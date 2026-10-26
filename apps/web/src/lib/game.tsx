@@ -1,0 +1,234 @@
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import type {
+  World,
+  Command,
+  Category,
+  ProductId,
+} from '../../../../packages/simulation/src/model';
+import { Factory, Store, Sprout, Pickaxe, Truck, Warehouse } from 'lucide-react';
+
+export const cr = (value: number, decimals = 0) =>
+  `${(value / 100).toLocaleString('pt-BR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })} cr`;
+export const num = (value: number, decimals = 0) =>
+  value.toLocaleString('pt-BR', { maximumFractionDigits: decimals });
+export const categoryIcons = {
+  industry: Factory,
+  retail: Store,
+  farm: Sprout,
+  mine: Pickaxe,
+  logistics: Truck,
+  warehouse: Warehouse,
+};
+export function CategoryIcon({
+  category,
+  className = '',
+  size = 18,
+}: {
+  category: Category;
+  className?: string;
+  size?: number;
+}) {
+  const Icon = categoryIcons[category];
+  return <Icon size={size} className={className} strokeWidth={1.7} />;
+}
+export type Page =
+  | 'map'
+  | 'opportunities'
+  | 'businesses'
+  | 'market'
+  | 'logistics'
+  | 'company'
+  | 'purchase'
+  | 'industry'
+  | 'retail'
+  | 'carrier';
+export interface MarketIntent {
+  product: ProductId;
+  destinationId: string;
+  offerId?: string;
+  quantity?: number;
+}
+interface GameContextValue {
+  world: World;
+  actor: string;
+  setActor: (v: string) => void;
+  pending: boolean;
+  run: (command: Command, message: string) => Promise<boolean>;
+  refresh: () => Promise<void>;
+  page: Page;
+  navigate: (page: Page) => void;
+  selectedId: string | null;
+  select: (id: string | null) => void;
+  focus: [number, number] | undefined;
+  consumeFocus: () => void;
+  focusMap: (coordinates: [number, number], propertyId?: string) => void;
+  businessId: string;
+  openBusiness: (id: string) => void;
+  intent: MarketIntent;
+  openMarket: (intent: MarketIntent) => void;
+  notice: (message: string, error?: boolean) => void;
+}
+const GameContext = createContext<GameContextValue | null>(null);
+export const useGame = () => {
+  const g = useContext(GameContext);
+  if (!g) throw new Error('Game provider missing');
+  return g;
+};
+export function GameProvider({ children }: { children: ReactNode }) {
+  const [world, setWorld] = useState<World | null>(null),
+    [error, setError] = useState('');
+  const [actor, changeActor] = useState(() =>
+    localStorage.getItem('aftermarket.company') === 'player2' ? 'player2' : 'player',
+  );
+  const [page, changePage] = useState<Page>(
+    (localStorage.getItem('aftermarket.page') as Page) || 'map',
+  );
+  const [selectedId, select] = useState<string | null>('hortolandia');
+  const [businessId, setBusinessId] = useState('e-industry');
+  const [focus, setFocus] = useState<[number, number]>();
+  const consumeFocus = useCallback(() => setFocus(undefined), []);
+  const [intent, setIntent] = useState<MarketIntent>({
+    product: 'iron',
+    destinationId: 'e-industry',
+    quantity: 24,
+  });
+  const [pending, setPending] = useState(false),
+    [toast, setToast] = useState<{ message: string; error: boolean; id: number }>();
+  const refresh = useCallback(async () => {
+    const response = await fetch('/api/world');
+    if (!response.ok) throw new Error('O servidor não respondeu.');
+    const next: World = await response.json();
+    setWorld((previous) =>
+      previous?.revision === next.revision &&
+      Object.keys(previous.routes).length === Object.keys(next.routes).length
+        ? previous
+        : next,
+    );
+    setError('');
+  }, []);
+  useEffect(() => {
+    void refresh().catch(() =>
+      setError('Não foi possível conectar ao mundo. Verifique se o servidor está em execução.'),
+    );
+    const timer = setInterval(
+      () => void refresh().catch(() => setError('Conexão interrompida. Tentando reconectar…')),
+      3000,
+    );
+    return () => clearInterval(timer);
+  }, [refresh]);
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(undefined), 6000);
+    return () => clearTimeout(timer);
+  }, [toast]);
+  const notice = (message: string, isError = false) =>
+    setToast({ message, error: isError, id: Date.now() });
+  const navigate = (p: Page) => {
+    changePage(p);
+    localStorage.setItem('aftermarket.page', p);
+  };
+  const setActor = (a: string) => {
+    changeActor(a);
+    localStorage.setItem('aftermarket.company', a);
+    navigate('map');
+  };
+  const run = async (command: Command, message: string) => {
+    if (pending) return false;
+    setPending(true);
+    try {
+      const response = await fetch('/api/commands', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-company-id': actor,
+          'Idempotency-Key': crypto.randomUUID(),
+        },
+        body: JSON.stringify(command),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error);
+      setWorld(result);
+      notice(message);
+      return true;
+    } catch (e) {
+      notice(e instanceof Error ? e.message : 'Não foi possível concluir. Tente novamente.', true);
+      await refresh().catch(() => undefined);
+      return false;
+    } finally {
+      setPending(false);
+    }
+  };
+  if (!world)
+    return (
+      <div className="connection-screen">
+        <div className="brand-mark">A</div>
+        <h1>AFTERMARKET</h1>
+        <p>{error || 'Conectando à economia…'}</p>
+        {error && (
+          <button onClick={() => void refresh().catch(() => undefined)}>Tentar novamente</button>
+        )}
+      </div>
+    );
+  return (
+    <GameContext.Provider
+      value={{
+        world,
+        actor,
+        setActor,
+        page,
+        navigate,
+        selectedId,
+        select,
+        focus,
+        consumeFocus,
+        pending,
+        run,
+        refresh,
+        businessId,
+        intent,
+        notice,
+        focusMap: (coordinates, propertyId) => {
+          setFocus([...coordinates]);
+          select(propertyId ?? null);
+          navigate('map');
+        },
+        openBusiness: (id) => {
+          const e = world.establishments.find((x) => x.id === id);
+          if (!e) return;
+          setBusinessId(id);
+          navigate(
+            e.category === 'retail'
+              ? 'retail'
+              : e.category === 'logistics'
+                ? 'carrier'
+                : 'industry',
+          );
+        },
+        openMarket: (next) => {
+          setIntent(next);
+          navigate('market');
+        },
+      }}
+    >
+      {children}
+      {error && (
+        <div className="connection-banner" role="status">
+          {error}
+        </div>
+      )}
+      {toast && (
+        <div
+          className={`toast ${toast.error ? 'error' : ''}`}
+          role={toast.error ? 'alert' : 'status'}
+          key={toast.id}
+        >
+          <span>{toast.error ? '!' : '✓'}</span>
+          {toast.message}
+          <button aria-label="Fechar mensagem" onClick={() => setToast(undefined)}>
+            ×
+          </button>
+        </div>
+      )}
+    </GameContext.Provider>
+  );
+}

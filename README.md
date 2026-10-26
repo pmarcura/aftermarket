@@ -1,0 +1,83 @@
+# AFTERMARKET
+
+Simulador empresarial geográfico no Brasil. Explore oportunidades, adquira propriedades, compre insumos, contrate transporte e opere negócios conectados por uma economia persistente.
+
+**Entrega atual: versão jogável local 0.1.0.** Dez telas baseadas nas referências, cartografia real, servidor autoritativo local e persistência SQLite. O jogo ainda não é um MMO público: contas autenticadas, infraestrutura distribuída e várias regras do GDD estão nas próximas fases.
+
+## Executar
+
+Requisitos: **Node.js 22.13 ou superior**, npm e navegador com WebGL. O projeto foi verificado com Node 25.5 e Microsoft Edge. Não precisa de chave de API para o mapa.
+
+```powershell
+npm ci
+npm run dev
+```
+
+Abra **http://127.0.0.1:5173**. API: http://127.0.0.1:3001/api/health.
+
+O mundo fica em `.runtime/world.sqlite`. Fechar o navegador não perde o progresso. Ao reiniciar o servidor, os eventos vencidos são processados. Não apague `.runtime` para atualizar o código. Faça backup antes de alterar o formato do estado.
+
+```powershell
+npm run world:backup
+```
+
+Para executar a compilação de produção local:
+
+```powershell
+npm run build
+npm start
+```
+
+Nesse modo, interface e API usam http://127.0.0.1:3001.
+
+## Primeiro teste de jogo
+
+1. Explore a região de Campinas. Clique em uma propriedade para consultar área, categoria e aquisição.
+2. Abra **Mercado**, escolha carvão ou minério e mantenha **Indústria de Aço** como destino.
+3. Compare o custo completo. Continue para frete, escolha uma transportadora e confirme o pagamento.
+4. Em **Logística**, acompanhe a carga. O inventário só recebe o material depois da entrega.
+5. Em **Meus Negócios → Indústria de Aço → Produção**, adicione um ciclo. Ele consome 12 t de minério e 3 t de carvão para produzir 8 t de aço, com custo industrial e tempo de processamento.
+6. Consulte estoque, publique uma oferta e veja as movimentações em **Empresa**.
+7. Em **Configurações**, alterne entre João Silva e Marina Costa. As duas empresas veem a mesma titularidade e os mesmos estoques de mercado.
+
+O relógio do laboratório usa **120×**: um segundo real equivale a dois minutos do jogo. Um ciclo siderúrgico de uma hora do jogo leva 30 segundos reais. Custos e consumo são processados a cada duas horas do jogo. O botão de pausa impede novos ciclos; lotes já reservados terminam normalmente.
+
+## Estrutura e fontes de verdade
+
+| Local                        | Responsabilidade                                          |
+| ---------------------------- | --------------------------------------------------------- |
+| `apps/web`                   | Interface React, mapa, navegação e fluxos do jogador      |
+| `apps/server`                | API, validação de pedidos e transações SQLite             |
+| `packages/simulation`        | Regras econômicas, modelos, receitas e cenário inicial    |
+| `packages/world`             | Regiões piloto, catálogo IBGE e proveniência              |
+| `docs/product/GDD-v3.0.md`   | GDD original, preservado sem alterações                   |
+| `docs/references`            | As 13 imagens originais e seu manifesto                   |
+| `docs/research/ECOSYSTEM.md` | Repositórios, mapas, dados, licenças e decisões           |
+| `.planning`                  | Requisitos, fases, estado atual e evidências de validação |
+| `tests`                      | Testes de integridade e fluxos de navegador               |
+| `.runtime`                   | Banco, backups e ferramentas temporárias; fora do Git     |
+
+Comece pela [situação atual](.planning/STATE.md) e pelo [roteiro](.planning/ROADMAP.md). O [processo Game-GSD](docs/DEVELOPMENT.md) orienta a continuidade sem duplicar versões de código.
+
+## Verificação
+
+```powershell
+npm run check
+npm run test:e2e
+npm run format:check
+```
+
+Os testes de navegador usam Edge instalado. Em outro sistema, instale Chromium com `npx playwright install chromium` e defina `PLAYWRIGHT_CHANNEL=chromium`. O teste econômico de navegador cria uma compra e um ciclo reais no mundo local e pode levar cerca de dois minutos.
+
+## Cartografia e dados
+
+- MapLibre renderiza dados do OpenStreetMap via OpenFreeMap, mantendo os créditos no mapa.
+- Há **5.571 municípios** no catálogo IBGE importado e uma malha GeoJSON de Campinas. `npm run data:sync` atualiza dados e proveniência; a economia ativa começa em dez municípios de referência.
+- As rotas consultam OSRM e são armazenadas em cache no banco. Quando indisponível, a tela identifica a distância como estimada. O perfil OSRM atual é automotivo; restrições para caminhões e pedágios exigem Valhalla/infraestrutura própria na fase geográfica.
+- Propriedades, infraestrutura econômica, reservas, demanda, preços e empresas são **simulados**. Não representam ofertas imobiliárias nem licenças de exploração reais.
+
+## Limites desta versão
+
+Bots têm recursos finitos e executam extração/produção pelas mesmas regras. Ainda não fazem planejamento empresarial completo. A análise de oportunidades usa parâmetros do cenário, sem realimentação integral do mercado. Fretes humanos, aluguel, contratos recorrentes, automações de estoque e validação territorial nacional estão planejados. A API só escuta o computador local; os perfis sem senha existem para testar concorrência entre empresas.
+
+O repositório Git é local, na branch `main`. Histórico substitui cópias `old`, `backup`, `final2` ou projetos paralelos. Dependências estão fixadas no `package-lock.json`.

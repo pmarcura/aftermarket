@@ -1,0 +1,47 @@
+{
+  "name": "aftermarket",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "dev": "concurrently -k -n API,WEB -c cyan,green \"npm:dev:api\" \"npm:dev:web\"",
+    "dev:api": "tsx watch apps/server/src/index.ts",
+    "dev:web": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build",
+    "start": "tsx apps/server/src/index.ts --production",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "check": "npm run build && npm test",
+    "data:sync": "tsx scripts/sync-geography.ts",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "world:backup": "tsx scripts/backup-world.ts",
+    "capture:ui": "tsx scripts/capture-ui.ts"
+  },
+  "dependencies": {
+    "@fontsource-variable/inter": "^5.3.0",
+    "express": "^5.3.0",
+    "lucide-react": "^1.61.0",
+    "maplibre-gl": "^6.16.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.6.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "concurrently": "^10.0.6",
+    "prettier": "^3.9.10",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5",
+    "vitest": "^4.1.12"
+  }
+}

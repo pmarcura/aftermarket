@@ -1,0 +1,63 @@
+{
+  "source": "IBGE · API de localidades",
+  "url": "https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome",
+  "retrievedAt": "2026-10-26T05:55:49.542Z",
+  "count": 5571,
+  "sha256": "fe5a83777365680d9f610ce0b18e0918c5302fa23fce294a51ee8ece0414a02c",
+  "coordinateSystem": "Coordenadas geográficas conforme os metadados do produto IBGE; não houve reprojeção nesta importação.",
+  "boundaries": "Campinas · GeoJSON",
+  "boundaryUrl": "https://servicodados.ibge.gov.br/api/v3/malhas/municipios/3509502?formato=application/vnd.geo+json&qualidade=minima",
+  "pilotIdsVerified": [
+    {
+      "id": "3509502",
+      "name": "Campinas",
+      "present": true
+    },
+    {
+      "id": "3538709",
+      "name": "Piracicaba",
+      "present": true
+    },
+    {
+      "id": "3501608",
+      "name": "Americana",
+      "present": true
+    },
+    {
+      "id": "3526902",
+      "name": "Limeira",
+      "present": true
+    },
+    {
+      "id": "3552205",
+      "name": "Sorocaba",
+      "present": true
+    },
+    {
+      "id": "3549904",
+      "name": "São José dos Campos",
+      "present": true
+    },
+    {
+      "id": "3131703",
+      "name": "Itabira",
+      "present": true
+    },
+    {
+      "id": "3106200",
+      "name": "Belo Horizonte",
+      "present": true
+    },
+    {
+      "id": "3550308",
+      "name": "São Paulo",
+      "present": true
+    },
+    {
+      "id": "4106902",
+      "name": "Curitiba",
+      "present": true
+    }
+  ],
+  "use": "Referência geográfica. Demanda, empresas, propriedades e preços não são dados do IBGE."
+}

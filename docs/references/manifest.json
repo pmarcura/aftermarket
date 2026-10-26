@@ -1,0 +1,93 @@
+[
+  {
+    "file": "01_mapa_principal.png",
+    "bytes": 2960004,
+    "sha256": "dc1d0e56d8889733e72291f8c7a6938a57dfcd2bcd7557b108fd8e38ccd46918",
+    "source": "user-provided",
+    "usage": "private-design-reference"
+  },
+  {
+    "file": "02_oportunidades.png",
+    "bytes": 516177,
+    "sha256": "390740db2bb6e4625b5cd990adb78d3a8e22d2866b9422046ed3dd647fe1cb4f",
+    "source": "user-provided",
+    "usage": "private-design-reference"
+  },
+  {
+    "file": "03_comprar_propriedade.png",
+    "bytes": 1627555,
+    "sha256": "771e25d116b5d6cb861bb1eb8e0b9e8f781548fef30785c797089947d44a42f3",
+    "source": "user-provided",
+    "usage": "private-design-reference"
+  },
+  {
+    "file": "04_meus_negocios.png",
+    "bytes": 461653,
+    "sha256": "73126a240f9a0ab8c457fcd293c8a3bdd88f30ccecc598295210d6f9b47dbf52",
+    "source": "user-provided",
+    "usage": "private-design-reference"
+  },
+  {
+    "file": "05_producao_industrial.png",
+    "bytes": 279359,
+    "sha256": "4da6b9e7bf95e0c14562e87206998ac7cdc69ff310e064bee6e562b5a91493b2",
+    "source": "user-provided",
+    "usage": "private-design-reference"
+  },
+  {
+    "file": "06_loja_varejista.png",
+    "bytes": 281630,
+    "sha256": "77453fe7725c341c13604c9ee5cad0e485d8f31504172fab65415dabbaf5cd59",
+    "source": "user-provided",
+    "usage": "private-design-reference"
+  },
+  {
+    "file": "07_mercado_b2b.png",
+    "bytes": 297760,
+    "sha256": "95182e433940e26977905c093fa914b5ff7ef226f94b69b1389300156d338e5b",
+    "source": "user-provided",
+    "usage": "private-design-reference"
+  },
+  {
+    "file": "08_contratar_frete.png",
+    "bytes": 1194894,
+    "sha256": "d5be4ec3d61e985a93cc6273a2fc32900fb3300a905bb6a346bc36751923a9f5",
+    "source": "user-provided",
+    "usage": "private-design-reference"
+  },
+  {
+    "file": "09_transportadora.png",
+    "bytes": 291643,
+    "sha256": "0e3bfb79495c009596eb21bae669b0e418fa8490a774b414a754c10bf1a594b4",
+    "source": "user-provided",
+    "usage": "private-design-reference"
+  },
+  {
+    "file": "10_empresa_financas.png",
+    "bytes": 277986,
+    "sha256": "71cadafa9f0d8cb40d471b8222cb0e4cf7006612f0229d08a3faa93b9d69d3b4",
+    "source": "user-provided",
+    "usage": "private-design-reference"
+  },
+  {
+    "file": "mapa-conceito-original.png",
+    "bytes": 2780896,
+    "sha256": "e182f2c623eb49959566602d821a80a76d35e9bad8bf5f4a04c05a5c92d780b6",
+    "source": "user-provided",
+    "usage": "private-design-reference"
+  },
+  {
+    "file": "painel-alternativas-original.png",
+    "bytes": 2793593,
+    "sha256": "24ca8cfbd2efdb5ee4faa9a80c0083aec001d92a00ed40e1ec82fa7c014648df",
+    "source": "user-provided",
+    "usage": "private-design-reference"
+  },
+  {
+    "file": "painel-conceitos-original.png",
+    "bytes": 2657198,
+    "sha256": "b870686590a65c0393d8077b11a92467a3e54b974dfa9443f1a236516489f052",
+    "source": "user-provided",
+    "usage": "private-design-reference"
+  }
+]

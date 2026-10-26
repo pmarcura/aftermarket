@@ -22,13 +22,24 @@ import { useGame, CategoryIcon, cr, num } from '../lib/game';
 import { WorldMap, defaultLayers, type Layers } from '../components/WorldMap';
 import { Badge, Panel, PageHeading, Rows, Modal } from '../components/ui';
 import { categoryInfo } from '../../../../packages/simulation/src/model';
+import {
+  laborMarket,
+  logisticsQuality,
+  utilityTariff,
+} from '../../../../packages/simulation/src/metrics';
+import { InfrastructureDetails } from '../components/InfrastructureDetails';
 
 export function MapPage() {
   const { world, actor, selectedId, select, navigate, openBusiness, focusMap } = useGame();
   const [layers, setLayers] = useState<Layers>(defaultLayers),
     [expanded, setExpanded] = useState(true);
+  const [ownership, setOwnership] = useState<'' | 'mine' | 'others' | 'available'>(''),
+    [details, setDetails] = useState(false);
   const p = world.properties.find((x) => x.id === selectedId),
     e = world.establishments.find((x) => x.propertyId === selectedId);
+  const labor = p ? laborMarket(world, p) : null,
+    logistics = p ? logisticsQuality(world, p) : null,
+    tariff = p ? utilityTariff(world, p) : null;
   const layerList: { key: keyof Layers; label: string; icon: typeof Building2 }[] = [
     { key: 'companies', label: 'Empresas', icon: Building2 },
     { key: 'available', label: 'Propriedades disponíveis', icon: MapPin },
@@ -40,13 +51,38 @@ export function MapPage() {
   return (
     <div className="map-page">
       <div className="main-map">
-        <WorldMap layers={layers} onSelect={select} />
+        <WorldMap layers={layers} onSelect={select} ownership={ownership} />
         <div className="map-breadcrumb">
           <MapPin size={14} />
           <span>
             Brasil <i>/</i> São Paulo <i>/</i> Região de Campinas
           </span>
           <Badge tone="muted">Região piloto</Badge>
+        </div>
+        <div className="map-owner-controls">
+          <button
+            className={ownership === 'mine' ? 'primary' : 'secondary'}
+            aria-pressed={ownership === 'mine'}
+            onClick={() => {
+              setOwnership(ownership === 'mine' ? '' : 'mine');
+              if (p?.ownerId !== actor) select(null);
+            }}
+          >
+            <Building2 size={15} /> Minhas propriedades
+          </button>
+          <select
+            aria-label="Filtrar titularidade no mapa"
+            value={ownership}
+            onChange={(event) => {
+              setOwnership(event.target.value as typeof ownership);
+              select(null);
+            }}
+          >
+            <option value="">Titularidade (opcional)</option>
+            <option value="mine">Somente minhas</option>
+            <option value="others">Outras empresas</option>
+            <option value="available">Disponíveis</option>
+          </select>
         </div>
         <div className="map-layer-panel">
           <button
@@ -176,7 +212,7 @@ export function MapPage() {
                       <Truck size={15} /> Acesso rodoviário
                     </>
                   ),
-                  value: 'Disponível',
+                  value: 'Acesso cadastrado no jogo',
                 },
               ]}
             />
@@ -191,7 +227,10 @@ export function MapPage() {
                       <Zap size={16} className="gold-text" /> Energia
                     </>
                   ),
-                  value: 'Disponível',
+                  value:
+                    p.energyConnected === false
+                      ? 'Sem conexão'
+                      : `${cr(tariff!.electricity)} / kWh`,
                   className: 'positive',
                 },
                 {
@@ -200,7 +239,7 @@ export function MapPage() {
                       <Droplets size={16} className="blue-text" /> Água
                     </>
                   ),
-                  value: p.water ? 'Disponível' : 'Sob consulta',
+                  value: p.water ? `${cr(tariff!.water)} / m³` : 'Sem abastecimento',
                   className: 'positive',
                 },
                 {
@@ -209,7 +248,7 @@ export function MapPage() {
                       <Users size={16} /> Mão de obra
                     </>
                   ),
-                  value: 'Alta',
+                  value: `${num(labor!.available)} candidatos`,
                   className: 'positive',
                 },
                 {
@@ -218,11 +257,14 @@ export function MapPage() {
                       <Truck size={16} /> Logística
                     </>
                   ),
-                  value: 'Boa',
+                  value: `${logistics!.score}/100 · ${logistics!.label}`,
                   className: 'positive',
                 },
               ]}
             />
+            <button className="text-button" onClick={() => setDetails(true)}>
+              Ver cálculos, tarifas e custos <ArrowUpRight size={13} />
+            </button>
           </section>
           <div className="property-actions">
             {!p.ownerId ? (
@@ -246,6 +288,7 @@ export function MapPage() {
           </div>
         </aside>
       )}
+      {details && p && <InfrastructureDetails property={p} onClose={() => setDetails(false)} />}
     </div>
   );
 }
@@ -262,6 +305,8 @@ export function PurchasePage() {
       </div>
     );
   const balance = world.companies.find((x) => x.id === actor)!.balance;
+  const labor = laborMarket(world, p),
+    tariff = utilityTariff(world, p);
   return (
     <>
       <PageHeading
@@ -320,9 +365,24 @@ export function PurchasePage() {
               rows={[
                 { label: 'Rodovia mais próxima', value: `${p.road} · ${p.roadDistance} km` },
                 { label: 'Acesso rodoviário', value: 'Disponível' },
-                { label: 'Energia', value: 'Disponível' },
-                { label: 'Água para processo', value: p.water ? 'Disponível' : 'Sob consulta' },
+                {
+                  label: 'Energia',
+                  value:
+                    p.energyConnected === false ? 'Sem conexão' : `${cr(tariff.electricity)} / kWh`,
+                },
+                {
+                  label: 'Água + esgoto',
+                  value: p.water ? `${cr(tariff.water)} / m³` : 'Sem abastecimento',
+                },
                 { label: 'Tipo de aquisição', value: 'Imóvel e instalação inicial' },
+                { label: 'Equipe de abertura', value: '12 contratos de trabalho' },
+                { label: 'Candidatos disponíveis no modelo', value: num(labor.available) },
+                {
+                  label: 'Folha mensal de abertura + encargos',
+                  value: cr(
+                    labor.monthlySalary * 12 * world.season.config.parameters.payrollBurden,
+                  ),
+                },
               ]}
             />
             <h3>Condições de aquisição</h3>
@@ -337,7 +397,8 @@ export function PurchasePage() {
             </p>
             <p className="muted small">
               O pagamento transfere a titularidade e abre uma unidade vazia. Estoques, veículos e
-              capital de giro são adquiridos separadamente. Não há taxa de registro neste cenário.
+              capital de giro são adquiridos separadamente. A folha e a manutenção continuam sendo
+              pagas ao pausar a produção. Não há taxa de registro neste cenário.
             </p>
             <div className="purchase-bottom">
               <button className="secondary" onClick={() => navigate('opportunities')}>
@@ -345,7 +406,7 @@ export function PurchasePage() {
               </button>
               <button
                 className="primary"
-                disabled={Boolean(p.ownerId) || balance < p.price}
+                disabled={Boolean(p.ownerId) || balance < p.price || labor.available < 12}
                 onClick={() => {
                   setName(`${categoryInfo[p.category].label} ${p.city}`);
                   setConfirm(true);

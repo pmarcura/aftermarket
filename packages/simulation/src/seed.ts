@@ -1,5 +1,7 @@
 import type { World, Property, Establishment, Category, Position } from './model';
-import { ECONOMIC_INTERVAL, products, type ProductId } from './model';
+import { ECONOMIC_INTERVAL, products, recipes, type ProductId } from './model';
+import { createSeasonConfig } from './calibration';
+import { operatingCosts, recordMarket } from './metrics';
 
 export function createWorld(now = Date.now()): World {
   const properties: Property[] = [];
@@ -232,8 +234,8 @@ export function createWorld(now = Date.now()): World {
         status: owner === 'player' && i === 3 ? 'maintenance' : 'available',
       });
   }
-  return {
-    version: 1,
+  const world: World = {
+    version: 2,
     revision: 0,
     createdAt: now,
     updatedAt: now,
@@ -274,5 +276,53 @@ export function createWorld(now = Date.now()): World {
     jobs: [],
     ledger: [],
     routes: {},
+    currency: 'BRL',
+    economyStartedAt: now,
+    marketHistory: [],
+    season: {
+      id: `local-${now}`,
+      name: 'Temporada local',
+      startedAt: now,
+      config: createSeasonConfig(
+        Object.fromEntries(Object.entries(products).map(([id, p]) => [id, p.basePrice])) as Record<
+          ProductId,
+          number
+        >,
+        recipes,
+      ),
+    },
   };
+  for (const p of world.properties) {
+    p.energyConnected = true;
+    if (!p.ownerId) calibrateProperty(p);
+  }
+  for (const offer of world.offers)
+    offer.price = Math.round(
+      products[offer.product].basePrice * (products[offer.product].unit === 'un' ? 0.78 : 1),
+    );
+  for (const establishment of world.establishments) {
+    establishment.automation = world.companies.find((c) => c.id === establishment.companyId)!.bot;
+    for (const id of Object.keys(establishment.prices) as ProductId[])
+      establishment.prices[id] = products[id].basePrice;
+    establishment.dailyCost = operatingCosts(world, establishment).total;
+  }
+  recordMarket(world, now);
+  return world;
+}
+
+export function calibrateProperty(p: Property) {
+  if (p.category === 'industry') {
+    p.area = Math.min(p.area, 12000);
+    p.price = Math.round(p.area * 20000);
+  }
+  if (p.category === 'retail') {
+    p.area = Math.min(p.area, 180);
+    p.price = Math.round(p.area * 350000);
+  }
+  if (p.category === 'logistics') {
+    p.area = Math.min(p.area, 15000);
+    p.price = Math.round(p.area * 25000);
+  }
+  if (p.category === 'farm') p.price = Math.round(p.area * 700);
+  if (p.category === 'mine') p.price = 72000000; // direito virtual, não preço de um título minerário real
 }

@@ -1,9 +1,15 @@
 import express from 'express';
+import { regions } from '../../../packages/world/src/regions';
 import { z } from 'zod';
 import { resolve } from 'node:path';
 import { createStore } from './store';
 import { RuleError } from '../../../packages/simulation/src/engine';
-import type { Route } from '../../../packages/simulation/src/model';
+import {
+  products,
+  type ProductId,
+  type Route,
+  type World,
+} from '../../../packages/simulation/src/model';
 
 const app = express();
 const port = Number(process.env.AFTERMARKET_PORT ?? 3001);
@@ -15,8 +21,10 @@ const allowedOrigins = new Set([
   `http://localhost:${port}`,
   'http://127.0.0.1:5173',
   'http://localhost:5173',
+  `http://127.0.0.1:${process.env.AFTERMARKET_WEB_PORT ?? 5173}`,
+  `http://localhost:${process.env.AFTERMARKET_WEB_PORT ?? 5173}`,
 ]);
-const product = z.enum(['iron', 'coal', 'steel', 'soy', 'oil', 'rice', 'beans', 'sugar', 'milk']);
+const product = z.enum(Object.keys(products) as [ProductId, ...ProductId[]]);
 const id = z.string().min(1).max(100),
   amount = z.number().int().positive();
 const commandSchema = z.discriminatedUnion('type', [
@@ -30,6 +38,7 @@ const commandSchema = z.discriminatedUnion('type', [
       quantity: amount.max(1000000),
       destinationId: id,
       carrierId: id,
+      expectedTotal: amount.optional(),
     })
     .strict(),
   z
@@ -58,6 +67,9 @@ const commandSchema = z.discriminatedUnion('type', [
     })
     .strict(),
   z.object({ type: z.literal('toggleOperation'), establishmentId: id }).strict(),
+  z
+    .object({ type: z.literal('setAutomation'), establishmentId: id, enabled: z.boolean() })
+    .strict(),
   z.object({ type: z.literal('buyVehicle') }).strict(),
 ]);
 app.use(express.json({ limit: '16kb' }));
@@ -66,9 +78,37 @@ app.use('/api', (_req, res, next) => {
   next();
 });
 app.get('/api/health', (_req, res) =>
-  res.json({ ok: true, mode: 'local-development', version: '0.1.0' }),
+  res.json({ ok: true, mode: 'local-development', version: '0.2.0' }),
 );
-app.get('/api/world', (_req, res) => res.json(store.tick()));
+const worldView = (w: World) => ({ ...w, marketHistory: w.marketHistory.slice(-220) });
+app.get('/api/world', (_req, res) => res.json(worldView(store.tick())));
+app.get('/api/market-history', (req, res) => {
+  const parsed = product.safeParse(req.query.product);
+  if (!parsed.success)
+    return res.status(400).json({ error: 'Escolha uma mercadoria para consultar o histórico.' });
+  const w = store.read(),
+    regionId = typeof req.query.region === 'string' ? req.query.region : '';
+  return res.json({
+    product: parsed.data,
+    regionId,
+    startedAt: w.economyStartedAt,
+    seasonId: w.season.id,
+    samples: w.marketHistory
+      .filter((s) => s.product === parsed.data && s.regionId === regionId)
+      .slice(-1000),
+    trades: w.ledger
+      .filter(
+        (e) =>
+          e.product === parsed.data &&
+          e.channel === 'wholesale' &&
+          (!regionId ||
+            (regionId.startsWith('state:')
+              ? regions.find((r) => r.id === e.regionId)?.state === regionId.slice(6)
+              : e.regionId === regionId)),
+      )
+      .slice(-2000),
+  });
+});
 app.post('/api/commands', (req, res, next) => {
   try {
     const origin = req.get('origin');
@@ -78,7 +118,7 @@ app.post('/api/commands', (req, res, next) => {
     if (actor !== 'player' && actor !== 'player2')
       return res.status(403).json({ error: 'Escolha uma empresa de teste válida.' });
     const key = z.uuid().parse(req.get('idempotency-key'));
-    res.json(store.command(actor, commandSchema.parse(req.body), key));
+    res.json(worldView(store.command(actor, commandSchema.parse(req.body), key)));
   } catch (error) {
     next(error);
   }

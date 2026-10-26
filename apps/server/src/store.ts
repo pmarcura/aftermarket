@@ -1,9 +1,10 @@
 import { DatabaseSync } from 'node:sqlite';
 import { mkdirSync } from 'node:fs';
-import { dirname } from 'node:path';
+import { dirname, resolve } from 'node:path';
 import { createWorld } from '../../../packages/simulation/src/seed';
 import { advance, execute, RuleError } from '../../../packages/simulation/src/engine';
 import type { Command, World } from '../../../packages/simulation/src/model';
+import { migrateWorld, needsMigration } from '../../../packages/simulation/src/migrate';
 
 export function createStore(path: string) {
   if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true });
@@ -13,6 +14,30 @@ export function createStore(path: string) {
   );
   if (!db.prepare('SELECT id FROM worlds WHERE id=1').get())
     db.prepare('INSERT INTO worlds VALUES(1, ?)').run(JSON.stringify(createWorld()));
+  const existing = JSON.parse(
+    (db.prepare('SELECT state FROM worlds WHERE id=1').get() as { state: string }).state,
+  );
+  if (needsMigration(existing)) {
+    if (path !== ':memory:') {
+      const backup = resolve(dirname(path), 'backups', `pre-v2-${Date.now()}.sqlite`);
+      mkdirSync(dirname(backup), { recursive: true });
+      db.exec(`VACUUM INTO '${backup.replaceAll("'", "''")}'`);
+    }
+    db.exec('BEGIN IMMEDIATE');
+    try {
+      const latest = JSON.parse(
+        (db.prepare('SELECT state FROM worlds WHERE id=1').get() as { state: string }).state,
+      );
+      const migrated = migrateWorld(latest);
+      if (migrated.changed)
+        db.prepare('UPDATE worlds SET state=? WHERE id=1').run(JSON.stringify(migrated.world));
+      db.exec('COMMIT');
+    } catch (error) {
+      db.exec('ROLLBACK');
+      db.close();
+      throw error;
+    }
+  }
   const read = () =>
     JSON.parse(
       (db.prepare('SELECT state FROM worlds WHERE id=1').get() as { state: string }).state,

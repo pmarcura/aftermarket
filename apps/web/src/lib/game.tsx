@@ -7,8 +7,13 @@ import type {
 } from '../../../../packages/simulation/src/model';
 import { Factory, Store, Sprout, Pickaxe, Truck, Warehouse } from 'lucide-react';
 
-export const cr = (value: number, decimals = 0) =>
-  `${(value / 100).toLocaleString('pt-BR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })} cr`;
+export const cr = (value: number, decimals = 2) =>
+  (value / 100).toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
 export const num = (value: number, decimals = 0) =>
   value.toLocaleString('pt-BR', { maximumFractionDigits: decimals });
 export const categoryIcons = {
@@ -43,8 +48,8 @@ export type Page =
   | 'retail'
   | 'carrier';
 export interface MarketIntent {
-  product: ProductId;
-  destinationId: string;
+  product?: ProductId;
+  destinationId?: string;
   offerId?: string;
   quantity?: number;
 }
@@ -56,7 +61,7 @@ interface GameContextValue {
   run: (command: Command, message: string) => Promise<boolean>;
   refresh: () => Promise<void>;
   page: Page;
-  navigate: (page: Page) => void;
+  navigate: (page: Page, preserveIntent?: boolean) => void;
   selectedId: string | null;
   select: (id: string | null) => void;
   focus: [number, number] | undefined;
@@ -87,11 +92,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [businessId, setBusinessId] = useState('e-industry');
   const [focus, setFocus] = useState<[number, number]>();
   const consumeFocus = useCallback(() => setFocus(undefined), []);
-  const [intent, setIntent] = useState<MarketIntent>({
-    product: 'iron',
-    destinationId: 'e-industry',
-    quantity: 24,
-  });
+  const [intent, setIntent] = useState<MarketIntent>({});
   const [pending, setPending] = useState(false),
     [toast, setToast] = useState<{ message: string; error: boolean; id: number }>();
   const refresh = useCallback(async () => {
@@ -123,7 +124,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
   }, [toast]);
   const notice = (message: string, isError = false) =>
     setToast({ message, error: isError, id: Date.now() });
-  const navigate = (p: Page) => {
+  const navigate = (p: Page, preserveIntent = false) => {
+    if (p === 'market' || (p === 'logistics' && !preserveIntent)) setIntent({});
     changePage(p);
     localStorage.setItem('aftermarket.page', p);
   };
@@ -206,7 +208,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
         },
         openMarket: (next) => {
           setIntent(next);
-          navigate('market');
+          changePage('market');
+          localStorage.setItem('aftermarket.page', 'market');
         },
       }}
     >

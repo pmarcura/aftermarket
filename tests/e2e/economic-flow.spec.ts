@@ -13,8 +13,17 @@ test('compra, frete, entrega e produção alteram o estado real e persistem apó
   await page.getByLabel('Produto', { exact: true }).selectOption('coal');
   await page.getByLabel('Destino da compra').selectOption('e-industry');
   await page.getByLabel('Quantidade de mercadoria').fill('3');
+  await page
+    .getByRole('row')
+    .filter({ hasText: 'FerroVale Comercial' })
+    .getByRole('button', { name: 'Selecionar', exact: true })
+    .click();
   const before = (await (await request.get('/api/world')).json()) as World;
   await page.getByRole('button', { name: 'Continuar para frete' }).click();
+  await page
+    .getByRole('button', { name: 'Selecionar transportadora', exact: true })
+    .first()
+    .click();
   await page.getByRole('button', { name: 'Contratar e comprar' }).click();
   const response = page.waitForResponse(
     (r) => r.url().endsWith('/api/commands') && r.request().method() === 'POST',

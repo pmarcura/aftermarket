@@ -17,3 +17,23 @@
 | D-013 | Preservar área física ao desenhar propriedades         | Marcadores mantêm tamanho legível, mas os polígonos não são artificialmente ampliados para reproduzir as proporções ilustrativas dos mockups.                                                              |
 
 Essas decisões não alteram o GDD original. Elas definem o que a versão 0.1 demonstra e onde a implementação ainda precisa evoluir.
+
+### D-014 · Cartografia limpa com malha viária e natureza
+
+Em 26/10/2026, a pedido do usuário, o mapa principal e os previews passaram a usar um estilo local de 10 camadas, substituindo as 119 camadas do Bright. Exibe água, matas, areia/gelo e a malha viária: autoestradas, estradas principais/secundárias, vias locais e acessos. Retira rótulos, ícones, aeroportos, prédios e zoneamento urbano. Gramados também ficam fora porque podem reproduzir silhuetas de pistas e equipamentos urbanos.
+
+O usuário refinou o pedido para preservar estradas de ligação e melhorar cores e recortes por zoom. Todas as vias usam a geometria de `transportation`, sem exigir nome/número e sem reutilizar as linhas incompletas de rótulos de `transportation_name`. Classes `motorway/trunk/primary/secondary/tertiary/minor/service/track` têm a mesma curva contínua de espessura em superfície, ponte e túnel. Vias menores recebem menos contraste e ganham espessura ao aproximar; rodovias usam dourado suave, conexões marfim e água azul dessaturado sobre terreno sálvia. Não há cortes artificiais por `maxzoom` nem filtro por `ref`. A generalização e a disponibilidade de detalhes por zoom do provedor continuam limites da base; a apresentação não altera o roteamento de cargas.
+
+O estilo não carrega glyphs, sprites nem um JSON de estilo externo. Os tiles vetoriais e seus dados urbanos continuam sendo baixados; a redução demonstrada é de camadas/recursos de apresentação, sem percentual de FPS ou de tráfego prometido. Antes de introduzir tiles filtrados e infraestrutura própria na fase 03, medir tráfego, memória e fluidez em dispositivo modesto. Busca, camadas do jogo e atribuição do OpenFreeMap/OpenMapTiles/OSM permanecem disponíveis.
+
+### D-015 · Economia interna por temporada
+
+A pedido do usuário, referências externas são usadas apenas para preparar a abertura e os balanceamentos futuros. A configuração econômica é copiada para cada mundo e não muda por uma edição do template. Não há cotações externas durante a season. BRL substitui créditos; fontes/faixas são âncoras simuladas, não preços locais oficiais. Esta decisão substitui o valor imobiliário de D-003 para imóveis ainda disponíveis (Hortolândia: 12.000 m² e R$ 2,4 milhões), preservando imóveis adquiridos e saldos. D-011 evolui para preços/estoques/negócios observados mais demanda modelada, com procedência separada.
+
+### D-016 · Explicação progressiva e decisões comerciais deliberadas
+
+Filtros abrem vazios. Contexto de reposição só preenche produto/destino quando o jogador inicia esse fluxo. Fornecedor e transportadora exigem escolha. Catálogo completo, resumo simples, análise avançada e tabela compartilham a mesma regra. ECharts acrescenta ferramentas analíticas profissionais sem criar histórico fictício; ausência de negócio não produz candles. Mercados próximos agrupam no mapa para preservar legibilidade, sem somar áreas de influência.
+
+### D-017 · Custos e movimento com consequência
+
+Água/energia são consumidas e pagas, folha volta aos consumidores e manutenção permanece ao pausar. Mão de obra e logística expõem componentes. O caminhão interpola a geometria contratada pelo tempo salvo; a chegada visual aguarda confirmação autoritativa. Coprodutos conservam o custo agregado. A simulação de 30 dias denuncia rupturas e não as esconde com estoque infinito. Ver `GAME-DESIGN-AUDIT.md`.

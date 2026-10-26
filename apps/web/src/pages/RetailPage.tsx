@@ -1,5 +1,13 @@
 import { useState } from 'react';
-import { Search, Plus, Box, TriangleAlert, ShoppingCart, Pencil } from 'lucide-react';
+import {
+  Search,
+  Plus,
+  Box,
+  TriangleAlert,
+  ShoppingCart,
+  Pencil,
+  ChartNoAxesCombined,
+} from 'lucide-react';
 import { useGame, cr, num } from '../lib/game';
 import {
   PageHeading,
@@ -13,6 +21,12 @@ import {
   Empty,
 } from '../components/ui';
 import { products, type ProductId } from '../../../../packages/simulation/src/model';
+import {
+  householdDemand,
+  regionFor,
+  seasonPrice,
+} from '../../../../packages/simulation/src/metrics';
+import { ProductAnalysisModal } from '../components/ProductAnalysis';
 export function RetailPage() {
   const { world, actor, businessId, openMarket, run, pending, navigate } = useGame();
   const e =
@@ -22,6 +36,7 @@ export function RetailPage() {
   const [tab, setTab] = useState('Produtos'),
     [editing, setEditing] = useState<ProductId>(),
     [price, setPrice] = useState(0);
+  const [analysis, setAnalysis] = useState<ProductId>();
   if (!e)
     return (
       <Empty
@@ -38,12 +53,22 @@ export function RetailPage() {
     entries = world.ledger.filter((l) => l.establishmentId === e.id && l.kind === 'retail'),
     stock = Object.entries(e.inventory) as [ProductId, number][];
   const sold = entries.reduce((n, l) => n + l.amount, 0);
-  const low = stock.filter(([, q]) => q < 100);
+  const region = regionFor(p.coordinates, p.city),
+    competingStores = Math.max(
+      1,
+      world.establishments.filter(
+        (x) =>
+          x.enabled &&
+          x.category === 'retail' &&
+          world.properties.find((p) => p.id === x.propertyId)!.city === p.city,
+      ).length,
+    );
+  const demandFor = (id: ProductId) => householdDemand(world, region.id, id) / competingStores;
+  const low = stock.filter(([id, q]) => q < demandFor(id) * 2);
+  const intervalStart = Math.max(world.economyStartedAt, world.nextEconomicAt - 14 * 60000);
   const bars = Array.from({ length: 14 }, (_, i) =>
     entries
-      .filter(
-        (l) => l.at >= world.createdAt + i * 60000 && l.at < world.createdAt + (i + 1) * 60000,
-      )
+      .filter((l) => l.at >= intervalStart + i * 60000 && l.at < intervalStart + (i + 1) * 60000)
       .reduce((n, l) => n + l.amount, 0),
   );
   return (
@@ -122,17 +147,19 @@ export function RetailPage() {
                             <i className={`table-icon ${id === 'oil' ? 'green' : ''}`}>
                               <Box size={17} />
                             </i>
-                            <strong>{products[id].name}</strong>
+                            <button className="text-button" onClick={() => setAnalysis(id)}>
+                              {products[id].name} <ChartNoAxesCombined size={13} />
+                            </button>
                           </div>
                         </td>
                         <td>{products[id].category}</td>
                         <td className="numeric">{num(quantity)}</td>
-                        <td className="numeric">{cr(e.prices[id] ?? products[id].basePrice, 2)}</td>
+                        <td className="numeric">{cr(e.prices[id] ?? seasonPrice(world, id), 2)}</td>
                         <td>
-                          <Badge tone={quantity < 100 ? 'gold' : 'green'}>
+                          <Badge tone={quantity < demandFor(id) * 2 ? 'gold' : 'green'}>
                             {quantity === 0
                               ? 'Sem estoque'
-                              : quantity < 100
+                              : quantity < demandFor(id) * 2
                                 ? 'Baixo estoque'
                                 : 'Ativo'}
                           </Badge>
@@ -144,7 +171,7 @@ export function RetailPage() {
                             title="Editar preço"
                             onClick={() => {
                               setEditing(id);
-                              setPrice(e.prices[id] ?? products[id].basePrice);
+                              setPrice(e.prices[id] ?? seasonPrice(world, id));
                             }}
                           >
                             <Pencil size={15} />
@@ -204,11 +231,11 @@ export function RetailPage() {
             )}
             {['Produtos', 'Estoque', 'Vendas'].includes(tab) && (
               <div className="panel-content">
-                <h3>Vendas por período — primeiras 14 rodadas</h3>
+                <h3>Vendas por período — últimas 14 rodadas</h3>
                 <div
                   className="bar-chart"
                   role="img"
-                  aria-label="Receita das primeiras 14 rodadas de vendas"
+                  aria-label="Receita das últimas 14 rodadas de vendas"
                 >
                   {bars.map((v, i) => (
                     <div key={i}>
@@ -230,22 +257,41 @@ export function RetailPage() {
             )}
           </Panel>
           <div className="right-stack">
-            <Panel title={`Demanda regional — ${p.city}`}>
+            <Panel title="Cobertura estimada do estoque">
               <div className="panel-content">
-                {[
-                  ['Alimentos', 91],
-                  ['Bebidas', 78],
-                  ['Higiene', 69],
-                  ['Limpeza', 57],
-                  ['Vestuário', 33],
-                ].map(([label, value]) => (
-                  <div className="meter-row" key={label}>
-                    <span>{label}</span>
-                    <Progress value={Number(value)} />
-                    <small>{value}/100</small>
-                  </div>
-                ))}
-                <p className="small muted">Índices iniciais do cenário de consumo.</p>
+                {stock.map(([id, quantity]) => {
+                  const demand = demandFor(id),
+                    days = demand ? quantity / demand : 0;
+                  return (
+                    <div className="meter-row" key={id}>
+                      <span>{products[id].name}</span>
+                      <Progress value={(days / 7) * 100} />
+                      <small>{demand ? `${num(days, 1)} d` : '—'}</small>
+                    </div>
+                  );
+                })}
+                <p className="small muted">
+                  Estoque ÷ demanda diária dividida entre {competingStores} lojas. Barra completa =
+                  7 dias do jogo; não é garantia de vendas.
+                </p>
+                <button
+                  className="secondary full"
+                  disabled={pending}
+                  onClick={() =>
+                    void run(
+                      { type: 'setAutomation', establishmentId: e.id, enabled: !e.automation },
+                      e.automation
+                        ? 'Reposição automática desativada.'
+                        : 'Reposição automática ativada com limite diário do cenário.',
+                    )
+                  }
+                >
+                  {e.automation ? 'Desativar reposição automática' : 'Ativar reposição automática'}
+                </button>
+                <p className="small muted">
+                  A reposição respeita estoque, transporte, saldo e orçamento de{' '}
+                  {cr(e.automationDailyBudget ?? 3000000)} por dia do jogo.
+                </p>
               </div>
             </Panel>
             <Panel title="Alertas de estoque">
@@ -286,7 +332,7 @@ export function RetailPage() {
       {editing && (
         <Modal title={`Preço · ${products[editing].name}`} onClose={() => setEditing(undefined)}>
           <label className="field">
-            Preço de venda por unidade (cr)
+            Preço de venda por unidade (R$)
             <input
               autoFocus
               type="number"
@@ -316,6 +362,13 @@ export function RetailPage() {
             Salvar preço
           </button>
         </Modal>
+      )}
+      {analysis && (
+        <ProductAnalysisModal
+          product={analysis}
+          regionId={region.id}
+          onClose={() => setAnalysis(undefined)}
+        />
       )}
     </>
   );

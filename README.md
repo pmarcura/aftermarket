@@ -2,7 +2,7 @@
 
 Simulador empresarial geográfico no Brasil. Explore oportunidades, adquira propriedades, compre insumos, contrate transporte e opere negócios conectados por uma economia persistente.
 
-**Entrega atual: versão jogável local 0.1.0.** Dez telas baseadas nas referências, cartografia real, servidor autoritativo local e persistência SQLite. O jogo ainda não é um MMO público: contas autenticadas, infraestrutura distribuída e várias regras do GDD estão nas próximas fases.
+**Entrega atual: versão jogável local 0.2.0.** Dez telas baseadas nas referências, cartografia real, servidor autoritativo local e persistência SQLite. O jogo ainda não é um MMO público: contas autenticadas, infraestrutura distribuída e várias regras do GDD estão nas próximas fases.
 
 ## Executar
 
@@ -33,14 +33,26 @@ Nesse modo, interface e API usam http://127.0.0.1:3001.
 ## Primeiro teste de jogo
 
 1. Explore a região de Campinas. Clique em uma propriedade para consultar área, categoria e aquisição.
-2. Abra **Mercado**, escolha carvão ou minério e mantenha **Indústria de Aço** como destino.
+2. Abra **Mercado**, escolha carvão ou minério, selecione uma oferta, informe quantidade e escolha **Indústria de Aço** como destino. Os filtros começam vazios.
 3. Compare o custo completo. Continue para frete, escolha uma transportadora e confirme o pagamento.
 4. Em **Logística**, acompanhe a carga. O inventário só recebe o material depois da entrega.
 5. Em **Meus Negócios → Indústria de Aço → Produção**, adicione um ciclo. Ele consome 12 t de minério e 3 t de carvão para produzir 8 t de aço, com custo industrial e tempo de processamento.
 6. Consulte estoque, publique uma oferta e veja as movimentações em **Empresa**.
 7. Em **Configurações**, alterne entre João Silva e Marina Costa. As duas empresas veem a mesma titularidade e os mesmos estoques de mercado.
 
-O relógio do laboratório usa **120×**: um segundo real equivale a dois minutos do jogo. Um ciclo siderúrgico de uma hora do jogo leva 30 segundos reais. Custos e consumo são processados a cada duas horas do jogo. O botão de pausa impede novos ciclos; lotes já reservados terminam normalmente.
+O relógio do laboratório usa **120×**: um segundo real equivale a dois minutos do jogo. Um ciclo siderúrgico de uma hora do jogo leva 30 segundos reais. Custos e consumo são processados a cada duas horas do jogo. O botão de pausa impede novos ciclos; lotes já reservados terminam normalmente, e contratos fixos continuam sendo cobrados. Água e energia são pagas por consumo.
+
+## Temporadas e balanceamento
+
+Preços iniciais, receitas, população representada, salários, utilidades e combustível são copiados para a configuração da temporada. **Nenhuma cotação econômica externa é consultada durante o jogo.** O mercado evolui pelos agentes internos; fontes reais servem para criar/balancear temporadas futuras.
+
+Consulte [fórmulas e regras](docs/product/ECONOMY.md) e [auditoria de design](docs/product/GAME-DESIGN-AUDIT.md). O gráfico avançado oferece zoom, cursor cruzado, candles de negócios, média móvel, escala logarítmica, livro de ofertas, tabela e exportações.
+
+```powershell
+npm run balance:season -- --days=30
+```
+
+Esse comando simula um cenário separado, conserva o dinheiro e grava relatório em `.runtime/balance`; nunca usa o banco do jogador. Para verificar uma migração do banco existente, pare seu servidor, faça `npm run world:backup` e execute `npm run world:upgrade`. A atualização mantém saldos, estoques, titularidade e recibos; cria outro backup antes de converter.
 
 ## Estrutura e fontes de verdade
 
@@ -67,7 +79,7 @@ npm run test:e2e
 npm run format:check
 ```
 
-Os testes de navegador usam Edge instalado. Em outro sistema, instale Chromium com `npx playwright install chromium` e defina `PLAYWRIGHT_CHANNEL=chromium`. O teste econômico de navegador cria uma compra e um ciclo reais no mundo local e pode levar cerca de dois minutos.
+Os testes de navegador usam Edge instalado. Em outro sistema, instale Chromium com `npx playwright install chromium` e defina `PLAYWRIGHT_CHANNEL=chromium`. Os testes sempre iniciam um banco novo em `.runtime/e2e` e usam portas 5183/3013, separadas do jogo. Não reutilizam o servidor principal. O teste econômico cria uma compra e um ciclo reais nesse banco e pode levar cerca de dois minutos.
 
 ## Cartografia e dados
 
@@ -78,6 +90,6 @@ Os testes de navegador usam Edge instalado. Em outro sistema, instale Chromium c
 
 ## Limites desta versão
 
-Bots têm recursos finitos e executam extração/produção pelas mesmas regras. Ainda não fazem planejamento empresarial completo. A análise de oportunidades usa parâmetros do cenário, sem realimentação integral do mercado. Fretes humanos, aluguel, contratos recorrentes, automações de estoque e validação territorial nacional estão planejados. A API só escuta o computador local; os perfis sem senha existem para testar concorrência entre empresas.
+Bots compram, transportam, produzem e ajustam ofertas com recursos finitos e regras comuns. Lojas oferecem reposição automática com orçamento. Oportunidades apresenta preços/estoque/negócios internos e demanda modelada, com mapa, filtros vazios e análise simples/avançada. Fretes humanos, aluguel, contratos recorrentes, planejamento completo e validação territorial nacional continuam planejados. As cadeias ainda não sustentam todos os itens por uma temporada inteira. A API só escuta o computador local; os perfis sem senha existem para testar concorrência entre empresas.
 
 O repositório Git é local, na branch `main`. Histórico substitui cópias `old`, `backup`, `final2` ou projetos paralelos. Dependências estão fixadas no `package-lock.json`.

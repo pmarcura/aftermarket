@@ -2,17 +2,17 @@ import { useState } from 'react';
 import { FileText, ChartNoAxesCombined, Box, Truck, Factory, Download } from 'lucide-react';
 import { useGame, cr, num } from '../lib/game';
 import { PageHeading, Stat, Panel, Rows, Badge, LineChart, Select, Modal } from '../components/ui';
+import { operatingCosts } from '../../../../packages/simulation/src/metrics';
 import type { ProductId } from '../../../../packages/simulation/src/model';
 export function CompanyPage() {
   const { world, actor, notice } = useGame();
-  const [period, setPeriod] = useState('all'),
+  const [period, setPeriod] = useState(''),
     [details, setDetails] = useState(false);
   const company = world.companies.find((c) => c.id === actor)!,
     units = world.establishments.filter((e) => e.companyId === actor),
     fleet = world.vehicles.filter((v) => v.companyId === actor);
   const ledger = world.ledger.filter((e) => e.from === actor || e.to === actor),
-    filtered =
-      period === 'all' ? ledger : ledger.filter((e) => e.at >= Date.now() - Number(period) * 60000);
+    filtered = !period ? ledger : ledger.filter((e) => e.at >= Date.now() - Number(period) * 60000);
   const revenue = units.reduce((n, e) => n + e.revenue, 0),
     expenses = units.reduce((n, e) => n + e.expenses, 0),
     profit = revenue - expenses;
@@ -34,7 +34,7 @@ export function CompanyPage() {
     inTransit = world.shipments
       .filter((s) => s.buyerId === actor && !s.delivered)
       .reduce((n, s) => n + s.cost + s.freight, 0),
-    vehicles = fleet.length * 28000000;
+    vehicles = fleet.reduce((n, v) => n + (v.purchasePrice ?? 28000000), 0);
   const netWorth = company.balance + propertyAssets + inventory + wip + inTransit + vehicles;
   const first = filtered[0]?.at ?? world.createdAt,
     last = Math.max(Date.now(), first + 1);
@@ -53,9 +53,25 @@ export function CompanyPage() {
     { label: 'Estoques e produção', amount: inventory + wip + inTransit, color: '#75b593' },
     { label: 'Caixa disponível', amount: company.balance, color: '#7e929d' },
   ];
+  const cashCosts = [
+    ['Folha de pagamento', 'payroll'],
+    ['Energia', 'energy'],
+    ['Água e esgoto', 'water'],
+    ['Manutenção', 'maintenance'],
+    ['Processamento e serviços', 'operation'],
+    ['Fretes contratados', 'freight'],
+  ].map(([label, kind]) => ({
+    label,
+    value: cr(
+      filtered
+        .filter((e) => e.from === actor && e.to !== actor && e.kind === kind)
+        .reduce((n, e) => n + e.amount, 0),
+    ),
+  }));
+  const forecast = units.reduce((n, e) => n + operatingCosts(world, e).total, 0);
   const exportLedger = () => {
     const csv =
-      '\uFEFFData;Descrição;Tipo;Entrada (cr);Saída (cr)\r\n' +
+      '\uFEFFData;Descrição;Tipo;Entrada (R$);Saída (R$)\r\n' +
       filtered
         .map((e) =>
           [
@@ -118,7 +134,7 @@ export function CompanyPage() {
                     value={period}
                     onChange={(e) => setPeriod(e.target.value)}
                   >
-                    <option value="all">Desde a abertura</option>
+                    <option value="">Período (opcional)</option>
                     <option value="5">Últimos 5 min reais</option>
                     <option value="30">Últimos 30 min reais</option>
                   </Select>
@@ -132,8 +148,8 @@ export function CompanyPage() {
                   money
                 />
                 <p className="muted small">
-                  Movimentação efetiva de caixa em cr. Aquisições e produção capitalizada alteram o
-                  caixa antes do resultado operacional.
+                  Movimentação efetiva de caixa em reais. Aquisições e produção capitalizada alteram
+                  o caixa antes do resultado operacional.
                 </p>
               </div>
             </Panel>
@@ -202,6 +218,19 @@ export function CompanyPage() {
                     <strong>{num((c.amount / Math.max(netWorth, 1)) * 100)}%</strong>
                   </div>
                 ))}
+              </div>
+            </Panel>
+            <Panel title="Pagamentos operacionais em caixa">
+              <div className="panel-content">
+                <Rows rows={cashCosts} />
+                <p className="muted small">
+                  Pagamentos efetivos do período selecionado. Energia e água incluem consumo de
+                  produção e manutenção da operação; produção em andamento fica no ativo até a
+                  venda.
+                </p>
+                <Rows
+                  rows={[{ label: 'Custos fixos estimados / dia do jogo', value: cr(forecast) }]}
+                />
               </div>
             </Panel>
             <Panel title="Situação da empresa">

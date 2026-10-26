@@ -1,6 +1,6 @@
 export type Category = 'retail' | 'industry' | 'farm' | 'mine' | 'warehouse' | 'logistics';
 export type ProductId =
-  'iron' | 'coal' | 'steel' | 'soy' | 'oil' | 'rice' | 'beans' | 'sugar' | 'milk';
+  'iron' | 'coal' | 'steel' | 'soy' | 'soymeal' | 'oil' | 'rice' | 'beans' | 'sugar' | 'milk';
 export type Position = [number, number];
 export interface Company {
   id: string;
@@ -21,6 +21,7 @@ export interface Property {
   road: string;
   roadDistance: number;
   water: boolean;
+  energyConnected?: boolean;
 }
 export interface Establishment {
   id: string;
@@ -39,6 +40,8 @@ export interface Establishment {
   expenses: number;
   enabled: boolean;
   reserve?: number;
+  automation?: boolean;
+  automationDailyBudget?: number;
 }
 export interface Offer {
   id: string;
@@ -54,6 +57,7 @@ export interface Vehicle {
   capacityM3: number;
   propertyId: string;
   status: 'available' | 'route' | 'maintenance';
+  purchasePrice?: number;
 }
 export interface Shipment {
   id: string;
@@ -71,6 +75,11 @@ export interface Shipment {
   arrivesAt: number;
   delivered: boolean;
   distance: number;
+  route?: Position[];
+  routeSource?: 'osrm' | 'estimate';
+  pickupAt?: number;
+  roadDepartureAt?: number;
+  roadArrivalAt?: number;
 }
 export interface Job {
   id: string;
@@ -81,6 +90,15 @@ export interface Job {
   finishesAt: number;
   completed: boolean;
   cost: number;
+  output?: Partial<Record<ProductId, number>>;
+  outputCosts?: Partial<Record<ProductId, number>>;
+  charges?: {
+    processing: number;
+    energy: number;
+    water: number;
+    energyKwh: number;
+    waterM3: number;
+  };
 }
 export interface Entry {
   id: string;
@@ -90,10 +108,36 @@ export interface Entry {
   amount: number;
   description: string;
   establishmentId?: string;
-  kind: 'trade' | 'freight' | 'property' | 'operation' | 'retail' | 'vehicle';
+  kind:
+    | 'trade'
+    | 'freight'
+    | 'property'
+    | 'operation'
+    | 'retail'
+    | 'vehicle'
+    | 'energy'
+    | 'water'
+    | 'payroll'
+    | 'maintenance'
+    | 'budget';
+  product?: ProductId;
+  quantity?: number;
+  unitPrice?: number;
+  regionId?: string;
+  channel?: 'wholesale' | 'retail' | 'internal';
+}
+export interface MarketSample {
+  at: number;
+  product: ProductId;
+  regionId: string;
+  price: number | null;
+  stock: number;
+  offerCount: number;
+  tradedQuantity: number;
+  tradedValue: number;
 }
 export interface World {
-  version: 1;
+  version: 2;
   revision: number;
   createdAt: number;
   updatedAt: number;
@@ -107,6 +151,10 @@ export interface World {
   jobs: Job[];
   ledger: Entry[];
   routes: Record<string, Route>;
+  marketHistory: MarketSample[];
+  economyStartedAt: number;
+  currency: 'BRL';
+  season: { id: string; name: string; startedAt: number; config: SeasonConfig };
 }
 export interface Route {
   coordinates: Position[];
@@ -116,12 +164,20 @@ export interface Route {
 }
 export type Command =
   | { type: 'buyProperty'; propertyId: string; name: string }
-  | { type: 'trade'; offerId: string; quantity: number; destinationId: string; carrierId: string }
+  | {
+      type: 'trade';
+      offerId: string;
+      quantity: number;
+      destinationId: string;
+      carrierId: string;
+      expectedTotal?: number;
+    }
   | { type: 'produce'; establishmentId: string; recipeId: string; cycles: number }
   | { type: 'extract'; establishmentId: string; quantity: number }
   | { type: 'setPrice'; establishmentId: string; product: ProductId; price: number }
   | { type: 'publishOffer'; establishmentId: string; product: ProductId; price: number }
   | { type: 'toggleOperation'; establishmentId: string }
+  | { type: 'setAutomation'; establishmentId: string; enabled: boolean }
   | { type: 'buyVehicle' };
 export interface Recipe {
   id: string;
@@ -132,6 +188,7 @@ export interface Recipe {
   cost: number;
   duration: number;
   energyKwh: number;
+  waterM3: number;
 }
 export const TIME_SCALE = 120;
 export const ECONOMIC_INTERVAL = 60_000; // duas horas virtuais por minuto real
@@ -152,7 +209,7 @@ export const products: Record<
     unit: 't',
     massT: 1,
     volumeM3: 0.45,
-    basePrice: 25800,
+    basePrice: 50000,
   },
   coal: {
     name: 'Carvão mineral',
@@ -160,7 +217,7 @@ export const products: Record<
     unit: 't',
     massT: 1,
     volumeM3: 1.3,
-    basePrice: 42000,
+    basePrice: 180000,
   },
   steel: {
     name: 'Aço em barras',
@@ -168,7 +225,7 @@ export const products: Record<
     unit: 't',
     massT: 1,
     volumeM3: 0.15,
-    basePrice: 285000,
+    basePrice: 480000,
   },
   soy: {
     name: 'Soja em grão',
@@ -176,7 +233,15 @@ export const products: Record<
     unit: 't',
     massT: 1,
     volumeM3: 1.4,
-    basePrice: 148000,
+    basePrice: 250000,
+  },
+  soymeal: {
+    name: 'Farelo de soja',
+    category: 'Agricultura',
+    unit: 'kg',
+    massT: 0.001,
+    volumeM3: 0.0017,
+    basePrice: 230,
   },
   oil: {
     name: 'Óleo de soja 1 L',
@@ -184,7 +249,7 @@ export const products: Record<
     unit: 'un',
     massT: 0.00092,
     volumeM3: 0.0013,
-    basePrice: 890,
+    basePrice: 849,
   },
   rice: {
     name: 'Arroz 5 kg',
@@ -192,7 +257,7 @@ export const products: Record<
     unit: 'un',
     massT: 0.005,
     volumeM3: 0.007,
-    basePrice: 2490,
+    basePrice: 2345,
   },
   beans: {
     name: 'Feijão 1 kg',
@@ -200,7 +265,7 @@ export const products: Record<
     unit: 'un',
     massT: 0.001,
     volumeM3: 0.0015,
-    basePrice: 890,
+    basePrice: 870,
   },
   sugar: {
     name: 'Açúcar 5 kg',
@@ -208,7 +273,7 @@ export const products: Record<
     unit: 'un',
     massT: 0.005,
     volumeM3: 0.006,
-    basePrice: 1690,
+    basePrice: 1745,
   },
   milk: {
     name: 'Leite 1 L',
@@ -216,7 +281,7 @@ export const products: Record<
     unit: 'un',
     massT: 0.00103,
     volumeM3: 0.0012,
-    basePrice: 590,
+    basePrice: 549,
   },
 };
 export const recipes: Recipe[] = [
@@ -226,19 +291,21 @@ export const recipes: Recipe[] = [
     category: 'industry',
     input: { iron: 12, coal: 3 },
     output: { steel: 8 },
-    cost: 235000,
+    cost: 1200000,
     duration: 3_600_000 / TIME_SCALE,
-    energyKwh: 480,
+    energyKwh: 4400,
+    waterM3: 24,
   },
   {
     id: 'soy-oil',
     name: 'Óleo de soja',
     category: 'industry',
     input: { soy: 1 },
-    output: { oil: 200 },
-    cost: 8000,
+    output: { oil: 200, soymeal: 760 },
+    cost: 16000,
     duration: 3_600_000 / TIME_SCALE,
     energyKwh: 150,
+    waterM3: 0.5,
   },
   {
     id: 'soy-harvest',
@@ -249,6 +316,7 @@ export const recipes: Recipe[] = [
     cost: 1280000,
     duration: 86_400_000 / TIME_SCALE,
     energyKwh: 80,
+    waterM3: 25,
   },
   {
     id: 'iron-extraction',
@@ -259,6 +327,7 @@ export const recipes: Recipe[] = [
     cost: 14500,
     duration: 3000,
     energyKwh: 30,
+    waterM3: 0.8,
   },
 ];
 export const categoryInfo: Record<Category, { label: string; color: string }> = {
@@ -269,3 +338,4 @@ export const categoryInfo: Record<Category, { label: string; color: string }> = 
   warehouse: { label: 'Armazém', color: '#b68abc' },
   logistics: { label: 'Logística', color: '#5c9bc4' },
 };
+import type { SeasonConfig } from './calibration';

@@ -1,4 +1,4 @@
-# Arquitetura · Laboratório 0.1
+# Arquitetura · Laboratório 0.2
 
 ## Fluxo de autoridade
 
@@ -31,7 +31,7 @@ O frontend apresenta e solicita operações. O servidor escolhe o estado vigente
 
 O SQLite usa WAL, `BEGIN IMMEDIATE` e uma linha com snapshot JSON do mundo. Uma tabela de recibos registra chave, ator e comando. Uma chave repetida para o mesmo pedido não executa novamente; uso com outro pedido é rejeitado. Uma exceção provoca rollback integral.
 
-Esse desenho evita múltiplos donos e cobranças duplicadas em uma instância local e simplifica o primeiro teste. Não é uma arquitetura distribuída. O volume de ledger e serialização crescerá com o mundo; a fase 02 substitui o snapshot por tabelas relacionais com restrições, índices e autorização.
+Esse desenho evita múltiplos donos e cobranças duplicadas em uma instância local e simplifica o primeiro teste. Não é uma arquitetura distribuída. O volume de ledger e serialização crescerá com o mundo; a fase 03 substitui o snapshot por tabelas relacionais com restrições, índices e autorização.
 
 ## Valores, estoque e contabilidade
 
@@ -55,10 +55,18 @@ As vendas possuem estoque, concorrência por preço e orçamento agregado finito
 
 ## Geografia e rotas
 
-MapLibre usa Bright/OpenFreeMap com cores adaptadas. Não usa screenshot como mapa. Lotes desenhados são áreas virtuais retangulares de referência, não cadastros imobiliários oficiais. A seleção tem contorno independente da atividade.
+MapLibre usa o estilo local mínimo de `apps/web/src/lib/map-style.ts` sobre tiles vetoriais OpenFreeMap. A base exibe malha viária e natureza, sem edificações, aeroportos ou rótulos; ver D-014 para critérios e limites. Estradas, alças, pontes e túneis usam `transportation`, com uma curva de espessura por classe/zoom; a camada de rótulos não fornece geometria viária. A mesma fábrica de estilo atende ao mapa principal e aos previews, sem depender de IDs do Bright nem carregar glyphs/sprites. Não usa screenshot como mapa. Lotes desenhados são áreas virtuais retangulares de referência, não cadastros imobiliários oficiais. A seleção tem contorno independente da atividade.
 
 O adaptador consulta OSRM somente para coordenadas de propriedades conhecidas. Armazena rotas válidas e identifica a alternativa geográfica quando não há serviço. A cotação inclui distância, capacidade, deslocamento do veículo até a origem e margem parametrizada. Isso não comprova viabilidade legal de caminhões na rota; Valhalla truck e dados de restrições são a evolução prevista.
 
 ## Antes do acesso público
 
 A fase 02 precisa entregar autenticação, autorização por recurso e respostas com dados permitidos, além de migração relacional, controle concorrente entre processos e recuperação de pedidos. A alpha exigirá backup restaurado, limites por cliente, observabilidade, testes de falhas e medição de carga. Esses itens são requisitos do produto, não funcionalidades que a interface atual comprova.
+
+## Configuração econômica e leitura analítica
+
+Cada snapshot inclui `season.config`, copiada do template uma vez; o motor não acessa fontes econômicas externas. `calibration.ts` oferece templates, `metrics.ts` deriva índices/consumo/custos, `shipment.ts` descreve fases e `geometry.ts` interpola por distância. Jobs e remessas congelam saídas/custos/rota contratados. `migrate.ts` preserva dados anteriores; `createStore` faz backup e transação antes de migrar ou completar snapshots intermediários.
+
+`GET /api/market-history` retorna observações e negócios internos por item e praça/estado. A resposta operacional limita as últimas observações para não transferir todo o histórico a cada três segundos. ECharts modular resolve zoom, crosshair, candles, log, exportação e livro de ofertas; MapLibre mantém a mesma cartografia mínima com bolhas agrupadas e sobreposição de trajetos animados. Agrupar aproxima o mapa e não soma mercados municipais sobrepostos.
+
+O arquivo de [economia](../product/ECONOMY.md) define fórmulas e limites. O snapshot SQLite e os agregados são adequados ao laboratório; retenção de longo prazo e índices relacionais permanecem pendentes.

@@ -12,4 +12,4 @@
 
 **Público-alvo da validação:** pessoas interessadas em jogos de gestão, cadeias produtivas, arbitragem espacial e decisões empresariais. O primeiro teste precisa mostrar que comparar fornecedores e transportar de fato muda a rentabilidade.
 
-**A próxima evolução:** autenticação, permissões, modelo relacional/PostGIS e concorrência entre clientes autenticados. Não ampliar setores antes de validar o ciclo econômico completo.
+**Evolução 0.2 entregue:** temporada congelada, economia explicável, BRL, utilidades, animação temporal, filtro de titularidade e inteligência de mercado simples/avançada. A auditoria e a simulação de 30 dias identificam cadeias incompletas. Próxima etapa: fechar duas cadeias e recuperar insolvência no laboratório, em paralelo ao planejamento da identidade autenticada; autenticação e persistência relacional são pré-condições de uma season pública.

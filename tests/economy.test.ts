@@ -30,7 +30,7 @@ describe('integridade econômica', () => {
       { type: 'buyProperty', propertyId: 'hortolandia', name: 'Indústria Hortolândia' },
       NOW,
     );
-    expect(balance(w)).toBe(initial - 185000000);
+    expect(balance(w)).toBe(initial - w.properties[0].price);
     expect(w.properties[0].ownerId).toBe('player');
     expect(() =>
       execute(
@@ -60,7 +60,7 @@ describe('integridade econômica', () => {
     expect(unit(w).inventory.iron).toBe(120);
     expect(w.shipments).toHaveLength(1);
     const s = w.shipments[0];
-    expect(balance(w)).toBe(old - 24 * 25800 - s.freight);
+    expect(balance(w)).toBe(old - 24 * w.season.config.basePrices.iron - s.freight);
     expect(w.vehicles.find((v) => v.id === s.vehicleId)!.status).toBe('route');
     expect(totalMoney(w)).toBe(money);
   });
@@ -109,7 +109,7 @@ describe('integridade econômica', () => {
     expect(unit(w).inventory.iron).toBe(96);
     expect(unit(w).inventory.coal).toBe(12);
     expect(unit(w).inventory.steel).toBe(24);
-    expect(balance(w)).toBe(oldBalance - r.cost * 2);
+    expect(balance(w)).toBe(oldBalance - 3305600); // 2 × (R$ 12.000 + 4.400 kWh × R$ .92 + 24 m³ × R$ 20)
     expect(totalMoney(w)).toBe(money);
     advance(w, NOW + r.duration * 2);
     expect(unit(w).inventory.steel).toBe(40);

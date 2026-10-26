@@ -12,14 +12,15 @@ import {
   Select,
   Empty,
 } from '../components/ui';
-import {
-  products,
-  recipes,
-  TIME_SCALE,
-  type ProductId,
-} from '../../../../packages/simulation/src/model';
+import { products, TIME_SCALE, type ProductId } from '../../../../packages/simulation/src/model';
 import { loadOf } from '../../../../packages/simulation/src/engine';
 import { useClock } from '../lib/clock';
+import {
+  operatingCosts,
+  productionCharges,
+  seasonPrice,
+} from '../../../../packages/simulation/src/metrics';
+import { InfrastructureDetails } from '../components/InfrastructureDetails';
 
 export function OperationPage() {
   const now = useClock();
@@ -33,7 +34,8 @@ export function OperationPage() {
     [cycles, setCycles] = useState(1),
     [offerProduct, setOfferProduct] = useState<ProductId>(),
     [price, setPrice] = useState(0);
-  const options = recipes.filter((r) => r.category === e?.category),
+  const [showCosts, setShowCosts] = useState(false);
+  const options = world.season.config.recipes.filter((r) => r.category === e?.category),
     recipe = options.find((r) => r.id === recipeId) ?? options[0];
   useEffect(() => {
     setTab(e?.category === 'warehouse' ? 'Estoque' : 'Produção');
@@ -61,9 +63,11 @@ export function OperationPage() {
     .slice(-20)
     .reverse();
   const stock = Object.entries(e.inventory) as [ProductId, number][];
+  const charges = recipe ? productionCharges(world, e, recipe.id, cycles) : null;
+  const daily = operatingCosts(world, e);
   const sell = (product: ProductId) => {
     setOfferProduct(product);
-    setPrice(products[product].basePrice);
+    setPrice(seasonPrice(world, product));
   };
   return (
     <>
@@ -174,7 +178,7 @@ export function OperationPage() {
                       : 'Materiais consumidos por ciclo'}
                   </p>
                   <small>
-                    Energia: {recipe.energyKwh} kWh · {cr(recipe.cost)} / ciclo
+                    Consumo: {num(recipe.energyKwh)} kWh + {num(recipe.waterM3, 1)} m³ por ciclo
                   </small>
                 </div>
                 <div className="recipe-arrow">
@@ -203,7 +207,7 @@ export function OperationPage() {
               </div>
               {jobs.length ? (
                 jobs.map((j) => {
-                  const r = recipes.find((r) => r.id === j.recipeId)!,
+                  const r = world.season.config.recipes.find((r) => r.id === j.recipeId)!,
                     progress = ((now - j.startedAt) / (j.finishesAt - j.startedAt)) * 100;
                   return (
                     <div className="job-row" key={j.id}>
@@ -401,7 +405,7 @@ export function OperationPage() {
                   },
                   { label: 'Ciclos na fila', value: jobs.reduce((n, j) => n + j.cycles, 0) },
                   { label: 'Funcionários', value: e.employees },
-                  { label: 'Custos / dia do jogo', value: cr(e.dailyCost) },
+                  { label: 'Custos / dia do jogo', value: cr(daily.total) },
                   {
                     label: 'Resultado registrado',
                     value: cr(e.revenue - e.expenses),
@@ -412,6 +416,9 @@ export function OperationPage() {
               {e.reserve !== undefined && (
                 <Rows rows={[{ label: 'Reserva mineral virtual', value: `${num(e.reserve)} t` }]} />
               )}
+              <button className="text-button" onClick={() => setShowCosts(true)}>
+                Ver custos e tarifas
+              </button>
             </div>
           </Panel>
           <Panel title="Insumos e abastecimento">
@@ -483,9 +490,15 @@ export function OperationPage() {
                 label: products[id as ProductId].name,
                 value: `${num(q! * cycles)} ${products[id as ProductId].unit} necessários · ${num(e.inventory[id as ProductId] ?? 0)} em estoque`,
               })),
-              { label: 'Custo total', value: cr(recipe.cost * cycles) },
+              { label: 'Processamento e consumíveis', value: cr(charges!.processing) },
+              { label: `Energia · ${num(charges!.energyKwh)} kWh`, value: cr(charges!.energy) },
               {
-                label: 'Tempo real nesta fila',
+                label: `Água e esgoto · ${num(charges!.waterM3, 2)} m³`,
+                value: cr(charges!.water),
+              },
+              { label: 'Pagamento total do lote', value: cr(charges!.total) },
+              {
+                label: 'Processamento do lote (tempo real)',
                 value: `${num((recipe.duration * cycles) / 1000)} s`,
               },
             ]}
@@ -518,7 +531,7 @@ export function OperationPage() {
             {products[offerProduct].unit} em estoque
           </p>
           <label className="field">
-            Preço por {products[offerProduct].unit} (cr)
+            Preço por {products[offerProduct].unit} (R$)
             <input
               type="number"
               min="0.01"
@@ -548,6 +561,7 @@ export function OperationPage() {
           </button>
         </Modal>
       )}
+      {showCosts && <InfrastructureDetails property={p} onClose={() => setShowCosts(false)} />}
     </>
   );
 }

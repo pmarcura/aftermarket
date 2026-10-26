@@ -18,6 +18,7 @@ test('as dez telas carregam, navegam e mantêm o estado do mundo', async ({ page
     .getByRole('button', { name: 'Oportunidades', exact: true })
     .click();
   await expect(page.getByRole('heading', { name: 'Análise de oportunidades' })).toBeVisible();
+  await page.locator('.economic-map [data-map-ready="true"]').waitFor({ timeout: 25000 });
   await page.screenshot({ path: 'test-results/oportunidades-desktop.png', fullPage: true });
   await page
     .getByRole('navigation')
@@ -50,7 +51,7 @@ test('as dez telas carregam, navegam e mantêm o estado do mundo', async ({ page
     .getByRole('navigation')
     .getByRole('button', { name: 'Logística', exact: true })
     .click();
-  await expect(page.getByRole('heading', { name: 'Contratar frete' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Logística e entregas' })).toBeVisible();
   await page.getByRole('button', { name: 'Minha transportadora' }).click();
   await expect(
     page.getByRole('heading', { name: 'Transportadora Aurora', exact: true }),

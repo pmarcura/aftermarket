@@ -4,7 +4,7 @@ Atualizado em **26/10/2026**, America/Sao_Paulo.
 
 ## Onde estamos
 
-Fase 01 entregue como laboratório local. Projeto canônico em `D:\Novidade`, branch `main`. Não havia código anterior na pasta. GDD e 13 imagens preservados. React/TypeScript/MapLibre, API Node/Express e SQLite em `.runtime/world.sqlite`.
+Fase 01 entregue como laboratório local. Projeto canônico em `D:\Novidade`, branch `main`. Checkpoint inicial: `4cef185`. Não havia código anterior na pasta. GDD e 13 imagens preservados. React/TypeScript/MapLibre, API Node/Express e SQLite em `.runtime/world.sqlite`.
 
 ## Funciona
 
@@ -14,7 +14,7 @@ O custo médio incorpora frete e custos industriais. Eventos são processados em
 
 ## Validação
 
-Ver `.planning/phases/01-foundation/01-VALIDATION.md`. Não considerar a fase seguinte pronta apenas porque as telas existem.
+Build, 15 testes de domínio, 3 testes de navegador e formatação passaram. Produção local respondeu com assets compilados, e o backup teve `integrity_check = ok`. Ver `.planning/phases/01-foundation/01-VALIDATION.md`. Não considerar a fase seguinte pronta apenas porque as telas existem.
 
 ## Próxima ação concreta
 

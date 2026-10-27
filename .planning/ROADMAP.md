@@ -1,5 +1,7 @@
 # Roteiro por resultado jogável
 
+Frente de apoio 07, solicitada em 27/10: laboratório local de simulação e interfaces, com contexto automático para acelerar entendimento e refinamentos. Ver `phases/07-development-lab` e `docs/design/DEVELOPMENT-LAB.md`. A bancada não substitui autenticação, playtest humano, escala ou os critérios da alpha.
+
 | Fase                                    | Resultado                                              | Estado                  | Critério de saída                                                                                                                                                         |
 | --------------------------------------- | ------------------------------------------------------ | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 01 · Fundação e fatia jogável           | Interface e fluxo financeiro/industrial local          | Entregue                | Dez telas, transações, entrega, produção, fontes e testes                                                                                                                 |
@@ -19,6 +21,12 @@ A simulação 0.3.0 de 30 dias conserva dinheiro e termina com oferta nos dez pr
 Para a fase 03: manter comandos financeiros, separar identidade de desenvolvimento, introduzir repositórios relacionais com restrições e bloqueio de estoque. Migrar preservando o laboratório e validar concorrência por lote/imóvel em duas conexões independentes.
 
 Fontes externas calibram apenas a abertura e futuras temporadas. Nunca corrigir rupturas conectando cotações externas ao motor durante uma season.
+
+## Prioridade de recursos · 27/10/2026
+
+Auditoria matemática retomada e reproduzida em `docs/product/MATHEMATICS-AUDIT.md`: três erros de fórmula (recuperação/cadência/demanda fracionária), dois pontos de calibração e duas políticas implícitas. Corrigir as fórmulas e decidir o rateio varejista antes de calibrar a cadeia e os alvos de estoque. A referência de 90 dias permanece preservada; nenhuma regra ou parâmetro da season foi alterado.
+
+O usuário pediu estabelecer obtenção, fabricação, venda e padrão matemático antes de ampliar conteúdo. A frente `phases/05-resource-balance` entrega o catálogo verificável, auditoria estrutural e ficha de admissão. A fase 05 permanece parcial: dez itens têm origem e caminho ao consumo, mas a escala mínima de cinco receitas e a absorção de farelo precisam de calibração. Próximo experimento é óleo/farelo/leite em conjunto, seguido da operação iniciante por especialidade; ver `docs/product/RESOURCE-STANDARD.md`. Não recalibrar a season salva ao editar os templates.
 
 ## Frente 06 antecipada · 0.3.0
 

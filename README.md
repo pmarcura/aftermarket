@@ -6,6 +6,8 @@ Simulador empresarial geográfico no Brasil. Explore oportunidades, adquira prop
 
 ## Executar
 
+Para investigar e refinar o jogo, use o [laboratório de desenvolvimento](docs/design/DEVELOPMENT-LAB.md): `npm run lab` inicia a bancada em `/lab` e sua coleta automática, sem API/banco. `npm run lab:refresh` reúne fluxos de interface, comparação visual e simulações A/B. `npm run lab:query -- --run=A:0 --bot=rival-1 --day=30` consulta causas observadas; `lab:context -- --screen=carrier --action=buyVehicle` localiza uma ação. Custos, velocidade, frete, políticas, choques, diário e evidências ficam na mesma bancada.
+
 Requisitos: **Node.js 22.13 ou superior**, npm e navegador com WebGL. O projeto foi verificado com Node 25.5 e Microsoft Edge. Não precisa de chave de API para o mapa.
 
 ```powershell
@@ -49,6 +51,20 @@ O relógio do laboratório usa **120×**: um segundo real equivale a dois minuto
 Preços iniciais, receitas, população representada, salários, utilidades e combustível são copiados para a configuração da temporada. **Nenhuma cotação econômica externa é consultada durante o jogo.** O mercado evolui pelos agentes internos; fontes reais servem para criar/balancear temporadas futuras.
 
 Consulte [fórmulas e regras](docs/product/ECONOMY.md) e [auditoria de design](docs/product/GAME-DESIGN-AUDIT.md). O gráfico avançado oferece zoom, cursor cruzado, candles de negócios, média móvel, escala logarítmica, livro de ofertas, tabela e exportações.
+
+Para balancear os recursos, comece pelo [catálogo de itens, receitas e fornecedores](docs/product/RESOURCE-CATALOG.md) e pelo [padrão matemático e regras de admissão](docs/product/RESOURCE-STANDARD.md). Novos itens/receitas exigem a [ficha de admissão](docs/product/RESOURCE-TEMPLATE.md). A auditoria separa cobertura estrutural de viabilidade econômica.
+
+O [relatório das mecânicas](docs/product/MECHANICS-REPORT.md) reúne origem/valor das sementes e dos estoques iniciais, óleo/farelo/leite, custos, capacidade, demanda, transporte, finanças e fluxos incompletos. Para atualizar a leitura e os anexos de configuração/números do código: `npm run mechanics:report -- --world=.runtime/world.sqlite --write-doc`. O comando lê o banco sem avançar ou alterar a season.
+
+A [auditoria matemática](docs/product/MATHEMATICS-AUDIT.md) reproduz os erros de cadência, recuperação e arredondamento de demanda, separando-os de calibração agrícola e políticas de estoque/varejo. `npm run mathematics:audit -- --write-doc` gera as provas em mundos isolados e consulta os resultados existentes do laboratório, sem abrir SQLite. O comando comprova os achados atuais; não aprova equilíbrio nem altera a economia.
+
+```powershell
+npm run resources:catalog
+npm run resources:check
+npm run resources:audit -- --world=.runtime/world.sqlite
+```
+
+O catálogo versionado usa a abertura do código. O último comando lê o snapshot salvo sem migrar/tickar e grava JSON/Markdown em `.runtime/resources/saved-world.*`. Custos de comparação e alertas não alteram o mundo. `npm run check` inclui a auditoria estrutural; `resources:audit -- --strict` também reprova alertas de balanceamento/agregação conhecidos.
 
 ```powershell
 npm run balance:season -- --days=90 --scenario=baseline --seed=0

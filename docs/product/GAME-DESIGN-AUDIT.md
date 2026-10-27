@@ -23,6 +23,8 @@ Continuam as correções anteriores: BRL, fórmula de logística, contratação 
 
 ## O que a economia ainda não provou
 
+Para a revisão de obtenção/fabricação/venda e admissão de conteúdo, usar o [catálogo verificável](RESOURCE-CATALOG.md) e o [padrão matemático de recursos](RESOURCE-STANDARD.md). A auditoria estrutural integrada ao check não aprova equilíbrio nem substitui experimentos de absorção dos coprodutos e menor operação viável.
+
 Cenários de 30/90 dias conservam dinheiro, mas mostram atrasados, suspensão de empresas e concentração. Oferta final nos dez itens não significa ausência de rupturas durante todo o período ou concorrência saudável por cidade. A carteira de demonstração tem muitos ativos e ações humanas desligadas na simulação; o iniciante é outra distribuição inicial e não deve ser comparado como experimento controlado de uma única regra.
 
 Relatórios locais em `.runtime/balance/season-0.4-*.json`; comandos e medidas na validação da fase 04. Simulações usam geografia estimada explicitamente e não testam disponibilidade do serviço de rotas. O indicador HHI agregado mede faturamento registrado, não riqueza ou participação de um produto; a interface permite recortar por item.

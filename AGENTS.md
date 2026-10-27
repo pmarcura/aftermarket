@@ -21,6 +21,7 @@ Usar o processo em `docs/DEVELOPMENT.md`. Questionar internamente necessidade, c
 - Não criar controles que só exibam uma notificação sem executar a ação anunciada.
 - Nenhum sistema de fusões, cidade ou renderização 3D obrigatória.
 - Não introduzir novas dependências ou infraestrutura sem justificar o problema resolvido.
+- Antes de adicionar/alterar item ou receita, seguir `docs/product/RESOURCE-STANDARD.md`, preencher `RESOURCE-TEMPLATE.md`, regenerar o catálogo e executar `npm run resources:check`. Explicar origem/semente, destino de cada coproduto, unidades, custo completo e efeito na season. Estrutura válida não significa economia balanceada.
 
 ## Organização
 
@@ -32,6 +33,12 @@ Usar o processo em `docs/DEVELOPMENT.md`. Questionar internamente necessidade, c
 - Artefatos de execução em `.runtime` e resultados em `test-results`; não versionar bancos nem dependências.
 - Preservar as referências originais. Não usar screenshots de UI como fundo do jogo.
 - Antes de migrar o banco, criar backup e uma migração explícita. Nunca apagar o mundo automaticamente.
+
+## Investigar o jogo com rapidez
+
+Para evolução e motivos observados, usar `npm run lab:query -- --run=A:0 --bot=rival-1 --day=30 --limit=5` (ou `--item=soymeal`). Para uma ação de UI, `lab:context -- --screen=carrier --action=buyVehicle`. Conferir período, fingerprint e ausência de atribuição: gates de candidatos não provam que o bot inteiro ficou parado. A comparação nunca deve substituir a referência anterior sem aceitação explícita.
+
+Para perguntas sobre telas, bots ou balanceamento, começar pelo contexto gerado em `.runtime/lab/context.json` e pela triagem em `.runtime/lab/review.json`, quando existirem. `npm run lab:context -- --screen=<id>` consulta uma tela; `--detail --state=abertura --viewport=desktop` abre os controles observados. Usar `npm run lab:refresh` para atualizar tudo ou `lab:watch` para coleta automática durante refinamentos. Conferir hashes/limites da evidência antes de concluir. Ler `docs/design/DEVELOPMENT-LAB.md`. Scripts fazem a coleta repetitiva; agentes investigam problemas e decisões. Prioridade é tempo até entender/reproduzir, não apenas custo de execução.
 
 ## Concluir uma fase
 

@@ -1,5 +1,19 @@
 # Requisitos rastreáveis
 
+## Laboratório de desenvolvimento · frente 07
+
+| ID     | Requisito                                                                              | Estado             | Evidência / limite                                                                                                  |
+| ------ | -------------------------------------------------------------------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| LAB-01 | Executar e comparar temporadas isoladas com telemetria por dia/item/bot                | Implementado local | Mesmo runner em CLI/worker, A/B pareado, cancelamento, JSON/CSV e invariantes; tempo medido na validação            |
+| LAB-02 | Consultar automaticamente telas, controles, comandos candidatos e estados visíveis     | Implementado local | Catálogo AST de dez views e Playwright desktop/celular; cobre fixtures/abas/modais declarados, não todos os ramos   |
+| LAB-03 | Atualizar contexto e evidência por alteração de conteúdo sem coleta manual por agentes | Implementado local | Cache por hash, refresh/watch e consulta compacta por tela; watcher precisa ser iniciado localmente                 |
+| LAB-04 | Apoiar refinamento por observação, hipótese, experimento e decisão                     | Implementado local | Diário, critérios e casos econômicos/UX com decisão e evidência; compreensão humana continua dependendo de playtest |
+| LAB-05 | Explicar tentativas, recusas e bloqueios observados por bot/item/dia                   | Implementado local | Trace efêmero de comandos/gates; consulta rápida e séries; sem atribuição de causa ou produto ausentes              |
+| LAB-06 | Executar fluxos e comparar referência estrutural, visual e funcional                   | Implementado local | 29 contratos, 58 execuções desktop/celular, PNG/controles/comandos/asserções; referência anterior preservada        |
+| LAB-07 | Experimentar custos, velocidade, frete, política e choques com horizontes medidos      | Implementado local | A/B e condições determinísticas, benchmark 30/90/365, conservação física/monetária; sem alteração da season salva   |
+
+Plano e validação em `phases/07-development-lab`. Esta frente não conclui sustentabilidade econômica nem alpha pública.
+
 Estados: **Implementado** = demonstrado no laboratório; **Parcial** = há base funcional e limite explícito; **Planejado** = não entregue.
 
 | ID      | Requisito                                                    | Estado       | Evidência / próxima etapa                                                                                                                     |
@@ -79,3 +93,15 @@ Validação consolidada em `phases/06-business-operations/06-VALIDATION.md`.
 | ECO-15 | Playtests reproduzíveis de abertura e recessão                    | Implementado         | Baseline, starter, low-demand, semente e relatórios isolados sem consultar o banco do jogador   |
 
 Evidências e limites em `phases/04-road-routing/04-VALIDATION.md`. Nenhum status local substitui autenticação/concorrência da fase 03.
+
+## Complemento · Recursos e padrão de expansão
+
+| ID     | Requisito                                                                       | Estado             | Evidência / limite                                                                                                          |
+| ------ | ------------------------------------------------------------------------------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| CAT-01 | Catálogo regenerável com obtenção, receitas, fornecedores e consumo final       | Implementado local | `RESOURCE-CATALOG.md`, JSON de abertura e leitura somente leitura da season; não garante disponibilidade contínua           |
+| CAT-02 | Padrão matemático e ficha obrigatória para novos itens/receitas                 | Implementado       | `RESOURCE-STANDARD.md`, `RESOURCE-TEMPLATE.md` e regra em AGENTS/processo; calibração numérica continua pendente            |
+| CAT-03 | Auditoria estrutural e fluxo por item/receita nos comandos comuns               | Implementado local | `resources:check` integrado ao check, testes de produção/venda/consumo/falha; equilíbrio e arbitragem geral não comprovados |
+| CAT-04 | Relatório de números das mecânicas, origem/valor inaugural e fluxos incompletos | Implementado local | `MECHANICS-REPORT.md`, `mechanics:report`, JSON/CSV com fontes/hashes; sem recalibrar o mundo                               |
+| CAT-05 | Auditoria matemática reproduzível de capacidade, demanda e viabilidade          | Implementado local | `MATHEMATICS-AUDIT.md`, `mathematics:audit`, sete achados e controles isolados; correções/calibração permanecem pendentes   |
+
+Plano e evidências em `phases/05-resource-balance`. Estes requisitos não concluem ECO-04/11 nem a fase 05.

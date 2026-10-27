@@ -2,6 +2,8 @@
 
 Este projeto adapta a disciplina GSD para ciclos de jogo: cada fase precisa entregar uma decisão interessante ao jogador, regras econômicas consistentes e evidência de funcionamento.
 
+Para investigação rápida, usar o [laboratório de desenvolvimento](design/DEVELOPMENT-LAB.md): índice automático de interfaces, evidências de navegador e simulações A/B no mesmo motor. Começar pelo resumo, abrir detalhe por dia/item/empresa/tela e registrar observação → hipótese → experimento → decisão. `lab:refresh` coleta tudo; `lab:watch` mantém a coleta durante alterações. Evidência estática, observação da fixture e playtest humano têm alcances diferentes.
+
 ## Ciclo de uma fase
 
 | Etapa         | Pergunta que precisa ser respondida                           | Artefato                                 |
@@ -42,3 +44,9 @@ Dependências e compilação podem ser recriadas com `npm ci` e `npm run build`.
 Usar duas contas locais para testar titularidade e mercado. Comparar o estado antes e depois de cada transação. Interromper o navegador durante uma remessa e durante uma produção; retornar e conferir inventário e histórico. Tentar saldo insuficiente, material insuficiente, carga acima da capacidade, unidade de outro dono e repetição do pedido.
 
 Quando uma funcionalidade depender de infraestrutura futura, o requisito permanece parcial ou planejado. Uma tela navegável não comprova um sistema MMO completo.
+
+## Admissão de recursos e receitas
+
+Usar `docs/product/RESOURCE-STANDARD.md` e a ficha `RESOURCE-TEMPLATE.md` antes de gerar conteúdo. O catálogo `RESOURCE-CATALOG.md` é regenerado do código/configuração de abertura por `npm run resources:catalog`; a auditoria de uma season salva fica separada em `.runtime/resources` e é somente leitura. Não editar tabelas para fazer uma receita parecer viável.
+
+`npm run check` inclui a auditoria estrutural de origem, unidade, perfil, produtor bot, massa declarada e destino final. Alertas de agregação/custo/semente continuam visíveis; o modo `--strict` falha enquanto houver alertas. Balanceamento exige medir venda, margem, estoque/coprodutos e dinheiro em cenários comparáveis, além de passar nessa auditoria.

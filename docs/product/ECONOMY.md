@@ -21,7 +21,7 @@ Contratação disponível em todas as cidades, sem pool de candidatos. O limite 
 
 Salário mensal = maior entre mínimo da season e salário da atividade × multiplicador estadual × índice salarial interno. Os 27 multiplicadores são parâmetros congelados em `season.config.competition.stateFactors`, não dados salariais ao vivo. O índice começa em 1 e, a cada sete dias virtuais, aumenta de 0,2% a 2%, pela folha paga no próprio estado: `min(0,02; 0,002 + salários pagos na semana / 10¹¹ centavos)`. A história estadual fica visível na equipe.
 
-Folha diária = empregados × salário × encargos de cenário 1,65 ÷ 30. Abrir indústria contrata 18 funcionários; fazenda, seis; demais atividades, 12. A compra ainda agrega imóvel/instalação/equipe; separar estas decisões continua no backlog.
+Folha diária = empregados × salário × encargos de cenário 1,65 ÷ 30. Novas aquisições começam sem equipe/equipamento; instalação e contratação são decisões explícitas. Referências iniciais de equipe são 18 na indústria, seis na fazenda e 12 nas demais atividades; cada receita tem seu próprio mínimo por linha. Unidades legadas mantêm a equipe existente.
 
 Educação de produtores custa funcionários × R$ 350 × nível de destino, dura 12 horas virtuais e tem cinco níveis. A formação média acrescenta três pontos de qualidade por nível, com limite de 100. Qualidade também depende das entradas e do local. O treinamento concluído beneficia somente novos jobs; não requalifica estoque nem lotes contratados. Novos empregados entram com formação zero: `média nova = média anterior × equipe anterior / equipe nova`. Equipe zerada perde a formação. Alterar equipe durante treinamento ou reduzir durante lotes reservados é rejeitado.
 
@@ -112,7 +112,7 @@ O período da atualização de regras não é cobrado retroativamente: se o tick
 
 ## Limites e próxima validação
 
-O ciclo ainda não fecha para todo o catálogo: não confundir uma economia movimentada com equilíbrio sustentável. Ver [auditoria de design](GAME-DESIGN-AUDIT.md) para riscos, métricas e próximos experimentos. O cenário inclui patrimônio inicial de demonstração; não é a progressão de um novo jogador de temporada pública.
+Os dez itens têm receita e caminho até um consumo final; cobertura do grafo não comprova equilíbrio sustentável. Há dependência de sementes iniciais, consumo público de aço e excesso potencial de farelo. Ver [catálogo verificável](RESOURCE-CATALOG.md), [padrão de recursos](RESOURCE-STANDARD.md) e [auditoria de design](GAME-DESIGN-AUDIT.md) para riscos, métricas e próximos experimentos. O cenário inclui patrimônio inicial de demonstração; não é a progressão de um novo jogador de temporada pública.
 
 ## Frota e quantidade máxima
 

@@ -405,20 +405,7 @@ export function updateWages(w: World, at: number) {
   }
 }
 export function publicReference(w: World, product: ProductId) {
-  const offers = w.offers.filter(
-    (o) =>
-      o.product === product &&
-      (w.establishments.find((e) => e.id === o.establishmentId)?.inventory[product] ?? 0) > 0,
-  );
-  const sellers = new Map<string, number>();
-  for (const o of offers) {
-    const e = w.establishments.find((e) => e.id === o.establishmentId)!;
-    if (!institutional(e.companyId)) sellers.set(e.companyId, o.price);
-  }
-  const values = [...sellers.values()].sort((a, b) => a - b);
-  return values.length >= 3
-    ? values[Math.floor(values.length / 2)]
-    : w.season.config.basePrices[product];
+  return w.publicBenchmarks?.[product]?.price ?? w.season.config.basePrices[product];
 }
 export function trainingQuote(w: World, e: Establishment) {
   const targetLevel = Math.floor(e.education ?? 0) + 1;

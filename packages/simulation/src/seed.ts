@@ -4,6 +4,7 @@ import { createSeasonConfig } from './calibration';
 import { operatingCosts, recordMarket } from './metrics';
 import { initializeOperations } from './operations';
 import { initializeCompetition } from './competition';
+import { initializeDesign } from './design';
 
 export function createWorld(now = Date.now()): World {
   const properties: Property[] = [];
@@ -315,6 +316,7 @@ export function createWorld(now = Date.now()): World {
     establishment.dailyCost = operatingCosts(world, establishment).total;
   }
   initializeCompetition(world, now);
+  initializeDesign(world, now);
   recordMarket(world, now);
   return world;
 }

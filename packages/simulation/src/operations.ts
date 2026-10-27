@@ -72,7 +72,10 @@ export function productionCapacity(w: World, e: Establishment, r: Recipe, cycles
   const areaLines = Math.floor(p.area / rule.areaM2),
     laborLines = Math.floor(e.employees / rule.workers);
   // Um lote ocupa as linhas até terminar; lotes seguintes aguardam na fila.
-  const lines = Math.max(0, Math.min(areaLines, laborLines));
+  const lines =
+    e.installed === false
+      ? 0
+      : Math.max(0, Math.min(areaLines, laborLines, e.equipmentLines ?? Infinity));
   return {
     ...rule,
     areaLines,
@@ -84,9 +87,11 @@ export function productionCapacity(w: World, e: Establishment, r: Recipe, cycles
         ? laborLines === 0
           ? 'Equipe insuficiente'
           : 'Área insuficiente'
-        : laborLines < areaLines
-          ? 'Equipe limita as linhas'
-          : 'Área limita as linhas',
+        : lines < Math.min(areaLines, laborLines)
+          ? 'Equipamentos limitam as linhas'
+          : laborLines < areaLines
+            ? 'Equipe limita as linhas'
+            : 'Área limita as linhas',
   };
 }
 export function productionQuality(w: World, e: Establishment, r: Recipe) {

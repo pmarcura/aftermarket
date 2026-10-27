@@ -4,11 +4,14 @@ import { calibrateProperty } from './seed';
 import { operatingCosts, recordMarket } from './metrics';
 import { initializeOperations } from './operations';
 import { initializeCompetition } from './competition';
+import { initializeDesign } from './design';
 
 export function needsMigration(input: unknown) {
   const w = input as World;
   return (
     w.operationsVersion !== 3 ||
+    w.designVersion !== 2 ||
+    !w.season?.config?.design ||
     w.competitionVersion !== 1 ||
     !w.orders ||
     !w.infrastructure ||
@@ -34,6 +37,7 @@ export function migrateWorld(input: unknown, now = Date.now()): { world: World; 
     cfg.qualification ??= defaults.qualification;
     initializeOperations(w);
     initializeCompetition(w, now);
+    initializeDesign(w, now);
     // Atualização de regras não deve cobrar retroativamente manutenção/automação nova.
     // Entregas, lotes e treinamentos mantêm seus horários e são liquidados normalmente.
     w.nextEconomicAt = Math.max(w.nextEconomicAt, now);
@@ -104,6 +108,7 @@ export function migrateWorld(input: unknown, now = Date.now()): { world: World; 
   w.updatedAt = now;
   initializeOperations(w);
   initializeCompetition(w, now);
+  initializeDesign(w, now);
   recordMarket(w, now);
   return { world: w, changed: true };
 }

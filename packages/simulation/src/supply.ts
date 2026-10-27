@@ -6,8 +6,16 @@ import {
   type SupplyPolicy,
   type ProductId,
 } from './model';
-import { GAME_DAY, inventoryQuality, productionCapacity, availableStock } from './operations';
+import {
+  GAME_DAY,
+  inventoryQuality,
+  productionCapacity,
+  retailCapacity,
+  availableStock,
+} from './operations';
 import { householdDemand, regionFor, operatingCosts, productionCharges } from './metrics';
+import { freeCash } from './design';
+import { storageQuantity } from './transport';
 
 export function validateSupplyPolicy(policy: SupplyPolicy) {
   const int = (n: number, min = 0, max = 1e9) => Number.isSafeInteger(n) && n >= min && n <= max;
@@ -33,6 +41,8 @@ export function validateSupplyPolicy(policy: SupplyPolicy) {
     throw new RuleError('Cada produto deve ter uma única regra.');
   for (const r of policy.rules)
     if (
+      (r.originId !== undefined &&
+        (typeof r.originId !== 'string' || !r.originId.length || r.originId.length > 100)) ||
       !products[r.product] ||
       !int(r.minimum) ||
       !int(r.target, 1, 1000000) ||
@@ -63,12 +73,17 @@ export function supplyCandidates(
 ) {
   const options: { origin: Establishment; price: number; offerId?: string; internal: boolean }[] =
     [];
-  if (policy.source !== 'market')
+  const pinned = policy.rules.find((r) => r.product === product)?.originId;
+  if (pinned || policy.source !== 'market')
     for (const origin of w.establishments.filter(
-      (x) => x.companyId === e.companyId && x.id !== e.id && (x.inventory[product] ?? 0) > 0,
+      (x) =>
+        x.companyId === e.companyId &&
+        x.id !== e.id &&
+        (!pinned || x.id === pinned) &&
+        (x.inventory[product] ?? 0) > 0,
     ))
       options.push({ origin, price: 0, internal: true });
-  if (policy.source !== 'internal-only')
+  if (!pinned && policy.source !== 'internal-only')
     for (const o of w.offers.filter((o) => o.product === product)) {
       const origin = w.establishments.find((x) => x.id === o.establishmentId)!;
       if (
@@ -96,13 +111,13 @@ export function supplyCandidates(
           ]
         : [policy.carrierId];
   return options
-    .filter(
-      (o) =>
-        (o.internal || o.origin.enabled) &&
-        inventoryQuality(o.origin, product) >= policy.minQuality,
-    )
+    .filter((o) => inventoryQuality(o.origin, product) >= policy.minQuality)
     .flatMap((o) => {
-      const amount = Math.min(quantity, availableStock(w, o.origin, product));
+      const amount = Math.min(
+        quantity,
+        availableStock(w, o.origin, product),
+        storageQuantity(w, e, product),
+      );
       const quotes = [...new Set(carriers)]
         .filter((c) => w.companies.some((x) => x.id === c))
         .map((c) => quote(w, o.origin.id, e.id, product, amount, c))
@@ -157,7 +172,14 @@ export function dailyNeed(w: World, e: Establishment, product: ProductId) {
         x.category === 'retail' &&
         w.properties.find((p) => p.id === x.propertyId)!.city === p.city,
     ).length;
-    return householdDemand(w, regionFor(p.coordinates, p.city).id, product) / Math.max(1, stores);
+    const model =
+      householdDemand(w, regionFor(p.coordinates, p.city).id, product) / Math.max(1, stores);
+    const count = Math.max(
+      1,
+      new Set([...Object.keys(e.prices), ...(e.supplyPolicy?.rules.map((r) => r.product) ?? [])])
+        .size,
+    );
+    return Math.min(model, (retailCapacity(w, e) * 12) / count);
   }
   return 0;
 }
@@ -263,8 +285,22 @@ export function supplyForecast(w: World, e: Establishment, policy: SupplyPolicy)
         (productionCapacity(w, e, recipe).lines * GAME_DAY) / recipe.duration,
       );
   }
+  const highFactor =
+    e.category === 'retail'
+      ? Math.min(
+          1.2,
+          (retailCapacity(w, e) * 12) /
+            Math.max(
+              1,
+              rows.reduce((n, r) => n + r.need, 0),
+            ),
+        )
+      : 1;
   return {
     rows,
+    highFactor,
+    lowResult: contribution * 0.8 - fixed,
+    highResult: contribution * highFactor - fixed,
     cashNeeded,
     fixed,
     contribution,
@@ -300,7 +336,7 @@ export function runSupplyPolicies(w: World, at: number) {
         e.supplyStatus = `Sem origem elegível para ${products[rule.product].name}`;
         continue;
       }
-      const cash = w.companies.find((c) => c.id === e.companyId)!.balance - policy.cashReserve;
+      const cash = freeCash(w, e.companyId) - policy.cashReserve;
       const limit = Math.min(cash, policy.dailyBudget - supplySpent(w, e, at).total);
       if (best.total > limit && best.price > 0) {
         const affordable = Math.min(best.quantity, Math.floor((limit - best.q.price) / best.price));
@@ -335,6 +371,7 @@ export function runSupplyPolicies(w: World, at: number) {
             e.companyId,
             {
               type: 'requestOrder',
+              reserveFunds: policy.reserveOrders,
               offerId: best.offerId!,
               destinationId: e.id,
               quantity: best.quantity,

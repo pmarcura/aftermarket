@@ -1,6 +1,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { createWorld } from '../packages/simulation/src/seed';
+import { createScenario, type ScenarioName } from '../packages/simulation/src/scenarios';
+import { economyHealth, outstandingLoans } from '../packages/simulation/src/design';
 import { advance } from '../packages/simulation/src/engine';
 import { products, TIME_SCALE, type ProductId } from '../packages/simulation/src/model';
 import { marketView } from '../packages/simulation/src/metrics';
@@ -10,8 +11,11 @@ const days = Number(process.argv.find((a) => a.startsWith('--days='))?.split('='
 if (!Number.isInteger(days) || days < 1 || days > 365)
   throw new Error('Use --days=1 até --days=365.');
 // Laboratório determinístico: nunca abre o banco do jogador nem consulta serviços externos.
-const at = Date.UTC(2026, 9, 26, 12),
-  world = createWorld(at);
+const scenario = (process.argv.find((a) => a.startsWith('--scenario='))?.split('=')[1] ??
+  'baseline') as ScenarioName;
+const seed = Number(process.argv.find((a) => a.startsWith('--seed='))?.split('=')[1] ?? 0);
+const at = Date.UTC(2026, 9, 26 + seed, 12),
+  world = createScenario(at, scenario, seed);
 const money = world.companies.reduce((n, c) => n + c.balance, 0),
   output = [];
 for (let day = 0; day <= days; day++) {
@@ -25,6 +29,10 @@ for (let day = 0; day <= days; day++) {
   output.push({
     day,
     money,
+    health: economyHealth(world),
+    principal: world.companies.reduce((n, c) => n + outstandingLoans(world, c.id), 0),
+    mothballed: world.establishments.filter((e) => e.mothballed).length,
+    routingMode: 'estimativa explícita da simulação offline, sem rede',
     totalTreasury: world.companies
       .filter((c) => c.id === 'treasury' || c.id.startsWith('treasury:'))
       .reduce((n, c) => n + c.balance, 0),
@@ -65,15 +73,14 @@ for (let day = 0; day <= days; day++) {
   });
 }
 const report = {
-  scenario: 'Carteira demonstrativa; ações humanas desativadas; bots com regras comuns',
+  scenario,
+  seed,
+  note: 'Cenário isolado; ações humanas desativadas; geografia estimada para teste sem rede',
   days,
   config: world.season.config,
   observations: output,
 };
-const path = resolve(
-  '.runtime/balance',
-  `season-${world.season.config.version}-${days}d-operations.json`,
-);
+const path = resolve('.runtime/balance', `season-0.4-${scenario}-${seed}-${days}d.json`);
 mkdirSync(resolve('.runtime/balance'), { recursive: true });
 writeFileSync(path, JSON.stringify(report, null, 2));
 const last = output.at(-1)!;
@@ -95,6 +102,11 @@ console.log(
       consumedSteel: last.consumedSteel,
       pendingOrders: last.pendingOrders,
       rivalsActive: last.rivalsActive,
+      arrears: last.health.obligations,
+      outstandingPrincipal: last.principal,
+      mothballed: last.mothballed,
+      velocity: last.health.velocity,
+      hhi: last.health.hhi,
     },
     null,
     2,

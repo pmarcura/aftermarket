@@ -467,7 +467,7 @@ describe('disputa e entrega aos tesouros estaduais', () => {
     const c = w.infrastructure[0],
       fixed = c.referencePrice;
     for (const o of w.offers.filter((o) => o.product === c.product)) o.price *= 2;
-    expect(publicReference(w, c.product)).toBeGreaterThan(fixed!);
+    expect(publicReference(w, c.product)).toBe(fixed!);
     expect(c.referencePrice).toBe(fixed);
   });
 });

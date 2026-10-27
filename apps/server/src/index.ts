@@ -3,19 +3,23 @@ import { regions } from '../../../packages/world/src/regions';
 import { z } from 'zod';
 import { resolve } from 'node:path';
 import { createStore } from './store';
+import { createRoutingService } from './routing';
+import type { ScenarioName } from '../../../packages/simulation/src/scenarios';
 import { RuleError } from '../../../packages/simulation/src/engine';
-import {
-  products,
-  type ProductId,
-  type Route,
-  type World,
-} from '../../../packages/simulation/src/model';
+import { products, type ProductId, type World } from '../../../packages/simulation/src/model';
 
 const app = express();
 const port = Number(process.env.AFTERMARKET_PORT ?? 3001);
 if (!Number.isInteger(port) || port < 1024 || port > 65535)
   throw new Error('Porta local inválida.');
-const store = createStore(resolve(process.env.AFTERMARKET_DB_FILE ?? '.runtime/world.sqlite'));
+const scenario = z
+  .enum(['baseline', 'starter', 'low-demand'])
+  .parse(process.env.AFTERMARKET_SCENARIO ?? 'baseline') as ScenarioName;
+const store = createStore(resolve(process.env.AFTERMARKET_DB_FILE ?? '.runtime/world.sqlite'), {
+  requireRoadRoutes: true,
+  scenario,
+});
+const routing = createRoutingService(store);
 const allowedOrigins = new Set([
   `http://127.0.0.1:${port}`,
   `http://localhost:${port}`,
@@ -29,6 +33,7 @@ const id = z.string().min(1).max(100),
   amount = z.number().int().positive();
 const supplyPolicy = z
   .object({
+    reserveOrders: z.boolean().optional(),
     enabled: z.boolean(),
     dailyBudget: amount.max(1e9),
     cashReserve: z.number().int().min(0).max(1e9),
@@ -42,6 +47,7 @@ const supplyPolicy = z
       .array(
         z
           .object({
+            originId: id.optional(),
             product,
             minimum: z.number().int().min(0).max(1000000),
             target: amount.max(1000000),
@@ -54,6 +60,25 @@ const supplyPolicy = z
   })
   .strict();
 const commandSchema = z.discriminatedUnion('type', [
+  z
+    .object({
+      type: z.literal('installBusiness'),
+      establishmentId: id,
+      recipeId: id.optional(),
+      lines: amount.max(100),
+    })
+    .strict(),
+  z
+    .object({
+      type: z.literal('takeRecoveryLoan'),
+      state: z.string().length(2),
+      amount: amount.max(1e9),
+    })
+    .strict(),
+  z.object({ type: z.literal('payObligations'), amount: amount.max(1e9) }).strict(),
+  z.object({ type: z.literal('repayLoan'), loanId: id, amount: amount.max(1e9) }).strict(),
+  z.object({ type: z.literal('mothball'), establishmentId: id, enabled: z.boolean() }).strict(),
+  z.object({ type: z.literal('sellVehicle'), vehicleId: id }).strict(),
   z
     .object({ type: z.literal('configureSupply'), establishmentId: id, policy: supplyPolicy })
     .strict(),
@@ -71,6 +96,7 @@ const commandSchema = z.discriminatedUnion('type', [
   z
     .object({
       type: z.literal('createPurchaseRequest'),
+      reserveFunds: z.boolean().optional(),
       destinationId: id,
       product,
       quantity: amount.max(1000000),
@@ -165,6 +191,7 @@ const commandSchema = z.discriminatedUnion('type', [
   z
     .object({
       type: z.literal('requestOrder'),
+      reserveFunds: z.boolean().optional(),
       offerId: id,
       destinationId: id,
       quantity: amount.max(1000000),
@@ -192,10 +219,15 @@ app.use('/api', (_req, res, next) => {
   next();
 });
 app.get('/api/health', (_req, res) =>
-  res.json({ ok: true, mode: 'local-development', version: '0.3.0' }),
+  res.json({ ok: true, mode: 'local-development', version: '0.4.0' }),
 );
 const worldView = (w: World) => ({ ...w, marketHistory: w.marketHistory.slice(-220) });
-app.get('/api/world', (_req, res) => res.json(worldView(store.tick())));
+app.get('/api/world', (_req, res) => {
+  const w = store.tick();
+  routing.prepare(w);
+  res.json(worldView(w));
+});
+app.get('/api/routing-status', (_req, res) => res.json(routing.status()));
 app.get('/api/market-history', (req, res) => {
   const parsed = product.safeParse(req.query.product);
   if (!parsed.success)
@@ -237,56 +269,18 @@ app.post('/api/commands', (req, res, next) => {
     next(error);
   }
 });
-const pending = new Map<string, Promise<Route | undefined>>();
 app.get('/api/route', async (req, res, next) => {
   try {
     const w = store.read();
-    const origin = w.properties.find((x) => x.id === req.query.origin),
-      dest = w.properties.find((x) => x.id === req.query.destination);
-    if (!origin || !dest) return res.status(400).json({ error: 'Origem ou destino inválido.' });
-    const key = `${origin.id}:${dest.id}`;
-    if (w.routes[key]) return res.json(w.routes[key]);
-    if (!pending.has(key))
-      pending.set(
-        key,
-        (async () => {
-          try {
-            const url = `https://router.project-osrm.org/route/v1/driving/${origin.coordinates.join(',')};${dest.coordinates.join(',')}?overview=full&geometries=geojson`;
-            const response = await fetch(url, {
-              signal: AbortSignal.timeout(8000),
-              headers: { 'User-Agent': 'Aftermarket-local-prototype/0.1' },
-            });
-            if (!response.ok) return;
-            const json = (await response.json()) as {
-              code: string;
-              routes: {
-                distance: number;
-                duration: number;
-                geometry: { coordinates: [number, number][] };
-              }[];
-            };
-            const result = json.routes?.[0];
-            if (json.code !== 'Ok' || !result) return;
-            const route: Route = {
-              coordinates: result.geometry.coordinates,
-              distanceKm: result.distance / 1000,
-              durationSeconds: result.duration,
-              source: 'osrm',
-            };
-            store.route(key, route);
-            return route;
-          } catch {
-            return;
-          } finally {
-            pending.delete(key);
-          }
-        })(),
-      );
-    const route = await pending.get(key);
+    const origin = w.properties.find((p) => p.id === req.query.origin),
+      dest = w.properties.find((p) => p.id === req.query.destination);
+    if (!origin || !dest || origin.id === dest.id)
+      return res.status(400).json({ error: 'Origem ou destino inválido.' });
+    const route = await routing.request(origin.id, dest.id);
     if (!route)
       return res.status(503).json({
         error:
-          'Roteamento indisponível. A cotação usa uma estimativa geográfica identificada na tela.',
+          'Não foi possível calcular a rota pelas estradas. A contratação aguarda; tente novamente em um minuto.',
       });
     res.json(route);
   } catch (error) {
@@ -312,7 +306,8 @@ app.use(
 );
 const tick = setInterval(() => {
   try {
-    store.tick();
+    const w = store.tick();
+    routing.prepare(w);
   } catch (e) {
     console.error('Falha ao processar eventos', e);
   }
@@ -322,6 +317,7 @@ const server = app.listen(port, '127.0.0.1', () =>
 );
 function stop() {
   clearInterval(tick);
+  routing.stop();
   server.close(() => {
     store.close();
     process.exit(0);

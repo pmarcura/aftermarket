@@ -8,9 +8,11 @@ export interface Company {
   bot: boolean;
   balance: number;
   lastExpansionAt?: number;
+  lastRecoveryAt?: number;
   homeState?: string;
   behaviorVersion?: number;
   strategy?: 'regional' | 'quality' | 'value';
+  financingExpense?: number;
 }
 export interface Property {
   id: string;
@@ -54,6 +56,10 @@ export interface Establishment {
   supplyStatus?: string;
   supplyReorder?: ProductId[];
   education?: number;
+  mothballed?: boolean;
+  installed?: boolean;
+  equipmentLines?: number;
+  installationValue?: number;
 }
 export interface Offer {
   id: string;
@@ -89,6 +95,10 @@ export interface Shipment {
   distance: number;
   route?: Position[];
   routeSource?: 'osrm' | 'estimate';
+  mapRoute?: Position[];
+  mapRouteSource?: 'osrm';
+  mapRouteKey?: string;
+  routeKey?: string;
   pickupAt?: number;
   roadDepartureAt?: number;
   roadArrivalAt?: number;
@@ -138,7 +148,13 @@ export interface Entry {
     | 'payroll'
     | 'maintenance'
     | 'budget'
-    | 'education';
+    | 'education'
+    | 'loan'
+    | 'repayment'
+    | 'finance'
+    | 'asset-sale';
+  // Equipamentos pagos são capitalizados junto ao ativo da unidade.
+  // Principais de empréstimo são passivos, não receita/despesa operacional.
   // educação tem pagamento próprio no extrato
   product?: ProductId;
   quantity?: number;
@@ -171,12 +187,18 @@ export interface World {
   jobs: Job[];
   ledger: Entry[];
   routes: Record<string, Route>;
+  roadPaths?: Record<string, Position[]>;
   marketHistory: MarketSample[];
   economyStartedAt: number;
   currency: 'BRL';
   season: { id: string; name: string; startedAt: number; config: SeasonConfig };
   operationsVersion: number;
   competitionVersion?: number;
+  designVersion?: number;
+  requireRoadRoutes?: boolean;
+  obligations?: Obligation[];
+  loans?: RecoveryLoan[];
+  publicBenchmarks?: Partial<Record<ProductId, PublicBenchmark>>;
   stateWages?: Record<
     string,
     { index: number; updatedAt: number; history: { at: number; index: number }[] }
@@ -197,6 +219,7 @@ export interface World {
   consumedMaterials: Partial<Record<ProductId, number>>;
 }
 export interface PurchaseOrder {
+  escrowReserved?: number;
   supplyManaged?: boolean;
   id: string;
   buyerId: string;
@@ -223,6 +246,7 @@ export interface InfrastructureContract {
   municipality?: string;
   treasuryId?: string;
   referencePrice?: number;
+  referenceSource?: string;
   biddingEndsAt?: number;
   bids?: InfrastructureBid[];
   program?: string;
@@ -253,8 +277,17 @@ export interface Route {
   distanceKm: number;
   durationSeconds: number;
   source: 'osrm' | 'estimate';
+  fetchedAt?: number;
+  profile?: 'driving';
+  steps?: { name: string; distanceM: number; durationSeconds: number; location: Position }[];
 }
 export type Command =
+  | { type: 'installBusiness'; establishmentId: string; recipeId?: string; lines: number }
+  | { type: 'takeRecoveryLoan'; state: string; amount: number }
+  | { type: 'payObligations'; amount: number }
+  | { type: 'repayLoan'; loanId: string; amount: number }
+  | { type: 'mothball'; establishmentId: string; enabled: boolean }
+  | { type: 'sellVehicle'; vehicleId: string }
   | { type: 'buyProperty'; propertyId: string; name: string }
   | {
       type: 'trade';
@@ -281,6 +314,7 @@ export type Command =
   | { type: 'setWorkforce'; establishmentId: string; employees: number }
   | {
       type: 'requestOrder';
+      reserveFunds?: boolean;
       offerId: string;
       destinationId: string;
       quantity: number;
@@ -310,6 +344,7 @@ export type Command =
     }
   | {
       type: 'createPurchaseRequest';
+      reserveFunds?: boolean;
       destinationId: string;
       product: ProductId;
       quantity: number;
@@ -499,6 +534,7 @@ export const categoryInfo: Record<Category, { label: string; color: string }> = 
 import type { SeasonConfig } from './calibration';
 
 export interface SupplyRule {
+  originId?: string;
   product: ProductId;
   minimum: number;
   target: number;
@@ -506,6 +542,7 @@ export interface SupplyRule {
   maxPrice: number;
 }
 export interface SupplyPolicy {
+  reserveOrders?: boolean;
   enabled: boolean;
   dailyBudget: number;
   cashReserve: number;
@@ -550,4 +587,36 @@ export interface Training {
   targetLevel: number;
   finishesAt: number;
   completed: boolean;
+}
+
+export interface Obligation {
+  id: string;
+  companyId: string;
+  establishmentId: string;
+  to: string;
+  kind: 'payroll' | 'maintenance' | 'energy' | 'water';
+  description: string;
+  amount: number;
+  paid: number;
+  dueAt: number;
+}
+export interface RecoveryLoan {
+  id: string;
+  companyId: string;
+  treasuryId: string;
+  principal: number;
+  repaid: number;
+  fee: number;
+  createdAt: number;
+  nextDueAt: number;
+  installment: number;
+  durationDays: number;
+}
+export interface PublicBenchmark {
+  price: number;
+  at: number;
+  trades: number;
+  buyers: number;
+  sellers: number;
+  source: 'opening' | 'trades' | 'retained';
 }

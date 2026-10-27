@@ -9,6 +9,7 @@ import {
   type Entry,
 } from './model';
 import { distanceKm } from './geometry';
+import { committedStorage, fleetAvailability } from './transport';
 import {
   actorState,
   treasuryId,
@@ -21,6 +22,14 @@ import {
 } from './competition';
 import { runSupplyPolicies, validateSupplyPolicy } from './supply';
 import { runBotDirector } from './director';
+import {
+  freeCash,
+  recoveryQuote,
+  arrears,
+  outstandingLoans,
+  collateral,
+  updatePublicBenchmarks,
+} from './design';
 import {
   GAME_DAY,
   gameCalendar,
@@ -92,7 +101,10 @@ function transfer(
   if (to === 'treasury') to = treasuryId(actorState(w, from, establishmentId));
   const sender = company(w, from),
     receiver = company(w, to);
-  ensure(sender.balance >= amount, 'Saldo insuficiente para concluir esta operação.');
+  ensure(
+    freeCash(w, from) >= amount,
+    'Saldo insuficiente ou vinculado a pedidos. Libere a reserva ou reduza a operação.',
+  );
   sender.balance -= amount;
   receiver.balance += amount;
   w.ledger.push({
@@ -118,19 +130,7 @@ export function loadOf(inventory: Partial<Record<ProductId, number>>) {
   return { mass, volume };
 }
 function capacity(w: World, e: Establishment, extra: Partial<Record<ProductId, number>>) {
-  const inv = { ...e.inventory };
-  for (const s of w.shipments.filter((x) => x.destinationId === e.id && !x.delivered))
-    inv[s.product] = (inv[s.product] ?? 0) + s.quantity;
-  for (const j of w.jobs.filter((x) => x.establishmentId === e.id && !x.completed))
-    for (const [p, q] of Object.entries(
-      j.output ??
-        Object.fromEntries(
-          Object.entries(w.season.config.recipes.find((x) => x.id === j.recipeId)!.output).map(
-            ([p, q]) => [p, q! * j.cycles],
-          ),
-        ),
-    ))
-      inv[p as ProductId] = (inv[p as ProductId] ?? 0) + q!;
+  const inv = committedStorage(w, e);
   for (const [p, q] of Object.entries(extra)) inv[p as ProductId] = (inv[p as ProductId] ?? 0) + q!;
   const load = loadOf(inv);
   ensure(
@@ -209,8 +209,14 @@ export function quote(
     for (const key of Object.keys(costs) as (keyof typeof costs)[]) costs[key] += part.costs[key];
   return {
     carrierId,
+    fleet: fleetAvailability(w, carrierId, product),
     vehicleId: parts[0]?.vehicleId,
-    compatible: Number.isSafeInteger(quantity) && quantity > 0 && remaining === 0,
+    compatible:
+      Number.isSafeInteger(quantity) &&
+      quantity > 0 &&
+      remaining === 0 &&
+      (!w.requireRoadRoutes || route?.source === 'osrm'),
+    routeRequired: Boolean(w.requireRoadRoutes && route?.source !== 'osrm'),
     price: parts.reduce((n, p) => n + p.price, 0),
     distanceKm: Math.round(km * 10) / 10,
     durationMs: Math.max(0, ...parts.map((p) => p.durationMs)),
@@ -250,6 +256,10 @@ function dispatch(
   capacity(w, dest, { [product]: quantity });
   const q = quote(w, origin.id, dest.id, product, quantity, carrierId);
   ensure(
+    !q.routeRequired,
+    'Rota rodoviária pendente. Aguarde o cálculo pelas estradas antes de contratar; nada foi cobrado.',
+  );
+  ensure(
     company(w, carrierId).bot ||
       carrierId === buyerId ||
       (Boolean(infrastructureId || orderId) && carrierId === origin.companyId),
@@ -268,14 +278,21 @@ function dispatch(
     expectedTotal === undefined || expectedTotal === total,
     'A cotação mudou. Revise o novo total antes de confirmar; nenhum pagamento foi feito.',
   );
-  ensure(company(w, buyerId).balance >= total, 'Saldo insuficiente para mercadoria e frete.');
+  ensure(
+    freeCash(w, buyerId, orderId) >= total,
+    'Saldo insuficiente para mercadoria e frete, considerando pedidos com reserva.',
+  );
   // Obras possuem verba previamente comprometida; outros pagamentos do Tesouro não podem gastá-la.
   if (buyerId === 'treasury' && !infrastructureId)
     ensure(treasuryAvailable(w) >= total, 'Caixa do Tesouro já comprometido.');
   ensure(
-    q.ownFleet || company(w, carrierId).balance + q.price >= q.costs.operatingCost,
+    q.ownFleet || freeCash(w, carrierId) + q.price >= q.costs.operatingCost,
     'Transportador sem caixa para os custos da viagem.',
   );
+  if (orderId) {
+    const order = w.orders.find((o) => o.id === orderId);
+    if (order) order.escrowReserved = 0;
+  }
   if (!internal)
     transfer(
       w,
@@ -339,6 +356,13 @@ function dispatch(
     origin.expenses += Math.round((origin.unitCosts[product] ?? 0) * quantity);
   }
   const batchId = randomUUID();
+  const routeKey = w.requireRoadRoutes
+    ? `${origin.propertyId}:${dest.propertyId}@${w.routes[`${origin.propertyId}:${dest.propertyId}`]?.fetchedAt ?? 'frozen'}`
+    : undefined;
+  if (routeKey) {
+    w.roadPaths ??= {};
+    w.roadPaths[routeKey] ??= structuredClone(q.coordinates);
+  }
   let allocated = 0;
   q.parts.forEach((part, index) => {
     const partCost =
@@ -364,7 +388,8 @@ function dispatch(
       arrivesAt: now + part.durationMs,
       delivered: false,
       distance: q.distanceKm,
-      route: structuredClone(q.coordinates),
+      route: routeKey ? undefined : structuredClone(q.coordinates),
+      routeKey,
       routeSource: q.source,
       pickupAt: now + part.relocationMs,
       roadDepartureAt: now + part.relocationMs + part.loadingMs,
@@ -381,6 +406,199 @@ function dispatch(
 export function execute(w: World, actor: string, command: Command, now = Date.now()) {
   company(w, actor);
   switch (command.type) {
+    case 'installBusiness': {
+      const e = owned(w, command.establishmentId, actor),
+        p = dpOf(w, e);
+      integer(command.lines, 'Linhas de equipamento', 100);
+      const productive = ['industry', 'farm', 'mine'].includes(e.category);
+      const r = w.season.config.recipes.find(
+        (r) => r.id === command.recipeId && r.category === e.category,
+      );
+      ensure(!productive || r, 'Escolha uma especialidade compatível com a unidade.');
+      ensure(
+        !w.jobs.some((j) => j.establishmentId === e.id && !j.completed),
+        'Conclua os lotes antes de alterar equipamentos.',
+      );
+      const maximum = r ? Math.floor(p.area / w.season.config.operations.profiles[r.id].areaM2) : 1;
+      const current = e.installed === false ? 0 : (e.equipmentLines ?? maximum);
+      ensure(
+        command.lines > current && command.lines <= maximum,
+        'Equipamento precisa aumentar as linhas e caber na área.',
+      );
+      ensure(
+        current === 0 || !productive || e.specialization === r!.id,
+        'Troca de tecnologia exige nova unidade neste laboratório.',
+      );
+      const cost = (command.lines - current) * w.season.config.design.equipmentCost[e.category];
+      transfer(
+        w,
+        actor,
+        treasuryId(p.state),
+        cost,
+        'Equipamento e instalação capitalizados',
+        'property',
+        now,
+        e.id,
+      );
+      e.installationValue = (e.installationValue ?? 0) + cost;
+      e.installed = true;
+      e.equipmentLines = command.lines;
+      e.specialization = r?.id;
+      e.capacityT = Math.max(
+        1,
+        Math.floor(p.area * w.season.config.design.storageMassPerM2[e.category]),
+      );
+      e.capacityM3 = Math.max(
+        1,
+        Math.floor(p.area * w.season.config.design.storageVolumePerM2[e.category]),
+      );
+      e.supplyPolicy = defaultSupplyPolicy(w, e);
+      e.dailyCost = operatingCosts(w, e).total;
+      break;
+    }
+    case 'takeRecoveryLoan': {
+      integer(command.amount, 'Principal do crédito', 1e9);
+      ensure(
+        w.properties.some((p) => p.ownerId === actor && p.state === command.state),
+        'Escolha um estado em que sua empresa possui imóvel.',
+      );
+      ensure(!institutional(actor), 'Crédito disponível apenas para empresas privadas.');
+      const q = recoveryQuote(w, actor, command.state, command.amount);
+      ensure(
+        command.amount >= 100000 && command.amount <= q.maximum,
+        'Crédito excede garantia ou verba estadual livre. O mínimo é R$ 1.000.',
+      );
+      ensure(
+        !w.loans!.some(
+          (l) =>
+            l.companyId === actor && l.principal > l.repaid && now - l.createdAt > GAME_DAY * 30,
+        ),
+        'Regularize o crédito vencido antes de tomar outro.',
+      );
+      transfer(
+        w,
+        q.lender,
+        actor,
+        command.amount,
+        'Crédito de recuperação com garantia',
+        'loan',
+        now,
+      );
+      transfer(
+        w,
+        actor,
+        q.lender,
+        q.fee,
+        'Custo de financiamento de 2% pago na contratação',
+        'finance',
+        now,
+      );
+      company(w, actor).financingExpense = (company(w, actor).financingExpense ?? 0) + q.fee;
+      w.loans!.push({
+        id: randomUUID(),
+        companyId: actor,
+        treasuryId: q.lender,
+        principal: command.amount,
+        repaid: 0,
+        fee: q.fee,
+        createdAt: now,
+        nextDueAt: now + GAME_DAY,
+        installment: q.installment,
+        durationDays: q.days,
+      });
+      break;
+    }
+    case 'repayLoan': {
+      const loan = w.loans!.find((l) => l.id === command.loanId && l.companyId === actor);
+      ensure(loan, 'Crédito não encontrado.');
+      integer(command.amount, 'Amortização', 1e9);
+      ensure(
+        command.amount <= loan.principal - loan.repaid,
+        'Amortização supera o principal restante.',
+      );
+      transfer(
+        w,
+        actor,
+        loan.treasuryId,
+        command.amount,
+        'Amortização antecipada de principal',
+        'repayment',
+        now,
+      );
+      loan.repaid += command.amount;
+      break;
+    }
+    case 'payObligations': {
+      integer(command.amount, 'Pagamento de atrasados', 1e9);
+      ensure(
+        command.amount <= arrears(w, actor) && command.amount <= freeCash(w, actor),
+        'Revise o total devido e o caixa livre.',
+      );
+      let remaining = command.amount;
+      for (const due of w
+        .obligations!.filter((o) => o.companyId === actor && o.amount > o.paid)
+        .sort(
+          (a, b) =>
+            (a.kind === 'payroll' ? 0 : 1) - (b.kind === 'payroll' ? 0 : 1) || a.dueAt - b.dueAt,
+        )) {
+        const amount = Math.min(remaining, due.amount - due.paid);
+        if (!amount) continue;
+        transfer(
+          w,
+          actor,
+          due.to,
+          amount,
+          `Regularização · ${due.description}`,
+          due.kind,
+          now,
+          due.establishmentId,
+        );
+        due.paid += amount;
+        remaining -= amount;
+      }
+      break;
+    }
+    case 'mothball': {
+      const e = owned(w, command.establishmentId, actor);
+      ensure(
+        !w.jobs.some((j) => j.establishmentId === e.id && !j.completed) &&
+          !w.training?.some((t) => t.establishmentId === e.id && !t.completed),
+        'Conclua produção e educação antes de suspender a estrutura.',
+      );
+      e.mothballed = command.enabled;
+      if (command.enabled) {
+        e.enabled = false;
+        e.employees = 0;
+        e.education = 0;
+        e.automation = false;
+        if (e.supplyPolicy) e.supplyPolicy.enabled = false;
+      }
+      e.dailyCost = operatingCosts(w, e).total;
+      break;
+    }
+    case 'sellVehicle': {
+      const v = w.vehicles.find((v) => v.id === command.vehicleId && v.companyId === actor);
+      ensure(v && v.status === 'available', 'Somente veículo próprio e livre pode ser vendido.');
+      const state = w.properties.find((p) => p.id === v.propertyId)!.state,
+        buyer = treasuryId(state);
+      const price = Math.floor((v.purchasePrice ?? 28000000) * 0.65);
+      ensure(
+        price > 0 && treasuryAvailable(w, state) >= price,
+        'Fundo estadual sem verba livre para comprar o veículo.',
+      );
+      ensure(
+        outstandingLoans(w, actor) <=
+          collateral(w, actor) -
+            Math.ceil((v.purchasePrice ?? 28000000) * w.season.config.design.collateralRatio),
+        'O veículo garante crédito ativo; amortize antes de vender.',
+      );
+      transfer(w, buyer, actor, price, `Venda de veículo usado · ${v.name}`, 'asset-sale', now);
+      company(w, actor).financingExpense =
+        (company(w, actor).financingExpense ?? 0) + (v.purchasePrice ?? 28000000) - price;
+      v.companyId = buyer;
+      v.status = 'maintenance';
+      break;
+    }
     case 'buyProperty': {
       const p = w.properties.find((x) => x.id === command.propertyId);
       ensure(p, 'Propriedade não encontrada.');
@@ -400,13 +618,14 @@ export function execute(w: World, actor: string, command: Command, now = Date.no
         inventory: {},
         unitCosts: {},
         prices: {},
-        capacityT: 1000,
-        capacityM3: 2000,
-        employees: openingWorkers(p.category),
+        capacityT: 0,
+        capacityM3: 0,
+        employees: 0,
         dailyCost: 85000,
         revenue: 0,
         expenses: 0,
-        enabled: true,
+        enabled: false,
+        installed: false,
         ...(p.category === 'mine' ? { reserve: 12000 } : {}),
       });
       const opened = w.establishments.at(-1)!;
@@ -481,7 +700,7 @@ export function execute(w: World, actor: string, command: Command, now = Date.no
       );
       const charges = productionCharges(w, e, recipe.id, command.cycles);
       ensure(
-        company(w, actor).balance >= charges.total,
+        freeCash(w, actor) >= charges.total,
         'Saldo insuficiente para processamento, energia e água.',
       );
       transfer(
@@ -605,6 +824,8 @@ export function execute(w: World, actor: string, command: Command, now = Date.no
     }
     case 'toggleOperation': {
       const e = owned(w, command.establishmentId, actor);
+      ensure(!e.mothballed, 'Reative a estrutura e contrate a equipe antes de operar.');
+      ensure(e.installed !== false, 'Instale equipamentos antes de operar.');
       e.enabled = !e.enabled;
       break;
     }
@@ -618,6 +839,10 @@ export function execute(w: World, actor: string, command: Command, now = Date.no
     }
     case 'configureProduction': {
       const e = owned(w, command.establishmentId, actor);
+      ensure(
+        !e.mothballed || !command.enabled,
+        'Reative a estrutura antes de automatizar a produção.',
+      );
       const r = w.season.config.recipes.find(
         (r) => r.id === command.recipeId && r.category === e.category,
       );
@@ -638,6 +863,7 @@ export function execute(w: World, actor: string, command: Command, now = Date.no
     }
     case 'setWorkforce': {
       const e = owned(w, command.establishmentId, actor);
+      ensure(!e.mothballed || command.employees === 0, 'Reative a estrutura antes de contratar.');
       ensure(
         Number.isSafeInteger(command.employees) &&
           command.employees >= 0 &&
@@ -692,7 +918,7 @@ export function execute(w: World, actor: string, command: Command, now = Date.no
         'Prazo menor que o tempo estimado de transporte.',
       );
       ensure(
-        company(w, actor).balance >= offer.price * command.quantity + command.maxFreight,
+        freeCash(w, actor) >= offer.price * command.quantity + command.maxFreight,
         'Saldo insuficiente para autorizar o pedido.',
       );
       capacity(w, dest, { [offer.product]: command.quantity });
@@ -710,6 +936,9 @@ export function execute(w: World, actor: string, command: Command, now = Date.no
         createdAt: now,
         deadline: now + command.deliveryDays * GAME_DAY,
         status: 'pending',
+        escrowReserved: command.reserveFunds
+          ? command.quantity * offer.price + command.maxFreight
+          : 0,
       });
       break;
     }
@@ -791,6 +1020,11 @@ export function execute(w: World, actor: string, command: Command, now = Date.no
     case 'configureSupply': {
       const e = owned(w, command.establishmentId, actor);
       validateSupplyPolicy(command.policy);
+      for (const rule of command.policy.rules)
+        if (rule.originId) {
+          const origin = owned(w, rule.originId, actor);
+          ensure(origin.id !== e.id, 'A conexão de reposição precisa de outra unidade de origem.');
+        }
       e.supplyPolicy = structuredClone(command.policy);
       if (e.category === 'retail') e.automation = false;
       e.supplyStatus = command.policy.enabled ? 'Aguardando avaliação' : 'Reposição desativada';
@@ -847,6 +1081,9 @@ export function execute(w: World, actor: string, command: Command, now = Date.no
         createdAt: now,
         deadline: now + command.deliveryDays * GAME_DAY,
         status: 'pending',
+        escrowReserved: command.reserveFunds
+          ? command.quantity * command.unitPrice + command.maxFreight
+          : 0,
         proposals: [],
       });
       break;
@@ -1171,8 +1408,27 @@ function economicTick(w: World, at: number) {
       },
     ];
     const total = parts.reduce((n, p) => n + p.amount, 0);
-    if (company(w, e.companyId).balance < total) {
+    if (freeCash(w, e.companyId) < total) {
       e.enabled = false;
+      const day = Math.floor((at - w.season.startedAt) / GAME_DAY);
+      for (const part of parts.filter((p) => p.amount > 0)) {
+        const id = `${e.id}:${part.kind}:${day}`,
+          prior = w.obligations!.find((o) => o.id === id);
+        if (prior) prior.amount += part.amount;
+        else
+          w.obligations!.push({
+            id,
+            companyId: e.companyId,
+            establishmentId: e.id,
+            to: part.to === 'treasury' ? treasuryId(dpOf(w, e).state) : part.to,
+            kind: part.kind as 'payroll' | 'maintenance' | 'energy' | 'water',
+            amount: part.amount,
+            paid: 0,
+            description: `${part.description} · ${e.name}`,
+            dueAt: at,
+          });
+      }
+      e.expenses += total;
       continue;
     }
     for (const part of parts)
@@ -1194,6 +1450,26 @@ function economicTick(w: World, at: number) {
   for (const c of w.infrastructure)
     if (c.status === 'open' && c.deadline <= at) c.status = 'expired';
   updateWages(w, at);
+  updatePublicBenchmarks(w, at);
+  for (const loan of w.loans ?? []) {
+    if (loan.repaid >= loan.principal || at < loan.nextDueAt) continue;
+    const days = Math.min(loan.durationDays, Math.floor((at - loan.createdAt) / GAME_DAY));
+    const due = Math.max(0, Math.floor((loan.principal * days) / loan.durationDays) - loan.repaid);
+    const amount = Math.min(due, freeCash(w, loan.companyId));
+    if (amount > 0) {
+      transfer(
+        w,
+        loan.companyId,
+        loan.treasuryId,
+        amount,
+        'Parcela de principal do crédito de recuperação',
+        'repayment',
+        at,
+      );
+      loan.repaid += amount;
+    }
+    loan.nextDueAt = loan.createdAt + (days + 1) * GAME_DAY;
+  }
   regionalizeTreasury(w, at);
   openInfrastructure(w, at);
   runSupplyPolicies(w, at);
@@ -1376,6 +1652,7 @@ function openInfrastructure(w: World, at: number) {
       quantity,
       unitPrice,
       referencePrice,
+      referenceSource: w.publicBenchmarks?.[program.product]?.source ?? 'opening',
       minQuality: program.quality,
       maxFreight,
       reserved,
@@ -1646,7 +1923,8 @@ function runAutomations(w: World, at: number) {
       const contract = w.infrastructure.find((c) => c.status === 'open')!;
       if (
         cycleCost < contract.unitPrice * r.output.steel! * 0.9 &&
-        investor.balance >= property.price + reserve &&
+        freeCash(w, investor.id) >=
+          property.price + reserve + w.season.config.design.equipmentCost[property.category] &&
         attempt(investor.id, {
           type: 'buyProperty',
           propertyId: property.id,
@@ -1683,6 +1961,7 @@ function runAutomations(w: World, at: number) {
       !property ||
       c.balance <
         property.price +
+          w.season.config.design.equipmentCost[property.category] +
           Math.max(template.dailyCost, 100000) * w.season.config.operations.expansionReserveDays
     )
       continue;

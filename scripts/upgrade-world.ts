@@ -56,7 +56,15 @@ function validate(after: World) {
   for (const p of before.properties)
     assert.equal(after.properties.find((x) => x.id === p.id)?.ownerId, p.ownerId);
   assert.deepEqual(after.jobs, before.jobs);
-  assert.deepEqual(after.shipments, before.shipments);
+  const economicShipments = (w: World) =>
+    w.shipments.map((s) =>
+      Object.fromEntries(
+        Object.entries(s).filter(
+          ([key]) => !['mapRoute', 'mapRouteSource', 'mapRouteKey'].includes(key),
+        ),
+      ),
+    );
+  assert.deepEqual(economicShipments(after), economicShipments(before));
   assert.deepEqual(
     after.infrastructure.slice(0, before.infrastructure?.length ?? 0),
     before.infrastructure ?? [],
@@ -85,6 +93,12 @@ function validate(after: World) {
               v,
             );
         }
+      else if (key === 'design')
+        for (const [name, parameter] of Object.entries(before.season.config.design))
+          assert.deepEqual(
+            (after.season.config.design as unknown as Record<string, unknown>)[name],
+            parameter,
+          );
       else assert.deepEqual(after.season.config[key as keyof typeof after.season.config], value);
     }
 }
@@ -100,8 +114,8 @@ assert.deepEqual(afterDb.prepare('SELECT * FROM receipts ORDER BY id').all(), re
 afterDb.close();
 const report = {
   path,
-  from: before.operationsVersion ?? 0,
-  to: after.operationsVersion,
+  from: before.designVersion ?? 0,
+  to: after.designVersion,
   integrity: 'ok',
   moneyConserved: true,
   humanBalancesAndExistingStocksPreserved: true,

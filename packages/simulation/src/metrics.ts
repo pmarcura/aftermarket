@@ -49,12 +49,19 @@ export function operatingCosts(w: World, e: Establishment) {
   const p = w.properties.find((p) => p.id === e.propertyId)!,
     labor = laborMarket(w, p),
     rates = utilityTariff(w, p);
-  const payroll = Math.round(
-    (e.employees * labor.monthlySalary * w.season.config.parameters.payrollBurden) / 30,
+  const payroll = e.mothballed
+    ? 0
+    : Math.round(
+        (e.employees * labor.monthlySalary * w.season.config.parameters.payrollBurden) / 30,
+      );
+  const maintenance = Math.round(
+    (w.season.config.maintenance[e.category] / 30) *
+      (e.mothballed || e.installed === false
+        ? (w.season.config.design?.mothballMaintenance ?? 0.1)
+        : 1),
   );
-  const maintenance = Math.round(w.season.config.maintenance[e.category] / 30);
-  const energyKwh = e.employees * rates.standingKwhPerEmployee;
-  const waterM3 = e.employees * rates.standingM3PerEmployee;
+  const energyKwh = e.mothballed ? 0 : e.employees * rates.standingKwhPerEmployee;
+  const waterM3 = e.mothballed ? 0 : e.employees * rates.standingM3PerEmployee;
   const energy = Math.round(energyKwh * rates.electricity),
     water = Math.round(waterM3 * rates.water);
   return {
@@ -140,12 +147,7 @@ export function marketView(w: World, product: ProductId, regionId = '', radiusKm
       ...o,
       establishment: w.establishments.find((e) => e.id === o.establishmentId)!,
     }))
-    .filter(
-      (o) =>
-        o.establishment.enabled &&
-        within(o.establishment) &&
-        (o.establishment.inventory[product] ?? 0) > 0,
-    )
+    .filter((o) => within(o.establishment) && (o.establishment.inventory[product] ?? 0) > 0)
     .map((o) => ({ ...o, quantity: availableStock(w, o.establishment, product) }))
     .filter((o) => o.quantity > 0);
   const stock = offers.reduce((n, o) => n + o.quantity, 0),

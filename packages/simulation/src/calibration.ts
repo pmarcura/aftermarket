@@ -1,5 +1,6 @@
 import type { Category, ProductId, Recipe } from './model';
 import { competitionRules } from './competition';
+import { designRules } from './design';
 import { regions } from '../../world/src/regions';
 import { operationRules } from './operations';
 
@@ -161,6 +162,7 @@ export const economicSources = [
 ];
 
 export interface SeasonConfig {
+  design: typeof designRules;
   competition: typeof competitionRules;
   operations: typeof operationRules;
   version: string;
@@ -182,6 +184,7 @@ export function createSeasonConfig(
 ): SeasonConfig {
   return structuredClone({
     competition: competitionRules,
+    design: designRules,
     operations: operationRules,
     version: calibration.version,
     parameters: calibration,

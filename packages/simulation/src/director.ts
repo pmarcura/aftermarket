@@ -1,8 +1,9 @@
 import { execute, quote, RuleError } from './engine';
-import { products, type Command, type ProductId, type World } from './model';
+import { products, type Command, type ProductId, type World, type Establishment } from './model';
 import { institutional, publicReference, trainingQuote } from './competition';
-import { GAME_DAY, inventoryQuality, productionCapacity } from './operations';
-import { operatingCosts } from './metrics';
+import { GAME_DAY, inventoryQuality, productionCapacity, productionQuality } from './operations';
+import { operatingCosts, productionCharges, marketView } from './metrics';
+import { arrears, freeCash, recoveryQuote, outstandingLoans } from './design';
 
 export const botCapabilities = [
   'production',
@@ -13,7 +14,68 @@ export const botCapabilities = [
   'internal-transfer',
   'education',
   'expansion',
+  'recovery',
+  'reserved-orders',
+  'installation',
 ] as const;
+export function botRecoveryPlan(w: World, e: Establishment, at: number) {
+  const r = w.season.config.recipes.find((r) => r.id === e.specialization),
+    profile = r ? w.season.config.operations.profiles[r.id] : undefined;
+  if (!r || !profile || e.installed === false || (e.category === 'mine' && (e.reserve ?? 0) <= 0))
+    return;
+  const workers = profile.workers * (e.equipmentLines ?? 1),
+    preview = { ...e, employees: workers, mothballed: false, enabled: true },
+    fixed = operatingCosts(w, preview).total;
+  let input = 0;
+  for (const [id, quantity] of Object.entries(r.input) as [ProductId, number][]) {
+    const prices = w.offers
+      .filter(
+        (o) =>
+          o.product === id &&
+          (w.establishments.find((x) => x.id === o.establishmentId)?.inventory[id] ?? 0) >=
+            quantity,
+      )
+      .map((o) => o.price);
+    const price =
+      (e.inventory[id] ?? 0) >= quantity
+        ? e.unitCosts[id]
+        : prices.length
+          ? Math.min(...prices)
+          : undefined;
+    if (price === undefined) return;
+    input += price * quantity;
+  }
+  const outputProduct = Object.keys(r.output)[0] as ProductId,
+    quantity = r.output[outputProduct]!,
+    qualified = w.infrastructure.filter(
+      (c) => c.product === outputProduct && c.createdAt >= at - GAME_DAY * 14,
+    );
+  const publicPrice = qualified.length ? Math.min(...qualified.map((c) => c.unitPrice)) * 0.94 : 0;
+  const demand =
+    marketView(w, outputProduct).demand + qualified.reduce((n, c) => n + c.quantity, 0) / 14;
+  const competitors = Math.max(
+    1,
+    w.establishments.filter(
+      (x) => x.specialization === r.id && w.companies.find((c) => c.id === x.companyId)?.bot,
+    ).length,
+  );
+  const dailyQuantity = Math.min(
+    quantity * 12 * (e.automationCycles ?? 1),
+    (demand * 0.2) / competitors,
+  );
+  const marketPrice =
+    marketView(w, outputProduct).price ?? w.season.config.basePrices[outputProduct];
+  const price = publicPrice || marketPrice;
+  const perCycle = productionCharges(w, preview, r.id, 1).total + input;
+  const contribution = (price - perCycle / quantity) * dailyQuantity - fixed;
+  if (contribution <= fixed * 0.15 || dailyQuantity <= 0) return;
+  return {
+    workers,
+    fixed,
+    upfront: Math.ceil(perCycle * 4 + fixed * 7 + arrears(w, e.companyId)),
+    contribution,
+  };
+}
 export function runBotDirector(w: World, at: number) {
   const act = (actor: string, cmd: Command, text: string) => {
     try {
@@ -31,7 +93,6 @@ export function runBotDirector(w: World, at: number) {
       const candidates = w.establishments
         .filter(
           (e) =>
-            e.enabled &&
             e.companyId !== o.buyerId &&
             bots.some((b) => b.id === e.companyId) &&
             (e.inventory[o.product] ?? 0) >= o.quantity,
@@ -140,11 +201,136 @@ export function runBotDirector(w: World, at: number) {
     }
   }
   for (const c of bots) {
-    c.behaviorVersion = 1;
-    const units = w.establishments.filter((e) => e.companyId === c.id && e.enabled);
+    c.behaviorVersion = 2;
+    for (const e of w.establishments.filter((e) => e.companyId === c.id && e.installed === false)) {
+      if (
+        act(
+          c.id,
+          { type: 'installBusiness', establishmentId: e.id, recipeId: e.specialization, lines: 1 },
+          'Instalou equipamentos na unidade adquirida',
+        )
+      ) {
+        const recipe = w.season.config.recipes.find((r) => r.id === e.specialization),
+          workers = recipe ? w.season.config.operations.profiles[recipe.id].workers : 6;
+        if (
+          act(
+            c.id,
+            { type: 'setWorkforce', establishmentId: e.id, employees: workers },
+            'Contratou a equipe da nova unidade',
+          )
+        )
+          act(
+            c.id,
+            { type: 'toggleOperation', establishmentId: e.id },
+            'Iniciou operação da unidade equipada',
+          );
+        e.automation = e.category !== 'retail';
+        if (e.supplyPolicy) e.supplyPolicy.enabled = true;
+      }
+    }
+    const debt = arrears(w, c.id),
+      allUnits = w.establishments.filter((e) => e.companyId === c.id);
+    if (debt > 0 && freeCash(w, c.id) >= debt)
+      act(
+        c.id,
+        { type: 'payObligations', amount: debt },
+        'Regularizou salários e serviços em atraso',
+      );
+    if (debt > 0 && at - w.season.startedAt >= GAME_DAY * 3) {
+      const fixed = allUnits.reduce((n, e) => n + operatingCosts(w, e).total, 0),
+        place = w.properties.find((p) => p.id === allUnits[0]?.propertyId);
+      const operatingProfit = allUnits.reduce((n, e) => n + e.revenue - e.expenses, 0);
+      if (
+        place &&
+        operatingProfit > fixed * 3 &&
+        outstandingLoans(w, c.id) === 0 &&
+        !w.loans!.some((l) => l.companyId === c.id)
+      ) {
+        const wanted = debt + fixed * 7,
+          q = recoveryQuote(w, c.id, place.state, wanted);
+        if (
+          wanted >= 100000 &&
+          wanted <= q.maximum &&
+          act(
+            c.id,
+            { type: 'takeRecoveryLoan', state: place.state, amount: wanted },
+            'Contratou crédito limitado por garantia e verba',
+          )
+        )
+          act(
+            c.id,
+            { type: 'payObligations', amount: Math.min(arrears(w, c.id), freeCash(w, c.id)) },
+            'Pagou atrasados com plano de recuperação',
+          );
+      }
+      if (operatingProfit <= 0 && debt > fixed * 2)
+        for (const e of allUnits.filter((e) => !e.enabled && !e.mothballed))
+          act(
+            c.id,
+            { type: 'mothball', establishmentId: e.id, enabled: true },
+            'Suspendeu estrutura deficitária para reduzir compromissos',
+          );
+      else if (arrears(w, c.id) === 0)
+        for (const e of allUnits.filter((e) => !e.enabled && !e.mothballed && e.employees > 0))
+          act(
+            c.id,
+            { type: 'toggleOperation', establishmentId: e.id },
+            'Retomou operação após regularização',
+          );
+    }
+    if (at - (c.lastRecoveryAt ?? w.season.startedAt) >= GAME_DAY * 7) {
+      for (const e of allUnits.filter((e) => e.mothballed)) {
+        const plan = botRecoveryPlan(w, e, at);
+        if (!plan) continue;
+        let needed = Math.max(0, plan.upfront - freeCash(w, c.id));
+        if (needed > 0 && !w.loans!.some((l) => l.companyId === c.id && l.principal > l.repaid)) {
+          needed = Math.max(100000, Math.ceil(needed / (1 - w.season.config.design.loanFee)));
+          const state = w.properties.find((p) => p.id === e.propertyId)!.state,
+            q = recoveryQuote(w, c.id, state, needed);
+          if (needed <= q.maximum)
+            act(
+              c.id,
+              { type: 'takeRecoveryLoan', state, amount: needed },
+              'Financiou retomada com margem projetada e garantia',
+            );
+        }
+        if (freeCash(w, c.id) < plan.upfront) continue;
+        if (arrears(w, c.id) > 0)
+          act(
+            c.id,
+            { type: 'payObligations', amount: arrears(w, c.id) },
+            'Regularizou obrigações antes da retomada',
+          );
+        if (
+          act(
+            c.id,
+            { type: 'mothball', establishmentId: e.id, enabled: false },
+            'Reativou estrutura com plano de caixa',
+          )
+        ) {
+          act(
+            c.id,
+            { type: 'setWorkforce', establishmentId: e.id, employees: plan.workers },
+            'Recontratou equipe para demanda observada',
+          );
+          act(
+            c.id,
+            { type: 'toggleOperation', establishmentId: e.id },
+            'Retomou produção com orçamento finito',
+          );
+          e.automation = true;
+          if (e.supplyPolicy) e.supplyPolicy.enabled = true;
+          c.lastRecoveryAt = at;
+        }
+      }
+    }
+    const units = w.establishments.filter(
+      (e) =>
+        e.companyId === c.id && (e.enabled || Object.values(e.inventory).some((q) => (q ?? 0) > 0)),
+    );
     for (const e of units) {
       // Os registros de receitas conduzem o plano; treinamento e estoque não recebem bônus ocultos.
-      if (e.supplyPolicy?.enabled && at - w.season.startedAt >= GAME_DAY / 4) {
+      if (e.enabled && e.supplyPolicy?.enabled && at - w.season.startedAt >= GAME_DAY / 4) {
         const rule = e.supplyPolicy.rules.find(
           (r) =>
             (e.inventory[r.product] ?? 0) <= r.minimum &&
@@ -165,19 +351,31 @@ export function runBotDirector(w: World, at: number) {
           )
         ) {
           const qty = Math.min(rule.maxBuy, rule.target - (e.inventory[rule.product] ?? 0));
-          if (qty > 0)
+          const unitPrice = rule.maxPrice || Math.round(publicReference(w, rule.product) * 1.2),
+            maxFreight = Math.max(
+              200000,
+              Math.round(qty * publicReference(w, rule.product) * 0.25),
+            );
+          const affordable = Math.min(
+            qty,
+            Math.floor(
+              (freeCash(w, c.id) -
+                Math.max(e.supplyPolicy.cashReserve, operatingCosts(w, e).total * 3) -
+                maxFreight) /
+                unitPrice,
+            ),
+          );
+          if (affordable > 0)
             act(
               c.id,
               {
                 type: 'createPurchaseRequest',
+                reserveFunds: c.strategy === 'regional',
                 destinationId: e.id,
                 product: rule.product,
-                quantity: qty,
-                unitPrice: rule.maxPrice || Math.round(publicReference(w, rule.product) * 1.2),
-                maxFreight: Math.max(
-                  200000,
-                  Math.round(qty * publicReference(w, rule.product) * 0.25),
-                ),
+                quantity: affordable,
+                unitPrice,
+                maxFreight,
                 deliveryDays: 3,
               },
               `Publicou necessidade de ${products[rule.product].name}`,
@@ -200,8 +398,32 @@ export function runBotDirector(w: World, at: number) {
           .filter((q) => q.compatible && q.price <= contract.maxFreight)
           .sort((a, b) => a.price - b.price)[0];
         if (!q) continue;
-        const floor = Math.ceil((e.unitCosts[contract.product] ?? 0) * 1.08),
-          discount = c.strategy === 'value' ? 0.94 : c.strategy === 'quality' ? 0.99 : 0.97;
+        const relevant = w.infrastructure.filter(
+          (x) => x.product === contract.product && x.createdAt >= at - GAME_DAY * 14,
+        );
+        const producers = Math.max(
+          1,
+          w.establishments.filter(
+            (x) =>
+              x.specialization === e.specialization &&
+              w.companies.find((z) => z.id === x.companyId)?.bot,
+          ).length,
+        );
+        const expectedDaily = Math.max(
+          contract.quantity / 7,
+          ((relevant.reduce((n, x) => n + x.quantity, 0) / 14) * 0.2) / producers,
+        );
+        const floor = Math.ceil(
+          ((e.unitCosts[contract.product] ?? 0) + operatingCosts(w, e).total / expectedDaily) *
+            1.08,
+        );
+        const lost = w.infrastructure
+          .slice(-30)
+          .flatMap((x) => x.bids ?? [])
+          .filter((b) => b.supplierId === c.id && b.status === 'lost').length;
+        const discount =
+          (c.strategy === 'value' ? 0.94 : c.strategy === 'quality' ? 0.99 : 0.97) -
+          Math.min(0.12, lost * 0.02);
         const price = Math.max(floor, Math.round(contract.unitPrice * discount));
         if (price <= contract.unitPrice)
           act(
@@ -219,9 +441,23 @@ export function runBotDirector(w: World, at: number) {
       const training = trainingQuote(w, e),
         fixed = operatingCosts(w, e).total;
       if (
-        c.strategy === 'quality' &&
+        (c.strategy === 'quality' ||
+          w.infrastructure.some(
+            (c) =>
+              c.status === 'open' &&
+              Object.keys(
+                w.season.config.recipes.find((r) => r.id === e.specialization)?.output ?? {},
+              ).includes(c.product) &&
+              c.minQuality >
+                productionQuality(
+                  w,
+                  e,
+                  w.season.config.recipes.find((r) => r.id === e.specialization)!,
+                ),
+          )) &&
+        e.enabled &&
         ['industry', 'farm', 'mine'].includes(e.category) &&
-        (e.education ?? 0) < 3 &&
+        (e.education ?? 0) < 5 &&
         e.employees > 0 &&
         c.balance > training.cost + fixed * 15 &&
         !w.training!.some((t) => t.establishmentId === e.id && !t.completed)
@@ -231,7 +467,7 @@ export function runBotDirector(w: World, at: number) {
           { type: 'trainWorkforce', establishmentId: e.id },
           'Investiu em educação da equipe',
         );
-      if (e.category !== 'retail') continue;
+      if (e.category !== 'retail' || !e.enabled) continue;
       for (const id of Object.keys(e.inventory) as ProductId[]) {
         const demand = Math.max(
           1,

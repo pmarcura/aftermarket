@@ -1,0 +1,372 @@
+<title>Raio-X do Aftermarket</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..800&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: uma coluna de leitura (~72ch) com faixas largas para diagrama e tabelas; cor de categoria igual à do jogo */
+:root {
+  --bg: #f2f4f3; --surface: #ffffff; --ink: #13232c; --muted: #56676e; --line: #d6dddf;
+  --gold: #9a6a1c; --gold-soft: #f3e7d1;
+  --ok: #2d7a4d; --ok-soft: #dcefe3; --warn: #9a640f; --warn-soft: #f7ead2; --bad: #ad3a31; --bad-soft: #f6dedb;
+  --mine: #a97c45; --farm: #4f8f5c; --industry: #6c7c85; --retail: #c95c50; --gov: #3f7fae;
+  --display: "Archivo", "Arial Narrow", system-ui, sans-serif;
+  --body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f1d24; --surface: #142730; --ink: #e5ecec; --muted: #94a6ab; --line: #24404b;
+  --gold: #e0b066; --gold-soft: #3a3020;
+  --ok: #6cc58f; --ok-soft: #173827; --warn: #e8b04d; --warn-soft: #3b2e14; --bad: #ef7d72; --bad-soft: #42211e;
+  --mine: #cfa06a; --farm: #78b884; --industry: #9eadb5; --retail: #e8857a; --gov: #7db6db;
+  color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0f1d24; --surface: #142730; --ink: #e5ecec; --muted: #94a6ab; --line: #24404b;
+  --gold: #e0b066; --gold-soft: #3a3020;
+  --ok: #6cc58f; --ok-soft: #173827; --warn: #e8b04d; --warn-soft: #3b2e14; --bad: #ef7d72; --bad-soft: #42211e;
+  --mine: #cfa06a; --farm: #78b884; --industry: #9eadb5; --retail: #e8857a; --gov: #7db6db;
+  color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 400 16px/1.6 var(--body); }
+.wrap { max-width: 980px; margin: 0 auto; padding-block: 48px 80px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 64px; }
+.read { max-width: 70ch; }
+h1, h2, h3 { font-family: var(--display); font-stretch: 85%; line-height: 1.1; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2.4rem, 6vw, 3.6rem); font-weight: 800; letter-spacing: -0.01em; }
+h2 { font-size: 1.75rem; font-weight: 700; }
+h3 { font-size: 1.1rem; font-weight: 700; font-stretch: 90%; }
+p { margin: 0; }
+.eyebrow { font: 500 0.75rem/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); }
+.lead { font-size: 1.2rem; line-height: 1.5; color: var(--ink); }
+.muted { color: var(--muted); }
+section { display: grid; gap: 20px; }
+.head { display: grid; gap: 8px; }
+.mono { font-family: var(--mono); font-size: 0.86em; }
+
+/* hero */
+header { display: grid; gap: 18px; }
+.mark { width: 44px; height: 44px; border-radius: 10px; background: var(--ink); color: var(--gold);
+  display: grid; place-items: center; font: 800 1.5rem/1 var(--display); }
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: var(--line);
+  border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin-top: 8px; }
+.stat { background: var(--surface); padding: 16px 18px; display: grid; gap: 4px; }
+.stat b { font: 700 1.9rem/1 var(--display); font-stretch: 80%; font-variant-numeric: tabular-nums; }
+.stat span { font-size: 0.85rem; color: var(--muted); line-height: 1.35; }
+.stat.alert b { color: var(--bad); }
+
+/* loop */
+.loop { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; list-style: none; padding: 0; margin: 0; }
+.loop li { display: flex; align-items: center; gap: 8px; font: 600 1rem/1 var(--display); font-stretch: 90%; }
+.loop li span.n { font: 500 0.72rem/1 var(--mono); color: var(--gold); }
+.loop li:not(:last-child)::after { content: "→"; color: var(--muted); font-weight: 400; margin-left: 4px; }
+
+/* chains */
+.lane { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; display: grid; gap: 16px; }
+.lane-title { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: baseline; }
+.flow { display: flex; flex-wrap: wrap; gap: 10px; align-items: stretch; }
+.node { flex: 1 1 170px; min-width: 0; border: 1px solid var(--line); border-left: 4px solid var(--c, var(--line));
+  border-radius: 8px; padding: 10px 12px; display: grid; gap: 4px; align-content: start; background: var(--bg); }
+.node .cat { font: 500 0.68rem/1 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--c); }
+.node strong { font-family: var(--display); font-stretch: 90%; font-size: 1rem; }
+.node .rx { font: 400 0.78rem/1.4 var(--mono); color: var(--muted); }
+.arrow { align-self: center; color: var(--muted); font-size: 1.2rem; flex: 0 0 auto; }
+.c-mine { --c: var(--mine); } .c-farm { --c: var(--farm); } .c-ind { --c: var(--industry); }
+.c-retail { --c: var(--retail); } .c-gov { --c: var(--gov); }
+.flags { display: grid; gap: 8px; }
+.flag { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: start; font-size: 0.93rem; line-height: 1.45; }
+.flag i { font-style: normal; font: 700 0.7rem/1 var(--mono); padding: 4px 6px; border-radius: 4px; margin-top: 2px;
+  background: var(--bad-soft); color: var(--bad); }
+.flag i.w { background: var(--warn-soft); color: var(--warn); }
+
+/* status table */
+.tablebox { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 0.93rem; }
+th, td { text-align: left; padding: 11px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+th { font: 500 0.72rem/1 var(--mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); background: var(--bg); }
+td:first-child { font-weight: 600; white-space: nowrap; }
+.pill { display: inline-block; font: 600 0.74rem/1 var(--body); padding: 5px 9px; border-radius: 999px; white-space: nowrap; }
+.p-ok { background: var(--ok-soft); color: var(--ok); }
+.p-mid { background: var(--warn-soft); color: var(--warn); }
+.p-bad { background: var(--bad-soft); color: var(--bad); }
+
+/* problems */
+.problems { display: grid; gap: 14px; counter-reset: p; }
+.problem { display: grid; grid-template-columns: 44px 1fr; gap: 4px 16px; padding: 18px 0; border-top: 1px solid var(--line); }
+.problem::before { counter-increment: p; content: counter(p); grid-row: span 2; font: 800 2rem/1 var(--display); color: var(--gold); }
+.problem h3 { font-size: 1.2rem; }
+.problem p { color: var(--muted); }
+.problem ul { margin: 8px 0 0; padding-left: 18px; color: var(--ink); display: grid; gap: 4px; }
+
+/* roadmap */
+.road { display: grid; gap: 0; list-style: none; padding: 0; margin: 0; }
+.step { display: grid; grid-template-columns: 56px 1fr; gap: 0 16px; position: relative; padding-bottom: 26px; }
+.step:not(:last-child)::after { content: ""; position: absolute; left: 21px; top: 46px; bottom: 4px; width: 2px; background: var(--line); }
+.step .badge { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--gold); color: var(--gold);
+  display: grid; place-items: center; font: 800 1.2rem/1 var(--display); background: var(--surface); }
+.step.now .badge { background: var(--gold); color: var(--surface); }
+.step .body { display: grid; gap: 6px; padding-top: 8px; min-width: 0; }
+.step .body p { color: var(--muted); }
+.step .meta { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 0.86rem; }
+.step .meta span b { font-weight: 600; color: var(--ink); }
+.step .meta span { color: var(--muted); }
+.step.art .badge { border-style: dashed; }
+.step.done .badge { border-color: var(--ok); color: var(--ok); }
+.step h3 .pill { vertical-align: middle; margin-left: 6px; }
+
+/* two cols */
+.cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; display: grid; gap: 10px; align-content: start; }
+.card ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+.callout { background: var(--gold-soft); border-radius: 12px; padding: 20px 22px; display: grid; gap: 8px; }
+.qs { display: grid; gap: 12px; counter-reset: q; list-style: none; padding: 0; margin: 0; }
+.qs li { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px 14px 52px; position: relative; display: grid; gap: 4px; }
+.qs li::before { counter-increment: q; content: counter(q); position: absolute; left: 16px; top: 13px;
+  width: 24px; height: 24px; border-radius: 50%; background: var(--ink); color: var(--bg); display: grid; place-items: center; font: 700 0.8rem/1 var(--mono); }
+.qs li b { font-weight: 600; }
+.qs li span { color: var(--muted); font-size: 0.93rem; }
+footer { font-size: 0.85rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 18px; }
+
+@media (max-width: 720px) {
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cols { grid-template-columns: 1fr; }
+  .arrow { transform: rotate(90deg); flex-basis: 100%; text-align: center; }
+  .wrap { gap: 48px; padding-block: 32px 56px; }
+}
+</style>
+
+<div class="wrap">
+
+<header>
+  <div class="mark" aria-hidden="true">A</div>
+  <p class="eyebrow">Leitura do projeto · 27 out 2026 · versão 0.4.0</p>
+  <h1>Raio-X do Aftermarket</h1>
+  <p class="lead read">A base é boa: o mapa é real, as regras são justas e os bots jogam pelas mesmas regras que você. O que segura o jogo hoje são três coisas: a economia ainda não fecha, o motor não aguenta muita gente e seus amigos ainda não conseguem entrar. São seis etapas até o primeiro playtest.</p>
+  <div class="stats">
+    <div class="stat"><b>10</b><span>produtos e 9 receitas de produção</span></div>
+    <div class="stat"><b>38</b><span>empresas-bot jogando com as mesmas regras</span></div>
+    <div class="stat"><b>160</b><span>testes automáticos, todos passando</span></div>
+    <div class="stat alert"><b>63 MB</b><span>o mundo inteiro, regravado a cada 2 segundos</span></div>
+  </div>
+</header>
+
+<section>
+  <div class="head">
+    <p class="eyebrow">O jogo em uma frase</p>
+    <h2>Monte uma empresa no mapa real e lucre com o caminho das coisas</h2>
+  </div>
+  <p class="read">Você abre uma loja, fazenda, mina, indústria ou transportadora em São Paulo e Minas Gerais. Compra, produz, transporta e vende, disputando o mesmo mercado com amigos e bots. Não é construir cidade: é descobrir onde vale a pena operar e por que o frete come a sua margem.</p>
+  <ol class="loop">
+    <li><span class="n">1</span>Localizar</li>
+    <li><span class="n">2</span>Investigar</li>
+    <li><span class="n">3</span>Comparar</li>
+    <li><span class="n">4</span>Adquirir</li>
+    <li><span class="n">5</span>Operar</li>
+  </ol>
+</section>
+
+<section>
+  <div class="head">
+    <p class="eyebrow">Como a economia está montada hoje</p>
+    <h2>Duas cadeias, cada uma com um furo</h2>
+    <p class="muted read">Cores iguais às do mapa do jogo. As receitas mostram o que entra e o que sai em cada ciclo.</p>
+  </div>
+
+  <div class="lane">
+    <div class="lane-title"><h3>Cadeia do metal</h3><span class="muted mono">minério + carvão → aço</span></div>
+    <div class="flow">
+      <div class="node c-mine"><span class="cat">Mineração</span><strong>Minério de ferro</strong><span class="rx">reserva finita · 1 t a cada 6 min de jogo</span></div>
+      <div class="node c-mine"><span class="cat">Mineração</span><strong>Carvão mineral</strong><span class="rx">reserva finita · 1 t a cada 12 min</span></div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="node c-ind"><span class="cat">Indústria</span><strong>Aço em barras</strong><span class="rx">12 t minério + 3 t carvão → 8 t aço</span></div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="node c-gov"><span class="cat">Governo</span><strong>Editais públicos</strong><span class="rx">pontes, escolas, obras</span></div>
+    </div>
+    <div class="flags">
+      <div class="flag"><i>FURO</i><span>O governo é o único comprador de aço. Se a arrecadação cai, a cadeia inteira para. Nenhum jogador consegue usar aço para fabricar outra coisa.</span></div>
+      <div class="flag"><i class="w">ATENÇÃO</i><span>Das 15 t que entram, 8 t saem como aço. As outras 7 t somem sem virar resíduo, custo ou coproduto.</span></div>
+    </div>
+  </div>
+
+  <div class="lane">
+    <div class="lane-title"><h3>Cadeia dos alimentos</h3><span class="muted mono">fazenda → indústria → loja → famílias</span></div>
+    <div class="flow">
+      <div class="node c-farm"><span class="cat">Fazenda</span><strong>Soja</strong><span class="rx">planta 1 t → colhe 26 t em 1 dia</span></div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="node c-ind"><span class="cat">Indústria</span><strong>Óleo + farelo</strong><span class="rx">1 t soja → 200 L óleo + 760 kg farelo</span></div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="node c-farm"><span class="cat">Fazenda</span><strong>Leite</strong><span class="rx">50 kg farelo → 300 L leite</span></div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="node c-retail"><span class="cat">Comércio</span><strong>Lojas → famílias</strong><span class="rx">óleo, leite, arroz, feijão, açúcar</span></div>
+    </div>
+    <div class="flow">
+      <div class="node c-farm"><span class="cat">Fazenda</span><strong>Arroz, feijão, açúcar</strong><span class="rx">planta 1 pacote de arroz 5 kg → colhe 160 pacotes</span></div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="node c-retail"><span class="cat">Comércio</span><strong>Lojas → famílias</strong><span class="rx">demanda pela população da cidade</span></div>
+    </div>
+    <div class="flags">
+      <div class="flag"><i>FURO</i><span>Quatro fazendas dão prejuízo mesmo pagando só os salários. Com terra, água, energia e frete de graça, ainda não fecham a conta.</span></div>
+      <div class="flag"><i>FURO</i><span>Sobra farelo: o leite só consegue usar uma parte. Na conta atual, cerca de 56% a mais do que é consumido fica parado no estoque, sem outro comprador.</span></div>
+      <div class="flag"><i class="w">ATENÇÃO</i><span>Semente não existe. Planta-se o próprio pacote de mercado, e as primeiras unidades aparecem do nada na abertura. Leite também não tem vaca.</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="head">
+    <p class="eyebrow">Semáforo</p>
+    <h2>O que já funciona, o que está pela metade e o que falta</h2>
+  </div>
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>Sistema</th><th>Estado</th><th>Em uma linha</th></tr></thead>
+      <tbody>
+        <tr><td>Mapa e estradas reais</td><td><span class="pill p-ok">Funciona</span></td><td>Caminhões andam sobre rodovias reais, com prazo e custo.</td></tr>
+        <tr><td>Comprar e operar negócios</td><td><span class="pill p-ok">Funciona</span></td><td>Imóvel, equipamento, equipe, produção e estoque físico.</td></tr>
+        <tr><td>Mercado e negociação</td><td><span class="pill p-ok">Funciona</span></td><td>Pedidos, contrapropostas, editais do governo.</td></tr>
+        <tr><td>Laboratório de simulação</td><td><span class="pill p-ok">Funciona</span></td><td>Roda 90 dias de bots em 10 segundos. Peça-chave para balancear.</td></tr>
+        <tr><td>Frota e frete</td><td><span class="pill p-mid">Pela metade</span></td><td>Frota própria funciona; transportadora de outro jogador ainda não aceita frete.</td></tr>
+        <tr><td>Bots</td><td><span class="pill p-mid">Pela metade</span></td><td>Jogam bem, mas decidem com três contas erradas e concentram mercado.</td></tr>
+        <tr><td>Finanças e falência</td><td><span class="pill p-mid">Pela metade</span></td><td>Crédito existe; o que acontece quando ninguém paga ainda não está definido.</td></tr>
+        <tr><td>Sensação de mundo vivo</td><td><span class="pill p-mid">Pela metade</span></td><td>Tem caminhões no mapa e atividade dos bots, falta notícia, ranking e eventos.</td></tr>
+        <tr><td>Economia equilibrada</td><td><span class="pill p-bad">Não fecha</span></td><td>Os furos acima. Dinheiro não some, mas empresas quebram e o mercado concentra.</td></tr>
+        <tr><td>Desempenho com muita gente</td><td><span class="pill p-bad">Não aguenta</span></td><td>O mundo é um arquivo único que cresce sem parar.</td></tr>
+        <tr><td>Jogar com amigos</td><td><span class="pill p-bad">Falta</span></td><td>Só funciona no seu computador, sem login.</td></tr>
+        <tr><td>Primeira hora do jogador</td><td><span class="pill p-bad">Falta</span></td><td>Nenhum guia; a loja abre com 10 abas.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="head">
+    <p class="eyebrow">Diagnóstico</p>
+    <h2>Os cinco problemas que importam</h2>
+  </div>
+  <div class="problems">
+    <div class="problem">
+      <h3>A economia ainda é de fachada em alguns pontos</h3>
+      <div>
+        <p>Além dos furos das cadeias, há três contas erradas que fazem os bots tomarem decisões ruins:</p>
+        <ul>
+          <li>O bot acha que a fazenda de leite produz 12 vezes mais do que ela consegue, e gasta caixa para reabri-la.</li>
+          <li>A previsão de uma usina de aço promete 48 lotes por dia, mas ela entrega 30.</li>
+          <li>Abrir uma segunda loja igual pode fazer vendas desaparecerem por arredondamento.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="problem">
+      <h3>Seus amigos não conseguem entrar</h3>
+      <p>O servidor só aceita conexões vindas do próprio computador e os perfis não têm senha. Hoje o multiplayer é trocar de perfil na mesma máquina.</p>
+    </div>
+    <div class="problem">
+      <h3>O motor não aguenta o mundo crescendo</h3>
+      <div>
+        <p>O mundo inteiro é salvo como um arquivo único. Ele é lido e regravado a cada 2 segundos, e o navegador baixa tudo de novo a cada 3 segundos.</p>
+        <ul>
+          <li>Mundo principal: 63 MB. Um mundo recém-criado já manda 4,4 MB para o navegador a cada atualização.</li>
+          <li>O histórico nunca é limpo: só o extrato financeiro tem 25 MB e as rotas, 23 MB.</li>
+          <li>Com 5 amigos e dezenas de bots, isso trava antes de o mundo ganhar vida.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="problem">
+      <h3>A interface parece planilha, não jogo</h3>
+      <p>Tudo está correto e bem desenhado, mas cansa. A loja tem 10 abas e várias telas mostram muitos números de uma vez. Falta o jogo dizer “o que fazer agora” e comemorar a primeira venda.</p>
+    </div>
+    <div class="problem">
+      <h3>O projeto ficou pesado de manter</h3>
+      <div>
+        <p>O processo anterior gerou muito documento e muita ferramenta de auditoria:</p>
+        <ul>
+          <li>Os arquivos de estado e roteiro são densos e técnicos; ninguém lê com prazer.</li>
+          <li>Cerca de um terço do código é ferramenta de laboratório e relatório, não jogo.</li>
+          <li>Muita coisa não está salva no Git: 20 arquivos alterados e cerca de 45 novos desde o último ponto de salvamento.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="head">
+    <p class="eyebrow">Caminho até o playtest</p>
+    <h2>Seis etapas, cada uma termina em algo que dá para ver</h2>
+    <p class="muted read">Cada etapa tem um resultado jogável e um critério para dizer “pronto”. Você decide o design; eu cuido da matemática, do código e das simulações.</p>
+  </div>
+  <ol class="road">
+    <li class="step done"><div class="badge">A</div><div class="body">
+      <h3>Arrumar a casa <span class="pill p-ok">Concluída</span></h3>
+      <p>Trabalho pendente salvo no Git, estado e roteiro em uma página cada, um resumo único da economia com um só comando para regerar os relatórios técnicos, 360 MB de bancos de teste antigos apagados e instruções curtas para o Claude. Mundo principal e backups intactos.</p>
+      <div class="meta"><span><b>Pronto quando:</b> nós dois abrimos o projeto e entendemos onde estamos em 2 minutos</span><span><b>Você:</b> aprovou</span></div>
+    </div></li>
+    <li class="step now"><div class="badge">B</div><div class="body">
+      <h3>Redesenhar a economia</h3>
+      <p>Primeiro no papel, junto com você: de onde vem a semente, para onde vai o farelo, quem compra aço além do governo, o que é realista e o que é abstrato. Depois eu corrijo as contas e rodo 90 dias de bots para provar.</p>
+      <div class="meta"><span><b>Pronto quando:</b> nenhuma cadeia dá prejuízo por construção, nada acumula sem fim e os preços se estabilizam</span><span><b>Você:</b> decisões de design</span></div>
+    </div></li>
+    <li class="step"><div class="badge">C</div><div class="body">
+      <h3>Motor que aguenta</h3>
+      <p>Salvar o mundo em partes, mandar ao navegador só o que mudou e resumir o histórico antigo.</p>
+      <div class="meta"><span><b>Pronto quando:</b> 5 humanos e 60 bots rodam 30 dias de jogo sem travar num PC comum</span><span><b>Você:</b> nada</span></div>
+    </div></li>
+    <li class="step"><div class="badge">D</div><div class="body">
+      <h3>Jogar junto</h3>
+      <p>Login simples, uma empresa por amigo e um servidor que todos acessam de casa.</p>
+      <div class="meta"><span><b>Pronto quando:</b> 5 pessoas jogam ao mesmo tempo de lugares diferentes</span><span><b>Você:</b> escolher onde hospedar</span></div>
+    </div></li>
+    <li class="step"><div class="badge">E</div><div class="body">
+      <h3>Primeira hora e mundo vivo</h3>
+      <p>Tutorial jogando de verdade, telas enxutas (loja com 3 ou 4 abas), um mural de notícias da economia e ranking entre empresas.</p>
+      <div class="meta"><span><b>Pronto quando:</b> um amigo novo faz a primeira venda em 15 minutos sem ajuda</span><span><b>Você:</b> direção de interface</span></div>
+    </div></li>
+    <li class="step art"><div class="badge">·</div><div class="body">
+      <h3>Arte dos produtos e identidade</h3>
+      <p>Entra aqui, quando a lista de produtos estiver fechada.</p>
+    </div></li>
+    <li class="step"><div class="badge">F</div><div class="body">
+      <h3>Playtest 1</h3>
+      <p>Roteiro da sessão, coleta de impressões e lista de ajustes.</p>
+      <div class="meta"><span><b>Pronto quando:</b> a sessão acontece e temos as 10 maiores dores anotadas</span><span><b>Você:</b> chamar os amigos</span></div>
+    </div></li>
+  </ol>
+</section>
+
+<section>
+  <div class="cols">
+    <div class="callout">
+      <p class="eyebrow">Imagens: agora ou depois?</p>
+      <h3>Depois</h3>
+      <p>A lista de produtos vai mudar na etapa B: pode entrar semente, gado, sucata, um comprador novo para o aço. Gerar arte agora é jogar trabalho fora. Até lá os ícones simples atuais bastam.</p>
+      <p>Quando a lista fechar, eu te mando um pacote de prompts com um estilo único para gerar tudo de uma vez. Consistência vale mais do que cada imagem bonita isolada.</p>
+    </div>
+    <div class="card">
+      <p class="eyebrow">O que fica e o que sai</p>
+      <ul>
+        <li><b>Fica:</b> o motor de regras, o mapa, os bots e o laboratório de simulação.</li>
+        <li><b>Fica:</b> o GDD original como visão de produto.</li>
+        <li><b>Encolhe:</b> documentação de processo e os três relatórios de auditoria, que viram um só.</li>
+        <li><b>Sai:</b> bancos de teste antigos e arquivos soltos de revisões passadas.</li>
+        <li><b>Muda depois:</b> a forma de salvar o mundo (etapa C).</li>
+        <li><b>Resumo da economia:</b> <span class="mono">docs/product/ECONOMIA-HOJE.md</span>, em linguagem simples.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="head">
+    <p class="eyebrow">Para você decidir</p>
+    <h2>Três perguntas que mudam a etapa B</h2>
+  </div>
+  <ol class="qs">
+    <li><b>Como vai ser o playtest?</b><span>Sessões juntos de 2 a 3 horas, ou o mundo rodando a semana toda com cada um entrando quando puder? Isso muda a velocidade do tempo e quanto a automação precisa fazer sozinha.</span></li>
+    <li><b>Quão realista?</b><span>Vaca, semente e adubo, ou abstrato e enxuto? Minha sugestão: só o que gera uma decisão interessante para o jogador.</span></li>
+    <li><b>Duas cadeias redondas antes de crescer?</b><span>Minha sugestão: sim. Metal e alimentos bem fechados valem mais do que dez produtos com furo.</span></li>
+  </ol>
+</section>
+
+<footer>Fontes: GDD 3.0, estado e roteiro do projeto, auditoria matemática e relatório de mecânicas, testes rodados e o jogo aberto no cenário iniciante em 27/10/2026.</footer>
+
+</div>

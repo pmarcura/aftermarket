@@ -15,10 +15,15 @@ import { products, type ProductId } from '../../../../../packages/simulation/src
 import { quote } from '../../../../../packages/simulation/src/engine';
 import { useRoute } from '../../lib/routing';
 import '../../economy.css';
+import { Orders } from '../business/Orders';
+import { BotActivity } from '../business/BotActivity';
+import { InfrastructureContracts } from '../business/InfrastructureContracts';
+import { inventoryQuality } from '../../../../../packages/simulation/src/operations';
 
 export function MarketPage() {
   const { world, actor, intent, navigate, openMarket, refresh } = useGame();
   const [product, setProduct] = useState(intent.product ?? ''),
+    [supplierId, setSupplier] = useState(intent.supplierId ?? ''),
     [quantity, setQuantity] = useState(String(intent.quantity ?? '')),
     [destinationId, setDestination] = useState(intent.destinationId ?? ''),
     [offerId, setOffer] = useState(intent.offerId ?? ''),
@@ -54,7 +59,9 @@ export function MarketPage() {
           ? quote(world, e.id, destination.id, o.product, amount, 'transbrasil')
           : undefined;
       return (
-        e.companyId !== actor &&
+        e.id !== destinationId &&
+        e.enabled &&
+        (!supplierId || e.id === supplierId) &&
         (!product || o.product === product) &&
         (!sourceState || p.state === sourceState) &&
         (!supplierType || (supplierType === 'bot') === bot) &&
@@ -75,9 +82,11 @@ export function MarketPage() {
         ? qa.distanceKm - qb.distanceKm
         : a.price * amount + qa.price - b.price * amount - qb.price;
     });
-  const cost = selected ? selected.price * (validAmount ? amount : 0) : 0;
+  const cost =
+    selected && seller?.companyId !== actor ? selected.price * (validAmount ? amount : 0) : 0;
   const clear = () => {
     setProduct('');
+    setSupplier('');
     setQuantity('');
     setDestination('');
     setOffer('');
@@ -97,6 +106,40 @@ export function MarketPage() {
         action={<Tabs values={['Simplificada', 'Avançada']} value={mode} onChange={setMode} />}
       />
       <div className="page-body">
+        <details className="infrastructure-market">
+          <summary>
+            Pedidos e negociações{' '}
+            <Badge tone="blue">
+              {world.orders.filter((o) => o.status === 'pending').length} em aberto
+            </Badge>
+          </summary>
+          <Orders />
+        </details>
+        <details className="infrastructure-market">
+          <summary>Concorrentes e movimento do mundo</summary>
+          <BotActivity />
+        </details>
+        <details className="infrastructure-market">
+          <summary>
+            Contratos de infraestrutura{' '}
+            <Badge tone="gold">
+              {world.infrastructure.filter((c) => c.status === 'open').length} abertos
+            </Badge>
+            <span>Disputar projetos estaduais e entregas municipais</span>
+          </summary>
+          <InfrastructureContracts />
+        </details>
+        {supplierId && (
+          <div className="supplier-context">
+            <span>
+              Ofertas de{' '}
+              <strong>{world.establishments.find((e) => e.id === supplierId)?.name}</strong>
+            </span>
+            <button className="text-button" onClick={() => setSupplier('')}>
+              Ver todos os fornecedores
+            </button>
+          </div>
+        )}
         <div className="economic-filter-panel">
           <label className="search-input">
             <Search size={16} />
@@ -324,6 +367,10 @@ export function MarketPage() {
                     <Rows
                       rows={[
                         {
+                          label: 'Qualidade disponível',
+                          value: `${num(inventoryQuality(seller, selected.product))}/100 · média do estoque`,
+                        },
+                        {
                           label: 'Preço unitário',
                           value: `${cr(selected.price)} / ${products[selected.product].unit}`,
                         },
@@ -374,7 +421,8 @@ export function MarketPage() {
                     </button>
                     {validAmount && freight && !freight.compatible && (
                       <p className="warning-text small">
-                        Nenhum veículo disponível comporta esta massa e volume. Reduza a quantidade.
+                        A frota disponível não comporta esta massa e volume. Compare outra
+                        transportadora ou reduza a quantidade.
                       </p>
                     )}
                     <p className="muted small">

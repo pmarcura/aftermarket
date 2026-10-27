@@ -69,10 +69,11 @@ describe('temporada e indicadores auditáveis', () => {
       propertyId: p.id,
       employees: 12,
     });
-    expect(laborMarket(w, p).available).toBe(before.available - 12);
+    expect(laborMarket(w, p).monthlySalary).toBe(before.monthlySalary);
   });
   it('retorna sem oferta e distingue preços regionais, estaduais e globais', () => {
     const w = createWorld(NOW);
+    w.offers = w.offers.filter((o) => o.product !== 'soymeal');
     expect(marketView(w, 'soymeal').price).toBeNull();
     const sp = marketView(w, 'iron', 'state:SP'),
       mg = marketView(w, 'iron', 'state:MG');

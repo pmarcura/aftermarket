@@ -1,13 +1,5 @@
 import { useState } from 'react';
-import {
-  Search,
-  Plus,
-  Box,
-  TriangleAlert,
-  ShoppingCart,
-  Pencil,
-  ChartNoAxesCombined,
-} from 'lucide-react';
+import { Search, Plus, Box, TriangleAlert, ShoppingCart, ChartNoAxesCombined } from 'lucide-react';
 import { useGame, cr, num } from '../lib/game';
 import {
   PageHeading,
@@ -17,8 +9,8 @@ import {
   Badge,
   Progress,
   Modal,
-  Rows,
   Empty,
+  Select,
 } from '../components/ui';
 import { products, type ProductId } from '../../../../packages/simulation/src/model';
 import {
@@ -26,17 +18,25 @@ import {
   regionFor,
   seasonPrice,
 } from '../../../../packages/simulation/src/metrics';
+import { inventoryQuality, gameCalendar } from '../../../../packages/simulation/src/operations';
 import { ProductAnalysisModal } from '../components/ProductAnalysis';
+import { SupplyPlanner } from '../features/business/SupplyPlanner';
+import { Stock } from '../features/business/Stock';
+import { SalesCatalog } from '../features/business/SalesCatalog';
+import { Workforce } from '../features/business/Workforce';
+import { Orders } from '../features/business/Orders';
+import { BusinessFinance, Consumption } from '../features/business/Analytics';
+
 export function RetailPage() {
-  const { world, actor, businessId, openMarket, run, pending, navigate } = useGame();
+  const { world, actor, businessId, openMarket, openBusiness, run, pending, navigate } = useGame();
   const e =
     world.establishments.find(
       (e) => e.id === businessId && e.companyId === actor && e.category === 'retail',
     ) ?? world.establishments.find((e) => e.companyId === actor && e.category === 'retail');
   const [tab, setTab] = useState('Produtos'),
     [editing, setEditing] = useState<ProductId>(),
-    [price, setPrice] = useState(0);
-  const [analysis, setAnalysis] = useState<ProductId>();
+    [price, setPrice] = useState(0),
+    [analysis, setAnalysis] = useState<ProductId>();
   if (!e)
     return (
       <Empty
@@ -50,218 +50,269 @@ export function RetailPage() {
       />
     );
   const p = world.properties.find((p) => p.id === e.propertyId)!,
-    entries = world.ledger.filter((l) => l.establishmentId === e.id && l.kind === 'retail'),
-    stock = Object.entries(e.inventory) as [ProductId, number][];
-  const sold = entries.reduce((n, l) => n + l.amount, 0);
-  const region = regionFor(p.coordinates, p.city),
-    competingStores = Math.max(
-      1,
-      world.establishments.filter(
-        (x) =>
-          x.enabled &&
-          x.category === 'retail' &&
-          world.properties.find((p) => p.id === x.propertyId)!.city === p.city,
-      ).length,
-    );
-  const demandFor = (id: ProductId) => householdDemand(world, region.id, id) / competingStores;
-  const low = stock.filter(([id, q]) => q < demandFor(id) * 2);
-  const intervalStart = Math.max(world.economyStartedAt, world.nextEconomicAt - 14 * 60000);
-  const bars = Array.from({ length: 14 }, (_, i) =>
-    entries
-      .filter((l) => l.at >= intervalStart + i * 60000 && l.at < intervalStart + (i + 1) * 60000)
-      .reduce((n, l) => n + l.amount, 0),
+    region = regionFor(p.coordinates, p.city);
+  const stock = Object.entries(e.inventory) as [ProductId, number][];
+  const competitors = Math.max(
+    1,
+    world.establishments.filter(
+      (x) =>
+        x.enabled &&
+        x.category === 'retail' &&
+        world.properties.find((p) => p.id === x.propertyId)!.city === p.city,
+    ).length,
   );
+  const calendar = gameCalendar(world, world.nextEconomicAt - 60000);
+  const demandFor = (id: ProductId) =>
+    (householdDemand(world, region.id, id) * calendar.factor) / competitors;
+  const low = stock.filter(([id, q]) => q < demandFor(id) * 2);
+  const sales = world.ledger.filter((l) => l.establishmentId === e.id && l.kind === 'retail');
+  const requests = world.orders.filter((o) => o.originId === e.id && o.status === 'pending').length;
+  const edit = (id: ProductId) => {
+    setEditing(id);
+    setPrice(e.prices[id] ?? seasonPrice(world, id));
+  };
   return (
     <>
       <PageHeading
         eyebrow={`Meus Negócios / ${e.name}`}
         title={e.name}
-        description="Administre preços, estoque, abastecimento e desempenho das vendas regionais."
+        description="Decida o que vender, quando repor e quanto cada produto contribui para a operação."
+        action={
+          <Select
+            label="Selecionar loja"
+            value={e.id}
+            onChange={(event) => openBusiness(event.target.value)}
+          >
+            {world.establishments
+              .filter((x) => x.companyId === actor && x.category === 'retail')
+              .map((x) => (
+                <option key={x.id} value={x.id}>
+                  {x.name}
+                </option>
+              ))}
+          </Select>
+        }
       />
       <div className="page-body">
         <div className="stats-grid">
-          <Stat label="Vendas registradas" value={cr(sold)} note="desde a abertura do mundo" />
+          <Stat
+            label="Vendas registradas"
+            value={cr(sales.reduce((n, l) => n + l.amount, 0))}
+            note="receita observada desde a abertura"
+          />
           <Stat
             label="Resultado operacional"
             value={cr(e.revenue - e.expenses)}
-            note="receitas menos custos operacionais"
+            note="inclui mercadorias vendidas e custos fixos"
             positive={e.revenue >= e.expenses}
           />
           <Stat
-            label="Produtos disponíveis"
-            value={num(stock.reduce((n, [, q]) => n + q, 0))}
-            note={`${stock.length} produtos no estabelecimento`}
+            label="Produtos com baixa cobertura"
+            value={low.length}
+            note={`${stock.length} produtos no catálogo`}
+            gold={low.length > 0}
           />
           <Stat
-            label="Receita por transação"
-            value={cr(entries.length ? sold / entries.length : 0)}
-            note="vendas agregadas aos consumidores"
+            label="Pedidos para aceitar"
+            value={requests}
+            note={`${calendar.label} no calendário do jogo`}
           />
         </div>
         <div className="retail-grid">
           <Panel
-            title={`${e.name} — Produtos à venda`}
-            subtitle={`${p.city} — ${p.state} · Varejo alimentício`}
+            title={e.name}
+            subtitle={`${p.city} — ${p.state} · ${e.enabled ? 'Loja em operação' : 'Operação pausada'}`}
             action={
               <div className="inline-actions">
-                <button
-                  className="secondary"
-                  onClick={() => openMarket({ product: 'oil', destinationId: e.id, quantity: 200 })}
-                >
+                <button className="secondary" onClick={() => openMarket({ destinationId: e.id })}>
                   <Search size={16} /> Consultar fornecedores
                 </button>
-                <button
-                  className="primary"
-                  onClick={() =>
-                    openMarket({ product: 'milk', destinationId: e.id, quantity: 200 })
-                  }
-                >
+                <button className="primary" onClick={() => openMarket({ destinationId: e.id })}>
                   <Plus size={16} /> Adicionar produto
                 </button>
               </div>
             }
           >
             <Tabs
-              values={['Produtos', 'Estoque', 'Preços', 'Vendas', 'Funcionários']}
+              values={[
+                'Produtos',
+                'Estoque',
+                'Abastecimento',
+                'Preços',
+                'Vendas',
+                'Pedidos',
+                'Consumo',
+                'Finanças',
+                'Funcionários',
+              ]}
               value={tab}
               onChange={setTab}
             />
-            {['Produtos', 'Estoque', 'Preços'].includes(tab) && (
-              <div className="table-scroll">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Produto</th>
-                      <th>Categoria</th>
-                      <th className="numeric">Estoque</th>
-                      <th className="numeric">Preço</th>
-                      <th>Estado</th>
-                      <th aria-label="Editar preço" />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {stock.map(([id, quantity]) => (
-                      <tr key={id}>
-                        <td>
-                          <div className="table-name">
-                            <i className={`table-icon ${id === 'oil' ? 'green' : ''}`}>
-                              <Box size={17} />
-                            </i>
-                            <button className="text-button" onClick={() => setAnalysis(id)}>
-                              {products[id].name} <ChartNoAxesCombined size={13} />
-                            </button>
-                          </div>
-                        </td>
-                        <td>{products[id].category}</td>
-                        <td className="numeric">{num(quantity)}</td>
-                        <td className="numeric">{cr(e.prices[id] ?? seasonPrice(world, id), 2)}</td>
-                        <td>
-                          <Badge tone={quantity < demandFor(id) * 2 ? 'gold' : 'green'}>
-                            {quantity === 0
-                              ? 'Sem estoque'
-                              : quantity < demandFor(id) * 2
-                                ? 'Baixo estoque'
-                                : 'Ativo'}
-                          </Badge>
-                        </td>
-                        <td>
-                          <button
-                            className="icon-button"
-                            aria-label={`Editar preço de ${products[id].name}`}
-                            title="Editar preço"
-                            onClick={() => {
-                              setEditing(id);
-                              setPrice(e.prices[id] ?? seasonPrice(world, id));
-                            }}
-                          >
-                            <Pencil size={15} />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-            {tab === 'Funcionários' && (
-              <div className="panel-content">
-                <Rows
-                  rows={[
-                    { label: 'Funcionários', value: e.employees },
-                    { label: 'Custo diário de operação', value: cr(e.dailyCost) },
-                    { label: 'Estado', value: e.enabled ? 'Ativa' : 'Pausada' },
-                  ]}
-                />
-                <button
-                  className="secondary"
-                  disabled={pending}
-                  onClick={() =>
-                    void run(
-                      { type: 'toggleOperation', establishmentId: e.id },
-                      'Estado da loja atualizado.',
-                    )
-                  }
-                >
-                  {e.enabled ? 'Pausar vendas e operação' : 'Retomar operação'}
-                </button>
-              </div>
-            )}
-            {tab === 'Vendas' && (
-              <div className="panel-content">
-                {entries.length ? (
-                  entries
-                    .slice(-15)
-                    .reverse()
-                    .map((l) => (
-                      <div className="simple-entry" key={l.id}>
-                        <span>
-                          {l.description}
-                          <small>{new Date(l.at).toLocaleTimeString('pt-BR')}</small>
-                        </span>
-                        <strong className="positive">+{cr(l.amount)}</strong>
-                      </div>
-                    ))
+            {tab === 'Produtos' && (
+              <>
+                <div className="panel-content business-section">
+                  <div className="section-title">
+                    <div>
+                      <h3>Catálogo e cobertura de vendas</h3>
+                      <p className="muted small">
+                        Estoque vendável, qualidade e duração estimada com o consumo de{' '}
+                        {calendar.label.toLowerCase()}.
+                      </p>
+                    </div>
+                    <Badge tone="blue">{num(calendar.factor * 100)}% do consumo médio</Badge>
+                  </div>
+                </div>
+                {stock.length ? (
+                  <div className="table-scroll">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Produto</th>
+                          <th className="numeric">Disponível</th>
+                          <th className="numeric">Preço</th>
+                          <th>Qualidade</th>
+                          <th>Cobertura estimada</th>
+                          <th>Ação</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {stock.map(([id, q]) => {
+                          const demand = demandFor(id),
+                            days = demand ? q / demand : null;
+                          return (
+                            <tr key={id}>
+                              <td>
+                                <div className="table-name">
+                                  <i className="table-icon">
+                                    <Box size={17} />
+                                  </i>
+                                  <button className="text-button" onClick={() => setAnalysis(id)}>
+                                    {products[id].name}
+                                    <ChartNoAxesCombined size={14} />
+                                  </button>
+                                </div>
+                              </td>
+                              <td className="numeric">
+                                {num(q)} {products[id].unit}
+                              </td>
+                              <td className="numeric">
+                                {cr(e.prices[id] ?? seasonPrice(world, id))}
+                              </td>
+                              <td>
+                                <Badge tone="blue">{num(inventoryQuality(e, id))}/100</Badge>
+                              </td>
+                              <td>
+                                <Badge
+                                  tone={
+                                    q === 0 ? 'red' : days !== null && days < 2 ? 'gold' : 'green'
+                                  }
+                                >
+                                  {q === 0
+                                    ? 'Ruptura de estoque'
+                                    : days === null
+                                      ? 'Sem estimativa'
+                                      : `${num(days, 1)} dias do jogo`}
+                                </Badge>
+                              </td>
+                              <td>
+                                <button
+                                  className="secondary"
+                                  onClick={() =>
+                                    openMarket({
+                                      product: id,
+                                      destinationId: e.id,
+                                      quantity: Math.max(1, Math.ceil(demand * 3 - q)),
+                                    })
+                                  }
+                                >
+                                  Repor produto
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
                 ) : (
                   <Empty
-                    title="Aguardando o próximo período de vendas"
-                    description="Consumidores compram a cada minuto real, respeitando estoque, preços e orçamento. Mantenha a loja abastecida."
+                    title="Monte o catálogo da sua loja"
+                    description="Escolha produtos no mercado e aguarde a entrega para iniciar as vendas."
+                    action={
+                      <button
+                        className="primary"
+                        onClick={() => openMarket({ destinationId: e.id })}
+                      >
+                        Escolher produtos
+                      </button>
+                    }
+                  />
+                )}
+              </>
+            )}
+            {tab === 'Estoque' && <Stock establishment={e} />}
+            {tab === 'Abastecimento' && <SupplyPlanner key={e.id} establishment={e} />}
+            {tab === 'Preços' && <SalesCatalog establishment={e} retail onEdit={edit} />}
+            {tab === 'Vendas' && (
+              <div className="business-section">
+                <div className="panel-content">
+                  <h3>Vendas realizadas aos consumidores</h3>
+                  <p className="small muted">
+                    Quantidade, receita e horário virtual observados. Pedidos entre empresas estão
+                    na aba Pedidos.
+                  </p>
+                </div>
+                {sales.length ? (
+                  <div className="table-scroll">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Quando no jogo</th>
+                          <th>Produto</th>
+                          <th className="numeric">Quantidade</th>
+                          <th className="numeric">Preço / un.</th>
+                          <th className="numeric">Receita</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sales
+                          .slice(-40)
+                          .reverse()
+                          .map((l) => (
+                            <tr key={l.id}>
+                              <td>
+                                {gameCalendar(world, l.at).date.toLocaleString('pt-BR', {
+                                  timeZone: 'UTC',
+                                })}
+                              </td>
+                              <td>{l.product ? products[l.product].name : l.description}</td>
+                              <td className="numeric">{num(l.quantity ?? 0)}</td>
+                              <td className="numeric">{cr(l.unitPrice ?? 0)}</td>
+                              <td className="numeric positive">{cr(l.amount)}</td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <Empty
+                    title="Aguardando a próxima rodada de vendas"
+                    description="Consumidores compram a cada minuto real, respeitando estoque, preço, qualidade, capacidade e orçamento."
                   />
                 )}
               </div>
             )}
-            {['Produtos', 'Estoque', 'Vendas'].includes(tab) && (
-              <div className="panel-content">
-                <h3>Vendas por período — últimas 14 rodadas</h3>
-                <div
-                  className="bar-chart"
-                  role="img"
-                  aria-label="Receita das últimas 14 rodadas de vendas"
-                >
-                  {bars.map((v, i) => (
-                    <div key={i}>
-                      <i
-                        style={{
-                          height: `${Math.max(v ? 5 : 1, (v / Math.max(...bars, 1)) * 100)}%`,
-                        }}
-                        title={`Rodada ${i + 1}: ${cr(v)}`}
-                      />
-                      <span>{i + 1}</span>
-                    </div>
-                  ))}
-                </div>
-                <p className="small muted">
-                  Cada rodada equivale a 2 horas do jogo (1 minuto real). Valores do estado
-                  persistido.
-                </p>
-              </div>
-            )}
+            {tab === 'Pedidos' && <Orders establishment={e} />}
+            {tab === 'Consumo' && <Consumption key={e.id} establishment={e} />}
+            {tab === 'Finanças' && <BusinessFinance establishment={e} />}
+            {tab === 'Funcionários' && <Workforce key={e.id} establishment={e} />}
           </Panel>
           <div className="right-stack">
-            <Panel title="Cobertura estimada do estoque">
+            <Panel title="Reposição e cobertura">
               <div className="panel-content">
-                {stock.map(([id, quantity]) => {
+                {stock.map(([id, q]) => {
                   const demand = demandFor(id),
-                    days = demand ? quantity / demand : 0;
+                    days = demand ? q / demand : 0;
                   return (
                     <div className="meter-row" key={id}>
                       <span>{products[id].name}</span>
@@ -271,30 +322,20 @@ export function RetailPage() {
                   );
                 })}
                 <p className="small muted">
-                  Estoque ÷ demanda diária dividida entre {competingStores} lojas. Barra completa =
-                  7 dias do jogo; não é garantia de vendas.
+                  Estoque ÷ demanda diária modelada, dividida entre {competitors} lojas. Preço,
+                  qualidade e orçamento alteram a venda efetiva. Barra completa = 7 dias.
                 </p>
-                <button
-                  className="secondary full"
-                  disabled={pending}
-                  onClick={() =>
-                    void run(
-                      { type: 'setAutomation', establishmentId: e.id, enabled: !e.automation },
-                      e.automation
-                        ? 'Reposição automática desativada.'
-                        : 'Reposição automática ativada com limite diário do cenário.',
-                    )
-                  }
-                >
-                  {e.automation ? 'Desativar reposição automática' : 'Ativar reposição automática'}
+                <button className="secondary full" onClick={() => setTab('Abastecimento')}>
+                  Configurar abastecimento automático
                 </button>
                 <p className="small muted">
-                  A reposição respeita estoque, transporte, saldo e orçamento de{' '}
-                  {cr(e.automationDailyBudget ?? 3000000)} por dia do jogo.
+                  Até {cr(e.supplyPolicy?.dailyBudget ?? e.automationDailyBudget ?? 3000000)} por
+                  dia do jogo, incluindo mercadoria e frete. Pedidos e cargas em andamento entram na
+                  cobertura.
                 </p>
               </div>
             </Panel>
-            <Panel title="Alertas de estoque">
+            <Panel title="Atenção na operação">
               <div className="panel-content">
                 {low.length ? (
                   low.map(([id, q]) => (
@@ -302,27 +343,23 @@ export function RetailPage() {
                       <TriangleAlert size={20} />
                       <div>
                         <strong>{products[id].name}</strong>
-                        <p>{num(q)} unidades restantes</p>
+                        <p>{num(q)} unidades · cobertura abaixo de 2 dias</p>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <p className="muted">Todos os produtos estão acima do estoque mínimo.</p>
+                  <p className="muted">Estoque acima do mínimo estimado.</p>
                 )}
-                <p className="muted small">
-                  A reposição exige compra e entrega no depósito da loja.
-                </p>
                 <button
                   className="primary"
                   onClick={() =>
-                    openMarket({
-                      product: low[0]?.[0] ?? 'oil',
-                      destinationId: e.id,
-                      quantity: 200,
-                    })
+                    openMarket({ product: low[0]?.[0], destinationId: e.id, quantity: 200 })
                   }
                 >
                   <ShoppingCart size={16} /> Reabastecer estoque
+                </button>
+                <button className="text-button" onClick={() => setTab('Consumo')}>
+                  Ver consumo e gargalos
                 </button>
               </div>
             </Panel>
@@ -335,6 +372,7 @@ export function RetailPage() {
             Preço de venda por unidade (R$)
             <input
               autoFocus
+              aria-label="Preço de venda"
               type="number"
               step="0.01"
               min="0.01"
@@ -342,9 +380,10 @@ export function RetailPage() {
               onChange={(event) => setPrice(Math.round(Number(event.target.value) * 100))}
             />
           </label>
-          <p className="muted small">
-            O preço interfere na participação da loja na demanda regional. Produtos muito caros
-            vendem menos.
+          <p className="muted">
+            Custo posto: {cr(e.unitCosts[editing] ?? 0)} · margem bruta:{' '}
+            {cr(price - (e.unitCosts[editing] ?? 0))} por unidade. O preço altera a preferência dos
+            consumidores.
           </p>
           <button
             className="primary full"

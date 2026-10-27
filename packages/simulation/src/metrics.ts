@@ -9,6 +9,7 @@ import {
 } from './model';
 import { regions } from '../../world/src/regions';
 import { distanceKm } from './geometry';
+import { productionCapacity, availableStock } from './operations';
 
 const clamp = (n: number, min = 0, max = 100) => Math.min(max, Math.max(min, n));
 export function regionFor(position: Position, city?: string) {
@@ -27,39 +28,21 @@ export function utilityTariff(w: World, p: Property) {
 }
 export function laborMarket(w: World, p: Property) {
   const region = regionFor(p.coordinates, p.city),
-    cfg = w.season.config.parameters;
-  const qualifiedShare = w.season.config.qualification[p.category];
-  const population = w.season.config.population[region.id];
-  const pool = Math.round(
-    population *
-      cfg.workingAgeShare *
-      cfg.participation *
-      cfg.unemployment *
-      cfg.playableLaborShare *
-      qualifiedShare,
-  );
-  const employed = w.establishments
-    .filter(
-      (e) =>
-        regionFor(w.properties.find((x) => x.id === e.propertyId)!.coordinates).id === region.id,
-    )
-    .reduce((n, e) => n + e.employees, 0);
-  const available = Math.max(0, pool - employed),
-    pressure = pool ? Math.min(1, employed / pool) : 1;
+    cfg = w.season.config;
+  const factor = cfg.competition.stateFactors[p.state] ?? 1,
+    index = w.stateWages?.[p.state]?.index ?? 1;
   const monthlySalary = Math.round(
-    Math.max(cfg.minimumWage, w.season.config.salaries[p.category] * (1 + pressure * 0.15)),
+    Math.max(cfg.parameters.minimumWage, cfg.salaries[p.category] * factor * index),
   );
   return {
     region,
-    population,
-    pool,
-    employed,
-    available,
-    qualifiedShare,
-    pressure,
+    state: p.state,
+    factor,
+    index,
     monthlySalary,
-    label: available >= 100 ? 'Ampla' : available >= 30 ? 'Moderada' : 'Restrita',
-    formula: `população × ${cfg.workingAgeShare * 100}% em idade ativa × ${cfg.participation * 100}% participação × ${cfg.unemployment * 100}% disponíveis × ${cfg.playableLaborShare * 100}% mercado jogável × qualificação − empregos do mundo`,
+    label: 'Contratação disponível',
+    formula:
+      'salário da atividade × multiplicador estadual × índice salarial interno; contratação sem limite regional',
   };
 }
 export function operatingCosts(w: World, e: Establishment) {
@@ -139,19 +122,7 @@ export function householdDemand(w: World, regionId: string, product: ProductId) 
   );
 }
 function activeRecipe(w: World, e: Establishment) {
-  return w.season.config.recipes.find(
-    (r) =>
-      r.id ===
-      (e.category === 'industry'
-        ? /óleo|oleo/i.test(e.name)
-          ? 'soy-oil'
-          : 'steel-bars'
-        : e.category === 'farm'
-          ? 'soy-harvest'
-          : e.category === 'mine'
-            ? 'iron-extraction'
-            : ''),
-  );
+  return w.season.config.recipes.find((r) => r.id === e.specialization);
 }
 export function marketView(w: World, product: ProductId, regionId = '', radiusKm = 120) {
   const region = regions.find((r) => r.id === regionId);
@@ -175,7 +146,8 @@ export function marketView(w: World, product: ProductId, regionId = '', radiusKm
         within(o.establishment) &&
         (o.establishment.inventory[product] ?? 0) > 0,
     )
-    .map((o) => ({ ...o, quantity: o.establishment.inventory[product] ?? 0 }));
+    .map((o) => ({ ...o, quantity: availableStock(w, o.establishment, product) }))
+    .filter((o) => o.quantity > 0);
   const stock = offers.reduce((n, o) => n + o.quantity, 0),
     price = stock ? Math.round(offers.reduce((n, o) => n + o.price * o.quantity, 0) / stock) : null;
   const retailers = w.establishments.filter(
@@ -199,7 +171,8 @@ export function marketView(w: World, product: ProductId, regionId = '', radiusKm
     .reduce((n, e) => {
       const r = activeRecipe(w, e);
       if (!r) return n;
-      const cycles = Math.min(24, 86400000 / TIME_SCALE / r.duration);
+      const cycles =
+        Math.min(24, 86400000 / TIME_SCALE / r.duration) * productionCapacity(w, e, r).lines;
       return n + (r.input[product] ?? 0) * cycles;
     }, 0);
   const demand = household + industrial;

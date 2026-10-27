@@ -98,6 +98,23 @@ export function Tabs({
           className={value === v ? 'active' : ''}
           key={v}
           onClick={() => onChange(v)}
+          tabIndex={value === v ? 0 : -1}
+          onKeyDown={(event) => {
+            if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+            event.preventDefault();
+            const i = values.indexOf(v),
+              next =
+                event.key === 'Home'
+                  ? 0
+                  : event.key === 'End'
+                    ? values.length - 1
+                    : (i + (event.key === 'ArrowRight' ? 1 : -1) + values.length) % values.length;
+            onChange(values[next]);
+            (
+              event.currentTarget.parentElement?.querySelectorAll('button')[next] as
+                HTMLButtonElement | undefined
+            )?.focus();
+          }}
         >
           {v}
         </button>

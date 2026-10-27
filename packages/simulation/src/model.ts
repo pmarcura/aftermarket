@@ -7,6 +7,10 @@ export interface Company {
   name: string;
   bot: boolean;
   balance: number;
+  lastExpansionAt?: number;
+  homeState?: string;
+  behaviorVersion?: number;
+  strategy?: 'regional' | 'quality' | 'value';
 }
 export interface Property {
   id: string;
@@ -42,6 +46,14 @@ export interface Establishment {
   reserve?: number;
   automation?: boolean;
   automationDailyBudget?: number;
+  quality?: Partial<Record<ProductId, number>>;
+  specialization?: string;
+  automationCycles?: number;
+  automationStatus?: string;
+  supplyPolicy?: SupplyPolicy;
+  supplyStatus?: string;
+  supplyReorder?: ProductId[];
+  education?: number;
 }
 export interface Offer {
   id: string;
@@ -80,6 +92,10 @@ export interface Shipment {
   pickupAt?: number;
   roadDepartureAt?: number;
   roadArrivalAt?: number;
+  quality?: number;
+  orderId?: string;
+  infrastructureId?: string;
+  batchId?: string;
 }
 export interface Job {
   id: string;
@@ -92,6 +108,8 @@ export interface Job {
   cost: number;
   output?: Partial<Record<ProductId, number>>;
   outputCosts?: Partial<Record<ProductId, number>>;
+  quality?: number;
+  lines?: number;
   charges?: {
     processing: number;
     energy: number;
@@ -119,7 +137,9 @@ export interface Entry {
     | 'water'
     | 'payroll'
     | 'maintenance'
-    | 'budget';
+    | 'budget'
+    | 'education';
+  // educação tem pagamento próprio no extrato
   product?: ProductId;
   quantity?: number;
   unitPrice?: number;
@@ -155,6 +175,78 @@ export interface World {
   economyStartedAt: number;
   currency: 'BRL';
   season: { id: string; name: string; startedAt: number; config: SeasonConfig };
+  operationsVersion: number;
+  competitionVersion?: number;
+  stateWages?: Record<
+    string,
+    { index: number; updatedAt: number; history: { at: number; index: number }[] }
+  >;
+  training?: Training[];
+  botActivity?: { at: number; companyId: string; text: string; kind: string }[];
+  supplyHistory?: {
+    at: number;
+    establishmentId: string;
+    product: ProductId;
+    quantity: number;
+    cost: number;
+    source: string;
+  }[];
+  orders: PurchaseOrder[];
+  infrastructure: InfrastructureContract[];
+  consumptionHistory: ConsumptionSample[];
+  consumedMaterials: Partial<Record<ProductId, number>>;
+}
+export interface PurchaseOrder {
+  supplyManaged?: boolean;
+  id: string;
+  buyerId: string;
+  sellerId: string;
+  originId: string;
+  destinationId: string;
+  product: ProductId;
+  quantity: number;
+  unitPrice: number;
+  carrierId: string;
+  maxFreight: number;
+  createdAt: number;
+  deadline: number;
+  status: 'pending' | 'accepted' | 'delivered' | 'rejected' | 'expired';
+  proposals?: OrderProposal[];
+  acceptedProposalId?: string;
+}
+export interface InfrastructureContract {
+  id: string;
+  title: string;
+  destinationId: string;
+  product: ProductId;
+  state?: string;
+  municipality?: string;
+  treasuryId?: string;
+  referencePrice?: number;
+  biddingEndsAt?: number;
+  bids?: InfrastructureBid[];
+  program?: string;
+  quantity: number;
+  unitPrice: number;
+  minQuality: number;
+  maxFreight: number;
+  reserved: number;
+  createdAt: number;
+  deadline: number;
+  status: 'open' | 'delivering' | 'completed' | 'expired';
+  supplierId?: string;
+  originId?: string;
+  deliveredQuantity: number;
+  paid?: number;
+}
+export interface ConsumptionSample {
+  at: number;
+  establishmentId: string;
+  product: ProductId;
+  desired: number;
+  sold: number;
+  weekday: number;
+  quality: number;
 }
 export interface Route {
   coordinates: Position[];
@@ -178,6 +270,72 @@ export type Command =
   | { type: 'publishOffer'; establishmentId: string; product: ProductId; price: number }
   | { type: 'toggleOperation'; establishmentId: string }
   | { type: 'setAutomation'; establishmentId: string; enabled: boolean }
+  | {
+      type: 'configureProduction';
+      establishmentId: string;
+      recipeId: string;
+      cycles: number;
+      dailyBudget: number;
+      enabled: boolean;
+    }
+  | { type: 'setWorkforce'; establishmentId: string; employees: number }
+  | {
+      type: 'requestOrder';
+      offerId: string;
+      destinationId: string;
+      quantity: number;
+      carrierId: string;
+      maxFreight: number;
+      deliveryDays: number;
+      expectedUnitPrice?: number;
+    }
+  | { type: 'acceptOrder'; orderId: string }
+  | { type: 'rejectOrder'; orderId: string }
+  | {
+      type: 'fulfillInfrastructure';
+      contractId: string;
+      establishmentId: string;
+      carrierId: string;
+      expectedFreight: number;
+    }
+  | { type: 'configureSupply'; establishmentId: string; policy: SupplyPolicy }
+  | {
+      type: 'transferStock';
+      originId: string;
+      destinationId: string;
+      product: ProductId;
+      quantity: number;
+      carrierId: string;
+      expectedFreight?: number;
+    }
+  | {
+      type: 'createPurchaseRequest';
+      destinationId: string;
+      product: ProductId;
+      quantity: number;
+      unitPrice: number;
+      maxFreight: number;
+      deliveryDays: number;
+    }
+  | {
+      type: 'proposeOrder';
+      orderId: string;
+      establishmentId?: string;
+      unitPrice: number;
+      quantity: number;
+      maxFreight: number;
+      deliveryDays: number;
+      carrierId: string;
+    }
+  | { type: 'acceptProposal'; orderId: string; proposalId: string }
+  | {
+      type: 'bidInfrastructure';
+      contractId: string;
+      establishmentId: string;
+      carrierId: string;
+      unitPrice: number;
+    }
+  | { type: 'trainWorkforce'; establishmentId: string }
   | { type: 'buyVehicle' };
 export interface Recipe {
   id: string;
@@ -339,3 +497,57 @@ export const categoryInfo: Record<Category, { label: string; color: string }> = 
   logistics: { label: 'Logística', color: '#5c9bc4' },
 };
 import type { SeasonConfig } from './calibration';
+
+export interface SupplyRule {
+  product: ProductId;
+  minimum: number;
+  target: number;
+  maxBuy: number;
+  maxPrice: number;
+}
+export interface SupplyPolicy {
+  enabled: boolean;
+  dailyBudget: number;
+  cashReserve: number;
+  source: 'internal-first' | 'internal-only' | 'market';
+  purchaseMode: 'immediate' | 'request';
+  maxDistanceKm: number;
+  minQuality: number;
+  maxFreightPerUnit: number;
+  carrierId: string;
+  rules: SupplyRule[];
+}
+export interface OrderProposal {
+  id: string;
+  proposedBy: string;
+  sellerId: string;
+  originId: string;
+  unitPrice: number;
+  quantity: number;
+  maxFreight: number;
+  deadline: number;
+  carrierId: string;
+  createdAt: number;
+}
+export interface InfrastructureBid {
+  id: string;
+  supplierId: string;
+  originId: string;
+  carrierId: string;
+  unitPrice: number;
+  quality: number;
+  deliveryMs: number;
+  freight: number;
+  score: number;
+  createdAt: number;
+  status: 'valid' | 'won' | 'lost' | 'invalid';
+  reason?: string;
+}
+export interface Training {
+  id: string;
+  establishmentId: string;
+  cost: number;
+  targetLevel: number;
+  finishesAt: number;
+  completed: boolean;
+}

@@ -2,6 +2,8 @@ import type { World, Property, Establishment, Category, Position } from './model
 import { ECONOMIC_INTERVAL, products, recipes, type ProductId } from './model';
 import { createSeasonConfig } from './calibration';
 import { operatingCosts, recordMarket } from './metrics';
+import { initializeOperations } from './operations';
+import { initializeCompetition } from './competition';
 
 export function createWorld(now = Date.now()): World {
   const properties: Property[] = [];
@@ -235,6 +237,11 @@ export function createWorld(now = Date.now()): World {
       });
   }
   const world: World = {
+    operationsVersion: 1,
+    orders: [],
+    infrastructure: [],
+    consumptionHistory: [],
+    consumedMaterials: {},
     version: 2,
     revision: 0,
     createdAt: now,
@@ -292,6 +299,7 @@ export function createWorld(now = Date.now()): World {
       ),
     },
   };
+  initializeOperations(world);
   for (const p of world.properties) {
     p.energyConnected = true;
     if (!p.ownerId) calibrateProperty(p);
@@ -306,6 +314,7 @@ export function createWorld(now = Date.now()): World {
       establishment.prices[id] = products[id].basePrice;
     establishment.dailyCost = operatingCosts(world, establishment).total;
   }
+  initializeCompetition(world, now);
   recordMarket(world, now);
   return world;
 }

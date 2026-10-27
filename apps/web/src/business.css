@@ -1,0 +1,322 @@
+.block {
+  display: block;
+}
+.business-section {
+  min-width: 0;
+}
+.business-section h3 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.business-section .section-title {
+  gap: 16px;
+  align-items: flex-start;
+}
+.business-section .section-title > div {
+  min-width: 0;
+}
+.business-section .section-title p {
+  margin-top: 5px;
+}
+.business-section > .panel-content + .table-scroll {
+  margin-top: 0;
+}
+.business-two-col {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 28px;
+  margin: 18px 0;
+}
+.business-two-col > div {
+  min-width: 0;
+}
+.business-two-col h3 {
+  margin-bottom: 12px;
+}
+.business-advice {
+  margin-top: 22px;
+  padding: 16px 18px;
+  border-left: 3px solid var(--gold);
+  background: #20343d;
+  border-radius: 0 6px 6px 0;
+}
+.business-advice strong {
+  color: var(--gold);
+}
+.business-advice p {
+  margin-top: 5px;
+  max-width: 80ch;
+  color: #bdd0d9;
+}
+.capacity-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 28px;
+  padding: 16px 18px;
+  background: var(--panel-deep);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  margin-bottom: 24px;
+}
+.capacity-banner > div {
+  display: grid;
+  gap: 5px;
+  flex: 1;
+  min-width: 180px;
+}
+.capacity-banner strong {
+  color: #b8ddeb;
+}
+.capacity-banner span {
+  color: var(--muted);
+  font-size: 11px;
+}
+.capacity-rule {
+  padding: 16px 18px;
+  margin: 18px 0;
+  background: var(--panel-deep);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+}
+.capacity-rule .section-title {
+  margin-bottom: 14px;
+}
+.cost-breakdown {
+  margin: 14px 0;
+}
+.cost-breakdown > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 7px;
+}
+.cost-track {
+  display: block;
+  height: 6px;
+  background: #304650;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.cost-track i {
+  display: block;
+  height: 100%;
+  background: var(--gold);
+  border-radius: inherit;
+}
+.weekday-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-height: 32px;
+}
+.weekday-row > span {
+  width: 60px;
+  color: var(--muted);
+}
+.weekday-row i {
+  height: 9px;
+  background: #4f8aa0;
+  border-radius: 2px;
+}
+.weekday-row.today i {
+  background: var(--gold);
+}
+.weekday-row strong {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.owner-card {
+  display: grid;
+  gap: 9px;
+  background: #213943;
+  padding: 17px 20px;
+  margin: 0 20px 18px;
+  border: 1px solid #456471;
+  border-radius: 7px;
+}
+.owner-card > span {
+  color: #b2c8d2;
+  font-size: 11px;
+}
+.owner-card > strong {
+  font-size: 17px;
+  line-height: 1.4;
+}
+.owner-card .badge-row {
+  flex-wrap: wrap;
+}
+.map-offer {
+  padding: 12px 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-bottom: 1px solid var(--line);
+}
+.map-offer > div {
+  display: grid;
+  gap: 4px;
+}
+.map-offer .secondary {
+  min-height: 34px;
+  padding: 6px 9px;
+}
+.infrastructure-market {
+  background: #1c3038;
+  border: 1px solid #596052;
+  border-radius: 8px;
+  margin-bottom: 22px;
+  overflow: hidden;
+}
+.infrastructure-market > summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 20px;
+  cursor: pointer;
+  color: #edce91;
+  font-weight: 600;
+  list-style: none;
+}
+.infrastructure-market > summary::before {
+  content: '+';
+  font-size: 18px;
+  width: 18px;
+}
+.infrastructure-market[open] > summary::before {
+  content: '−';
+}
+.infrastructure-market > summary > span:last-child:not(.badge) {
+  color: var(--muted);
+  font-weight: 400;
+  margin-left: auto;
+}
+.infrastructure-market[open] > summary {
+  border-bottom: 1px solid var(--line);
+}
+.treasury-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  background: #14272f;
+  border-bottom: 1px solid var(--line);
+}
+.treasury-strip > div {
+  display: grid;
+  gap: 8px;
+  padding: 18px 20px;
+}
+.treasury-strip span {
+  color: var(--muted);
+  font-size: 11px;
+}
+.treasury-strip strong {
+  color: #e4c890;
+  font-size: 19px;
+  font-variant-numeric: tabular-nums;
+}
+.truck-manifest {
+  margin: 14px 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.truck-manifest > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 11px 14px;
+  gap: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.truck-manifest > div:last-child {
+  border-bottom: 0;
+}
+.truck-manifest > div > span {
+  flex: 1;
+  color: var(--muted);
+}
+.truck-manifest strong {
+  font-variant-numeric: tabular-nums;
+}
+.truck-manifest small {
+  margin-left: auto;
+}
+.supplier-context {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  border-left: 3px solid var(--blue);
+  padding: 8px 15px;
+  margin-bottom: 18px;
+  background: var(--panel);
+}
+.data-details {
+  margin-top: 20px;
+  border-top: 1px solid var(--line);
+}
+.data-details > summary {
+  cursor: pointer;
+  padding: 14px 0;
+  color: var(--blue);
+}
+.page-body > .panel + .panel {
+  margin-top: 22px;
+}
+.businesses-grid + .panel {
+  margin-top: 24px;
+}
+.tabs {
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.tabs > button {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+summary:focus-visible {
+  outline: 2px solid #81c6e6;
+  outline-offset: -3px;
+}
+@media (max-width: 900px) {
+  .business-two-col {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+  .treasury-strip {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .treasury-strip > div {
+    padding: 13px 18px;
+  }
+  .treasury-strip strong {
+    font-size: 17px;
+  }
+  .capacity-banner {
+    align-items: flex-start;
+  }
+}
+@media (max-width: 600px) {
+  .owner-card {
+    margin: 0 15px 16px;
+    padding: 15px;
+  }
+  .capacity-rule {
+    padding: 14px;
+  }
+  .business-section .section-title {
+    flex-wrap: wrap;
+  }
+  .business-section .section-title > .select-wrap {
+    max-width: 100%;
+  }
+  .infrastructure-market > summary > span:last-child:not(.badge) {
+    margin-left: 28px;
+    width: 100%;
+  }
+}

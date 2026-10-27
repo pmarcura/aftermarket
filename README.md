@@ -2,7 +2,7 @@
 
 Simulador empresarial geográfico no Brasil. Explore oportunidades, adquira propriedades, compre insumos, contrate transporte e opere negócios conectados por uma economia persistente.
 
-**Entrega atual: versão jogável local 0.2.0.** Dez telas baseadas nas referências, cartografia real, servidor autoritativo local e persistência SQLite. O jogo ainda não é um MMO público: contas autenticadas, infraestrutura distribuída e várias regras do GDD estão nas próximas fases.
+**Entrega atual: versão jogável local 0.3.0.** Dez telas baseadas nas referências, cartografia real, servidor autoritativo local e persistência SQLite. O jogo ainda não é um MMO público: contas autenticadas, infraestrutura distribuída e várias regras do GDD estão nas próximas fases.
 
 ## Executar
 
@@ -37,8 +37,10 @@ Nesse modo, interface e API usam http://127.0.0.1:3001.
 3. Compare o custo completo. Continue para frete, escolha uma transportadora e confirme o pagamento.
 4. Em **Logística**, acompanhe a carga. O inventário só recebe o material depois da entrega.
 5. Em **Meus Negócios → Indústria de Aço → Produção**, adicione um ciclo. Ele consome 12 t de minério e 3 t de carvão para produzir 8 t de aço, com custo industrial e tempo de processamento.
-6. Consulte estoque, publique uma oferta e veja as movimentações em **Empresa**.
-7. Em **Configurações**, alterne entre João Silva e Marina Costa. As duas empresas veem a mesma titularidade e os mesmos estoques de mercado.
+6. Em **Estoque**, traga material de outra unidade ou publique ofertas. Em **Abastecimento**, configure mínimos/alvos e consulte a projeção antes de salvar.
+7. Em **Mercado**, abra **Pedidos e negociações**, **Contratos de infraestrutura** e **Concorrentes e movimento do mundo**. A logística reúne os caminhões de cada pedido.
+8. Em **Funcionários**, planeje folha e educação; a qualidade dos novos lotes melhora ao concluir o treinamento.
+9. Em **Configurações**, alterne entre João Silva e Marina Costa. As duas empresas veem a mesma titularidade e os mesmos estoques de mercado.
 
 O relógio do laboratório usa **120×**: um segundo real equivale a dois minutos do jogo. Um ciclo siderúrgico de uma hora do jogo leva 30 segundos reais. Custos e consumo são processados a cada duas horas do jogo. O botão de pausa impede novos ciclos; lotes já reservados terminam normalmente, e contratos fixos continuam sendo cobrados. Água e energia são pagas por consumo.
 
@@ -52,7 +54,7 @@ Consulte [fórmulas e regras](docs/product/ECONOMY.md) e [auditoria de design](d
 npm run balance:season -- --days=30
 ```
 
-Esse comando simula um cenário separado, conserva o dinheiro e grava relatório em `.runtime/balance`; nunca usa o banco do jogador. Para verificar uma migração do banco existente, pare seu servidor, faça `npm run world:backup` e execute `npm run world:upgrade`. A atualização mantém saldos, estoques, titularidade e recibos; cria outro backup antes de converter.
+Esse comando simula um cenário separado, conserva o dinheiro e grava relatório em `.runtime/balance`; nunca usa o banco do jogador. Para verificar uma migração do banco existente, pare seu servidor, faça `npm run world:backup` e execute `npm run world:upgrade`. A atualização mantém saldos humanos, estoques, titularidade, frota, recibos e prazos; cria outro backup antes de converter. O capital dos novos bots vem dos consumidores existentes, com lançamento, sem emissão. A atualização de regras não cobra ticks econômicos vencidos retroativamente.
 
 ## Estrutura e fontes de verdade
 
@@ -90,6 +92,6 @@ Os testes de navegador usam Edge instalado. Em outro sistema, instale Chromium c
 
 ## Limites desta versão
 
-Bots compram, transportam, produzem e ajustam ofertas com recursos finitos e regras comuns. Lojas oferecem reposição automática com orçamento. Oportunidades apresenta preços/estoque/negócios internos e demanda modelada, com mapa, filtros vazios e análise simples/avançada. Fretes humanos, aluguel, contratos recorrentes, planejamento completo e validação territorial nacional continuam planejados. As cadeias ainda não sustentam todos os itens por uma temporada inteira. A API só escuta o computador local; os perfis sem senha existem para testar concorrência entre empresas.
+Bots compram, transportam, produzem e ajustam ofertas com recursos finitos e regras comuns. Lojas e produtores têm abastecimento configurável, transferências próprias e educação da equipe. Trinta novos bots negociam pedidos e disputam contratos municipais financiados por tesouros estaduais. Oportunidades apresenta preços/estoque/negócios internos e demanda modelada, com mapa, filtros vazios e análise simples/avançada. Fretes humanos, aluguel, contratos recorrentes, planejamento completo e validação territorial nacional continuam planejados. A simulação de 30 dias termina com oferta nos dez itens e conserva dinheiro, mas duas das 30 novas empresas pausam por falta de caixa; recuperação e manipulação de referência pública continuam em aberto. A API só escuta o computador local; os perfis sem senha existem para testar concorrência entre empresas.
 
 O repositório Git é local, na branch `main`. Histórico substitui cópias `old`, `backup`, `final2` ou projetos paralelos. Dependências estão fixadas no `package-lock.json`.

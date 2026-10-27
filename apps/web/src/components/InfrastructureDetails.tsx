@@ -34,17 +34,18 @@ export function InfrastructureDetails({
           <Rows
             rows={[
               { label: 'Mercado de referência', value: labor.region.name },
-              { label: 'Base populacional do cenário', value: num(labor.population) },
-              { label: 'Trabalhadores elegíveis no jogo', value: num(labor.pool) },
-              { label: 'Empregos em operações próximas', value: num(labor.employed) },
-              { label: 'Candidatos disponíveis', value: num(labor.available) },
+              { label: 'Estado', value: labor.state },
+              { label: 'Contratação', value: 'Disponível em qualquer praça' },
+              { label: 'Multiplicador estadual', value: `${num(labor.factor, 2)}×` },
+              { label: 'Índice salarial da temporada', value: `${num(labor.index, 3)}×` },
               { label: 'Salário-base estimado / mês', value: cr(labor.monthlySalary) },
             ]}
           />
           <p className="formula-note">{labor.formula}</p>
           <p className="small muted">
-            Qualificação da atividade: {num(labor.qualifiedShare * 100)}%. O cenário representa uma
-            fração da população. Este cálculo não estima o desemprego real do município.
+            A contratação depende do pagamento. O salário varia por atividade e estado; o índice
+            evolui semanalmente com os pagamentos internos. Educação melhora a qualidade dos novos
+            produtos.
           </p>
         </section>
         <section>

@@ -4,6 +4,7 @@ import { useGame, CategoryIcon, cr, num } from '../lib/game';
 import { PageHeading, Panel, Stat, Badge, Select, Rows, Empty } from '../components/ui';
 import { WorldMap } from '../components/WorldMap';
 import { categoryInfo } from '../../../../packages/simulation/src/model';
+import { Orders } from '../features/business/Orders';
 
 export function BusinessesPage() {
   const { world, actor, navigate, openBusiness } = useGame();
@@ -201,6 +202,9 @@ export function BusinessesPage() {
             </div>
           </Panel>
         </div>
+        <Panel title="Central de pedidos" subtitle="Compras e vendas de todas as suas unidades">
+          <Orders />
+        </Panel>
       </div>
     </>
   );

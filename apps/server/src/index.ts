@@ -27,7 +27,81 @@ const allowedOrigins = new Set([
 const product = z.enum(Object.keys(products) as [ProductId, ...ProductId[]]);
 const id = z.string().min(1).max(100),
   amount = z.number().int().positive();
+const supplyPolicy = z
+  .object({
+    enabled: z.boolean(),
+    dailyBudget: amount.max(1e9),
+    cashReserve: z.number().int().min(0).max(1e9),
+    source: z.enum(['internal-first', 'internal-only', 'market']),
+    purchaseMode: z.enum(['immediate', 'request']),
+    maxDistanceKm: z.number().min(1).max(6000),
+    minQuality: z.number().int().min(0).max(100),
+    maxFreightPerUnit: z.number().int().min(0).max(1e9),
+    carrierId: id,
+    rules: z
+      .array(
+        z
+          .object({
+            product,
+            minimum: z.number().int().min(0).max(1000000),
+            target: amount.max(1000000),
+            maxBuy: amount.max(1000000),
+            maxPrice: z.number().int().min(0).max(1e9),
+          })
+          .strict(),
+      )
+      .max(10),
+  })
+  .strict();
 const commandSchema = z.discriminatedUnion('type', [
+  z
+    .object({ type: z.literal('configureSupply'), establishmentId: id, policy: supplyPolicy })
+    .strict(),
+  z
+    .object({
+      type: z.literal('transferStock'),
+      originId: id,
+      destinationId: id,
+      product,
+      quantity: amount.max(1000000),
+      carrierId: id,
+      expectedFreight: amount.optional(),
+    })
+    .strict(),
+  z
+    .object({
+      type: z.literal('createPurchaseRequest'),
+      destinationId: id,
+      product,
+      quantity: amount.max(1000000),
+      unitPrice: amount.max(1e9),
+      maxFreight: amount.max(1e9),
+      deliveryDays: amount.max(14),
+    })
+    .strict(),
+  z
+    .object({
+      type: z.literal('proposeOrder'),
+      orderId: id,
+      establishmentId: id.optional(),
+      unitPrice: amount.max(1e9),
+      quantity: amount.max(1000000),
+      maxFreight: amount.max(1e9),
+      deliveryDays: amount.max(14),
+      carrierId: id,
+    })
+    .strict(),
+  z.object({ type: z.literal('acceptProposal'), orderId: id, proposalId: id }).strict(),
+  z
+    .object({
+      type: z.literal('bidInfrastructure'),
+      contractId: id,
+      establishmentId: id,
+      carrierId: id,
+      unitPrice: amount.max(1e9),
+    })
+    .strict(),
+  z.object({ type: z.literal('trainWorkforce'), establishmentId: id }).strict(),
   z
     .object({ type: z.literal('buyProperty'), propertyId: id, name: z.string().min(3).max(70) })
     .strict(),
@@ -71,6 +145,46 @@ const commandSchema = z.discriminatedUnion('type', [
     .object({ type: z.literal('setAutomation'), establishmentId: id, enabled: z.boolean() })
     .strict(),
   z.object({ type: z.literal('buyVehicle') }).strict(),
+  z
+    .object({
+      type: z.literal('setWorkforce'),
+      establishmentId: id,
+      employees: z.number().int().min(0).max(1000),
+    })
+    .strict(),
+  z
+    .object({
+      type: z.literal('configureProduction'),
+      establishmentId: id,
+      recipeId: id,
+      cycles: amount.max(100),
+      dailyBudget: amount.max(1000000000),
+      enabled: z.boolean(),
+    })
+    .strict(),
+  z
+    .object({
+      type: z.literal('requestOrder'),
+      offerId: id,
+      destinationId: id,
+      quantity: amount.max(1000000),
+      carrierId: id,
+      maxFreight: amount.max(1000000000),
+      deliveryDays: amount.max(14),
+      expectedUnitPrice: amount.optional(),
+    })
+    .strict(),
+  z.object({ type: z.literal('acceptOrder'), orderId: id }).strict(),
+  z.object({ type: z.literal('rejectOrder'), orderId: id }).strict(),
+  z
+    .object({
+      type: z.literal('fulfillInfrastructure'),
+      contractId: id,
+      establishmentId: id,
+      carrierId: id,
+      expectedFreight: amount,
+    })
+    .strict(),
 ]);
 app.use(express.json({ limit: '16kb' }));
 app.use('/api', (_req, res, next) => {
@@ -78,7 +192,7 @@ app.use('/api', (_req, res, next) => {
   next();
 });
 app.get('/api/health', (_req, res) =>
-  res.json({ ok: true, mode: 'local-development', version: '0.2.0' }),
+  res.json({ ok: true, mode: 'local-development', version: '0.3.0' }),
 );
 const worldView = (w: World) => ({ ...w, marketHistory: w.marketHistory.slice(-220) });
 app.get('/api/world', (_req, res) => res.json(worldView(store.tick())));

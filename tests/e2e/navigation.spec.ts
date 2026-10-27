@@ -43,7 +43,9 @@ test('as dez telas carregam, navegam e mantêm o estado do mundo', async ({ page
     .filter({ hasText: 'Loja Campinas' })
     .getByRole('button', { name: 'Gerenciar' })
     .click();
-  await expect(page.getByRole('heading', { name: 'Loja Campinas', exact: true })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Loja Campinas', exact: true, level: 1 }),
+  ).toBeVisible();
   await page.getByRole('navigation').getByRole('button', { name: 'Mercado', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Mercado de mercadorias' })).toBeVisible();
   await page.screenshot({ path: 'test-results/mercado-desktop.png', fullPage: true });

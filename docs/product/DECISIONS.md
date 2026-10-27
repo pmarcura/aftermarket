@@ -37,3 +37,19 @@ Filtros abrem vazios. Contexto de reposição só preenche produto/destino quand
 ### D-017 · Custos e movimento com consequência
 
 Água/energia são consumidas e pagas, folha volta aos consumidores e manutenção permanece ao pausar. Mão de obra e logística expõem componentes. O caminhão interpola a geometria contratada pelo tempo salvo; a chegada visual aguarda confirmação autoritativa. Coprodutos conservam o custo agregado. A simulação de 30 dias denuncia rupturas e não as esconde com estoque infinito. Ver `GAME-DESIGN-AUDIT.md`.
+
+### D-018 · Contratação e formação por estado
+
+A pedido do usuário, substitui-se o pool regional por contratação disponível em todas as praças. Salário por atividade × multiplicador estadual × índice interno semanal. Formação paga é média da equipe, diluída ao contratar; melhora apenas novos lotes. Não usar desemprego externo durante uma season.
+
+### D-019 · Editais estaduais com recebimento municipal
+
+Cada UF mantém saldo/reservas e paga projetos no piloto. O teto por unidade é referência interna +25%, salvo no edital; nunca uma fração alta do tesouro. Janela competitiva, pontuação de qualidade/preço/prazo/frete e revalidação no fechamento. Prefeituras são pontos virtuais de entrega. Contratos anteriores conservam os termos. Sem fornecedor válido, não há gasto.
+
+### D-020 · Pedidos e abastecimento com execução física
+
+Necessidades abertas e propostas usam os mesmos comandos para humanos e bots. Aceitação pela contraparte contrata o transporte; estoque/caixa são revalidados. Política automática por unidade controla origem interna, qualidade, preço, frete, orçamento e caixa protegido. Projeção indica hipóteses e chegada efetiva. Transferência própria não gera venda nem exige operação produtiva ativa. Todos os caminhões pertencem ao mesmo pedido logístico.
+
+### D-021 · Concorrência finita e atualização aditiva
+
+Adicionados 30 bots, financiados por transferência do orçamento existente dos consumidores. Estoque/instalação/frota iniciais são finitos e pagos. Registro de capacidades e teste de cobertura por receita obrigam manutenção explícita do comportamento. Migração com backup conserva patrimônio humano, estoques, históricos e contratos; ticks vencidos da manutenção não recebem regras novas retroativamente. Não há consulta econômica externa nem resgate monetário invisível.

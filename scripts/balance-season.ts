@@ -4,6 +4,7 @@ import { createWorld } from '../packages/simulation/src/seed';
 import { advance } from '../packages/simulation/src/engine';
 import { products, TIME_SCALE, type ProductId } from '../packages/simulation/src/model';
 import { marketView } from '../packages/simulation/src/metrics';
+import { treasuryReserved } from '../packages/simulation/src/operations';
 
 const days = Number(process.argv.find((a) => a.startsWith('--days='))?.split('=')[1] ?? 30);
 if (!Number.isInteger(days) || days < 1 || days > 365)
@@ -24,7 +25,25 @@ for (let day = 0; day <= days; day++) {
   output.push({
     day,
     money,
-    totalTreasury: world.companies.find((c) => c.id === 'treasury')!.balance,
+    totalTreasury: world.companies
+      .filter((c) => c.id === 'treasury' || c.id.startsWith('treasury:'))
+      .reduce((n, c) => n + c.balance, 0),
+    reservedTreasury: treasuryReserved(world),
+    infrastructureCompleted: world.infrastructure.filter((c) => c.status === 'completed').length,
+    infrastructureSpent: world.infrastructure.reduce((n, c) => n + (c.paid ?? 0), 0),
+    consumedSteel: world.consumedMaterials.steel ?? 0,
+    rivalsActive: world.companies.filter(
+      (c) =>
+        c.id.startsWith('rival-') &&
+        world.establishments.some((e) => e.companyId === c.id && e.enabled),
+    ).length,
+    rivalBalances: world.companies
+      .filter((c) => c.id.startsWith('rival-'))
+      .map((c) => ({ id: c.id, balance: c.balance })),
+    pendingOrders: world.orders.filter((o) => o.status === 'pending').length,
+    expansions: world.establishments.filter(
+      (e) => e.id.startsWith('e-') && !e.id.startsWith('e-public'),
+    ).length,
     consumers: world.companies.find((c) => c.id === 'consumers')!.balance,
     paused: world.establishments.filter((e) => !e.enabled).map((e) => e.id),
     shipments: world.shipments.length,
@@ -51,7 +70,10 @@ const report = {
   config: world.season.config,
   observations: output,
 };
-const path = resolve('.runtime/balance', `season-${world.season.config.version}-${days}d.json`);
+const path = resolve(
+  '.runtime/balance',
+  `season-${world.season.config.version}-${days}d-operations.json`,
+);
 mkdirSync(resolve('.runtime/balance'), { recursive: true });
 writeFileSync(path, JSON.stringify(report, null, 2));
 const last = output.at(-1)!;
@@ -67,6 +89,12 @@ console.log(
       completedJobs: world.jobs.filter((j) => j.completed).length,
       consumerBalance: last.consumers,
       treasuryBalance: last.totalTreasury,
+      treasuryReserved: last.reservedTreasury,
+      infrastructureCompleted: last.infrastructureCompleted,
+      infrastructureSpent: last.infrastructureSpent,
+      consumedSteel: last.consumedSteel,
+      pendingOrders: last.pendingOrders,
+      rivalsActive: last.rivalsActive,
     },
     null,
     2,

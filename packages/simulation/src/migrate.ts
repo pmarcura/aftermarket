@@ -2,10 +2,17 @@ import { createSeasonConfig } from './calibration';
 import { products, recipes, ECONOMIC_INTERVAL, type World, type ProductId } from './model';
 import { calibrateProperty } from './seed';
 import { operatingCosts, recordMarket } from './metrics';
+import { initializeOperations } from './operations';
+import { initializeCompetition } from './competition';
 
 export function needsMigration(input: unknown) {
   const w = input as World;
   return (
+    w.operationsVersion !== 3 ||
+    w.competitionVersion !== 1 ||
+    !w.orders ||
+    !w.infrastructure ||
+    !w.season?.config?.operations ||
     w.version !== 2 ||
     !w.season?.config?.recipes ||
     !w.season.config.population ||
@@ -25,6 +32,11 @@ export function migrateWorld(input: unknown, now = Date.now()): { world: World; 
     cfg.recipes ??= defaults.recipes;
     cfg.population ??= defaults.population;
     cfg.qualification ??= defaults.qualification;
+    initializeOperations(w);
+    initializeCompetition(w, now);
+    // Atualização de regras não deve cobrar retroativamente manutenção/automação nova.
+    // Entregas, lotes e treinamentos mantêm seus horários e são liquidados normalmente.
+    w.nextEconomicAt = Math.max(w.nextEconomicAt, now);
     w.revision++;
     w.updatedAt = now;
     return { world: w, changed: true };
@@ -90,6 +102,8 @@ export function migrateWorld(input: unknown, now = Date.now()): { world: World; 
       );
   w.revision++;
   w.updatedAt = now;
+  initializeOperations(w);
+  initializeCompetition(w, now);
   recordMarket(w, now);
   return { world: w, changed: true };
 }

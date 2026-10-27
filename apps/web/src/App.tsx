@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { GameProvider, useGame, cr, type Page } from './lib/game';
 import { Modal, Badge, Rows } from './components/ui';
+import './business.css';
 import { regions } from '../../../packages/world/src/regions';
 import { products, type Position } from '../../../packages/simulation/src/model';
 const MapPage = lazy(() => import('./pages/MapPage').then((m) => ({ default: m.MapPage })));

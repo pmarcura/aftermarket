@@ -48,6 +48,7 @@ export type Page =
   | 'retail'
   | 'carrier';
 export interface MarketIntent {
+  supplierId?: string;
   product?: ProductId;
   destinationId?: string;
   offerId?: string;
@@ -89,7 +90,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
     (localStorage.getItem('aftermarket.page') as Page) || 'map',
   );
   const [selectedId, select] = useState<string | null>('hortolandia');
-  const [businessId, setBusinessId] = useState('e-industry');
+  const [businessId, setBusinessId] = useState(
+    () => localStorage.getItem('aftermarket.business') ?? 'e-industry',
+  );
   const [focus, setFocus] = useState<[number, number]>();
   const consumeFocus = useCallback(() => setFocus(undefined), []);
   const [intent, setIntent] = useState<MarketIntent>({});
@@ -197,7 +200,15 @@ export function GameProvider({ children }: { children: ReactNode }) {
         openBusiness: (id) => {
           const e = world.establishments.find((x) => x.id === id);
           if (!e) return;
+          if (e.companyId !== actor) {
+            const property = world.properties.find((p) => p.id === e.propertyId)!;
+            setFocus([...property.coordinates]);
+            select(property.id);
+            navigate('map');
+            return;
+          }
           setBusinessId(id);
+          localStorage.setItem('aftermarket.business', id);
           navigate(
             e.category === 'retail'
               ? 'retail'

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, Search, ArrowRight, Pause, Play, Box, Settings2, Tag } from 'lucide-react';
+import { Plus, Search, ArrowRight, Pause, Play, Box, Settings2 } from 'lucide-react';
 import { useGame, CategoryIcon, cr, num } from '../lib/game';
 import {
   Badge,
@@ -21,6 +21,16 @@ import {
   seasonPrice,
 } from '../../../../packages/simulation/src/metrics';
 import { InfrastructureDetails } from '../components/InfrastructureDetails';
+import { SupplyPlanner } from '../features/business/SupplyPlanner';
+import { Stock } from '../features/business/Stock';
+import { SalesCatalog } from '../features/business/SalesCatalog';
+import { Workforce } from '../features/business/Workforce';
+import { Orders } from '../features/business/Orders';
+import { BusinessFinance } from '../features/business/Analytics';
+import {
+  productionCapacity,
+  productionQuality,
+} from '../../../../packages/simulation/src/operations';
 
 export function OperationPage() {
   const now = useClock();
@@ -35,10 +45,16 @@ export function OperationPage() {
     [offerProduct, setOfferProduct] = useState<ProductId>(),
     [price, setPrice] = useState(0);
   const [showCosts, setShowCosts] = useState(false);
+  const [auto, setAuto] = useState(false),
+    [autoCycles, setAutoCycles] = useState('1'),
+    [budget, setBudget] = useState('10000');
   const options = world.season.config.recipes.filter((r) => r.category === e?.category),
     recipe = options.find((r) => r.id === recipeId) ?? options[0];
   useEffect(() => {
     setTab(e?.category === 'warehouse' ? 'Estoque' : 'Produção');
+    if (e?.specialization) setRecipe(e.specialization);
+    setAutoCycles(String(e?.automationCycles ?? 1));
+    setBudget(String((e?.automationDailyBudget ?? 1000000) / 100));
   }, [e?.id]);
   if (!e)
     return (
@@ -58,12 +74,8 @@ export function OperationPage() {
   const producers = world.establishments.filter(
     (x) => x.companyId === actor && x.category !== 'retail' && x.category !== 'logistics',
   );
-  const entries = world.ledger
-    .filter((x) => x.establishmentId === e.id)
-    .slice(-20)
-    .reverse();
-  const stock = Object.entries(e.inventory) as [ProductId, number][];
   const charges = recipe ? productionCharges(world, e, recipe.id, cycles) : null;
+  const line = recipe ? productionCapacity(world, e, recipe, cycles) : null;
   const daily = operatingCosts(world, e);
   const sell = (product: ProductId) => {
     setOfferProduct(product);
@@ -135,14 +147,43 @@ export function OperationPage() {
           <Tabs
             values={
               e.category === 'warehouse'
-                ? ['Estoque', 'Vendas', 'Funcionários']
-                : ['Produção', 'Insumos', 'Estoque', 'Vendas', 'Funcionários']
+                ? ['Estoque', 'Abastecimento', 'Vendas', 'Pedidos', 'Finanças', 'Funcionários']
+                : [
+                    'Produção',
+                    'Insumos',
+                    'Estoque',
+                    'Abastecimento',
+                    'Vendas',
+                    'Pedidos',
+                    'Finanças',
+                    'Funcionários',
+                  ]
             }
             value={tab}
             onChange={setTab}
           />
+          {tab === 'Abastecimento' && <SupplyPlanner key={e.id} establishment={e} />}
           {tab === 'Produção' && recipe && (
             <div className="panel-content production-content">
+              {line && (
+                <div className="capacity-banner">
+                  <div>
+                    <strong>{line.lines} linhas produtivas</strong>
+                    <span>
+                      {e.employees} funcionários · {num(p.area)} m²
+                    </span>
+                  </div>
+                  <div>
+                    <strong>
+                      {line.workers} pessoas + {num(line.areaM2)} m²
+                    </strong>
+                    <span>por linha · {line.bottleneck.toLowerCase()}</span>
+                  </div>
+                  <button className="text-button" onClick={() => setTab('Funcionários')}>
+                    Ver régua e ajustar equipe
+                  </button>
+                </div>
+              )}
               <div className="section-title">
                 <h3>Receita ativa</h3>
                 <Select
@@ -190,7 +231,7 @@ export function OperationPage() {
                     <Box size={28} />
                   </i>
                   <h3>{recipe.name}</h3>
-                  <p>Saída estimada</p>
+                  <p>Saída por ciclo · qualidade {productionQuality(world, e, recipe)}/100</p>
                   <strong>
                     {Object.entries(recipe.output)
                       .map(([id, q]) => `${q} ${products[id as ProductId].unit}`)
@@ -246,8 +287,9 @@ export function OperationPage() {
                 />
               )}
               <div className="operation-bottom">
-                <button className="secondary" onClick={() => setQueue(true)} disabled={!e.enabled}>
-                  <Settings2 size={16} /> Configurar produção
+                <button className="secondary" onClick={() => setAuto(true)}>
+                  <Settings2 size={16} />{' '}
+                  {e.category === 'mine' ? 'Extração passiva' : 'Produção automática'}
                 </button>
                 <button
                   className="secondary"
@@ -265,133 +307,23 @@ export function OperationPage() {
                   {e.enabled ? 'Pausar novos ciclos' : 'Retomar operação'}
                 </button>
               </div>
-            </div>
-          )}
-          {(tab === 'Estoque' || tab === 'Insumos' || tab === 'Vendas') && (
-            <div>
-              <div className="panel-content section-title">
-                <h3>
-                  {tab === 'Vendas'
-                    ? 'Ofertas e produtos disponíveis'
-                    : tab === 'Insumos'
-                      ? 'Materiais no estabelecimento'
-                      : 'Estoque físico'}
-                </h3>
-                <button
-                  className="primary"
-                  onClick={() =>
-                    openMarket({
-                      product:
-                        e.category === 'farm' ? 'soy' : e.category === 'industry' ? 'iron' : 'coal',
-                      destinationId: e.id,
-                      quantity: 24,
-                    })
-                  }
-                >
-                  <Search size={15} /> Comprar insumos
-                </button>
+              <div className="business-advice">
+                <strong>{e.automation ? 'Automação ativada' : 'Produção manual'}</strong>
+                <p>
+                  {e.automation
+                    ? `${e.automationStatus ?? 'Aguardando a próxima rodada'} · limite ${cr(e.automationDailyBudget ?? 10000000)} / dia do jogo. Avaliação a cada rodada; lotes seguem mesmo com a página fechada.`
+                    : 'Ative a automação para iniciar lotes nas rodadas econômicas, respeitando equipe, área, insumos, reserva, espaço, caixa e orçamento diário.'}
+                </p>
               </div>
-              {stock.length ? (
-                <div className="table-scroll">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Produto</th>
-                        <th className="numeric">Quantidade</th>
-                        <th className="numeric">Massa</th>
-                        <th>Oferta de venda</th>
-                        <th aria-label="Ações" />
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {stock.map(([id, q]) => {
-                        const offer = world.offers.find(
-                          (o) => o.establishmentId === e.id && o.product === id,
-                        );
-                        return (
-                          <tr key={id}>
-                            <td>
-                              <div className="table-name">
-                                <i className="table-icon">
-                                  <Box size={16} />
-                                </i>
-                                <strong>{products[id].name}</strong>
-                              </div>
-                            </td>
-                            <td className="numeric">
-                              {num(q)} {products[id].unit}
-                            </td>
-                            <td className="numeric">{num(q * products[id].massT, 2)} t</td>
-                            <td>{offer ? cr(offer.price, 2) : 'Não anunciada'}</td>
-                            <td>
-                              <button
-                                className="secondary"
-                                disabled={q <= 0}
-                                onClick={() => sell(id)}
-                              >
-                                <Tag size={14} /> {offer ? 'Alterar oferta' : 'Anunciar'}
-                              </button>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <Empty
-                  title="Estoque vazio"
-                  description="Compre produtos no mercado ou inicie um ciclo produtivo com insumos disponíveis."
-                />
-              )}
-              {tab === 'Vendas' && (
-                <div className="panel-content">
-                  <h3>Movimentações recentes</h3>
-                  {entries.length ? (
-                    entries.map((entry) => (
-                      <div className="simple-entry" key={entry.id}>
-                        <span>{entry.description}</span>
-                        <strong className={entry.to === actor ? 'positive' : 'negative'}>
-                          {entry.to === actor ? '+' : '−'}
-                          {cr(entry.amount)}
-                        </strong>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="muted">Nenhuma transação registrada nesta unidade.</p>
-                  )}
-                </div>
-              )}
             </div>
           )}
-          {tab === 'Funcionários' && (
-            <div className="panel-content">
-              <h3>Equipe operacional</h3>
-              <Rows
-                rows={[
-                  { label: 'Funcionários contratados', value: e.employees },
-                  { label: 'Custo operacional / dia do jogo', value: cr(e.dailyCost) },
-                  { label: 'Estado da unidade', value: e.enabled ? 'Em operação' : 'Pausada' },
-                ]}
-              />
-              <p className="muted small">
-                Salários, serviços e manutenção estão agregados no custo diário deste cenário. A
-                cobrança é registrada a cada duas horas de jogo.
-              </p>
-              <button
-                className="secondary"
-                onClick={() =>
-                  void run(
-                    { type: 'toggleOperation', establishmentId: e.id },
-                    'Estado da operação atualizado.',
-                  )
-                }
-                disabled={pending}
-              >
-                {e.enabled ? 'Pausar operação' : 'Retomar operação'}
-              </button>
-            </div>
+          {(tab === 'Estoque' || tab === 'Insumos') && (
+            <Stock establishment={e} inputsOnly={tab === 'Insumos'} />
           )}
+          {tab === 'Vendas' && <SalesCatalog establishment={e} onEdit={sell} />}
+          {tab === 'Pedidos' && <Orders establishment={e} />}
+          {tab === 'Finanças' && <BusinessFinance establishment={e} />}
+          {tab === 'Funcionários' && <Workforce key={e.id} establishment={e} />}
         </Panel>
         <div className="right-stack">
           <Panel title="Indicadores operacionais">
@@ -486,6 +418,14 @@ export function OperationPage() {
           </label>
           <Rows
             rows={[
+              {
+                label: 'Capacidade disponível',
+                value: `${line!.lines} linhas · ${line!.workers} funcionários por linha`,
+              },
+              {
+                label: 'Qualidade esperada da saída',
+                value: `${productionQuality(world, e, recipe)}/100 · baseada nos insumos e no local`,
+              },
               ...Object.entries(recipe.input).map(([id, q]) => ({
                 label: products[id as ProductId].name,
                 value: `${num(q! * cycles)} ${products[id as ProductId].unit} necessários · ${num(e.inventory[id as ProductId] ?? 0)} em estoque`,
@@ -499,17 +439,20 @@ export function OperationPage() {
               { label: 'Pagamento total do lote', value: cr(charges!.total) },
               {
                 label: 'Processamento do lote (tempo real)',
-                value: `${num((recipe.duration * cycles) / 1000)} s`,
+                value: Number.isFinite(line!.durationMs)
+                  ? `${num(line!.durationMs / 1000)} s`
+                  : line!.bottleneck,
               },
             ]}
           />
           <p className="muted small">
             Os insumos saem do estoque agora e as saídas são recebidas quando cada lote for
-            concluído. A fila continua com a página fechada.
+            concluído. Os ciclos deste lote usam as linhas disponíveis em paralelo; novos lotes
+            aguardam a fila. A equipe permanece comprometida até terminar.
           </p>
           <button
             className="primary full"
-            disabled={pending || !e.enabled}
+            disabled={pending || !e.enabled || !line?.lines}
             onClick={async () => {
               if (
                 await run(
@@ -522,6 +465,99 @@ export function OperationPage() {
           >
             {pending ? 'Reservando…' : 'Confirmar produção'}
           </button>
+        </Modal>
+      )}
+      {auto && recipe && (
+        <Modal
+          title={
+            e.category === 'mine' ? 'Configurar extração passiva' : 'Configurar produção automática'
+          }
+          onClose={() => setAuto(false)}
+        >
+          <p>
+            <strong>{recipe.name}</strong> · {line?.lines ?? 0} linhas disponíveis. A receita
+            selecionada será a especialidade da automação.
+          </p>
+          <label className="field">
+            Ciclos por lote automático
+            <input
+              aria-label="Ciclos automáticos"
+              type="number"
+              min="1"
+              max="100"
+              value={autoCycles}
+              onChange={(event) => setAutoCycles(event.target.value)}
+            />
+          </label>
+          <label className="field">
+            Orçamento por dia do jogo (R$)
+            <input
+              aria-label="Orçamento diário de produção"
+              type="number"
+              min="0.01"
+              step="0.01"
+              value={budget}
+              onChange={(event) => setBudget(event.target.value)}
+            />
+          </label>
+          <p className="muted small">
+            O orçamento cobre processamento, energia e água dos novos lotes. Insumos podem ser
+            repostos pelas regras da aba Abastecimento. O orçamento de compra é separado. Folha e
+            manutenção são despesas fixas separadas. Ao faltar recurso, a automação aguarda sem
+            criar estoque nem dinheiro.
+          </p>
+          <button
+            className="primary full"
+            disabled={
+              pending ||
+              !Number.isInteger(Number(autoCycles)) ||
+              Number(autoCycles) < 1 ||
+              Number(autoCycles) > 100 ||
+              Number(budget) <= 0
+            }
+            onClick={async () => {
+              if (
+                await run(
+                  {
+                    type: 'configureProduction',
+                    establishmentId: e.id,
+                    recipeId: recipe.id,
+                    cycles: Number(autoCycles),
+                    dailyBudget: Math.round(Number(budget) * 100),
+                    enabled: true,
+                  },
+                  'Automação configurada com orçamento diário.',
+                )
+              )
+                setAuto(false);
+            }}
+          >
+            Salvar e ativar automação
+          </button>
+          {e.automation && (
+            <button
+              className="secondary full"
+              disabled={pending}
+              onClick={async () => {
+                if (
+                  await run(
+                    {
+                      type: 'configureProduction',
+                      establishmentId: e.id,
+                      recipeId: recipe.id,
+                      cycles: e.automationCycles ?? 1,
+                      dailyBudget: e.automationDailyBudget ?? 10000000,
+                      enabled: false,
+                    },
+                    'Automação desativada. Lotes em andamento serão concluídos.',
+                  )
+                )
+                  setAuto(false);
+              }}
+            >
+              Desativar automação
+            </button>
+          )}
         </Modal>
       )}
       {offerProduct && (

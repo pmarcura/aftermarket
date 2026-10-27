@@ -21,7 +21,8 @@ import {
 import { useGame, CategoryIcon, cr, num } from '../lib/game';
 import { WorldMap, defaultLayers, type Layers } from '../components/WorldMap';
 import { Badge, Panel, PageHeading, Rows, Modal } from '../components/ui';
-import { categoryInfo } from '../../../../packages/simulation/src/model';
+import { categoryInfo, products } from '../../../../packages/simulation/src/model';
+import { inventoryQuality, openingWorkers } from '../../../../packages/simulation/src/operations';
 import {
   laborMarket,
   logisticsQuality,
@@ -30,13 +31,16 @@ import {
 import { InfrastructureDetails } from '../components/InfrastructureDetails';
 
 export function MapPage() {
-  const { world, actor, selectedId, select, navigate, openBusiness, focusMap } = useGame();
+  const { world, actor, selectedId, select, navigate, openBusiness, openMarket, focusMap } =
+    useGame();
   const [layers, setLayers] = useState<Layers>(defaultLayers),
     [expanded, setExpanded] = useState(true);
   const [ownership, setOwnership] = useState<'' | 'mine' | 'others' | 'available'>(''),
     [details, setDetails] = useState(false);
   const p = world.properties.find((x) => x.id === selectedId),
     e = world.establishments.find((x) => x.propertyId === selectedId);
+  const owner = world.companies.find((c) => c.id === p?.ownerId);
+  const offers = world.offers.filter((o) => o.establishmentId === e?.id);
   const labor = p ? laborMarket(world, p) : null,
     logistics = p ? logisticsQuality(world, p) : null,
     tariff = p ? utilityTariff(world, p) : null;
@@ -147,6 +151,81 @@ export function MapPage() {
               <X size={20} />
             </button>
           </div>
+          <section className="owner-card" aria-label="Titularidade da empresa">
+            <span>{owner ? 'Proprietário da empresa' : 'Titularidade'}</span>
+            <strong>{owner?.name ?? 'Disponível para aquisição'}</strong>
+            {owner && (
+              <div className="badge-row">
+                <Badge
+                  tone={
+                    owner.id === actor ? 'green' : owner.id.startsWith('treasury') ? 'gold' : 'blue'
+                  }
+                >
+                  {owner.id === actor
+                    ? 'Sua empresa'
+                    : owner.id === 'treasury'
+                      ? 'Tesouro · institucional'
+                      : owner.bot
+                        ? 'BOT · empresa automatizada'
+                        : 'Empresa de jogador'}
+                </Badge>
+                {e && (
+                  <Badge tone={e.enabled ? 'green' : 'muted'}>
+                    {e.enabled ? 'Operação ativa' : 'Operação pausada'}
+                  </Badge>
+                )}
+              </div>
+            )}
+            {owner && (
+              <small>
+                {world.establishments.filter((x) => x.companyId === owner.id).length}{' '}
+                estabelecimentos · {world.vehicles.filter((v) => v.companyId === owner.id).length}{' '}
+                veículos cadastrados
+              </small>
+            )}
+          </section>
+          {e && (
+            <section className="sidebar-section">
+              <h3>Produtos e ofertas da unidade</h3>
+              {offers.length ? (
+                offers.map((o) => (
+                  <div className="map-offer" key={o.id}>
+                    <div>
+                      <strong>{products[o.product].name}</strong>
+                      <small>
+                        {num(e.inventory[o.product] ?? 0)} {products[o.product].unit} · qualidade{' '}
+                        {num(inventoryQuality(e, o.product))}/100
+                      </small>
+                    </div>
+                    <button
+                      className="secondary"
+                      disabled={!e.enabled || (e.inventory[o.product] ?? 0) <= 0}
+                      onClick={() =>
+                        owner?.id === actor
+                          ? openBusiness(e.id)
+                          : openMarket({ product: o.product, offerId: o.id, supplierId: e.id })
+                      }
+                    >
+                      {cr(o.price)} / {products[o.product].unit}
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <p className="small muted">
+                  Nenhuma oferta pública de venda.{' '}
+                  {owner?.id === actor
+                    ? 'Abra a gestão para anunciar o estoque.'
+                    : 'Consulte outras empresas no mercado.'}
+                </p>
+              )}
+              {owner?.id.startsWith('treasury') && (
+                <p className="small muted">
+                  O canteiro consome aço entregue por contratos de infraestrutura. Consulte as obras
+                  no mercado.
+                </p>
+              )}
+            </section>
+          )}
           <div className="coordinates">
             <MapPin size={13} />
             {p.coordinates[1].toFixed(4)}, {p.coordinates[0].toFixed(4)}
@@ -248,7 +327,7 @@ export function MapPage() {
                       <Users size={16} /> Mão de obra
                     </>
                   ),
-                  value: `${num(labor!.available)} candidatos`,
+                  value: `${cr(labor!.monthlySalary)} / mês`,
                   className: 'positive',
                 },
                 {
@@ -277,8 +356,8 @@ export function MapPage() {
               </button>
             ) : (
               e && (
-                <button className="primary full" onClick={() => navigate('market')}>
-                  <ShoppingCart size={17} /> Consultar mercado
+                <button className="primary full" onClick={() => openMarket({ supplierId: e.id })}>
+                  <ShoppingCart size={17} /> Consultar ofertas desta empresa
                 </button>
               )
             )}
@@ -375,12 +454,17 @@ export function PurchasePage() {
                   value: p.water ? `${cr(tariff.water)} / m³` : 'Sem abastecimento',
                 },
                 { label: 'Tipo de aquisição', value: 'Imóvel e instalação inicial' },
-                { label: 'Equipe de abertura', value: '12 contratos de trabalho' },
-                { label: 'Candidatos disponíveis no modelo', value: num(labor.available) },
+                {
+                  label: 'Equipe de abertura',
+                  value: `${openingWorkers(p.category)} contratos de trabalho`,
+                },
+                { label: 'Contratação', value: 'Disponível · salário por estado' },
                 {
                   label: 'Folha mensal de abertura + encargos',
                   value: cr(
-                    labor.monthlySalary * 12 * world.season.config.parameters.payrollBurden,
+                    labor.monthlySalary *
+                      openingWorkers(p.category) *
+                      world.season.config.parameters.payrollBurden,
                   ),
                 },
               ]}
@@ -406,7 +490,7 @@ export function PurchasePage() {
               </button>
               <button
                 className="primary"
-                disabled={Boolean(p.ownerId) || balance < p.price || labor.available < 12}
+                disabled={Boolean(p.ownerId) || balance < p.price}
                 onClick={() => {
                   setName(`${categoryInfo[p.category].label} ${p.city}`);
                   setConfirm(true);

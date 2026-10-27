@@ -43,6 +43,7 @@ export function WorldMap({
   onSelect,
   ownership = '',
   shipment,
+  shipments: shipmentGroup,
   economic,
   onRegionSelect,
 }: {
@@ -54,6 +55,7 @@ export function WorldMap({
   onSelect?: (id: string) => void;
   ownership?: '' | 'mine' | 'others' | 'available';
   shipment?: Shipment;
+  shipments?: Shipment[];
   economic?: {
     product?: ProductId;
     metric: 'price' | 'demand' | 'stock' | 'coverage';
@@ -334,23 +336,29 @@ export function WorldMap({
       if (framedRoute.current !== key) {
         const bounds = new maplibregl.LngLatBounds();
         lines.forEach((path) => path.forEach((p) => bounds.extend(p)));
-        m.fitBounds(bounds, { padding: mini ? 30 : 65, maxZoom: 12, duration: 500 });
+        m.fitBounds(bounds, {
+          padding: mini ? 30 : shipmentGroup ? 90 : 65,
+          maxZoom: 12,
+          duration: 500,
+        });
         framedRoute.current = key;
       }
     }
-  }, [ready, route, layers.routes, world.shipments, ownership, actor]);
+  }, [ready, route, layers.routes, world.shipments, ownership, actor, Boolean(shipmentGroup)]);
   useEffect(() => {
     const m = map.current;
     if (!m || !ready || mini || economic) return;
-    const items = shipment
-      ? [shipment]
-      : layers.routes
-        ? world.shipments.filter(
-            (s) =>
-              !s.delivered &&
-              (ownership !== 'mine' || [s.buyerId, s.sellerId, s.carrierId].includes(actor)),
-          )
-        : [];
+    const items =
+      shipmentGroup ??
+      (shipment
+        ? [shipment]
+        : layers.routes
+          ? world.shipments.filter(
+              (s) =>
+                !s.delivered &&
+                (ownership !== 'mine' || [s.buyerId, s.sellerId, s.carrierId].includes(actor)),
+            )
+          : []);
     const moving = items.map((s) => {
       const origin = world.establishments.find((e) => e.id === s.originId)!,
         dest = world.establishments.find((e) => e.id === s.destinationId)!;
@@ -360,7 +368,9 @@ export function WorldMap({
           world.properties.find((p) => p.id === dest.propertyId)!.coordinates,
         ];
       const element = document.createElement('div');
-      element.className = 'shipment-truck';
+      element.className = `shipment-truck${shipmentGroup ? ' grouped' : ''}`;
+      element.tabIndex = 0;
+      element.setAttribute('role', 'img');
       element.dataset.shipmentId = s.id;
       element.innerHTML = renderToStaticMarkup(<Truck size={20} />);
       const marker = new maplibregl.Marker({ element }).setLngLat(path[0]).addTo(m);
@@ -376,13 +386,22 @@ export function WorldMap({
           properties: Record<string, never>;
           geometry: { type: 'LineString'; coordinates: Position[] };
         }[] = [];
-        for (const item of moving) {
+        for (const [index, item] of moving.entries()) {
           const status = shipmentStatus(item.s, Date.now()),
             point = positionAlongRoute(item.path, status.progress, item.lengths);
           item.marker.setLngLat(point.position);
+          const columns = Math.min(4, moving.length),
+            rows = Math.ceil(moving.length / columns);
+          item.element.style.marginLeft = shipmentGroup
+            ? `${((index % columns) - (columns - 1) / 2) * 34}px`
+            : '0px';
+          item.element.style.marginTop = shipmentGroup
+            ? `${(Math.floor(index / columns) - (rows - 1) / 2) * 34}px`
+            : '0px';
           item.element.dataset.progress = status.progress.toFixed(4);
           item.element.classList.toggle('delivered', item.s.delivered);
-          item.element.title = `${status.phase} · ${Math.round(status.progress * 100)}% do trajeto · ${products[item.s.product].name}`;
+          item.element.title = `${world.vehicles.find((v) => v.id === item.s.vehicleId)?.name ?? item.s.vehicleId} · ${status.phase} · ${Math.round(status.progress * 100)}% do trajeto · ${item.s.quantity} ${products[item.s.product].unit} de ${products[item.s.product].name}`;
+          item.element.setAttribute('aria-label', item.element.title);
           if (point.completed.length > 1)
             features.push({
               type: 'Feature',
@@ -405,7 +424,17 @@ export function WorldMap({
           features: [],
         });
     };
-  }, [ready, shipment, world.shipments, layers.routes, ownership, actor, Boolean(economic), mini]);
+  }, [
+    ready,
+    shipment,
+    shipmentGroup,
+    world.shipments,
+    layers.routes,
+    ownership,
+    actor,
+    Boolean(economic),
+    mini,
+  ]);
   useEffect(() => {
     const m = map.current;
     if (!m || !ready || !economic) return;

@@ -49,7 +49,7 @@ describe('integridade econômica', () => {
       execute(w, 'player', { type: 'buyProperty', propertyId: 'hortolandia', name: 'Teste' }, NOW),
     ).toThrow(/Saldo insuficiente/);
     expect(w.properties[0].ownerId).toBeNull();
-    expect(w.ledger).toHaveLength(0);
+    expect(w.ledger.filter((e) => e.from === 'player')).toHaveLength(0);
   });
   it('reserva estoque na origem sem crédito antecipado no destino', () => {
     const w = createWorld(NOW),
@@ -78,11 +78,13 @@ describe('integridade econômica', () => {
   });
   it('limita peso e volume dos veículos', () => {
     const w = createWorld(NOW);
-    expect(quote(w, 'e-ferrovale', 'e-industry', 'iron', 31, 'transbrasil').compatible).toBe(false);
-    expect(quote(w, 'e-ferrovale', 'e-industry', 'oil', 66000, 'transbrasil').compatible).toBe(
+    expect(quote(w, 'e-ferrovale', 'e-industry', 'iron', 151, 'transbrasil').compatible).toBe(
       false,
     );
-    expect(() => execute(w, 'player', { ...trade, type: 'trade', quantity: 31 }, NOW)).toThrow(
+    expect(quote(w, 'e-ferrovale', 'e-industry', 'oil', 400000, 'transbrasil').compatible).toBe(
+      false,
+    );
+    expect(() => execute(w, 'player', { ...trade, type: 'trade', quantity: 151 }, NOW)).toThrow(
       /massa e o volume/,
     );
   });

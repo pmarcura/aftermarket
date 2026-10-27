@@ -19,7 +19,7 @@ export function createStore(path: string) {
   );
   if (needsMigration(existing)) {
     if (path !== ':memory:') {
-      const backup = resolve(dirname(path), 'backups', `pre-v2-${Date.now()}.sqlite`);
+      const backup = resolve(dirname(path), 'backups', `pre-operations-${Date.now()}.sqlite`);
       mkdirSync(dirname(backup), { recursive: true });
       db.exec(`VACUUM INTO '${backup.replaceAll("'", "''")}'`);
     }

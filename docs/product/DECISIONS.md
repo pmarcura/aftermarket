@@ -53,3 +53,27 @@ Necessidades abertas e propostas usam os mesmos comandos para humanos e bots. Ac
 ### D-021 · Concorrência finita e atualização aditiva
 
 Adicionados 30 bots, financiados por transferência do orçamento existente dos consumidores. Estoque/instalação/frota iniciais são finitos e pagos. Registro de capacidades e teste de cobertura por receita obrigam manutenção explícita do comportamento. Migração com backup conserva patrimônio humano, estoques, históricos e contratos; ticks vencidos da manutenção não recebem regras novas retroativamente. Não há consulta econômica externa nem resgate monetário invisível.
+
+### D-022 · Recuperação usa dinheiro existente
+
+Obrigações reconhecidas separam caixa e despesa; pagamento não duplica custo. Crédito estadual com garantia e verba finita, taxa única e principal em 30 dias substitui resgate invisível. Suspensão reduz estrutura e preserva estoque/ativos. Venda de veículo respeita garantia remanescente. Inadimplência permanece visível; execução automática de garantia fica pendente. Parâmetros novos são copiados para `season.config.design`; editar o template não rebalanceia seasons já abertas.
+
+### D-023 · Pedidos podem proteger caixa e referência pública exige negócios
+
+Evolui D-012: compra imediata continua paga no despacho; pedidos podem vincular caixa até aceite/cancelamento/expiração. Não reservam estoque antes da aceitação. Referência de editais abandona anúncios em favor de negócios qualificados/diversos e limite diário; não alterar contratos existentes. Mitigação de anúncios não equivale a prova contra conluio com contas independentes.
+
+### D-024 · Trajeto visual respeita estrada e contrato
+
+Novo despacho no servidor exige OSRM salvo. Cache/fila podem adiar ação, nunca cobrar uma linha reta. Geometria contratada é compartilhada e imutável; legado estimado recebe apenas correção visual. Marcadores ficam na estrada, com destaque por caminhão em caso de sobreposição. Perfil automotivo, coleta vazia estimada e ausência de retorno planejado são declarados. A consulta é geográfica e não viola D-015.
+
+### D-025 · Aquisição não contrata uma empresa pronta
+
+Nova propriedade começa sem equipamento/equipe. Jogador revisa instalação, contratação e capital de giro. Unidades anteriores mantêm equipe/instalação sem cobrança duplicada. Instalação é imediata no laboratório. Cenário iniciante usa banco separado, nunca reset do mundo ativo.
+
+### D-026 · Decisão de transporte tem capacidade visível
+
+Substituir lista cega de empresas por cartões com busca, livres/total, massa/volume, máximo por produto e máximo da operação. Arredondamento por caminhão e espaço comprometido são comuns ao motor e à interface. Usar máximo é ação explícita; caixa/prazo/frete são limites adicionais. Informação parcial não se apresenta como cotação completa.
+
+### D-027 · Conexões de insumos e alertas recuperáveis
+
+Regra pode fixar unidade própria como origem; quando esgota, aguarda, sem trocar de fornecedor silenciosamente. Atalho informa que orçamento e frota são compartilhados por todas as regras do destino. Rotas, caixa, propriedade e estoque são revalidados por comandos comuns. Alertas de ação ficam na camada do modal, erros não somem por timeout, recebimentos são agrupados por pedido e leitura fica local por empresa/dispositivo. Pendências operacionais não desaparecem ao marcar recebimentos como lidos.

@@ -2,7 +2,7 @@
 
 Simulador empresarial geográfico no Brasil. Explore oportunidades, adquira propriedades, compre insumos, contrate transporte e opere negócios conectados por uma economia persistente.
 
-**Entrega atual: versão jogável local 0.3.0.** Dez telas baseadas nas referências, cartografia real, servidor autoritativo local e persistência SQLite. O jogo ainda não é um MMO público: contas autenticadas, infraestrutura distribuída e várias regras do GDD estão nas próximas fases.
+**Entrega atual: versão jogável local 0.4.0.** Dez telas baseadas nas referências, cartografia real, servidor autoritativo local e persistência SQLite. O jogo ainda não é um MMO público: contas autenticadas, infraestrutura distribuída e várias regras do GDD estão nas próximas fases.
 
 ## Executar
 
@@ -37,7 +37,7 @@ Nesse modo, interface e API usam http://127.0.0.1:3001.
 3. Compare o custo completo. Continue para frete, escolha uma transportadora e confirme o pagamento.
 4. Em **Logística**, acompanhe a carga. O inventário só recebe o material depois da entrega.
 5. Em **Meus Negócios → Indústria de Aço → Produção**, adicione um ciclo. Ele consome 12 t de minério e 3 t de carvão para produzir 8 t de aço, com custo industrial e tempo de processamento.
-6. Em **Estoque**, traga material de outra unidade ou publique ofertas. Em **Abastecimento**, configure mínimos/alvos e consulte a projeção antes de salvar.
+6. Em **Estoque**, traga material de outra unidade ou crie uma conexão de reposição automática. Compare veículos livres, máximo por produto, frete e espaço de destino nos cartões de frota. Em **Abastecimento**, configure mínimos/alvos e consulte a projeção antes de salvar.
 7. Em **Mercado**, abra **Pedidos e negociações**, **Contratos de infraestrutura** e **Concorrentes e movimento do mundo**. A logística reúne os caminhões de cada pedido.
 8. Em **Funcionários**, planeje folha e educação; a qualidade dos novos lotes melhora ao concluir o treinamento.
 9. Em **Configurações**, alterne entre João Silva e Marina Costa. As duas empresas veem a mesma titularidade e os mesmos estoques de mercado.
@@ -51,10 +51,26 @@ Preços iniciais, receitas, população representada, salários, utilidades e co
 Consulte [fórmulas e regras](docs/product/ECONOMY.md) e [auditoria de design](docs/product/GAME-DESIGN-AUDIT.md). O gráfico avançado oferece zoom, cursor cruzado, candles de negócios, média móvel, escala logarítmica, livro de ofertas, tabela e exportações.
 
 ```powershell
-npm run balance:season -- --days=30
+npm run balance:season -- --days=90 --scenario=baseline --seed=0
 ```
 
 Esse comando simula um cenário separado, conserva o dinheiro e grava relatório em `.runtime/balance`; nunca usa o banco do jogador. Para verificar uma migração do banco existente, pare seu servidor, faça `npm run world:backup` e execute `npm run world:upgrade`. A atualização mantém saldos humanos, estoques, titularidade, frota, recibos e prazos; cria outro backup antes de converter. O capital dos novos bots vem dos consumidores existentes, com lançamento, sem emissão. A atualização de regras não cobra ticks econômicos vencidos retroativamente.
+
+## Fluxos novos na 0.4.0
+
+- **Imóvel → equipamento → equipe → operação**: novas aquisições não contratam equipe automaticamente. Antes de confirmar, veja CAPEX e capital de giro estimado.
+- **Estoque → Trazer de outro estoque → Reposição automática**: origem fixa por produto, mínimo/alvo, orçamento e frota. Também disponível em Abastecimento → Conectar minha estrutura.
+- **Frota**: cartões com busca, capacidade em t/m³ e unidades, máximo da operação, ação Usar máximo, prazo/custo e detalhamento por caminhão. Confirmação sempre revalida disponibilidade.
+- **Alertas**: erros permanecem visíveis dentro da janela ativa até fechar ou outra ação atualizar a mensagem.
+- **Empresa**: caixa livre/vinculado, obrigações e recuperação; gráficos com tabela, exportações e tela cheia.
+
+```powershell
+npm run dev:starter
+```
+
+Abre um cenário iniciante separado em http://127.0.0.1:5185, banco `.runtime/starter.sqlite`, API 3015. O mundo principal continua em 5173/3001.
+
+O roteador pode ser configurado por `AFTERMARKET_ROUTER_URL`. O padrão público é para desenvolvimento; produção requer capacidade própria e perfil de caminhão. Ver [contrato de roteamento](docs/research/ROUTING.md).
 
 ## Estrutura e fontes de verdade
 
@@ -87,11 +103,11 @@ Os testes de navegador usam Edge instalado. Em outro sistema, instale Chromium c
 
 - MapLibre renderiza dados do OpenStreetMap via OpenFreeMap, mantendo os créditos no mapa.
 - Há **5.571 municípios** no catálogo IBGE importado e uma malha GeoJSON de Campinas. `npm run data:sync` atualiza dados e proveniência; a economia ativa começa em dez municípios de referência.
-- As rotas consultam OSRM e são armazenadas em cache no banco. Quando indisponível, a tela identifica a distância como estimada. O perfil OSRM atual é automotivo; restrições para caminhões e pedágios exigem Valhalla/infraestrutura própria na fase geográfica.
+- As rotas consultam OSRM e são armazenadas em cache no banco. Novos despachos aguardam uma rota válida: indisponibilidade não contrata uma linha reta nem cobra. Remessas antigas podem receber correção apenas visual, preservando datas e valores. O perfil OSRM atual é automotivo; restrições para caminhões e pedágios exigem Valhalla/infraestrutura própria na fase geográfica.
 - Propriedades, infraestrutura econômica, reservas, demanda, preços e empresas são **simulados**. Não representam ofertas imobiliárias nem licenças de exploração reais.
 
 ## Limites desta versão
 
-Bots compram, transportam, produzem e ajustam ofertas com recursos finitos e regras comuns. Lojas e produtores têm abastecimento configurável, transferências próprias e educação da equipe. Trinta novos bots negociam pedidos e disputam contratos municipais financiados por tesouros estaduais. Oportunidades apresenta preços/estoque/negócios internos e demanda modelada, com mapa, filtros vazios e análise simples/avançada. Fretes humanos, aluguel, contratos recorrentes, planejamento completo e validação territorial nacional continuam planejados. A simulação de 30 dias termina com oferta nos dez itens e conserva dinheiro, mas duas das 30 novas empresas pausam por falta de caixa; recuperação e manipulação de referência pública continuam em aberto. A API só escuta o computador local; os perfis sem senha existem para testar concorrência entre empresas.
+Bots compram, transportam, produzem e ajustam ofertas com recursos finitos e regras comuns. Lojas e produtores têm abastecimento configurável, transferências próprias e educação da equipe. Trinta novos bots negociam pedidos e disputam contratos municipais financiados por tesouros estaduais. Oportunidades apresenta preços/estoque/negócios internos e demanda modelada, com mapa, filtros vazios e análise simples/avançada. Fretes humanos, aluguel, contratos recorrentes, planejamento completo e validação territorial nacional continuam planejados. Recuperação inclui obrigações, suspensão, crédito estadual com garantia/verba finita e venda de veículos. Referências de editais usam negócios qualificados com limite diário. Cenários de 30/90 dias conservam dinheiro, mas ainda apresentam concentração e empresas suspensas; não há prova de equilíbrio de uma season pública. A API só escuta o computador local; os perfis sem senha existem para testar concorrência entre empresas.
 
 O repositório Git é local, na branch `main`. Histórico substitui cópias `old`, `backup`, `final2` ou projetos paralelos. Dependências estão fixadas no `package-lock.json`.

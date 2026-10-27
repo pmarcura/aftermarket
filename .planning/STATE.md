@@ -1,47 +1,47 @@
 # Estado da continuidade
 
-Atualizado em **26/10/2026**, America/Sao_Paulo.
+Atualizado em **27/10/2026**, America/Sao_Paulo.
 
 ## Onde estamos
 
-Laboratório local **0.3.0**, projeto canônico em `D:\Novidade`, branch `main`. Fases 01/02 entregues e frente de operação/concorrência da fase 06 integrada. React/TypeScript/MapLibre/ECharts, API Node/Express, SQLite em `.runtime/world.sqlite`. GDD, 13 imagens e cartografia simplificada preservados. Não há publicação externa.
+Laboratório local **0.4.0**, projeto canônico `D:\Novidade`, branch `main`. Fases 01/02 entregues; frentes antecipadas 04/05/06 têm entregas locais, sem conclusão de MMO público. React/TypeScript/MapLibre/ECharts, API Node/Express e SQLite `.runtime/world.sqlite`. GDD/imagens preservados. Nenhuma publicação externa. Checkpoints de implementação: `53e71de` (regras/rotas) e `0b23b5f` (interface e testes).
 
-## Funciona
+## Entregue nesta revisão
 
-- Economia em BRL, configuração salva por season, sem cotações econômicas externas durante a partida.
-- Compra/produção com caixa/estoque/capacidade, custo médio, qualidade e ledger conservado. Água, energia, salários e manutenção pagos.
-- Especialização persistida, capacidade por equipe/área, produção automática com orçamento e estado de espera.
-- Pedidos abertos/dirigidos por humanos/bots, propostas, contrapropostas, aceitação da contraparte e despacho transacional.
-- Transferência entre unidades próprias, inclusive pausadas, paga só frete; sem receita artificial.
-- Reposição de lojas, produtores e armazéns com mínimo/alvo, quantidade/preço, origem interna/mercado, qualidade, distância, frete, orçamento e caixa protegido. Projeção simples/avançada com chegada prevista e resultado hipotético.
-- Logística por pedido, todos os caminhões na rota, recebimentos por viagem e conclusão somente após a última.
-- Contratação disponível em todas as praças, salários por UF e índice interno semanal. Educação paga melhora novos lotes; novos empregados diluem formação média.
-- 27 tesouros estaduais, sete programas municipais, referência interna +25% como teto, disputa por qualidade/preço/prazo/frete e revalidação no fechamento.
-- 30 novos bots, além de oito anteriores: pedidos, suprimento, produção, ofertas, educação, licitações e expansão heurística. Painel de atividade real e teste de cobertura por receita.
-- Mapa por titularidade e mapa econômico; filtros opcionais vazios; análise dos dez itens com ECharts e exportações.
+- Servidor exige geometria rodoviária OSRM para novos despachos: fila/cache/validação, espera sem cobrança se indisponível, arquivo compartilhado imutável. Legado estimado recebe só correção visual, mantendo preços/datas. Todos os caminhões acompanham o tempo salvo sobre a linha, com destaque individual e trechos de ruas.
+- Cartões de frota pesquisáveis em compra, transferência, proposta, edital e abastecimento: livres/total/ocupados/manutenção, massa/volume, máximo do produto e da operação, custo/prazo/manifesto e Usar máximo. Espaço considera entregas/produção comprometidas; propostas mostram impedimentos antes de enviar.
+- Conexão fixa por insumo: origem → produto → destino, mínimos/alvos, orçamento e frota. Sem estoque na origem fixa, aguarda. Respeita os mesmos comandos e limites da reposição. Meus Negócios reúne a rede e permite criar conexões com campos vazios. Orçamento e frota são compartilhados pelo destino; outras regras ativadas aparecem na revisão.
+- Erros dentro da camada do modal, persistentes até fechar/substituir. Central separa pendências de recebimentos não lidos, agrupa caminhões por pedido e salva leitura local por empresa/dispositivo.
+- Gráficos padronizados, números pt-BR, zoom/escala, tela cheia, tabela/CSV/PNG; caixa por eventos reais e cenários baixo/base/alto limitados pela capacidade. Busca/paginação nas listas operacionais.
+- Obrigações não pagas, pagamento sem duplicar despesa, suspensão, crédito estadual com garantia/verba finita, taxa explícita e venda de veículos respeitando garantias. Pedidos podem vincular caixa opcionalmente até aceite/cancelamento/expiração.
+- Referência pública usa negócios diversos, janela de sete dias e ±5% ao dia; anúncios não elevam tetos, contratos existentes mantidos.
+- Novas aquisições separam imóvel/equipamento/equipe/operação. Legado preserva instalação/equipe. Cenário iniciante em banco separado, sem reset do mundo principal.
+- Bots atualizados para caixa protegido, custo total, educação, recuperação, instalação e oferta de estoque pausado. Mantidos os 30 novos rivais + oito anteriores e 27 tesouros.
 
-## Migração real
+## Migração e evidência
 
-`operationsVersion=3`. Auditoria contra `.runtime/backups/pre-operations-1793064355616.sqlite` confirmou integridade e conservação. Preservados saldos humanos, estoques, proprietários, frota, 54 recibos, 102 remessas e 227 jobs. Histórico original de 22.658 lançamentos preservado; 150 lançamentos de orçamento explicam capital dos novos bots e regionalização. Há backup anterior adicional `world-2026-10-26T11-38-55.700Z.sqlite` e backup transacional da atualização seguinte.
+`designVersion=2`, aditiva. Relatório `.runtime/review/migration-main.json`: integridade OK, dinheiro conservado, **44.700 lançamentos antes/depois**, 57 recibos, 604 remessas e 829 jobs preservados; nenhum novo capital de abertura nem rival. Parâmetros existentes da season, proprietários, saldos humanos, estoques, equipe/frota e termos contratados preservados. Tick vencido da atualização não cobra regras novas retroativamente. Operação normal continua avançando depois disso; esses números são o checkpoint, não totais atuais.
 
-Ticks vencidos de manutenção não recebem as regras novas retroativamente. Entregas/jobs mantêm horários. Reinício normal continua com simulação offline. Relatório: `.runtime/review/migration-main.json`. Depois da retomada, API processou 82 ações reais de bots, 23 pedidos e 13 contratos no mundo salvo, sem erros de regra nos logs; números continuam mudando.
+Backups: `world-2026-10-27T02-59-16.925Z.sqlite` antes da migração e `world-2026-10-27T05-57-11.135Z.sqlite` antes do último reinício. Nunca apagar `.runtime` para atualizar.
 
-## Validação
+Rota real FerroVale → Indústria de Aço: 31,4277 km, 630 pontos, 18 trechos, screenshot e JSON em `.runtime/review/road-real*`, sem erro JavaScript. Inspeção usou pedido existente, sem compra adicional. Testes de navegador usam curva controlada local; não confundir fixture com ruas reais.
 
-Ver `phases/06-business-operations/06-VALIDATION.md`. Build, testes de domínio, fluxos reais de negociação/transferência/educação, licitação com vários caminhões, navegação móvel e simulação de 30 dias. Artefatos locais em `test-results/competition` e `.runtime/balance`.
+Ver `phases/04-road-routing/04-VALIDATION.md`: compilação, 93 testes de domínio, 12 fluxos de navegador e validação específica da rede/alertas. Suítes e simulações não abrem o banco principal.
 
-No cenário de 30 dias: dinheiro conservado, 742 viagens, 916 jobs concluídos, 35 contratos públicos, R$ 8.938.005,39 de gasto público e 1.488 t de aço consumidas. Os dez itens terminam com oferta, e 28/30 novos concorrentes mantêm operação ativa. Duas novas indústrias e uma expansão pausam por falta de caixa; Armazém Sul começa pausado. Não declarar equilíbrio integral.
+## O que os 90 dias mostram
+
+Baseline seed 0: dinheiro conservado, 1.935 viagens, 1.362 jobs concluídos, 76 contratos, R$ 17.364.174,03 de gasto público e 3.000 t de aço consumidas. Dez itens com oferta no final, 21/30 novos rivais ativos, sete estruturas suspensas, R$ 3.226.858,34 em atrasados e HHI agregado 7.752,48. Cenários de baixa demanda, outra semente e iniciante também registrados. Ações humanas ficam desligadas; geografia é explicitamente estimada no teste offline. Há concentração e insolvência: **não declarar equilíbrio integral**. Ver auditoria e tabela de cenários da validação.
 
 ## Próxima ação concreta
 
-Priorizar recuperação de insolvência e proteção da referência de editais contra anúncios coordenados. Simular 30/90 dias com cenários iniciante, baixa demanda e diferentes sementes antes de expandir catálogo. Ver `docs/product/GAME-DESIGN-AUDIT.md`. Autenticação/persistência relacional da fase 03 continuam obrigatórias antes de season pública.
+Playtest humano iniciante: medir primeira compra/entrega/venda, entendimento dos máximos e recuperação, margem após frete/fixos e concentração por item. Definir política de inadimplência/garantias e reação a conluio com negócios reais. Medir o cliente em hardware modesto antes de ampliar catálogo/mapa. Autenticação e Postgres/PostGIS da fase 03 continuam obrigatórios antes de season pública.
 
-## Limites conhecidos
+## Limites
 
-Perfis locais sem senha, snapshot JSON transacional e API em loopback. Rotas OSRM automotivas ou estimadas; sem restrições truck, retorno vazio planejado ou aceite humano de fretes. Pontos de prefeitura, propriedades e reservas são virtuais. Atividade econômica limitada ao piloto; catálogo nacional geográfico não equivale a economia nacional.
+Perfis locais sem senha e snapshot JSON transacional em loopback. OSRM automotivo, sem validação truck, retorno vazio planejado ou rota rodoviária da coleta vazia; demonstrador público sem SLA. Preços/taxas do jogo não consultam dados econômicos externos durante a season.
 
-Qualidade por média de produto, sem lotes/validade. Agricultura e beneficiamento agregados. Pedidos sem escrow: orçamento/estoque podem mudar antes do aceite. Educação é formação média, sem profissões individuais. Referência pública usa ofertas, vulnerável a coordenação. Resultado de abastecimento é cenário de capacidade/preço, não garantia. Sem aluguel, crédito, contratos recorrentes ou recuperação de atrasados. Histórico móvel e feed limitado; escala MMO/desempenho em hardware modesto pendentes.
+Qualidade média por produto e agricultura agregada, sem lotes/validade/clima/profissões. Estoque não fica reservado na proposta. Crédito sem execução automática de garantia. Instalação imediata no laboratório. Sem aluguel, contratos recorrentes ou aceite humano de fretes. Histórico móvel, bundles MapLibre/ECharts grandes e escala MMO pendentes. Pontos municipais, propriedades e reservas são virtuais; catálogo IBGE não implica economia nacional ativa.
 
-## Regras de continuidade
+## Continuidade
 
-Ler AGENTS, estado, roteiro e requisitos. Um código ativo por função; histórico no Git. Banco/backups em `.runtime`, nunca apagar para atualizar. Fontes externas calibram abertura/futuras seasons. Nova mecânica precisa atualizar bot, capacidade, comando e testes; o registro de capacidades não programa comportamentos futuros sozinho.
+Ler AGENTS, estado, roteiro, requisitos e plano. Uma implementação ativa por função; histórico no Git. Nova mecânica precisa atualizar bot, comando, capacidade e testes. Fontes externas calibram apenas abertura/futuras seasons. Não rebalancear a season salva ao editar templates e não criar resgate invisível.

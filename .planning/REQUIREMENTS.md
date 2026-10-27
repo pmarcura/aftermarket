@@ -34,15 +34,15 @@ Estados: **Implementado** = demonstrado no laboratório; **Parcial** = há base 
 
 ## Complemento · Economia explicável
 
-| ID     | Requisito                                                               | Estado       | Evidência                                                                                                             |
-| ------ | ----------------------------------------------------------------------- | ------------ | --------------------------------------------------------------------------------------------------------------------- |
-| ECO-08 | Configuração congelada por temporada, sem cotações externas em execução | Implementado | `season.config`, regressão de imutabilidade e ausência de fetch                                                       |
-| ECO-09 | Água, energia, salários e manutenção pagos e explicados                 | Implementado | Produção/ledger/custos recorrentes; pausa conserva contratos                                                          |
-| ECO-10 | Mão de obra e logística calculadas                                      | Implementado | `metrics.ts`, ficha de fórmula e limitação de escopo                                                                  |
-| UX-04  | Filtros opcionais vazios, análise simples e avançada por item           | Implementado | Cinco testes de navegador, catálogo completo e ECharts                                                                |
-| UX-05  | Mapa somente das próprias propriedades e mapa econômico                 | Implementado | Titularidade, bolhas agrupadas e indicadores internos                                                                 |
-| LOG-04 | Animação segundo prazo persistido e distância da rota                   | Implementado | Interpolação, teste temporal e teste de recarga no Edge                                                               |
-| ECO-11 | Temporada sustentável e recuperação de insolvência                      | Parcial      | Simulação 30 dias conserva dinheiro e termina com oferta nos dez itens; 28/30 novos bots ativos, recuperação pendente |
+| ID     | Requisito                                                               | Estado       | Evidência                                                                                                                    |
+| ------ | ----------------------------------------------------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| ECO-08 | Configuração congelada por temporada, sem cotações externas em execução | Implementado | `season.config`, regressão de imutabilidade e ausência de fetch                                                              |
+| ECO-09 | Água, energia, salários e manutenção pagos e explicados                 | Implementado | Produção/ledger/custos recorrentes; pausa conserva contratos                                                                 |
+| ECO-10 | Mão de obra e logística calculadas                                      | Implementado | `metrics.ts`, ficha de fórmula e limitação de escopo                                                                         |
+| UX-04  | Filtros opcionais vazios, análise simples e avançada por item           | Implementado | Cinco testes de navegador, catálogo completo e ECharts                                                                       |
+| UX-05  | Mapa somente das próprias propriedades e mapa econômico                 | Implementado | Titularidade, bolhas agrupadas e indicadores internos                                                                        |
+| LOG-04 | Animação segundo prazo persistido e distância da rota                   | Implementado | Interpolação, teste temporal e teste de recarga no Edge                                                                      |
+| ECO-11 | Temporada sustentável e recuperação de insolvência                      | Parcial      | Recuperação finita, cenários iniciante/baixa demanda e simulações 30/90 dias; equilíbrio/concentração continuam em validação |
 
 O status implementado aqui se refere ao laboratório local. A aprovação de lançamento público exige critérios adicionais no roteiro.
 
@@ -61,3 +61,21 @@ O status implementado aqui se refere ao laboratório local. A aprovação de lan
 | ECO-13 | Trinta novos bots e manutenção da cobertura de capacidades     | Parcial      | 30 concorrentes finitos + oito anteriores; registro/testes de receitas e comandos, funções futuras exigem nova cobertura |
 
 Validação consolidada em `phases/06-business-operations/06-VALIDATION.md`.
+
+## Complemento · Rotas, recuperação e fluxo 0.4.0
+
+| ID     | Requisito                                                         | Estado               | Evidência                                                                                       |
+| ------ | ----------------------------------------------------------------- | -------------------- | ----------------------------------------------------------------------------------------------- |
+| LOG-06 | Novo despacho exige rota rodoviária salva sem fallback silencioso | Implementado local   | Fila/cache/validação, rejeição sem cobrança, OSRM real e recarga                                |
+| LOG-07 | Restrição truck, coleta e retorno vazio pelas estradas            | Planejado            | Perfil automotivo e coleta estimada são limites explícitos                                      |
+| UX-06  | Frota comparável e máximo por produto/operação                    | Implementado         | Cartões, busca, manifesto, limite por veículo, estoque/espaço e Usar máximo                     |
+| UX-07  | Alertas sobre a janela ativa e leitura por pedido                 | Implementado local   | Portal no dialog, erro persistente, agrupamento e leitura local por empresa                     |
+| UX-08  | Gráficos com ferramentas e interpretação coerente                 | Implementado         | ECharts, valores pt-BR, zoom/tela cheia, tabela/CSV/PNG, história real e sensibilidade          |
+| BIZ-08 | Conectar produtora/estoque a fábrica/depósito                     | Implementado         | Origem fixa por regra, mínimo/alvo, orçamento, mesma validação de propriedade e execução física |
+| BIZ-09 | Separar aquisição, equipamento, equipe e operação                 | Implementado local   | CAPEX e capacidade instalada; sem auto contratação, imóveis antigos preservados                 |
+| FIN-04 | Obrigações e recuperação sem resgate infinito                     | Implementado local   | Dívida reconhecida, pagamento, suspensão, crédito estadual finito/garantido e venda de veículo  |
+| FIN-05 | Vincular caixa opcionalmente a pedidos                            | Implementado         | Reserva/liberação/revalidação; propostas ainda não reservam estoque                             |
+| ECO-14 | Proteger referência pública contra anúncios manipulados           | Implementado parcial | Negócios diversos, mediana por par, janela e ±5% ao dia; conluio entre contas segue risco       |
+| ECO-15 | Playtests reproduzíveis de abertura e recessão                    | Implementado         | Baseline, starter, low-demand, semente e relatórios isolados sem consultar o banco do jogador   |
+
+Evidências e limites em `phases/04-road-routing/04-VALIDATION.md`. Nenhum status local substitui autenticação/concorrência da fase 03.

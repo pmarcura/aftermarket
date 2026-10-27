@@ -1,63 +1,51 @@
-# Auditoria de design de jogo · 0.3.0
+# Auditoria de design de jogo · 0.4.0
 
-Atualizada em 26/10/2026 (America/Sao_Paulo). Status refere-se ao laboratório local. Uma economia movimentada e com dinheiro conservado ainda pode ser recessiva, concentrada ou difícil de recuperar.
+Atualizada em 27/10/2026, America/Sao_Paulo. Regras e interface foram revisadas juntas. Este documento descreve o laboratório; não aprova uma season pública nem afirma equilíbrio econômico.
 
-## Correções demonstradas
+## Correções verificadas
 
-| Falha anterior                                                  | Correção e consequência                                                                                           |
-| --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Rótulos sem explicação                                          | Fórmulas de logística, custos, capacidade e salário com componentes observáveis                                   |
-| Candidatos locais bloqueavam contratação                        | Contratação disponível; salário estadual e índice interno semanal, sem pesquisa externa                           |
-| Pouca concorrência visível                                      | Trinta novos bots financiados, painel de ações efetivas e teste de cobertura das receitas                         |
-| Bots não negociavam necessidades                                | Pedidos abertos/dirigidos, propostas, contrapropostas e aceitação entre humanos/bots                              |
-| Várias viagens pareciam compras distintas                       | Um pedido agrupa caminhões, quantidades e recebimentos; conclusão depende de todos                                |
-| Estoque próprio exigia venda artificial                         | Transferência física paga só transporte e conserva custo/qualidade, inclusive com produção pausada                |
-| Reposição limitada ao varejo                                    | Política por unidade com mínimos/alvos, origens, qualidade, orçamento, caixa protegido e frete                    |
-| Benefício de educação podia ser multiplicado por contratação    | Formação média é diluída por novos empregados; treinamento tem custo/tempo e só afeta novos lotes                 |
-| Bot aceitava contraproposta abaixo do custo                     | Reavalia custo e contrapropõe antes de aceitar                                                                    |
-| Tesouro central acumulava caixa e premiação escalava pelo saldo | Contas por estado, editais financiados, teto de referência interna +25% e disputa por qualidade/preço/prazo/frete |
-| Cadeias dependiam apenas de estoque inicial                     | Receitas agregadas de arroz, feijão, açúcar, leite e carvão; proteção de sementes e reservas minerais finitas     |
+| Problema                                                  | Entrega                                                                                                                            | Evidência                                                               |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Rotas em linha reta ou sem geometria confiável            | Despacho exige OSRM; geometria imutável, todos os caminhões sobre a estrada, recarga preserva prazo                                | Testes de roteamento/recarga e rota real de 630 pontos                  |
+| Seletor de frota só mostrava nomes                        | Cartões pesquisáveis: livres/total/ocupados/manutenção, massa/volume, máximo do produto e da operação, custo, prazo e manifesto    | Testes de limite por veículo, UI desktop/celular e Usar máximo          |
+| Escolha incompatível só falhava no aceite                 | Estoque e espaço comprometido entram no máximo; impedimentos de quantidade, rota, teto de frete e prazo aparecem antes da proposta | Rejeição sem cobrança e teste do formulário                             |
+| Repetição manual entre estruturas próprias                | Conexão fixa origem → produto → destino com mínimo/alvo e limites da política de abastecimento                                     | Testes não desviam para outro fornecedor quando a origem esgota         |
+| Alertas sob o modal e contador acumulando toda a história | Erro persistente na camada da janela, recebimentos agrupados por pedido, marcação local de leitura e pendências atuais separadas   | Testes de DOM, recarga e capturas                                       |
+| Insolvência sem caminho explícito                         | Obrigações reconhecidas, pagamento, suspensão, crédito estadual finito/garantido e venda de veículos                               | Testes de caixa, garantia, taxa, conservação e recuperação no navegador |
+| Tetos públicos dependiam de anúncios                      | Negócios qualificados, diversidade por pares e limite diário; editais antigos mantidos                                             | Anúncio caro não altera referência; sem negócios mantém abertura        |
+| Necessidades comerciais disputavam todo o caixa           | Vínculo opcional por pedido e em reposições negociadas; cancelamento/expiração liberam                                             | Testes de reserva, pagamento e falha sem mutação                        |
+| Compra de imóvel mascarava equipe/equipamento             | Etapas explícitas e CAPEX; novas unidades sem auto contratação                                                                     | Fluxo completo de aquisição, instalação e equipe                        |
+| Curvas pouco legíveis ou história uniformizada            | ECharts compartilhado, números pt-BR, escala/zoom, tela cheia, tabela e exportações; caixa usa eventos reais                       | Exportação CSV e inspeção móvel                                         |
+| Bots não reagiam às regras novas                          | Orçamento, custo/fixos, educação, recuperação, instalação e venda de estoque pausado                                               | Capabilities e testes de comandos/cenários                              |
+| Listas escondiam registros antigos                        | Busca e paginação em pedidos, editais, atividade e logística                                                                       | Navegação real e busca por pedido                                       |
 
-## Experimento de 30 dias
+Continuam as correções anteriores: BRL, fórmula de logística, contratação em toda praça, salário estadual interno, água/energia pagas, formação diluída por contratações, 30 novos bots com recursos finitos, 27 tesouros, contratos municipais e reposição em produtores/lojas/armazéns. Fontes reais só calibram abertura e temporadas futuras.
 
-Cenário determinístico com carteira demonstrativa e ações humanas desligadas; configuração salva no relatório. Sem consultar o banco do jogador ou fontes econômicas externas.
+## O que a economia ainda não provou
 
-- Dinheiro conservado e nenhum saldo negativo.
-- 742 viagens e 916 lotes concluídos.
-- 35 contratos públicos concluídos; R$ 8.938.005,39 pagos, incluindo transporte.
-- 1.488 t de aço consumidas em programas públicos.
-- Nenhum dos dez produtos terminou sem oferta; isso não comprova disponibilidade contínua em toda cidade.
-- 28 dos 30 novos concorrentes mantiveram pelo menos uma operação ativa.
-- Duas indústrias novas pausaram por insuficiência de caixa; uma expansão antiga também pausou. Armazém Sul já começa pausado.
-- Nove pedidos pendentes ao fim. Estoque anunciado não prova venda, preço justo ou equilíbrio.
+Cenários de 30/90 dias conservam dinheiro, mas mostram atrasados, suspensão de empresas e concentração. Oferta final nos dez itens não significa ausência de rupturas durante todo o período ou concorrência saudável por cidade. A carteira de demonstração tem muitos ativos e ações humanas desligadas na simulação; o iniciante é outra distribuição inicial e não deve ser comparado como experimento controlado de uma única regra.
 
-Relatório reproduzível: `npm run balance:season -- --days=30`, saída `.runtime/balance/season-2026-10-26-30d-operations.json`. Não há meta artificial de todos os bots lucrarem nem resgate invisível.
+Relatórios locais em `.runtime/balance/season-0.4-*.json`; comandos e medidas na validação da fase 04. Simulações usam geografia estimada explicitamente e não testam disponibilidade do serviço de rotas. O indicador HHI agregado mede faturamento registrado, não riqueza ou participação de um produto; a interface permite recortar por item.
 
-## Falhas e próximos experimentos
+## Riscos em aberto e critério de próxima etapa
 
-| Prioridade                 | Falha / risco de estratégia dominante                                                                                | Próxima ação e critério                                                                                                               |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| P0 · recuperação           | Sem venda de ativos, dívida/atrasados ou reestruturação; insolvência pausa e pode deixar folha sem pagar             | Obrigações explícitas e caminho viável de recuperação; playtest de empresa sem caixa consegue retornar sem reset                      |
-| P0 · economia pública      | Referência usa anúncios de três empresas, não negócios. Conluio/anúncios caros podem elevar tetos de editais futuros | Comparar mediana de transações, janela, volume mínimo e limite de variação; rejeitar manipulação coordenada sem fixar preços privados |
-| P0 · liquidez              | Compras públicas recirculam arrecadação, mas não há política calibrada de reserva, crédito ou emissão                | Medir dinheiro por famílias/empresas/UF e velocidade; simular baixa demanda e retenção institucional por 90 dias                      |
-| P0 · lançamento            | Perfis sem senha e snapshot único não representam MMO público                                                        | Identidade real, autorização, Postgres/PostGIS e concorrência entre conexões antes de publicar                                        |
-| P1 · compromisso comercial | Pedidos pendentes autorizam gasto, mas não reservam caixa/estoque; proposta pode falhar no aceite                    | Mostrar validade/compromissos e testar escrow opcional com expiração, sem travar todo o mercado                                       |
-| P1 · entrada               | Carteira rica de demonstração e compra que agrega instalação/equipe mascaram início real                             | Cenário iniciante e etapas imóvel/equipamento/equipe; antecipar CAPEX e capital de giro                                               |
-| P1 · produção              | Agricultura/beneficiamento/envase agregados; sem área por safra, rebanho, validade ou clima                          | Separar etapas conforme testes de diversão; medir custo por hectare/ciclo antes de ampliar catálogo                                   |
-| P1 · qualidade             | Uma média por produto mistura todos os lotes; demissão seletiva não existe                                           | Lotes com qualidade/custo/validade e equipe por profissão apenas quando trouxer decisão útil                                          |
-| P1 · previsões             | Resultado potencial supõe capacidade, preços atuais e venda; gráfico de cobertura sinaliza uma reposição             | Comparar previsto/realizado e oferecer cenários baixo/base/alto; nunca rotular contribuição como lucro garantido                      |
-| P1 · concorrentes          | Heurísticas locais; expansão, estoque e licitações podem competir pelo mesmo caixa/frota                             | Registrar motivos de espera/perda, rodar múltiplas sementes, comparar lucro e concentração com humanos                                |
-| P1 · transporte            | OSRM automotivo/estimativa, sem truck profile, retorno vazio planejado ou aceite humano de frete                     | Roteador de caminhão e ciclo completo de serviço; receita/custo sem duplicação                                                        |
-| P1 · informação            | Histórico móvel e snapshot; caixa público usado como destino agregado de serviços                                    | Séries persistidas, separar prestadores privados/tributos e medir demanda efetivamente atendida                                       |
-| P1 · manutenção            | Tempos de referência e cadência de bots dependem da escala acelerada do laboratório                                  | Playtest de season lenta, ações offline e janelas justas em diferentes horários                                                       |
-| P2 · navegação             | Contratos e feed limitam registros recentes; grande frota pode congestionar mapa/lista                               | Paginação, busca por pedido/cidade, agrupamento visual acessível e perfis de desempenho                                               |
+| Prioridade | Risco                                                                        | Próxima ação mensurável                                                                                                                        |
+| ---------- | ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| P0         | Perfis sem senha e snapshot JSON não são MMO público                         | Autenticação, autorização e migração Postgres/PostGIS; disputar o mesmo lote/imóvel por conexões independentes                                 |
+| P0         | Liquidez/concentração ainda frágeis                                          | Playtest humano iniciante e cenário de baixa demanda; medir primeira venda, atrasados, recuperação e margem após todos os custos por 90 dias   |
+| P1         | Conluio com transações entre contas pode contornar diversidade de referência | Identidade, auditoria de relações, volume econômico e custo de ataque; ±5% ao dia reduz velocidade, não resolve conluio geral                  |
+| P1         | Crédito sem execução de garantia                                             | Definir inadimplência/reestruturação com decisão explícita e provar que não permite extrair dinheiro por empresas descartáveis                 |
+| P1         | Estoque não é reservado na proposta                                          | Mostrar/revalidar disponibilidade; avaliar reserva com vencimento apenas após observar falhas reais de negociação                              |
+| P1         | Rota automotiva e coleta vazia estimada                                      | Perfil/dados truck, planejamento de coleta/retorno vazio, orçamento de serviço e teste de restrições; sem prometer equivalência ao Google Maps |
+| P1         | Projeções usam preços e capacidade atuais                                    | Comparar previsto/realizado; sensibilidade baixa/base/alta não é probabilidade nem garantia de lucro                                           |
+| P1         | Agricultura e qualidade agregadas                                            | Avaliar safra/área, perecibilidade, profissões e qualidade por lote conforme decisões úteis de gameplay                                        |
+| P1         | Instalação imediata e preços de equipamentos parametrizados                  | Playtest de CAPEX/retorno; avaliar fornecedores e construção com tempo sem criar espera vazia                                                  |
+| P1         | Cadência acelerada pode favorecer quem fica conectado                        | Playtest de season lenta, automação justa e janelas de contratos em diferentes horários                                                        |
+| P2         | Histórico móvel, grande snapshot e bundles pesados                           | Séries persistidas, medição em hardware modesto e orçamento de renderização/tiles antes de expandir mapa                                       |
+| P2         | Falta aluguel e contratos recorrentes                                        | Entregar cadeia contratual completa com prazo, inadimplência e aceitação humana de frete                                                       |
 
-## Como manter os bots atualizados
+## Manter bots e evidências
 
-Cada nova regra deve responder: o bot descobre a ação, avalia custo/estoque, executa o mesmo comando, registra o resultado e trata rejeição? `director.ts` mantém capacidades/versão. Os testes exigem produtor e perfil para todas as receitas e exercitam pedidos reais com humano. Recursos humanos futuros precisam de nova cobertura; não existe atualização automática de comportamento por apenas adicionar um botão.
+Para cada regra nova: o bot descobre, avalia caixa/estoque/frota, executa o mesmo comando, registra resultado e trata rejeição? O registro de capacidades não implementa comportamento sozinho. Testes exigem produtores para cada receita e exercitam negociação, educação e recuperação. Conexões fixas usam o mesmo planejador e comandos; bots podem continuar priorizando suas origens pelo custo sem precisar fixá-las.
 
-## Métricas de playtest
-
-Acompanhar caixa por setor/UF, velocidade de circulação, salários não pagos, duração das rupturas, concentração de receita, margem depois de frete/fixos, retorno de capital, ocupação/km vazios e motivos de perda de editais. Medir tempo até primeira venda/entrega, cliques para reabastecer e compreensão de custo posto, caixa protegido e resultado potencial.
-
-Próximo marco: recuperação de insolvência e defesa da referência pública contra manipulação, com cenários de 30/90 dias e mundo iniciante. Sem balanceamento por cotação externa durante a season.
+Acompanhar dinheiro por setor/UF, giro, salários não pagos, rupturas, concentração por produto, margem depois de frete/fixos, ocupação/km vazios e perdas de licitações. Medir também cliques para reabastecer, compreensão do máximo transportável e resolução dos alertas. Histórico das auditorias anteriores está no Git; não manter cópias concorrentes do documento.

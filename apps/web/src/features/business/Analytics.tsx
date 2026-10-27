@@ -19,9 +19,11 @@ import { householdDemand, regionFor } from '../../../../../packages/simulation/s
 const axis = { axisLine: { lineStyle: { color: '#405760' } }, axisLabel: { color: '#a9bfcb' } };
 export function BusinessFinance({ establishment: e }: { establishment: Establishment }) {
   const { world } = useGame(),
-    [period, setPeriod] = useState('7');
+    [period, setPeriod] = useState('');
   const end = Math.max(world.updatedAt, world.nextEconomicAt - ECONOMIC_INTERVAL),
-    start = Math.max(world.economyStartedAt, end - Number(period) * GAME_DAY);
+    start = period
+      ? Math.max(world.economyStartedAt, end - Number(period) * GAME_DAY)
+      : world.economyStartedAt;
   const entries = world.ledger.filter((l) => l.establishmentId === e.id && l.at >= start);
   const outgoing = entries.filter((l) => l.from === e.companyId && l.to !== e.companyId);
   const sales = world.shipments.filter(
@@ -63,6 +65,7 @@ export function BusinessFinance({ establishment: e }: { establishment: Establish
           value={period}
           onChange={(event) => setPeriod(event.target.value)}
         >
+          <option value="">Período (opcional)</option>
           <option value="1">1 dia do jogo</option>
           <option value="7">7 dias do jogo</option>
           <option value="30">30 dias do jogo</option>
@@ -80,6 +83,8 @@ export function BusinessFinance({ establishment: e }: { establishment: Establish
             data: Array.from({ length: count }, (_, i) =>
               gameCalendar(world, start + i * width).date.toLocaleTimeString('pt-BR', {
                 timeZone: 'UTC',
+                day: '2-digit',
+                month: '2-digit',
                 hour: '2-digit',
                 minute: '2-digit',
               }),

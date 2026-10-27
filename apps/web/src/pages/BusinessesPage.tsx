@@ -5,6 +5,7 @@ import { PageHeading, Panel, Stat, Badge, Select, Rows, Empty } from '../compone
 import { WorldMap } from '../components/WorldMap';
 import { categoryInfo } from '../../../../packages/simulation/src/model';
 import { Orders } from '../features/business/Orders';
+import { SupplyNetwork } from '../features/business/SupplyNetwork';
 
 export function BusinessesPage() {
   const { world, actor, navigate, openBusiness } = useGame();
@@ -133,7 +134,13 @@ export function BusinessesPage() {
                           </td>
                           <td>
                             <Badge tone={e.enabled ? 'green' : 'gold'}>
-                              {e.enabled ? 'Ativo' : 'Pausado'}
+                              {e.installed === false
+                                ? 'Instalação pendente'
+                                : e.mothballed
+                                  ? 'Estrutura suspensa'
+                                  : e.enabled
+                                    ? 'Ativo'
+                                    : 'Pausado'}
                             </Badge>
                           </td>
                           <td>
@@ -202,6 +209,7 @@ export function BusinessesPage() {
             </div>
           </Panel>
         </div>
+        <SupplyNetwork />
         <Panel title="Central de pedidos" subtitle="Compras e vendas de todas as suas unidades">
           <Orders />
         </Panel>

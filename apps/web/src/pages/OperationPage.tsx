@@ -25,6 +25,7 @@ import { SupplyPlanner } from '../features/business/SupplyPlanner';
 import { Stock } from '../features/business/Stock';
 import { SalesCatalog } from '../features/business/SalesCatalog';
 import { Workforce } from '../features/business/Workforce';
+import { Installation } from '../features/business/Installation';
 import { Orders } from '../features/business/Orders';
 import { BusinessFinance } from '../features/business/Analytics';
 import {
@@ -67,6 +68,21 @@ export function OperationPage() {
           </button>
         }
       />
+    );
+  if (e.installed === false)
+    return (
+      <>
+        <PageHeading
+          eyebrow="Meus Negócios / Instalação"
+          title={e.name}
+          description="Imóvel adquirido. Instale equipamentos, depois contrate e abasteça."
+        />
+        <div className="page-body">
+          <Panel>
+            <Installation establishment={e} onInstalled={() => setTab('Funcionários')} />
+          </Panel>
+        </div>
+      </>
     );
   const p = world.properties.find((p) => p.id === e.propertyId)!,
     jobs = world.jobs.filter((j) => j.establishmentId === e.id && !j.completed),

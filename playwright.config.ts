@@ -11,16 +11,24 @@ export default defineConfig({
     viewport: { width: 1920, height: 1080 },
     trace: 'retain-on-failure',
   },
-  webServer: {
-    command: 'npm run dev',
-    env: {
-      AFTERMARKET_DB_FILE: `.runtime/e2e/season-${Date.now()}.sqlite`,
-      AFTERMARKET_PORT: '3013',
-      AFTERMARKET_WEB_PORT: '5183',
+  webServer: [
+    {
+      command: 'node tests/fixtures/road-router.mjs',
+      url: 'http://127.0.0.1:3014/health',
+      reuseExistingServer: false,
     },
-    url: 'http://127.0.0.1:5183',
-    reuseExistingServer: false,
-    timeout: 30000,
-  },
+    {
+      command: 'npm run dev',
+      env: {
+        AFTERMARKET_DB_FILE: `.runtime/e2e/season-${Date.now()}.sqlite`,
+        AFTERMARKET_PORT: '3013',
+        AFTERMARKET_WEB_PORT: '5183',
+        AFTERMARKET_ROUTER_URL: 'http://127.0.0.1:3014',
+      },
+      url: 'http://127.0.0.1:5183',
+      reuseExistingServer: false,
+      timeout: 30000,
+    },
+  ],
   reporter: 'list',
 });

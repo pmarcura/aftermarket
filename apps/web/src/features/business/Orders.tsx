@@ -1,3 +1,4 @@
+import { FleetPicker } from '../../components/FleetPicker';
 import { useState } from 'react';
 import { useGame, cr, num } from '../../lib/game';
 import { Badge, Empty, Modal, Rows, Select } from '../../components/ui';
@@ -9,7 +10,11 @@ import {
   type OrderProposal,
 } from '../../../../../packages/simulation/src/model';
 import { quote } from '../../../../../packages/simulation/src/engine';
+import { GAME_DAY, availableStock } from '../../../../../packages/simulation/src/operations';
+import { storageQuantity } from '../../../../../packages/simulation/src/transport';
 import { useClock } from '../../lib/clock';
+import { useRoute } from '../../lib/routing';
+import { Pagination, usePagination } from '../../components/Pagination';
 const statuses = {
   pending: 'Em negociação',
   accepted: 'Em entrega',
@@ -21,6 +26,7 @@ export function Orders({ establishment: e }: { establishment?: Establishment }) 
   const { world, actor, run, pending, navigate } = useGame(),
     now = useClock();
   const [filter, setFilter] = useState(''),
+    [reserve, setReserve] = useState(false),
     [create, setCreate] = useState(false),
     [negotiating, setNegotiating] = useState<PurchaseOrder>(),
     [review, setReview] = useState<{ order: PurchaseOrder; proposal?: OrderProposal }>();
@@ -42,6 +48,14 @@ export function Orders({ establishment: e }: { establishment?: Establishment }) 
     .slice()
     .reverse();
   const visible = rows.filter((o) => !filter || o.status === filter);
+  const page = usePagination(visible, (o) =>
+    [
+      o.id,
+      products[o.product].name,
+      world.companies.find((c) => c.id === o.buyerId)?.name,
+      world.establishments.find((e) => e.id === o.destinationId)?.name,
+    ].join(' '),
+  );
   const negotiate = (o: PurchaseOrder, p?: OrderProposal) => {
     setNegotiating(o);
     setOrigin(
@@ -66,6 +80,42 @@ export function Orders({ establishment: e }: { establishment?: Establishment }) 
         props?.carrierId ?? ro.carrierId,
       )
     : undefined;
+  const routeOriginId = review?.proposal?.originId ?? review?.order.originId ?? origin;
+  const routeDestinationId = review?.order.destinationId ?? negotiating?.destinationId;
+  const proposalQuote =
+    negotiating && origin && carrier && quantity > 0
+      ? quote(world, origin, negotiating.destinationId, negotiating.product, quantity, carrier)
+      : undefined;
+  const proposalIssue = !proposalQuote
+    ? 'Escolha uma frota para calcular o frete.'
+    : negotiating &&
+        origin &&
+        quantity >
+          availableStock(
+            world,
+            world.establishments.find((e) => e.id === origin)!,
+            negotiating.product,
+          )
+      ? 'Quantidade acima do estoque livre da origem.'
+      : negotiating &&
+          quantity >
+            storageQuantity(
+              world,
+              world.establishments.find((e) => e.id === negotiating.destinationId)!,
+              negotiating.product,
+            )
+        ? 'Quantidade acima do espaço livre no destino, incluindo entregas e produção pendentes.'
+        : !proposalQuote.compatible
+          ? 'A frota não atende à quantidade ou a rota ainda está pendente.'
+          : proposalQuote.price > freight
+            ? 'O teto de frete está abaixo da cotação atual. Ajuste o teto para enviar.'
+            : proposalQuote.durationMs > days * GAME_DAY
+              ? 'O prazo proposto é menor que a previsão de transporte.'
+              : '';
+  const routeLoading = useRoute(
+    world.establishments.find((e) => e.id === routeOriginId)?.propertyId,
+    world.establishments.find((e) => e.id === routeDestinationId)?.propertyId,
+  );
   return (
     <div className="business-section">
       <div className="panel-content section-title">
@@ -104,7 +154,8 @@ export function Orders({ establishment: e }: { establishment?: Establishment }) 
           ))}
         </Select>
       </div>
-      {visible.length ? (
+      <Pagination value={page} label="pedidos" />
+      {page.rows.length ? (
         <div className="orders-list">
           {visible.slice(0, 60).map((o) => {
             const buyer = world.companies.find((c) => c.id === o.buyerId)!,
@@ -143,6 +194,9 @@ export function Orders({ establishment: e }: { establishment?: Establishment }) 
                   </span>
                   <span>
                     Frete autorizado <b>{cr(o.maxFreight)}</b>
+                    {!!o.escrowReserved && (
+                      <small className="block">Caixa vinculado: {cr(o.escrowReserved)}</small>
+                    )}
                   </span>
                   <span>
                     Prazo restante{' '}
@@ -316,6 +370,15 @@ export function Orders({ establishment: e }: { establishment?: Establishment }) 
               onChange={(ev) => setDays(Number(ev.target.value))}
             />
           </label>
+          <label className="checkbox-line">
+            <input
+              aria-label="Reservar caixa do pedido"
+              type="checkbox"
+              checked={reserve}
+              onChange={(e) => setReserve(e.target.checked)}
+            />{' '}
+            Vincular caixa a este pedido até aceite, cancelamento ou expiração
+          </label>
           <Rows
             rows={[{ label: 'Autorização máxima de caixa', value: cr(quantity * price + freight) }]}
           />
@@ -329,6 +392,7 @@ export function Orders({ establishment: e }: { establishment?: Establishment }) 
                 await run(
                   {
                     type: 'createPurchaseRequest',
+                    reserveFunds: reserve,
                     destinationId: destination,
                     product: product as ProductId,
                     quantity,
@@ -347,7 +411,12 @@ export function Orders({ establishment: e }: { establishment?: Establishment }) 
         </Modal>
       )}
       {negotiating && (
-        <Modal title="Proposta e alteração de termos" onClose={() => setNegotiating(undefined)}>
+        <Modal
+          title="Proposta e alteração de termos"
+          onClose={() => setNegotiating(undefined)}
+          wide
+          formLayout
+        >
           <p>
             {products[negotiating.product].name} · comprador{' '}
             {world.companies.find((c) => c.id === negotiating.buyerId)?.name}
@@ -409,30 +478,53 @@ export function Orders({ establishment: e }: { establishment?: Establishment }) 
               onChange={(ev) => setDays(Number(ev.target.value))}
             />
           </label>
-          <Select
-            label="Transportadora proposta"
+          <FleetPicker
+            originId={origin}
+            destinationId={negotiating.destinationId}
+            product={negotiating.product}
+            quantity={quantity}
             value={carrier}
-            onChange={(ev) => setCarrier(ev.target.value)}
-          >
-            <option value="">Escolher transporte</option>
-            {world.companies
-              .filter(
-                (c) =>
-                  (c.bot || c.id === actor) && world.vehicles.some((v) => v.companyId === c.id),
-              )
-              .map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-          </Select>
+            onChange={setCarrier}
+            onQuantityChange={setQuantity}
+            label="Transportadora proposta"
+          />
+          {proposalQuote && (
+            <Rows
+              rows={[
+                { label: 'Frete calculado agora', value: cr(proposalQuote.price) },
+                {
+                  label: 'Mercadoria + frete previsto',
+                  value: cr(quantity * price + proposalQuote.price),
+                },
+              ]}
+            />
+          )}
+          {proposalQuote && proposalQuote.price > freight && (
+            <button className="secondary" onClick={() => setFreight(proposalQuote.price)}>
+              Usar frete calculado · {cr(proposalQuote.price)}
+            </button>
+          )}
+          {proposalIssue && (
+            <p className="fleet-warning" role="status">
+              {proposalIssue}
+            </p>
+          )}
           <p className="small muted">
             Enviar termos exige aceitação da outra parte. O pagamento será revalidado nessa
             aceitação.
           </p>
           <button
             className="primary full"
-            disabled={pending || !origin || !carrier || quantity <= 0 || price <= 0 || freight <= 0}
+            disabled={
+              pending ||
+              routeLoading ||
+              !origin ||
+              !carrier ||
+              Boolean(proposalIssue) ||
+              quantity <= 0 ||
+              price <= 0 ||
+              freight <= 0
+            }
             onClick={async () => {
               if (
                 await run(
@@ -475,7 +567,12 @@ export function Orders({ establishment: e }: { establishment?: Establishment }) 
           />
           <button
             className="primary full"
-            disabled={pending || !q.compatible || q.price > (props?.maxFreight ?? ro.maxFreight)}
+            disabled={
+              pending ||
+              routeLoading ||
+              !q.compatible ||
+              q.price > (props?.maxFreight ?? ro.maxFreight)
+            }
             onClick={async () => {
               if (
                 await run(

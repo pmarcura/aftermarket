@@ -20,15 +20,27 @@ test('negocia pedido real, agrupa caminhões e configura abastecimento e educaç
   page.on('pageerror', (e) => errors.push(e.message));
   const setup = await request.post('/api/commands', {
     headers: { 'x-company-id': 'player2', 'Idempotency-Key': crypto.randomUUID() },
-    data: { type: 'buyProperty', propertyId: 'newretail', name: 'Loja de Teste Comercial' },
+    data: { type: 'buyProperty', propertyId: 'newindustry', name: 'Unidade de Teste Comercial' },
   });
   expect(setup.ok(), await setup.text()).toBe(true);
+  const install = await request.post('/api/commands', {
+    headers: { 'x-company-id': 'player2', 'Idempotency-Key': crypto.randomUUID() },
+    data: {
+      type: 'installBusiness',
+      establishmentId: 'e-newindustry',
+      recipeId: 'steel-bars',
+      lines: 1,
+    },
+  });
+  expect(install.ok(), await install.text()).toBe(true);
   await page.goto('/');
   await actor(page, 'player2');
   await orders(page);
   await page.getByRole('button', { name: 'Publicar pedido de compra', exact: true }).click();
   const dialog = page.getByRole('dialog');
-  await dialog.getByLabel('Destino do pedido aberto', { exact: true }).selectOption('e-newretail');
+  await dialog
+    .getByLabel('Destino do pedido aberto', { exact: true })
+    .selectOption('e-newindustry');
   await dialog.getByLabel('Mercadoria do pedido aberto', { exact: true }).selectOption('iron');
   await dialog.getByLabel('Quantidade do pedido aberto', { exact: true }).fill('65');
   await dialog.getByLabel('Preço do pedido aberto', { exact: true }).fill('500');
@@ -46,7 +58,9 @@ test('negocia pedido real, agrupa caminhões e configura abastecimento e educaç
   await card.getByRole('button', { name: 'Fazer proposta', exact: true }).click();
   await dialog.getByLabel('Origem da proposta', { exact: true }).selectOption('e-industry');
   await dialog.getByLabel('Preço proposto', { exact: true }).fill('490');
-  await dialog.getByLabel('Transportadora proposta', { exact: true }).selectOption('transbrasil');
+  await dialog
+    .getByRole('button', { name: 'Selecionar TransBrasil Logística', exact: true })
+    .click();
   await dialog.getByRole('button', { name: 'Enviar proposta', exact: true }).click();
   await expect(dialog).not.toBeVisible();
   await actor(page, 'player2');
@@ -111,9 +125,7 @@ test('negocia pedido real, agrupa caminhões e configura abastecimento e educaç
   await dialog.getByLabel('Origem da transferência', { exact: true }).selectOption('e-mine');
   await dialog.getByLabel('Produto da transferência', { exact: true }).selectOption('iron');
   await dialog.getByLabel('Quantidade para transferir', { exact: true }).fill('1');
-  await dialog
-    .getByLabel('Transportadora da transferência', { exact: true })
-    .selectOption('player');
+  await dialog.getByRole('button', { name: 'Selecionar Minha frota', exact: true }).click();
   const moved = page.waitForResponse(
     (r) => r.url().endsWith('/api/commands') && r.request().method() === 'POST',
   );

@@ -11,6 +11,7 @@ import {
 } from '../../../../../packages/simulation/src/operations';
 import { trainingQuote } from '../../../../../packages/simulation/src/competition';
 import { useClock } from '../../lib/clock';
+import { Installation } from './Installation';
 export function Workforce({ establishment: e }: { establishment: Establishment }) {
   const { world, run, pending } = useGame(),
     now = useClock();
@@ -136,6 +137,12 @@ export function Workforce({ establishment: e }: { establishment: Establishment }
             },
           ]}
         />
+      )}
+      {e.equipmentLines !== undefined && (
+        <details>
+          <summary>Revisar equipamentos e capacidade</summary>
+          <Installation establishment={e} />
+        </details>
       )}
       {['industry', 'farm', 'mine'].includes(e.category) && (
         <section className="education-panel">

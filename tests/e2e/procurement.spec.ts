@@ -49,10 +49,12 @@ test('edital estadual mostra referência, disputa e todos os caminhões indo à 
   await card.getByRole('button', { name: 'Participar da disputa', exact: true }).click();
   const dialog = page.getByRole('dialog');
   await dialog.getByLabel('Origem da proposta pública', { exact: true }).selectOption('e-industry');
-  await dialog.getByLabel('Frota da proposta pública', { exact: true }).selectOption('transbrasil');
+  await dialog
+    .getByRole('button', { name: 'Selecionar TransBrasil Logística', exact: true })
+    .click();
   await dialog.getByRole('button', { name: 'Registrar proposta', exact: true }).click();
   await expect(card.getByText('Em entrega', { exact: true })).toBeVisible();
-  await card.locator('summary').click();
+  await card.locator('summary').filter({ hasText: 'Comparar propostas e resultado' }).click();
   await expect(card.getByRole('cell', { name: 'Vencedora', exact: true })).toBeVisible();
   await page.screenshot({ path: 'test-results/competition/public-contract.png', fullPage: true });
   await card.getByRole('button', { name: 'Acompanhar pedido e caminhões', exact: true }).click();

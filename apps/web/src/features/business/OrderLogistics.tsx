@@ -5,12 +5,16 @@ import { Panel, Badge, Select, Progress, Empty, Rows } from '../../components/ui
 import { WorldMap, defaultLayers } from '../../components/WorldMap';
 import { products, type Shipment } from '../../../../../packages/simulation/src/model';
 import { shipmentStatus } from '../../../../../packages/simulation/src/shipment';
+import { shipmentRoute } from '../../../../../packages/simulation/src/road-path';
 import { useClock } from '../../lib/clock';
+import { useRoute } from '../../lib/routing';
+import { Pagination, usePagination } from '../../components/Pagination';
 export function OrderLogistics() {
   const { world, actor, navigate } = useGame(),
     now = useClock();
   const [selectedId, setSelected] = useState(''),
-    [filter, setFilter] = useState('');
+    [filter, setFilter] = useState(''),
+    [highlight, setHighlight] = useState('');
   const groups = new Map<string, Shipment[]>();
   for (const s of world.shipments) {
     const key = s.infrastructureId
@@ -52,6 +56,19 @@ export function OrderLogistics() {
       (o) => !filter || (filter === 'delivered' ? o.complete : !o.complete),
     ),
     selected = orders.find((o) => o.id === selectedId);
+  const page = usePagination(visible, (o) =>
+    [o.id, o.origin.name, o.destination.name, products[o.first.product].name].join(' '),
+  );
+  const loadingRoute = useRoute(
+    selected?.origin.propertyId,
+    selected?.destination.propertyId,
+    true,
+  );
+  const savedRoute = selected
+    ? world.routes[`${selected.origin.propertyId}:${selected.destination.propertyId}`]
+    : undefined;
+  const roadReady =
+    selected && (selected.first.mapRouteSource === 'osrm' || selected.first.routeSource === 'osrm');
   return (
     <>
       <div className="section-title">
@@ -68,14 +85,15 @@ export function OrderLogistics() {
           <option value="delivered">Concluídos</option>
         </Select>
       </div>
+      <Pagination value={page} label="pedidos logísticos" />
       <div className="shipment-dashboard">
         <Panel
           title="Meus pedidos logísticos"
-          subtitle={`${visible.length} pedidos · ${visible.reduce((n, o) => n + o.shipments.length, 0)} viagens`}
+          subtitle={`${page.total} de ${visible.length} pedidos · ${visible.reduce((n, o) => n + o.shipments.length, 0)} viagens`}
           className="shipments-panel"
         >
           {visible.length ? (
-            visible.map((o) => (
+            page.rows.map((o) => (
               <button
                 className={`shipment-item ${o.id === selectedId ? 'selected' : ''}`}
                 key={o.id}
@@ -125,7 +143,7 @@ export function OrderLogistics() {
           }
           subtitle={
             selected
-              ? `${selected.shipments.length} caminhões · ${products[selected.first.product].name}`
+              ? `${selected.shipments.length} ${selected.shipments.length === 1 ? 'caminhão' : 'caminhões'} · ${products[selected.first.product].name}`
               : 'Selecione um pedido para acompanhar todos os veículos juntos'
           }
           action={
@@ -138,14 +156,39 @@ export function OrderLogistics() {
         >
           <div className="freight-map">
             <WorldMap
-              route={selected?.first.route}
+              route={
+                selected && (roadReady || !world.requireRoadRoutes)
+                  ? shipmentRoute(world, selected.first)
+                  : undefined
+              }
               shipments={selected?.shipments}
+              highlightShipmentId={highlight}
               layers={{ ...defaultLayers, routes: true }}
               ownership="mine"
             />
           </div>
           {selected ? (
             <div className="panel-content">
+              <div className="road-status">
+                <strong>
+                  {roadReady
+                    ? 'Trajeto rodoviário'
+                    : loadingRoute
+                      ? 'Calculando pelas estradas…'
+                      : 'Rota histórica estimada'}
+                </strong>
+                <span>OSRM / OpenStreetMap. Sem trânsito em tempo real.</span>
+              </div>
+              {selected.first.mapRouteSource === 'osrm' && (
+                <p className="analysis-caption">
+                  Trajeto visual recuperado pelas estradas. Preço e horários do contrato original
+                  foram mantidos.
+                </p>
+              )}
+              <p className="analysis-caption">
+                Veículos na mesma posição podem se sobrepor. Use “Localizar” para destacar cada
+                caminhão sobre a estrada.
+              </p>
               <div className="section-title">
                 <h3>
                   <Truck size={17} /> Caminhões deste pedido
@@ -175,6 +218,7 @@ export function OrderLogistics() {
                       <th>Quantidade</th>
                       <th>Etapa e progresso</th>
                       <th>Tempo real restante</th>
+                      <th>No mapa</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -199,12 +243,36 @@ export function OrderLogistics() {
                           <td>
                             {s.delivered ? 'Recebido' : `${Math.ceil(status.remainingMs / 1000)} s`}
                           </td>
+                          <td>
+                            <button
+                              className="secondary"
+                              aria-pressed={highlight === s.id}
+                              onClick={() => setHighlight(s.id)}
+                            >
+                              Localizar {truck?.name ?? 'caminhão'}
+                            </button>
+                          </td>
                         </tr>
                       );
                     })}
                   </tbody>
                 </table>
               </div>
+              {!!savedRoute?.steps?.length && (
+                <details>
+                  <summary>Ver estradas e trechos do trajeto</summary>
+                  <ol className="route-steps">
+                    {savedRoute.steps
+                      .filter((s) => s.distanceM > 50)
+                      .map((step, i) => (
+                        <li key={i}>
+                          <strong>{step.name}</strong>
+                          <span>{num(step.distanceM / 1000, 1)} km</span>
+                        </li>
+                      ))}
+                  </ol>
+                </details>
+              )}
               <Rows
                 rows={[
                   {

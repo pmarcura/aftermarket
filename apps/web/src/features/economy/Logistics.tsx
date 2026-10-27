@@ -1,6 +1,8 @@
+import { FleetPicker } from '../../components/FleetPicker';
+import { freeCash } from '../../../../../packages/simulation/src/design';
 import { OrderLogistics } from '../business/OrderLogistics';
 import { useState } from 'react';
-import { Truck, Check, ChevronRight, MapPin, ShoppingCart } from 'lucide-react';
+import { Truck, ChevronRight, MapPin, ShoppingCart } from 'lucide-react';
 import { useGame, cr, num } from '../../lib/game';
 import { Badge, Empty, Modal, PageHeading, Panel, Rows, Tabs } from '../../components/ui';
 import { WorldMap } from '../../components/WorldMap';
@@ -16,24 +18,31 @@ export function LogisticsPage() {
     [confirm, setConfirm] = useState(false),
     [more, setMore] = useState(false);
   const [orderMode, setOrderMode] = useState(false),
+    [adjustedQuantity, setAdjustedQuantity] = useState<number>(),
     [deliveryDays, setDeliveryDays] = useState(3);
   const offer = world.offers.find((o) => o.id === intent.offerId),
     origin = world.establishments.find((e) => e.id === offer?.establishmentId),
     dest = world.establishments.find((e) => e.id === intent.destinationId && e.companyId === actor),
-    quantity = intent.quantity;
+    quantity = adjustedQuantity ?? intent.quantity;
   const goodsCost = offer && quantity && origin?.companyId !== actor ? offer.price * quantity : 0;
   const op = world.properties.find((p) => p.id === origin?.propertyId),
     dp = world.properties.find((p) => p.id === dest?.propertyId),
     loading = useRoute(op?.id, dp?.id);
   const quotes =
     offer && origin && dest && quantity
-      ? [actor, 'transbrasil', 'rodoleste', 'expresso']
+      ? world.companies
+          .filter(
+            (c) =>
+              (c.id === actor || (c.bot && !c.id.startsWith('treasury'))) &&
+              world.vehicles.some((v) => v.companyId === c.id),
+          )
+          .map((c) => c.id)
           .map((id) => quote(world, origin.id, dest.id, offer.product, quantity, id))
           .sort((a, b) => a.price - b.price)
       : [];
   const selected = quotes.find((q) => q.carrierId === carrier),
     preview = selected ?? quotes[0];
-  const balance = world.companies.find((c) => c.id === actor)!.balance;
+  const balance = freeCash(world, actor);
   return (
     <>
       <PageHeading
@@ -70,6 +79,16 @@ export function LogisticsPage() {
               <div>
                 {products[offer.product].name} · {num(quantity)} {products[offer.product].unit}
               </div>
+              <label className="field">
+                Quantidade a transportar
+                <input
+                  aria-label="Quantidade no frete"
+                  type="number"
+                  min="1"
+                  value={quantity}
+                  onChange={(e) => setAdjustedQuantity(Number(e.target.value))}
+                />
+              </label>
               <button className="secondary" onClick={() => navigate('market')}>
                 Alterar compra
               </button>
@@ -89,7 +108,7 @@ export function LogisticsPage() {
                 }
               >
                 <div className="freight-map">
-                  <WorldMap route={preview.coordinates} />
+                  <WorldMap route={preview.routeRequired ? undefined : preview.coordinates} />
                 </div>
                 <div className="freight-map-stats">
                   <div>
@@ -110,54 +129,18 @@ export function LogisticsPage() {
                 title="Cotações de transporte"
                 subtitle="Escolha explicitamente quem fará o serviço"
               >
-                {quotes.map((q, i) => (
-                  <div
-                    key={q.carrierId}
-                    className={`quote-card ${carrier === q.carrierId ? 'selected' : ''}`}
-                  >
-                    <div className="quote-title">
-                      <i className="table-icon">
-                        <Truck size={19} />
-                      </i>
-                      <div>
-                        <h3>
-                          {q.carrierId === actor
-                            ? 'Minha frota'
-                            : world.companies.find((c) => c.id === q.carrierId)!.name}
-                        </h3>
-                        <small>
-                          {q.compatible
-                            ? `${q.parts.length} caminhões · ${num(q.load.mass, 2)} t / ${num(q.load.volume, 2)} m³`
-                            : 'Capacidade da frota insuficiente'}{' '}
-                          · {q.ownFleet ? 'sem margem de transportadora' : 'serviço terceirizado'}
-                        </small>
-                      </div>
-                      {i === 0 && <Badge tone="green">Menor custo</Badge>}
-                    </div>
-                    <div className="quote-values">
-                      <div>
-                        <span>Frete</span>
-                        <strong>{cr(q.price)}</strong>
-                      </div>
-                      <div>
-                        <span>Entrega no jogo</span>
-                        <b>{num((q.durationMs * TIME_SCALE) / 60000)} min</b>
-                      </div>
-                    </div>
-                    <button
-                      className={carrier === q.carrierId ? 'primary full' : 'secondary full'}
-                      disabled={!q.compatible || loading}
-                      onClick={() => setCarrier(q.carrierId)}
-                    >
-                      {carrier === q.carrierId ? <Check size={16} /> : <ChevronRight size={16} />}{' '}
-                      {!q.compatible
-                        ? 'Sem veículo disponível'
-                        : carrier === q.carrierId
-                          ? 'Selecionada'
-                          : 'Selecionar transportadora'}
-                    </button>
-                  </div>
-                ))}
+                <div className="panel-content">
+                  <FleetPicker
+                    originId={origin?.id}
+                    destinationId={dest.id}
+                    product={offer.product}
+                    quantity={quantity}
+                    value={carrier}
+                    onChange={setCarrier}
+                    onQuantityChange={setAdjustedQuantity}
+                    label="Frota para a compra"
+                  />
+                </div>
                 <div className="panel-content">
                   {selected ? (
                     <>

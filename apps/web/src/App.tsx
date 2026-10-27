@@ -1,3 +1,4 @@
+import { NotificationCenter } from './components/NotificationCenter';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import {
   Map,
@@ -7,7 +8,6 @@ import {
   Truck,
   Building2,
   Search,
-  Bell,
   ChevronDown,
   Coins,
   TrendingDown,
@@ -16,8 +16,6 @@ import {
   PanelLeftOpen,
   ArrowUpRight,
   Check,
-  Info,
-  X,
   MapPin,
   ExternalLink,
 } from 'lucide-react';
@@ -26,6 +24,7 @@ import { Modal, Badge, Rows } from './components/ui';
 import './business.css';
 import { regions } from '../../../packages/world/src/regions';
 import { products, type Position } from '../../../packages/simulation/src/model';
+import { freeCash } from '../../../packages/simulation/src/design';
 const MapPage = lazy(() => import('./pages/MapPage').then((m) => ({ default: m.MapPage })));
 const PurchasePage = lazy(() =>
   import('./pages/MapPage').then((m) => ({ default: m.PurchasePage })),
@@ -88,7 +87,7 @@ function Brand() {
   );
 }
 function Shell() {
-  const { world, actor, setActor, page, navigate, focusMap, openBusiness } = useGame();
+  const { world, actor, setActor, page, navigate, focusMap } = useGame();
   const [collapsed, setCollapsed] = useState(
       localStorage.getItem('aftermarket.sidebar') === 'collapsed',
     ),
@@ -100,7 +99,7 @@ function Shell() {
   const searchRef = useRef<HTMLDivElement>(null);
   const company = world.companies.find((c) => c.id === actor)!,
     mine = world.establishments.filter((e) => e.companyId === actor),
-    profit = mine.reduce((n, e) => n + e.revenue - e.expenses, 0);
+    profit = mine.reduce((n, e) => n + e.revenue - e.expenses, 0) - (company.financingExpense ?? 0);
   const coordinateMatch = query.trim().match(/^(-?\d+(?:\.\d+)?)\s*[,;]\s*(-?\d+(?:\.\d+)?)$/);
   const coordinate: Position | undefined =
     coordinateMatch &&
@@ -132,11 +131,6 @@ function Shell() {
           )
           .slice(0, 5)
       : [];
-  const delivered = world.shipments.filter((s) => s.buyerId === actor && s.delivered).length,
-    paused = mine.filter((e) => !e.enabled).length;
-  const lowStock = mine.filter(
-    (e) => e.category === 'retail' && Object.values(e.inventory).some((q) => q! < 100),
-  );
   useEffect(() => {
     const handler = (event: PointerEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node))
@@ -270,7 +264,7 @@ function Shell() {
         <div className="top-metric">
           <Coins size={23} className="gold-text" />
           <div>
-            <strong>{cr(company.balance)}</strong>
+            <strong>{cr(freeCash(world, actor))}</strong>
             <span>Saldo disponível</span>
           </div>
         </div>
@@ -288,89 +282,14 @@ function Shell() {
             <span>Resultado operacional</span>
           </div>
         </div>
-        <div className="notification-wrapper">
-          <button
-            className={`notification-button ${notifications ? 'active' : ''}`}
-            aria-label="Abrir notificações"
-            aria-expanded={notifications}
-            onClick={() => {
-              setNotifications(!notifications);
-              setProfile(false);
-            }}
-          >
-            <Bell size={21} />
-            {delivered + paused + lowStock.length > 0 && (
-              <i>{delivered + paused + lowStock.length}</i>
-            )}
-          </button>
-          {notifications && (
-            <div className="header-popover notifications">
-              <div className="popover-title">
-                <h3>Central de notificações</h3>
-                <button
-                  className="icon-button"
-                  aria-label="Fechar notificações"
-                  onClick={() => setNotifications(false)}
-                >
-                  <X size={16} />
-                </button>
-              </div>
-              {world.shipments
-                .filter((s) => s.buyerId === actor && s.delivered)
-                .slice(-3)
-                .map((s) => (
-                  <button
-                    key={s.id}
-                    onClick={() => {
-                      navigate('logistics');
-                      setNotifications(false);
-                    }}
-                  >
-                    <Check size={17} className="positive" />
-                    <span>
-                      Carga recebida no estoque
-                      <small>
-                        {world.establishments.find((e) => e.id === s.destinationId)?.name}
-                      </small>
-                    </span>
-                  </button>
-                ))}
-              {lowStock.map((e) => (
-                <button
-                  key={e.id}
-                  onClick={() => {
-                    openBusiness(e.id);
-                    setNotifications(false);
-                  }}
-                >
-                  <Info size={17} className="gold-text" />
-                  <span>
-                    Produtos com estoque baixo<small>{e.name}</small>
-                  </span>
-                </button>
-              ))}
-              {mine
-                .filter((e) => !e.enabled)
-                .map((e) => (
-                  <button
-                    key={e.id}
-                    onClick={() => {
-                      openBusiness(e.id);
-                      setNotifications(false);
-                    }}
-                  >
-                    <Info size={17} className="gold-text" />
-                    <span>
-                      Operação pausada<small>{e.name}</small>
-                    </span>
-                  </button>
-                ))}
-              {!delivered && !paused && !lowStock.length && (
-                <p>Você está em dia. Novos alertas aparecerão aqui.</p>
-              )}
-            </div>
-          )}
-        </div>
+        <NotificationCenter
+          open={notifications}
+          onToggle={() => {
+            setNotifications(!notifications);
+            setProfile(false);
+          }}
+          onClose={() => setNotifications(false)}
+        />
         <div className="profile-wrapper">
           <button
             className="profile-button"

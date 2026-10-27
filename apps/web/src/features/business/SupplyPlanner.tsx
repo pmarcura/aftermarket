@@ -1,3 +1,5 @@
+import { FleetPicker } from '../../components/FleetPicker';
+import { SupplyConnection } from './SupplyConnection';
 import { useMemo, useState } from 'react';
 import { Save, Plus, Trash2, SlidersHorizontal } from 'lucide-react';
 import { useGame, cr, num } from '../../lib/game';
@@ -18,9 +20,15 @@ export function SupplyPlanner({ establishment: e }: { establishment: Establishme
     ),
     [mode, setMode] = useState('Simplificada'),
     [add, setAdd] = useState(''),
-    [chart, setChart] = useState('');
+    [chart, setChart] = useState(''),
+    [connecting, setConnecting] = useState(false);
   const forecast = useMemo(() => supplyForecast(world, e, policy), [world.revision, e, policy]);
   const selected = forecast.rows.find((r) => r.product === chart),
+    fleetContext = selected ?? forecast.rows[0],
+    fleetOrigin = fleetContext
+      ? (policy.rules.find((r) => r.product === fleetContext.product)?.originId ??
+        fleetContext.best?.origin.id)
+      : undefined,
     cash = world.companies.find((c) => c.id === e.companyId)!.balance;
   const set = <K extends keyof typeof policy>(key: K, value: (typeof policy)[K]) =>
     setPolicy((p) => ({ ...p, [key]: value }));
@@ -51,6 +59,26 @@ export function SupplyPlanner({ establishment: e }: { establishment: Establishme
         </div>
         <Tabs values={['Simplificada', 'Avançada']} value={mode} onChange={setMode} />
       </div>
+      <div className="connection-launch">
+        <div>
+          <strong>Minha cadeia de abastecimento</strong>
+          <p className="small muted">
+            Conecte uma mineradora, fazenda ou estoque a este destino sem refazer compras.
+          </p>
+        </div>
+        <button className="secondary" onClick={() => setConnecting(!connecting)}>
+          {connecting ? 'Fechar conexão' : 'Conectar minha estrutura'}
+        </button>
+      </div>
+      {connecting && (
+        <SupplyConnection
+          initialDestination={e.id}
+          onSaved={(next) => {
+            setConnecting(false);
+            setPolicy(structuredClone(next));
+          }}
+        />
+      )}
       <div className="supply-kpis">
         <div>
           <span>Reposição sinalizada agora</span>
@@ -170,6 +198,38 @@ export function SupplyPlanner({ establishment: e }: { establishment: Establishme
                 </button>
               </div>
             </div>
+            <div className="connection-path">
+              <strong>
+                {r.originId
+                  ? (world.establishments.find((x) => x.id === r.originId)?.name ??
+                    'Origem indisponível')
+                  : policy.source === 'market'
+                    ? 'Mercado'
+                    : 'Minhas unidades / política de origem'}
+              </strong>
+              <span>→ {e.name}</span>
+            </div>
+            <Select
+              label={`Origem fixa de ${products[r.product].name}`}
+              value={r.originId ?? ''}
+              onChange={(ev) =>
+                set(
+                  'rules',
+                  policy.rules.map((rule, n) =>
+                    n === i ? { ...rule, originId: ev.target.value || undefined } : rule,
+                  ),
+                )
+              }
+            >
+              <option value="">Usar política de origem geral</option>
+              {world.establishments
+                .filter((x) => x.companyId === e.companyId && x.id !== e.id)
+                .map((x) => (
+                  <option key={x.id} value={x.id}>
+                    {x.name} · {num(x.inventory[r.product] ?? 0)} {unit} em estoque
+                  </option>
+                ))}
+            </Select>
             <div className="supply-rule-grid">
               <label className="field">
                 Repor ao atingir ({unit})
@@ -324,21 +384,28 @@ export function SupplyPlanner({ establishment: e }: { establishment: Establishme
               />
               <small>Zero = sem teto; a unidade segue a mercadoria.</small>
             </label>
-            <Select
-              label="Frota de abastecimento"
-              value={policy.carrierId}
-              onChange={(ev) => set('carrierId', ev.target.value)}
-            >
-              <option value="auto">Menor custo disponível</option>
-              <option value="own">Somente frota própria</option>
-              {world.companies
-                .filter((c) => c.bot && world.vehicles.some((v) => v.companyId === c.id))
-                .map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-            </Select>
+            <div className="field">
+              <span>Transporte de todas as regras</span>
+              <div className="inline-actions">
+                <button
+                  className={policy.carrierId === 'auto' ? 'primary' : 'secondary'}
+                  onClick={() => set('carrierId', 'auto')}
+                >
+                  Melhor frete disponível
+                </button>
+                <button
+                  className={policy.carrierId === 'own' ? 'primary' : 'secondary'}
+                  onClick={() => set('carrierId', 'own')}
+                >
+                  Somente minha frota
+                </button>
+              </div>
+              <small>
+                {['auto', 'own'].includes(policy.carrierId)
+                  ? 'A frota será revalidada a cada reposição.'
+                  : `Frota fixa: ${world.companies.find((c) => c.id === policy.carrierId)?.name ?? policy.carrierId}`}
+              </small>
+            </div>
             <Select
               label="Forma de abastecimento"
               value={policy.purchaseMode}
@@ -348,10 +415,37 @@ export function SupplyPlanner({ establishment: e }: { establishment: Establishme
               <option value="request">Enviar pedidos para aceitação</option>
             </Select>
           </div>
+          {fleetContext && (
+            <details>
+              <summary>Comparar frotas para {products[fleetContext.product].name}</summary>
+              <FleetPicker
+                originId={fleetOrigin}
+                destinationId={e.id}
+                product={fleetContext.product}
+                quantity={
+                  fleetContext.best?.quantity ??
+                  policy.rules.find((r) => r.product === fleetContext.product)?.maxBuy ??
+                  0
+                }
+                value={policy.carrierId === 'own' ? e.companyId : policy.carrierId}
+                onChange={(id) => set('carrierId', id)}
+                label="Frota de abastecimento"
+              />
+            </details>
+          )}
           <p className="small muted">
             Fornecedores humanos recebem pedidos para aceitar. Caixa e quantidade pendentes entram
             no planejamento; nada é creditado antes da entrega.
           </p>
+          <label className="checkbox-line">
+            <input
+              type="checkbox"
+              aria-label="Vincular caixa de pedidos automáticos"
+              checked={policy.reserveOrders ?? false}
+              onChange={(e) => set('reserveOrders', e.target.checked)}
+            />{' '}
+            Vincular caixa de pedidos automáticos até aceite ou expiração
+          </label>
         </div>
       )}
       <div className="supply-simulation">
@@ -390,6 +484,40 @@ export function SupplyPlanner({ establishment: e }: { establishment: Establishme
               },
               series: [
                 {
+                  name: 'Reposição / demanda baixa',
+                  type: 'line',
+                  lineStyle: { type: 'dashed' },
+                  data: supplyProjection(
+                    world,
+                    e,
+                    selected.product,
+                    selected.need * 0.8,
+                    selected.best
+                      ? {
+                          quantity: selected.best.quantity,
+                          arrivalAt: world.updatedAt + selected.best.q.durationMs,
+                        }
+                      : undefined,
+                  ),
+                },
+                {
+                  name: 'Reposição / demanda alta',
+                  type: 'line',
+                  lineStyle: { type: 'dashed' },
+                  data: supplyProjection(
+                    world,
+                    e,
+                    selected.product,
+                    selected.need * forecast.highFactor,
+                    selected.best
+                      ? {
+                          quantity: selected.best.quantity,
+                          arrivalAt: world.updatedAt + selected.best.q.durationMs,
+                        }
+                      : undefined,
+                  ),
+                },
+                {
                   name: 'Sem nova reposição',
                   type: 'line',
                   data: supplyProjection(world, e, selected.product, selected.need),
@@ -421,7 +549,9 @@ export function SupplyPlanner({ establishment: e }: { establishment: Establishme
         <p className="small muted">
           Projeção: demanda/capacidade do modelo, preços atuais e uma reposição sinalizada. Não
           garante vendas ou lucro e não antecipa a entrega. O cenário não inclui futuras variações
-          de preço.
+          de preço. Baixa/alta testam demanda 20% menor/maior, respeitando a capacidade e o plano
+          produtivo. Mais demanda não aumenta automaticamente a produção industrial. São cenários de
+          sensibilidade, não probabilidades.
         </p>
       </div>
       <Rows
@@ -434,6 +564,12 @@ export function SupplyPlanner({ establishment: e }: { establishment: Establishme
             value: cr(forecast.contribution),
           },
           { label: 'Custos fixos estimados / dia', value: cr(forecast.fixed) },
+          { label: 'Resultado potencial / demanda baixa (−20%)', value: cr(forecast.lowResult) },
+          { label: 'Resultado potencial / base', value: cr(forecast.estimatedResult) },
+          {
+            label: 'Resultado potencial / demanda alta (limitada)',
+            value: cr(forecast.highResult),
+          },
         ]}
       />
       {!valid && (

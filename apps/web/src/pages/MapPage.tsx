@@ -19,6 +19,7 @@ import {
   ArrowUpRight,
 } from 'lucide-react';
 import { useGame, CategoryIcon, cr, num } from '../lib/game';
+import { freeCash } from '../../../../packages/simulation/src/design';
 import { WorldMap, defaultLayers, type Layers } from '../components/WorldMap';
 import { Badge, Panel, PageHeading, Rows, Modal } from '../components/ui';
 import { categoryInfo, products } from '../../../../packages/simulation/src/model';
@@ -383,7 +384,7 @@ export function PurchasePage() {
         <button onClick={() => navigate('map')}>Selecionar uma propriedade no mapa</button>
       </div>
     );
-  const balance = world.companies.find((x) => x.id === actor)!.balance;
+  const balance = freeCash(world, actor);
   const labor = laborMarket(world, p),
     tariff = utilityTariff(world, p);
   return (
@@ -453,14 +454,17 @@ export function PurchasePage() {
                   label: 'Água + esgoto',
                   value: p.water ? `${cr(tariff.water)} / m³` : 'Sem abastecimento',
                 },
-                { label: 'Tipo de aquisição', value: 'Imóvel e instalação inicial' },
                 {
-                  label: 'Equipe de abertura',
-                  value: `${openingWorkers(p.category)} contratos de trabalho`,
+                  label: 'Tipo de aquisição',
+                  value: 'Imóvel; equipamentos e equipe são etapas separadas',
+                },
+                {
+                  label: 'Equipe sugerida depois da instalação',
+                  value: `${openingWorkers(p.category)} pessoas · contratação manual`,
                 },
                 { label: 'Contratação', value: 'Disponível · salário por estado' },
                 {
-                  label: 'Folha mensal de abertura + encargos',
+                  label: 'Folha mensal projetada + encargos',
                   value: cr(
                     labor.monthlySalary *
                       openingWorkers(p.category) *
@@ -505,8 +509,9 @@ export function PurchasePage() {
       {confirm && (
         <Modal title="Confirmar aquisição" onClose={() => setConfirm(false)}>
           <p>
-            Você está adquirindo <strong>{p.name}</strong>. A nova unidade começará sem estoque e
-            terá custos de operação.
+            Você está adquirindo <strong>{p.name}</strong>. A unidade começa sem estoque,
+            equipamento ou funcionários. Depois escolha a instalação e a equipe; a manutenção
+            reduzida do imóvel é paga desde a aquisição.
           </p>
           <label className="field">
             Nome do estabelecimento
@@ -519,7 +524,11 @@ export function PurchasePage() {
           </label>
           <Rows
             rows={[
-              { label: 'Investimento total', value: cr(p.price) },
+              { label: 'Imóvel · pagamento agora', value: cr(p.price) },
+              {
+                label: 'Equipamento inicial · etapa posterior',
+                value: cr(world.season.config.design.equipmentCost[p.category]),
+              },
               { label: 'Saldo após a compra', value: cr(balance - p.price) },
             ]}
           />

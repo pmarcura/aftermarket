@@ -15,6 +15,7 @@ import {
 import { regions } from '../../../../packages/world/src/regions';
 import { createMapStyle } from '../lib/map-style';
 import { positionAlongRoute, routeLengths } from '../../../../packages/simulation/src/geometry';
+import { shipmentRoute } from '../../../../packages/simulation/src/road-path';
 import { shipmentStatus } from '../../../../packages/simulation/src/shipment';
 import { marketView } from '../../../../packages/simulation/src/metrics';
 maplibregl.setWorkerUrl(workerUrl);
@@ -44,6 +45,7 @@ export function WorldMap({
   ownership = '',
   shipment,
   shipments: shipmentGroup,
+  highlightShipmentId,
   economic,
   onRegionSelect,
 }: {
@@ -56,6 +58,7 @@ export function WorldMap({
   ownership?: '' | 'mine' | 'others' | 'available';
   shipment?: Shipment;
   shipments?: Shipment[];
+  highlightShipmentId?: string;
   economic?: {
     product?: ProductId;
     metric: 'price' | 'demand' | 'stock' | 'coverage';
@@ -306,22 +309,15 @@ export function WorldMap({
               .filter(
                 (s) =>
                   !s.delivered &&
+                  (!world.requireRoadRoutes ||
+                    s.routeSource === 'osrm' ||
+                    s.mapRouteSource === 'osrm') &&
                   (ownership !== 'mine' ||
                     s.buyerId === actor ||
                     s.sellerId === actor ||
                     s.carrierId === actor),
               )
-              .map((s) => {
-                const origin = world.establishments.find((e) => e.id === s.originId)!,
-                  dest = world.establishments.find((e) => e.id === s.destinationId)!;
-                return (
-                  s.route ??
-                  world.routes[`${origin.propertyId}:${dest.propertyId}`]?.coordinates ?? [
-                    world.properties.find((p) => p.id === origin.propertyId)!.coordinates,
-                    world.properties.find((p) => p.id === dest.propertyId)!.coordinates,
-                  ]
-                );
-              })
+              .map((s) => shipmentRoute(world, s))
           : [];
     (m.getSource('routes') as GeoJSONSource).setData({
       type: 'FeatureCollection',
@@ -359,23 +355,34 @@ export function WorldMap({
                 (ownership !== 'mine' || [s.buyerId, s.sellerId, s.carrierId].includes(actor)),
             )
           : []);
-    const moving = items.map((s) => {
-      const origin = world.establishments.find((e) => e.id === s.originId)!,
-        dest = world.establishments.find((e) => e.id === s.destinationId)!;
-      const path = s.route ??
-        world.routes[`${origin.propertyId}:${dest.propertyId}`]?.coordinates ?? [
-          world.properties.find((p) => p.id === origin.propertyId)!.coordinates,
-          world.properties.find((p) => p.id === dest.propertyId)!.coordinates,
-        ];
-      const element = document.createElement('div');
-      element.className = `shipment-truck${shipmentGroup ? ' grouped' : ''}`;
-      element.tabIndex = 0;
-      element.setAttribute('role', 'img');
-      element.dataset.shipmentId = s.id;
-      element.innerHTML = renderToStaticMarkup(<Truck size={20} />);
-      const marker = new maplibregl.Marker({ element }).setLngLat(path[0]).addTo(m);
-      return { s, path, lengths: routeLengths(path), element, marker };
-    });
+    const moving = items
+      .filter(
+        (s) => !world.requireRoadRoutes || s.routeSource === 'osrm' || s.mapRouteSource === 'osrm',
+      )
+      .map((s) => {
+        const path = shipmentRoute(world, s);
+        const element = document.createElement('div');
+        element.className = `shipment-truck${shipmentGroup ? ' grouped' : ''}`;
+        element.tabIndex = 0;
+        element.setAttribute('role', 'img');
+        element.dataset.shipmentId = s.id;
+        element.innerHTML = renderToStaticMarkup(<Truck size={20} />);
+        const marker = new maplibregl.Marker({ element }).setLngLat(path[0]).addTo(m);
+        return { s, path, lengths: routeLengths(path), element, marker };
+      });
+    if (highlightShipmentId) {
+      const selected = moving.find((item) => item.s.id === highlightShipmentId);
+      if (selected)
+        m.flyTo({
+          center: positionAlongRoute(
+            selected.path,
+            shipmentStatus(selected.s, Date.now()).progress,
+            selected.lengths,
+          ).position,
+          zoom: Math.max(m.getZoom(), 11),
+          duration: 500,
+        });
+    }
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let frame = 0,
       last = 0;
@@ -386,19 +393,19 @@ export function WorldMap({
           properties: Record<string, never>;
           geometry: { type: 'LineString'; coordinates: Position[] };
         }[] = [];
-        for (const [index, item] of moving.entries()) {
+        for (const item of moving) {
           const status = shipmentStatus(item.s, Date.now()),
             point = positionAlongRoute(item.path, status.progress, item.lengths);
           item.marker.setLngLat(point.position);
-          const columns = Math.min(4, moving.length),
-            rows = Math.ceil(moving.length / columns);
-          item.element.style.marginLeft = shipmentGroup
-            ? `${((index % columns) - (columns - 1) / 2) * 34}px`
-            : '0px';
-          item.element.style.marginTop = shipmentGroup
-            ? `${(Math.floor(index / columns) - (rows - 1) / 2) * 34}px`
-            : '0px';
+          item.element.classList.toggle('focused', item.s.id === highlightShipmentId);
+          const icon = item.element.querySelector('svg');
+          if (icon)
+            (icon as SVGElement).style.transform = 'rotate(' + (point.bearing - 90) + 'deg)';
           item.element.dataset.progress = status.progress.toFixed(4);
+          item.element.dataset.longitude = String(point.position[0]);
+          item.element.dataset.latitude = String(point.position[1]);
+          item.element.dataset.routeSource =
+            item.s.mapRouteSource ?? item.s.routeSource ?? 'estimate';
           item.element.classList.toggle('delivered', item.s.delivered);
           item.element.title = `${world.vehicles.find((v) => v.id === item.s.vehicleId)?.name ?? item.s.vehicleId} · ${status.phase} · ${Math.round(status.progress * 100)}% do trajeto · ${item.s.quantity} ${products[item.s.product].unit} de ${products[item.s.product].name}`;
           item.element.setAttribute('aria-label', item.element.title);
@@ -428,6 +435,7 @@ export function WorldMap({
     ready,
     shipment,
     shipmentGroup,
+    highlightShipmentId,
     world.shipments,
     layers.routes,
     ownership,
@@ -564,9 +572,36 @@ export function WorldMap({
       {!mini && (
         <button
           className="map-recenter"
-          aria-label="Voltar à região de Campinas"
-          title="Voltar à região de Campinas"
-          onClick={() => map.current?.flyTo({ center: [-47.31, -22.88], zoom: 10.05 })}
+          aria-label={
+            route || shipmentGroup || layers.routes
+              ? 'Ver rota inteira'
+              : 'Voltar à região de Campinas'
+          }
+          title={
+            route || shipmentGroup || layers.routes
+              ? 'Ver rota inteira'
+              : 'Voltar à região de Campinas'
+          }
+          onClick={() => {
+            const selected =
+              shipmentGroup ??
+              (shipment
+                ? [shipment]
+                : layers.routes
+                  ? world.shipments.filter(
+                      (s) =>
+                        !s.delivered &&
+                        (ownership !== 'mine' ||
+                          [s.buyerId, s.sellerId, s.carrierId].includes(actor)),
+                    )
+                  : []);
+            const points = route ?? selected.flatMap((s) => shipmentRoute(world, s));
+            if (points.length > 1) {
+              const bounds = new maplibregl.LngLatBounds();
+              points.forEach((p) => bounds.extend(p));
+              map.current?.fitBounds(bounds, { padding: 80, maxZoom: 12, duration: 500 });
+            } else map.current?.flyTo({ center: [-47.31, -22.88], zoom: 10.05 });
+          }}
         >
           <LocateFixed size={19} />
         </button>

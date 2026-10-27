@@ -1,4 +1,12 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  type ReactNode,
+} from 'react';
 import type {
   World,
   Command,
@@ -6,6 +14,7 @@ import type {
   ProductId,
 } from '../../../../packages/simulation/src/model';
 import { Factory, Store, Sprout, Pickaxe, Truck, Warehouse } from 'lucide-react';
+import { Notice } from '../components/Notice';
 
 export const cr = (value: number, decimals = 2) =>
   (value / 100).toLocaleString('pt-BR', {
@@ -81,6 +90,7 @@ export const useGame = () => {
   return g;
 };
 export function GameProvider({ children }: { children: ReactNode }) {
+  const latestWorld = useRef<World | null>(null);
   const [world, setWorld] = useState<World | null>(null),
     [error, setError] = useState('');
   const [actor, changeActor] = useState(() =>
@@ -102,6 +112,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const response = await fetch('/api/world');
     if (!response.ok) throw new Error('O servidor não respondeu.');
     const next: World = await response.json();
+    latestWorld.current = next;
     setWorld((previous) =>
       previous?.revision === next.revision &&
       Object.keys(previous.routes).length === Object.keys(next.routes).length
@@ -121,8 +132,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(timer);
   }, [refresh]);
   useEffect(() => {
-    if (!toast) return;
-    const timer = setTimeout(() => setToast(undefined), 6000);
+    if (!toast || toast.error) return;
+    const timer = setTimeout(() => setToast(undefined), 9000);
     return () => clearTimeout(timer);
   }, [toast]);
   const notice = (message: string, isError = false) =>
@@ -152,6 +163,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error);
+      latestWorld.current = result;
       setWorld(result);
       notice(message);
       return true;
@@ -198,7 +210,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
           navigate('map');
         },
         openBusiness: (id) => {
-          const e = world.establishments.find((x) => x.id === id);
+          const live = latestWorld.current ?? world;
+          const e = live.establishments.find((x) => x.id === id);
           if (!e) return;
           if (e.companyId !== actor) {
             const property = world.properties.find((p) => p.id === e.propertyId)!;
@@ -210,11 +223,13 @@ export function GameProvider({ children }: { children: ReactNode }) {
           setBusinessId(id);
           localStorage.setItem('aftermarket.business', id);
           navigate(
-            e.category === 'retail'
-              ? 'retail'
-              : e.category === 'logistics'
-                ? 'carrier'
-                : 'industry',
+            e.installed === false && e.category !== 'retail'
+              ? 'industry'
+              : e.category === 'retail'
+                ? 'retail'
+                : e.category === 'logistics'
+                  ? 'carrier'
+                  : 'industry',
           );
         },
         openMarket: (next) => {
@@ -230,19 +245,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           {error}
         </div>
       )}
-      {toast && (
-        <div
-          className={`toast ${toast.error ? 'error' : ''}`}
-          role={toast.error ? 'alert' : 'status'}
-          key={toast.id}
-        >
-          <span>{toast.error ? '!' : '✓'}</span>
-          {toast.message}
-          <button aria-label="Fechar mensagem" onClick={() => setToast(undefined)}>
-            ×
-          </button>
-        </div>
-      )}
+      {toast && <Notice key={toast.id} {...toast} onClose={() => setToast(undefined)} />}
     </GameContext.Provider>
   );
 }

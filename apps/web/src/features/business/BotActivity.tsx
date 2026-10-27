@@ -3,7 +3,7 @@ import { useGame, cr, num } from '../../lib/game';
 import { Badge, Select, Progress } from '../../components/ui';
 import { EconomicChart } from '../../components/EconomicChart';
 import { institutional } from '../../../../../packages/simulation/src/competition';
-import { botCapabilities } from '../../../../../packages/simulation/src/director';
+import { Pagination, usePagination } from '../../components/Pagination';
 import { gameCalendar } from '../../../../../packages/simulation/src/operations';
 export function BotActivity() {
   const { world } = useGame();
@@ -21,8 +21,10 @@ export function BotActivity() {
   );
   const actions = (world.botActivity ?? [])
     .filter((a) => bots.some((b) => b.id === a.companyId))
-    .slice(-15)
     .reverse();
+  const page = usePagination(actions, (a) =>
+    [a.text, world.companies.find((c) => c.id === a.companyId)?.name].join(' '),
+  );
   const kinds = [
     'createPurchaseRequest',
     'proposeOrder',
@@ -83,8 +85,9 @@ export function BotActivity() {
       <div className="business-two-col">
         <div>
           <h3>Últimas decisões observadas</h3>
+          <Pagination value={page} label="ações dos bots" />
           {actions.length ? (
-            actions.map((a, i) => (
+            page.rows.map((a, i) => (
               <div className="bot-event" key={`${a.companyId}-${a.at}-${i}`}>
                 <Badge tone="blue">BOT</Badge>
                 <div>
@@ -132,8 +135,9 @@ export function BotActivity() {
             }}
           />
           <p className="small muted">
-            Capacidades da política v1: {botCapabilities.join(', ')}. Novas receitas devem estar
-            cobertas pelos perfis e testes de atualização dos bots.
+            Concorrentes negociam, produzem, contratam transporte, disputam projetos, investem na
+            equipe e avaliam expansão ou recuperação. As decisões mostradas foram executadas com
+            dinheiro e estoques próprios.
           </p>
         </div>
       </div>

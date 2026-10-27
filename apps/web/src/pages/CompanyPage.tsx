@@ -1,8 +1,12 @@
 import { useState } from 'react';
 import { FileText, ChartNoAxesCombined, Box, Truck, Factory, Download } from 'lucide-react';
 import { useGame, cr, num } from '../lib/game';
-import { PageHeading, Stat, Panel, Rows, Badge, LineChart, Select, Modal } from '../components/ui';
+import { PageHeading, Stat, Panel, Rows, Badge, Select, Modal } from '../components/ui';
 import { operatingCosts } from '../../../../packages/simulation/src/metrics';
+import { EconomicChart } from '../components/EconomicChart';
+import { Recovery } from '../features/business/Recovery';
+import { arrears, outstandingLoans } from '../../../../packages/simulation/src/design';
+import { gameCalendar } from '../../../../packages/simulation/src/operations';
 import type { ProductId } from '../../../../packages/simulation/src/model';
 export function CompanyPage() {
   const { world, actor, notice } = useGame();
@@ -14,7 +18,7 @@ export function CompanyPage() {
   const ledger = world.ledger.filter((e) => e.from === actor || e.to === actor),
     filtered = !period ? ledger : ledger.filter((e) => e.at >= Date.now() - Number(period) * 60000);
   const revenue = units.reduce((n, e) => n + e.revenue, 0),
-    expenses = units.reduce((n, e) => n + e.expenses, 0),
+    expenses = units.reduce((n, e) => n + e.expenses, 0) + (company.financingExpense ?? 0),
     profit = revenue - expenses;
   const propertyAssets = world.properties
       .filter((p) => p.ownerId === actor)
@@ -35,20 +39,27 @@ export function CompanyPage() {
       .filter((s) => s.buyerId === actor && !s.delivered)
       .reduce((n, s) => n + s.cost + s.freight, 0),
     vehicles = fleet.reduce((n, v) => n + (v.purchasePrice ?? 28000000), 0);
-  const netWorth = company.balance + propertyAssets + inventory + wip + inTransit + vehicles;
-  const first = filtered[0]?.at ?? world.createdAt,
-    last = Math.max(Date.now(), first + 1);
-  let total = 0;
-  const points = Array.from({ length: 30 }, (_, i) => {
-    const from = first + ((last - first) * i) / 30,
-      to = first + ((last - first) * (i + 1)) / 30;
-    total += filtered
-      .filter((e) => e.at >= from && e.at <= to && (i === 0 || e.at > from))
-      .reduce((n, e) => n + (e.to === actor ? e.amount : -e.amount), 0);
-    return total;
+  const assets = company.balance + propertyAssets + inventory + wip + inTransit + vehicles;
+  const liabilities = arrears(world, actor) + outstandingLoans(world, actor);
+  const equipment = units.reduce((n, e) => n + (e.installationValue ?? 0), 0);
+  const netWorth = assets + equipment - liabilities;
+  const ordered = [...filtered].sort((a, b) => a.at - b.at);
+  const first = ordered[0]?.at ?? world.updatedAt,
+    last = ordered.at(-1)?.at ?? first;
+  const bucketWidth = Math.max(1, Math.ceil((last - first) / 200));
+  const buckets = new Map<number, number>();
+  for (const l of ordered) {
+    const at = first + Math.floor((l.at - first) / bucketWidth) * bucketWidth;
+    buckets.set(at, (buckets.get(at) ?? 0) + (l.to === actor ? l.amount : -l.amount));
+  }
+  let cumulative = 0;
+  const timeline = [...buckets].map(([at, change]) => {
+    cumulative += change;
+    return { at, value: cumulative };
   });
+  const points = timeline.map((p) => p.value);
   const composition = [
-    { label: 'Imóveis e instalações', amount: propertyAssets, color: '#78a9c5' },
+    { label: 'Imóveis e equipamentos', amount: propertyAssets + equipment, color: '#78a9c5' },
     { label: 'Frota de veículos', amount: vehicles, color: '#c5a16b' },
     { label: 'Estoques e produção', amount: inventory + wip + inTransit, color: '#75b593' },
     { label: 'Caixa disponível', amount: company.balance, color: '#7e929d' },
@@ -103,7 +114,7 @@ export function CompanyPage() {
           <Stat
             label="Patrimônio líquido"
             value={cr(netWorth)}
-            note="caixa e ativos, sem dívidas neste cenário"
+            note="ativos menos obrigações e crédito pendente"
           />
           <Stat
             label="Receita registrada"
@@ -142,11 +153,41 @@ export function CompanyPage() {
               }
             >
               <div className="panel-content">
-                <LineChart
-                  values={points}
-                  labels={['Início', '20%', '40%', '60%', '80%', 'Agora']}
-                  money
+                <EconomicChart
+                  label="Fluxo de caixa acumulado observado, em reais"
+                  height={340}
+                  option={{
+                    tooltip: {
+                      trigger: 'axis',
+                      valueFormatter: (v: unknown) => cr(Number(v) * 100),
+                    },
+                    xAxis: {
+                      type: 'category',
+                      data: timeline.map((p) =>
+                        gameCalendar(world, p.at).date.toLocaleString('pt-BR', {
+                          timeZone: 'UTC',
+                          day: '2-digit',
+                          month: '2-digit',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          second: '2-digit',
+                        }),
+                      ),
+                    },
+                    yAxis: { type: 'value', name: 'R$ acumulados' },
+                    series: [
+                      {
+                        name: 'Fluxo líquido acumulado (R$)',
+                        type: 'line',
+                        showSymbol: points.length < 20,
+                        data: points.map((v) => v / 100),
+                        areaStyle: { opacity: 0.12 },
+                        markLine: { silent: true, data: [{ yAxis: 0 }] },
+                      },
+                    ],
+                  }}
                 />
+
                 <p className="muted small">
                   Movimentação efetiva de caixa em reais. Aquisições e produção capitalizada alteram
                   o caixa antes do resultado operacional.
@@ -205,7 +246,7 @@ export function CompanyPage() {
                     <i
                       key={c.label}
                       style={{
-                        width: `${(c.amount / Math.max(netWorth, 1)) * 100}%`,
+                        width: `${(c.amount / Math.max(assets + equipment, 1)) * 100}%`,
                         background: c.color,
                       }}
                     />
@@ -215,7 +256,7 @@ export function CompanyPage() {
                   <div className="composition-row" key={c.label}>
                     <i style={{ background: c.color }} />
                     <span>{c.label}</span>
-                    <strong>{num((c.amount / Math.max(netWorth, 1)) * 100)}%</strong>
+                    <strong>{num((c.amount / Math.max(assets + equipment, 1)) * 100)}%</strong>
                   </div>
                 ))}
               </div>
@@ -266,6 +307,7 @@ export function CompanyPage() {
             </Panel>
           </div>
         </div>
+        <Recovery />
       </div>
       {details && (
         <Modal title="Balanço patrimonial" onClose={() => setDetails(false)}>
@@ -273,11 +315,12 @@ export function CompanyPage() {
             rows={[
               { label: 'Caixa', value: cr(company.balance) },
               { label: 'Imóveis e instalações', value: cr(propertyAssets) },
+              { label: 'Equipamentos capitalizados', value: cr(equipment) },
               { label: 'Frota de veículos', value: cr(vehicles) },
               { label: 'Estoque disponível', value: cr(inventory) },
               { label: 'Materiais em produção', value: cr(wip) },
               { label: 'Mercadoria em trânsito', value: cr(inTransit) },
-              { label: 'Passivos', value: cr(0) },
+              { label: 'Passivos', value: cr(liabilities) },
               { label: 'Patrimônio líquido', value: cr(netWorth) },
             ]}
           />

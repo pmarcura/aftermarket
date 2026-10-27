@@ -21,7 +21,7 @@ test('compra, frete, entrega e produção alteram o estado real e persistem apó
   const before = (await (await request.get('/api/world')).json()) as World;
   await page.getByRole('button', { name: 'Continuar para frete' }).click();
   await page
-    .getByRole('button', { name: 'Selecionar transportadora', exact: true })
+    .getByRole('button', { name: /Selecionar /, exact: true })
     .first()
     .click();
   await page.getByRole('button', { name: 'Contratar e comprar' }).click();

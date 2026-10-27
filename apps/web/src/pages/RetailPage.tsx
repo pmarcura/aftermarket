@@ -24,6 +24,7 @@ import { SupplyPlanner } from '../features/business/SupplyPlanner';
 import { Stock } from '../features/business/Stock';
 import { SalesCatalog } from '../features/business/SalesCatalog';
 import { Workforce } from '../features/business/Workforce';
+import { Installation } from '../features/business/Installation';
 import { Orders } from '../features/business/Orders';
 import { BusinessFinance, Consumption } from '../features/business/Analytics';
 
@@ -48,6 +49,21 @@ export function RetailPage() {
           </button>
         }
       />
+    );
+  if (e.installed === false)
+    return (
+      <>
+        <PageHeading
+          eyebrow="Meus Negócios / Instalação"
+          title={e.name}
+          description="Prepare sua loja em etapas: imóvel, equipamento, equipe e abastecimento."
+        />
+        <div className="page-body">
+          <Panel>
+            <Installation establishment={e} onInstalled={() => setTab('Funcionários')} />
+          </Panel>
+        </div>
+      </>
     );
   const p = world.properties.find((p) => p.id === e.propertyId)!,
     region = regionFor(p.coordinates, p.city);

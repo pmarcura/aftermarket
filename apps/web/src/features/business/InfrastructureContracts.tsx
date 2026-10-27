@@ -1,3 +1,4 @@
+import { FleetPicker } from '../../components/FleetPicker';
 import { useState } from 'react';
 import { useGame, cr, num } from '../../lib/game';
 import { Badge, Empty, Modal, Rows, Select, Progress } from '../../components/ui';
@@ -13,6 +14,8 @@ import {
 } from '../../../../../packages/simulation/src/operations';
 import { quote } from '../../../../../packages/simulation/src/engine';
 import { useClock } from '../../lib/clock';
+import { useRoute } from '../../lib/routing';
+import { Pagination, usePagination } from '../../components/Pagination';
 export function InfrastructureContracts() {
   const { world, actor, run, pending, navigate, focusMap } = useGame(),
     now = useClock();
@@ -31,6 +34,9 @@ export function InfrastructureContracts() {
     .filter((c) => (!state || c.state === state) && (!status || c.status === status))
     .slice()
     .reverse();
+  const page = usePagination(contracts, (c) =>
+    [c.id, c.title, c.municipality, c.state, products[c.product].name].join(' '),
+  );
   const current = world.infrastructure.find((c) => c.id === selected?.id),
     origin = world.establishments.find((e) => e.id === originId && e.companyId === actor);
   const q =
@@ -42,6 +48,10 @@ export function InfrastructureContracts() {
         (e) => e.companyId === actor && (e.inventory[current.product] ?? 0) > 0,
       )
     : [];
+  const routeLoading = useRoute(
+    origin?.propertyId,
+    world.establishments.find((e) => e.id === current?.destinationId)?.propertyId,
+  );
   return (
     <div className="business-section">
       <div className="panel-content">
@@ -116,9 +126,10 @@ export function InfrastructureContracts() {
           <option value="expired">Encerrado sem fornecedor</option>
         </Select>
       </div>
-      {contracts.length ? (
+      <Pagination value={page} label="contratos públicos" />
+      {page.rows.length ? (
         <div className="infrastructure-cards">
-          {contracts.slice(0, 40).map((c) => {
+          {page.rows.map((c) => {
             const destination = world.establishments.find((e) => e.id === c.destinationId)!,
               p = world.properties.find((p) => p.id === destination.propertyId)!,
               open = c.status === 'open' && (!c.biddingEndsAt || now < c.biddingEndsAt),
@@ -167,7 +178,7 @@ export function InfrastructureContracts() {
                 </div>
                 {c.referencePrice && (
                   <p className="formula-note">
-                    Referência interna {cr(c.referencePrice)} × 1,25 = teto {cr(cap)}. Os
+                    Referência interna protegida {cr(c.referencePrice)} × 1,25 = teto {cr(cap)}. Os
                     fornecedores podem propor descontos. A referência é congelada neste edital.
                   </p>
                 )}
@@ -275,7 +286,12 @@ export function InfrastructureContracts() {
         />
       )}
       {current && (
-        <Modal title="Enviar proposta ao contrato público" onClose={() => setSelected(undefined)}>
+        <Modal
+          title="Enviar proposta ao contrato público"
+          onClose={() => setSelected(undefined)}
+          wide
+          formLayout
+        >
           <p>
             {current.title} · {num(current.quantity)} {products[current.product].unit}. Propor não
             despacha nem recebe dinheiro.
@@ -292,23 +308,15 @@ export function InfrastructureContracts() {
               </option>
             ))}
           </Select>
-          <Select
-            label="Frota da proposta pública"
+          <FleetPicker
+            originId={originId}
+            destinationId={current.destinationId}
+            product={current.product}
+            quantity={current.quantity}
             value={carrier}
-            onChange={(ev) => setCarrier(ev.target.value)}
-          >
-            <option value="">Escolher transportadora</option>
-            {world.companies
-              .filter(
-                (c) =>
-                  (c.bot || c.id === actor) && world.vehicles.some((v) => v.companyId === c.id),
-              )
-              .map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.id === actor ? 'Minha frota' : c.name}
-                </option>
-              ))}
-          </Select>
+            onChange={setCarrier}
+            label="Frota da proposta pública"
+          />
           <label className="field">
             Preço proposto por unidade (R$)
             <input
@@ -348,6 +356,7 @@ export function InfrastructureContracts() {
             className="primary full"
             disabled={
               pending ||
+              routeLoading ||
               !origin ||
               !q?.compatible ||
               price <= 0 ||

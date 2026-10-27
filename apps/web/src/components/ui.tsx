@@ -190,11 +190,13 @@ export function Modal({
   children,
   onClose,
   wide = false,
+  formLayout = false,
 }: {
   title: string;
   children: ReactNode;
   onClose: () => void;
   wide?: boolean;
+  formLayout?: boolean;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
@@ -209,7 +211,7 @@ export function Modal({
   return (
     <dialog
       ref={ref}
-      className={`modal ${wide ? 'wide-modal' : ''}`}
+      className={`modal ${wide ? 'wide-modal' : ''} ${formLayout ? 'form-modal' : ''}`}
       onCancel={onClose}
       onClick={(e) => {
         if (e.target === e.currentTarget) {
@@ -230,82 +232,8 @@ export function Modal({
           <X size={20} />
         </button>
       </div>
+      <div className="modal-alert-slot" />
       <div className="modal-body">{children}</div>
     </dialog>
-  );
-}
-export function LineChart({
-  values,
-  labels = ['Jan', 'Mar', 'Mai', 'Jul', 'Set', 'Dez'],
-  money = false,
-}: {
-  values: number[];
-  labels?: string[];
-  money?: boolean;
-}) {
-  const min = Math.min(0, ...values),
-    max = Math.max(...values, 1),
-    span = max - min || 1;
-  const points = values
-    .map(
-      (v, i) =>
-        `${50 + (i / Math.max(1, values.length - 1)) * 920},${210 - ((v - min) / span) * 180}`,
-    )
-    .join(' ');
-  return (
-    <div className="chart">
-      <svg
-        viewBox="0 0 1000 250"
-        role="img"
-        aria-label={`Gráfico de ${values.length} pontos, mínimo ${min.toLocaleString('pt-BR')} e máximo ${max.toLocaleString('pt-BR')}${money ? ' centavos' : ''}`}
-      >
-        <defs>
-          <linearGradient id={money ? 'money-fill' : 'demand-fill'} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#59bca2" stopOpacity=".22" />
-            <stop offset="100%" stopColor="#59bca2" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        {[0, 1, 2, 3, 4].map((i) => (
-          <g key={i}>
-            <line
-              x1="50"
-              x2="975"
-              y1={30 + i * 45}
-              y2={30 + i * 45}
-              stroke="#31454e"
-              strokeWidth="1"
-            />
-            <text x="40" y={34 + i * 45} textAnchor="end" fill="#8ca2ae" fontSize="11">
-              {Math.round((max - (i * span) / 4) / (money ? 100 : 1)).toLocaleString('pt-BR', {
-                notation: 'compact',
-              })}
-            </text>
-          </g>
-        ))}
-        <polygon
-          points={`50,210 ${points} 970,210`}
-          fill={`url(#${money ? 'money-fill' : 'demand-fill'})`}
-        />
-        <polyline
-          points={points}
-          fill="none"
-          stroke="#62c2aa"
-          strokeWidth="3"
-          strokeLinejoin="round"
-        />
-        {labels.map((v, i) => (
-          <text
-            key={v + i}
-            x={50 + (i / Math.max(1, labels.length - 1)) * 920}
-            y="242"
-            textAnchor={i === 0 ? 'start' : i === labels.length - 1 ? 'end' : 'middle'}
-            fill="#93a8b2"
-            fontSize="12"
-          >
-            {v}
-          </text>
-        ))}
-      </svg>
-    </div>
   );
 }

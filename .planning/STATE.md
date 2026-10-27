@@ -30,11 +30,11 @@ O jogo roda localmente: mapa real de SP–MG, compra de imóveis, produção, es
 
 ## Próximo passo
 
-Começar a **B · Redesenhar a economia**, primeiro no papel com o Pedro (designer e dono do produto): semente, destino do farelo, compradores do aço, nível de realismo.
+Etapa **B**, passo 3: corrigir as fórmulas M02–M05 e M07 que enganam os bots. Depois, levar a economia alvo ao motor.
 
-Decisões do Pedro em 27/10 (D-028): mundo semanal livre; realismo enxuto com cadeias completas (semente comprável, vaca que come ração do farelo); fechar metal e alimentos antes de crescer; aço vira caminhões e utensílios, com logística melhor.
+Decisões do Pedro em 27/10 (D-028, D-029): mundo semanal livre; realismo enxuto com cadeias completas; fechar metal e alimentos antes de crescer; aço vira caminhões e utensílios; sucata já; carne depois do playtest; relógio 1 h real = 6 h de jogo.
 
-Proposta de desenho aguardando reação: [`docs/economia-proposta.html`](../docs/economia-proposta.html). Em aberto: sucata/reciclagem já, carne depois do playtest, ritmo 1 h real = 6 h de jogo.
+Números da economia alvo em [ECONOMIA-ALVO](../docs/product/ECONOMIA-ALVO.md), calculados por `npm run economy:design` e protegidos por `tests/economy-design.test.ts`. Ainda não estão no motor.
 
 ## Como rodar
 

@@ -86,3 +86,7 @@ Regra pode fixar unidade própria como origem; quando esgota, aguarda, sem troca
 - **Aço ganha compradores privados:** fábrica de bens de consumo (utensílios para lojas) e caminhões para as frotas, junto com uma melhoria da mecânica de logística. O governo continua comprando para obras.
 
 Proposta de desenho em `docs/economia-proposta.html`. Nenhuma regra do motor mudou nesta decisão.
+
+### D-029 · Proposta 1 aprovada e regras de calibração (27/10/2026)
+
+O Pedro aprovou a proposta 1 das cadeias, incluindo sucata já, carne depois do playtest e relógio de 1 hora real = 6 horas de jogo. Para calibrar: preços dentro das faixas de referência; parcela de consumidores de 1% para 2%, para o mundo comportar cerca de 45 empresas; custo de equipamento por receita como botão de ajuste, com retorno alvo de 35 dias (indústria, mina), 30 (fazenda) e 40 (loja); loja atendendo 50 unidades por pessoa por rodada. Números e hipóteses em `ECONOMIA-ALVO.md`, fonte única em `economy-design.ts`.

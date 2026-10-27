@@ -40,6 +40,7 @@
     "mechanics:report": "tsx scripts/report-mechanics.ts",
     "mathematics:audit": "tsx scripts/audit-mathematics.ts",
     "economy:report": "npm run resources:catalog && npm run mathematics:audit -- --write-doc && npm run mechanics:report -- --world=.runtime/world.sqlite --write-doc",
+    "economy:design": "tsx scripts/economy-design.ts",
     "capture:ui": "tsx scripts/capture-ui.ts"
   },
   "dependencies": {

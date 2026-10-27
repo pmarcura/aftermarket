@@ -13,6 +13,7 @@ import {
   Empty,
 } from '../components/ui';
 import type { Vehicle } from '../../../../packages/simulation/src/model';
+import { freeCash } from '../../../../packages/simulation/src/design';
 export function CarrierPage() {
   const { world, actor, navigate, run, pending } = useGame();
   const [tab, setTab] = useState('Frota'),
@@ -27,6 +28,12 @@ export function CarrierPage() {
   const logistics = world.establishments.find(
     (e) => e.companyId === actor && e.category === 'logistics',
   );
+  const vehiclePrice = 28000000;
+  const cashAvailable = freeCash(world, actor);
+  const vehicleDepot = world.establishments.find(
+    (e) => e.companyId === actor && (e.category === 'logistics' || e.category === 'warehouse'),
+  );
+  const cashMissing = Math.max(0, vehiclePrice - cashAvailable);
   return (
     <>
       <PageHeading
@@ -308,23 +315,45 @@ export function CarrierPage() {
           </p>
           <Rows
             rows={[
-              { label: 'Preço de aquisição', value: cr(28000000) },
+              { label: 'Preço de aquisição', value: cr(vehiclePrice) },
+              { label: 'Caixa livre disponível', value: cr(cashAvailable) },
               {
-                label: 'Saldo após a compra',
-                value: cr(world.companies.find((c) => c.id === actor)!.balance - 28000000),
+                label: 'Caixa livre após a compra',
+                value: cashMissing ? 'Caixa insuficiente' : cr(cashAvailable - vehiclePrice),
               },
             ]}
           />
+          {(cashMissing > 0 || !vehicleDepot) && (
+            <p id="vehicle-purchase-blocked" role="status" className="form-message error">
+              {!vehicleDepot
+                ? 'Adquira uma propriedade logística ou um armazém para receber o veículo.'
+                : `Faltam ${cr(cashMissing)} de caixa livre. Revise os compromissos ou aumente o caixa antes de comprar.`}
+            </p>
+          )}
           <button
             className="primary full"
-            disabled={pending}
+            disabled={pending || cashMissing > 0 || !vehicleDepot}
+            aria-describedby={
+              cashMissing > 0 || !vehicleDepot ? 'vehicle-purchase-blocked' : undefined
+            }
             onClick={async () => {
               if (await run({ type: 'buyVehicle' }, 'Veículo adquirido e adicionado à frota.'))
                 setBuy(false);
             }}
           >
-            Comprar por {cr(28000000)}
+            Comprar por {cr(vehiclePrice)}
           </button>
+          {cashMissing > 0 && (
+            <button
+              className="secondary full"
+              onClick={() => {
+                setBuy(false);
+                navigate('company');
+              }}
+            >
+              Revisar caixa e compromissos
+            </button>
+          )}
         </Modal>
       )}
     </>

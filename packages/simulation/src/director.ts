@@ -4,6 +4,7 @@ import { institutional, publicReference, trainingQuote } from './competition';
 import { GAME_DAY, inventoryQuality, productionCapacity, productionQuality } from './operations';
 import { operatingCosts, productionCharges, marketView } from './metrics';
 import { arrears, freeCash, recoveryQuote, outstandingLoans } from './design';
+import { emitDecisionTrace, hasDecisionTrace, withDecisionSource } from './decision-trace';
 
 export const botCapabilities = [
   'production',
@@ -77,9 +78,37 @@ export function botRecoveryPlan(w: World, e: Establishment, at: number) {
   };
 }
 export function runBotDirector(w: World, at: number) {
+  const tracing = hasDecisionTrace(w);
+  const attempted = tracing ? new Set<string>() : undefined;
+  const pricing = tracing ? new Set<string>() : undefined;
+  const trace = (
+    companyId: string,
+    code: string,
+    message: string,
+    action: string,
+    establishmentId?: string,
+    targetId?: string,
+    productId?: ProductId,
+    outcome: 'blocked' | 'idle' = 'blocked',
+  ) => {
+    if (tracing)
+      emitDecisionTrace(w, {
+        at,
+        companyId,
+        source: 'director',
+        outcome,
+        action,
+        code,
+        message,
+        establishmentId,
+        targetId,
+        productId,
+      });
+  };
   const act = (actor: string, cmd: Command, text: string) => {
+    attempted?.add(actor);
     try {
-      execute(w, actor, cmd, at);
+      withDecisionSource(w, 'director', () => execute(w, actor, cmd, at));
       w.botActivity!.push({ at, companyId: actor, text, kind: cmd.type });
       return true;
     } catch (error) {
@@ -98,13 +127,34 @@ export function runBotDirector(w: World, at: number) {
             (e.inventory[o.product] ?? 0) >= o.quantity,
         )
         .sort((a, b) => (a.unitCosts[o.product] ?? 0) - (b.unitCosts[o.product] ?? 0));
+      if (tracing && !candidates.length)
+        trace(
+          o.buyerId,
+          'no-order-seller',
+          'Nenhum bot vendedor possui a quantidade pedida nesta rodada.',
+          'proposeOrder',
+          o.destinationId,
+          o.id,
+          o.product,
+        );
       for (const e of candidates.slice(0, 4)) {
         if (o.proposals?.some((p) => p.sellerId === e.companyId)) continue;
         const q = [e.companyId, 'transbrasil', 'rodoleste', 'expresso']
           .map((c) => quote(w, e.id, o.destinationId, o.product, o.quantity, c))
           .filter((q) => q.compatible && q.price <= o.maxFreight)
           .sort((a, b) => a.price - b.price)[0];
-        if (!q) continue;
+        if (!q) {
+          trace(
+            e.companyId,
+            'order-delivery-ineligible',
+            'Nenhum dos fretes avaliados foi compatível e ficou dentro do teto deste pedido.',
+            'proposeOrder',
+            e.id,
+            o.id,
+            o.product,
+          );
+          continue;
+        }
         const price = Math.max(
           1,
           w.offers.find((x) => x.establishmentId === e.id && x.product === o.product)?.price ??
@@ -145,6 +195,19 @@ export function runBotDirector(w: World, at: number) {
           buyer.id,
           { type: 'acceptProposal', orderId: o.id, proposalId: best.id },
           `Aceitou proposta de ${products[o.product].name}`,
+        );
+      else
+        trace(
+          buyer.id,
+          o.proposals?.length ? 'proposal-terms-ineligible' : 'awaiting-counterparty',
+          o.proposals?.length
+            ? 'Nenhuma proposta de terceiro atende à quantidade, preço e frete exigidos pelo comprador.'
+            : 'O comprador aguarda uma proposta da contraparte.',
+          'acceptProposal',
+          o.destinationId,
+          o.id,
+          o.product,
+          'idle',
         );
     }
     const negotiatedSeller = o.sellerId || o.proposals?.at(-1)?.sellerId;
@@ -230,6 +293,13 @@ export function runBotDirector(w: World, at: number) {
     }
     const debt = arrears(w, c.id),
       allUnits = w.establishments.filter((e) => e.companyId === c.id);
+    if (tracing && debt > 0 && freeCash(w, c.id) < debt)
+      trace(
+        c.id,
+        'debt-cash-shortfall',
+        'O caixa livre é menor que as obrigações que o diretor tenta regularizar integralmente.',
+        'payObligations',
+      );
     if (debt > 0 && freeCash(w, c.id) >= debt)
       act(
         c.id,
@@ -281,7 +351,16 @@ export function runBotDirector(w: World, at: number) {
     if (at - (c.lastRecoveryAt ?? w.season.startedAt) >= GAME_DAY * 7) {
       for (const e of allUnits.filter((e) => e.mothballed)) {
         const plan = botRecoveryPlan(w, e, at);
-        if (!plan) continue;
+        if (!plan) {
+          trace(
+            c.id,
+            'recovery-plan-unavailable',
+            'O cálculo de recuperação não aprovou um plano nesta rodada; este evento não atribui uma causa econômica adicional.',
+            'recover',
+            e.id,
+          );
+          continue;
+        }
         let needed = Math.max(0, plan.upfront - freeCash(w, c.id));
         if (needed > 0 && !w.loans!.some((l) => l.companyId === c.id && l.principal > l.repaid)) {
           needed = Math.max(100000, Math.ceil(needed / (1 - w.season.config.design.loanFee)));
@@ -294,7 +373,16 @@ export function runBotDirector(w: World, at: number) {
               'Financiou retomada com margem projetada e garantia',
             );
         }
-        if (freeCash(w, c.id) < plan.upfront) continue;
+        if (freeCash(w, c.id) < plan.upfront) {
+          trace(
+            c.id,
+            'recovery-upfront-cash',
+            'O caixa livre não cobre o desembolso inicial calculado para a recuperação.',
+            'recover',
+            e.id,
+          );
+          continue;
+        }
         if (arrears(w, c.id) > 0)
           act(
             c.id,
@@ -475,6 +563,7 @@ export function runBotDirector(w: World, at: number) {
             .filter((h) => h.establishmentId === e.id && h.product === id && h.at > at - GAME_DAY)
             .reduce((n, h) => n + h.desired, 0) || 100,
         );
+        const previousPrice = tracing ? e.prices[id] : undefined;
         e.prices[id] = Math.max(
           1,
           Math.round(
@@ -483,6 +572,20 @@ export function runBotDirector(w: World, at: number) {
               (c.strategy === 'quality' ? 1.25 : 1.14),
           ),
         );
+        if (tracing && previousPrice !== e.prices[id]) {
+          pricing!.add(c.id);
+          emitDecisionTrace(w, {
+            at,
+            companyId: c.id,
+            source: 'director',
+            outcome: 'executed',
+            action: 'retail-pricing',
+            code: 'retail-price-updated',
+            message: `Preço de ${products[id].name} ajustado para ${e.prices[id]} centavos pela regra de varejo.`,
+            establishmentId: e.id,
+            productId: id,
+          });
+        }
       }
     }
   }
@@ -504,13 +607,41 @@ export function runBotDirector(w: World, at: number) {
         : operatingCosts(w, e).total / Math.max(1, (e.inventory[o.product] ?? 0) / 3);
       const margin =
         w.companies.find((c) => c.id === e.companyId)!.strategy === 'value' ? 1.1 : 1.18;
+      const previousPrice = tracing ? o.price : undefined;
       o.price = Math.max(
         o.price,
         Math.round(
           ((e.unitCosts[o.product] ?? w.season.config.basePrices[o.product]) + overhead) * margin,
         ),
       );
+      if (tracing && previousPrice !== o.price) {
+        pricing!.add(e.companyId);
+        emitDecisionTrace(w, {
+          at,
+          companyId: e.companyId,
+          source: 'director',
+          outcome: 'executed',
+          action: 'wholesale-pricing',
+          code: 'wholesale-floor-updated',
+          message: `Preço de ${products[o.product].name} ajustado para ${o.price} centavos pelo piso operacional de atacado.`,
+          establishmentId: e.id,
+          productId: o.product,
+        });
+      }
     }
   }
   w.botActivity = w.botActivity!.slice(-1000);
+  if (tracing)
+    for (const bot of bots)
+      if (!attempted!.has(bot.id) && !pricing!.has(bot.id))
+        trace(
+          bot.id,
+          'no-command-selected',
+          'O diretor terminou a rodada sem selecionar comando ou alterar preço de varejo para este bot; a causa não foi inferida.',
+          'plan',
+          undefined,
+          undefined,
+          undefined,
+          'idle',
+        );
 }

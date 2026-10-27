@@ -5,7 +5,9 @@ import {
   type Establishment,
   type SupplyPolicy,
   type ProductId,
+  type Command,
 } from './model';
+import { emitDecisionTrace, hasDecisionTrace, withDecisionSource } from './decision-trace';
 import {
   GAME_DAY,
   inventoryQuality,
@@ -70,7 +72,24 @@ export function supplyCandidates(
   product: ProductId,
   quantity: number,
   policy: SupplyPolicy,
+  traceAt = w.updatedAt,
 ) {
+  const tracing = hasDecisionTrace(w);
+  const trace = (code: string, message: string, targetId?: string) => {
+    if (tracing)
+      emitDecisionTrace(w, {
+        at: traceAt,
+        companyId: e.companyId,
+        source: 'supply',
+        outcome: 'blocked',
+        action: 'select-source',
+        code,
+        message,
+        establishmentId: e.id,
+        productId: product,
+        targetId,
+      });
+  };
   const options: { origin: Establishment; price: number; offerId?: string; internal: boolean }[] =
     [];
   const pinned = policy.rules.find((r) => r.product === product)?.originId;
@@ -110,14 +129,38 @@ export function supplyCandidates(
               .map((c) => c.id),
           ]
         : [policy.carrierId];
+  if (tracing && !options.length)
+    trace(
+      pinned ? 'pinned-origin-unavailable' : 'no-stock-source',
+      pinned
+        ? 'A origem fixa não produziu opção com a titularidade e o estoque exigidos.'
+        : 'Nenhuma origem passou pelos filtros de origem, estoque e teto de preço da política.',
+    );
   return options
-    .filter((o) => inventoryQuality(o.origin, product) >= policy.minQuality)
+    .filter((o) => {
+      const eligible = inventoryQuality(o.origin, product) >= policy.minQuality;
+      if (!eligible)
+        trace(
+          'source-quality-below-minimum',
+          'A qualidade da origem ficou abaixo do mínimo configurado.',
+          o.origin.id,
+        );
+      return eligible;
+    })
     .flatMap((o) => {
       const amount = Math.min(
         quantity,
         availableStock(w, o.origin, product),
         storageQuantity(w, e, product),
       );
+      if (tracing && amount <= 0)
+        trace(
+          storageQuantity(w, e, product) <= 0
+            ? 'destination-storage-full'
+            : 'source-stock-unavailable',
+          'A quantidade admissível após estoque disponível e espaço comprometido é zero.',
+          o.origin.id,
+        );
       const quotes = [...new Set(carriers)]
         .filter((c) => w.companies.some((x) => x.id === c))
         .map((c) => quote(w, o.origin.id, e.id, product, amount, c))
@@ -132,13 +175,46 @@ export function supplyCandidates(
             quantity: q.compatible ? amount : allocated,
           };
         })
-        .filter(
-          ({ q, quantity }) =>
+        .filter(({ q, quantity }) => {
+          const eligible =
             q.compatible &&
             q.distanceKm <= policy.maxDistanceKm &&
             quantity > 0 &&
-            (!policy.maxFreightPerUnit || q.price / quantity <= policy.maxFreightPerUnit),
-        )
+            (!policy.maxFreightPerUnit || q.price / quantity <= policy.maxFreightPerUnit);
+          if (!eligible && tracing) {
+            if (q.routeRequired)
+              trace(
+                'road-route-pending',
+                'A cotação exige rota rodoviária ainda indisponível.',
+                q.carrierId,
+              );
+            else if (!q.compatible)
+              trace(
+                q.fleet.available === 0 ? 'fleet-unavailable' : 'load-incompatible',
+                `Cotação incompatível: ${q.unallocated} unidades não alocadas; ${q.fleet.available} veículos disponíveis.`,
+                q.carrierId,
+              );
+            else if (q.distanceKm > policy.maxDistanceKm)
+              trace(
+                'distance-limit',
+                'A distância cotada excedeu o máximo da política.',
+                o.origin.id,
+              );
+            else if (quantity <= 0)
+              trace(
+                'zero-load-quantity',
+                'A cotação não disponibilizou quantidade positiva.',
+                o.origin.id,
+              );
+            else
+              trace(
+                'freight-unit-limit',
+                'O frete por unidade excedeu o teto configurado.',
+                q.carrierId,
+              );
+          }
+          return eligible;
+        })
         .sort(
           (a, b) =>
             (o.price * a.quantity + a.q.price) / a.quantity -
@@ -309,6 +385,42 @@ export function supplyForecast(w: World, e: Establishment, policy: SupplyPolicy)
   };
 }
 export function runSupplyPolicies(w: World, at: number) {
+  const tracing = hasDecisionTrace(w);
+  const trace = (
+    e: Establishment,
+    code: string,
+    message: string,
+    productId?: ProductId,
+    outcome: 'blocked' | 'idle' = 'blocked',
+  ) => {
+    if (tracing)
+      emitDecisionTrace(w, {
+        at,
+        companyId: e.companyId,
+        source: 'supply',
+        outcome,
+        action: 'replenish',
+        code,
+        message,
+        establishmentId: e.id,
+        productId,
+      });
+  };
+  const executeSupply = (actor: string, command: Command) =>
+    withDecisionSource(w, 'supply', () => execute(w, actor, command, at));
+  if (tracing)
+    for (const e of w.establishments) {
+      if (e.supplyPolicy?.enabled && !e.enabled)
+        trace(e, 'operation-paused', 'A reposição não foi rodada porque a operação está pausada.');
+      else if (e.supplyPolicy && !e.supplyPolicy.enabled && e.supplyPolicy.rules.length)
+        trace(
+          e,
+          'supply-policy-disabled',
+          'A política de reposição está desativada; a automação produtiva é avaliada separadamente.',
+          undefined,
+          'idle',
+        );
+    }
   for (const e of w.establishments.filter((e) => e.enabled && e.supplyPolicy?.enabled)) {
     const policy = e.supplyPolicy!;
     e.supplyStatus = 'Estoque acima dos mínimos';
@@ -325,80 +437,101 @@ export function runSupplyPolicies(w: World, at: number) {
       e.supplyReorder ??= [];
       if (position >= rule.target) {
         e.supplyReorder = e.supplyReorder.filter((p) => p !== rule.product);
+        trace(
+          e,
+          'supply-target-covered',
+          'Estoque, remessas e pedidos pendentes já cobrem o alvo da regra.',
+          rule.product,
+          'idle',
+        );
         continue;
       }
-      if (position > rule.minimum && !e.supplyReorder.includes(rule.product)) continue;
+      if (position > rule.minimum && !e.supplyReorder.includes(rule.product)) {
+        trace(
+          e,
+          'above-reorder-minimum',
+          'A posição de estoque está acima do mínimo e não há reposição em curso.',
+          rule.product,
+          'idle',
+        );
+        continue;
+      }
       if (!e.supplyReorder.includes(rule.product)) e.supplyReorder.push(rule.product);
       const want = Math.min(rule.maxBuy, Math.max(0, rule.target - position));
-      if (want <= 0) continue;
-      let best = supplyCandidates(w, e, rule.product, want, policy)[0];
+      if (want <= 0) {
+        trace(
+          e,
+          'no-replenishment-quantity',
+          'O limite de compra e o alvo não produziram quantidade positiva.',
+          rule.product,
+          'idle',
+        );
+        continue;
+      }
+      let best = supplyCandidates(w, e, rule.product, want, policy, at)[0];
       if (!best) {
         e.supplyStatus = `Sem origem elegível para ${products[rule.product].name}`;
+        trace(e, 'no-eligible-source', e.supplyStatus, rule.product);
         continue;
       }
       const cash = freeCash(w, e.companyId) - policy.cashReserve;
       const limit = Math.min(cash, policy.dailyBudget - supplySpent(w, e, at).total);
       if (best.total > limit && best.price > 0) {
         const affordable = Math.min(best.quantity, Math.floor((limit - best.q.price) / best.price));
-        if (affordable > 0) best = supplyCandidates(w, e, rule.product, affordable, policy)[0];
+        if (affordable > 0) best = supplyCandidates(w, e, rule.product, affordable, policy, at)[0];
       }
       if (!best || best.total > limit) {
         e.supplyStatus = 'Orçamento diário ou reserva de caixa impede a compra';
+        if (tracing)
+          trace(
+            e,
+            cash <= policy.dailyBudget - supplySpent(w, e, at).total
+              ? 'cash-reserve'
+              : 'supply-daily-budget',
+            e.supplyStatus,
+            rule.product,
+          );
         continue;
       }
       try {
         if (best.internal)
-          execute(
-            w,
-            e.companyId,
-            {
-              type: 'transferStock',
-              originId: best.origin.id,
-              destinationId: e.id,
-              product: rule.product,
-              quantity: best.quantity,
-              carrierId: best.q.carrierId,
-              expectedFreight: best.q.price,
-            },
-            at,
-          );
+          executeSupply(e.companyId, {
+            type: 'transferStock',
+            originId: best.origin.id,
+            destinationId: e.id,
+            product: rule.product,
+            quantity: best.quantity,
+            carrierId: best.q.carrierId,
+            expectedFreight: best.q.price,
+          });
         else if (
           policy.purchaseMode === 'request' ||
           !w.companies.find((c) => c.id === best.origin.companyId)!.bot
         ) {
-          execute(
-            w,
-            e.companyId,
-            {
-              type: 'requestOrder',
-              reserveFunds: policy.reserveOrders,
-              offerId: best.offerId!,
-              destinationId: e.id,
-              quantity: best.quantity,
-              carrierId: best.q.carrierId,
-              maxFreight: Math.max(1, best.q.price),
-              deliveryDays: 3,
-              expectedUnitPrice: best.price,
-            },
-            at,
-          );
+          executeSupply(e.companyId, {
+            type: 'requestOrder',
+            reserveFunds: policy.reserveOrders,
+            offerId: best.offerId!,
+            destinationId: e.id,
+            quantity: best.quantity,
+            carrierId: best.q.carrierId,
+            maxFreight: Math.max(1, best.q.price),
+            deliveryDays: 3,
+            expectedUnitPrice: best.price,
+          });
           w.orders.at(-1)!.supplyManaged = true;
           e.supplyStatus = 'Pedido enviado; aguardando aceitação';
+          trace(e, 'awaiting-counterparty', e.supplyStatus, rule.product, 'idle');
           continue;
         } else
-          execute(
-            w,
-            e.companyId,
-            {
-              type: 'trade',
-              offerId: best.offerId!,
-              destinationId: e.id,
-              quantity: best.quantity,
-              carrierId: best.q.carrierId,
-              expectedTotal: best.total,
-            },
-            at,
-          );
+          executeSupply(e.companyId, {
+            type: 'trade',
+            offerId: best.offerId!,
+            destinationId: e.id,
+            quantity: best.quantity,
+            carrierId: best.q.carrierId,
+            expectedTotal: best.total,
+          });
         w.supplyHistory!.push({
           at,
           establishmentId: e.id,

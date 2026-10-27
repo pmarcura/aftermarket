@@ -103,14 +103,16 @@ export function freeCash(w: World, actor: string, exceptOrder?: string) {
   );
 }
 export function arrears(w: World, actor: string) {
-  return (w.obligations ?? [])
-    .filter((o) => o.companyId === actor)
-    .reduce((n, o) => n + o.amount - o.paid, 0);
+  let total = 0;
+  for (const obligation of w.obligations ?? [])
+    if (obligation.companyId === actor) total += obligation.amount - obligation.paid;
+  return total;
 }
 export function outstandingLoans(w: World, actor: string) {
-  return (w.loans ?? [])
-    .filter((l) => l.companyId === actor)
-    .reduce((n, l) => n + l.principal - l.repaid, 0);
+  let total = 0;
+  for (const loan of w.loans ?? [])
+    if (loan.companyId === actor) total += loan.principal - loan.repaid;
+  return total;
 }
 export function collateral(w: World, actor: string) {
   const property = w.properties.filter((p) => p.ownerId === actor).reduce((n, p) => n + p.price, 0);
@@ -148,22 +150,36 @@ export function recoveryQuote(w: World, actor: string, state: string, amount: nu
 }
 export function updatePublicBenchmarks(w: World, at: number) {
   initializeDesign(w, at);
-  for (const id of Object.keys(products) as ProductId[]) {
+  const dueProducts = (Object.keys(products) as ProductId[]).filter(
+    (id) => at - w.publicBenchmarks![id]!.at >= GAME_DAY,
+  );
+  if (!dueProducts.length) return;
+  const due = new Set(dueProducts);
+  const tradesByProduct = new Map<ProductId, World['ledger']>();
+  const since = at - GAME_DAY * w.season.config.design.referenceWindowDays;
+  // One read of the ledger for all references due today; grouping preserves
+  // each product's original ledger order and the existing median/limit rules.
+  for (const entry of w.ledger) {
+    if (
+      !entry.product ||
+      !due.has(entry.product) ||
+      entry.kind !== 'trade' ||
+      entry.channel !== 'wholesale' ||
+      !(entry.at >= since && entry.at <= at) ||
+      entry.from === entry.to ||
+      institution(entry.from) ||
+      institution(entry.to) ||
+      !((entry.quantity ?? 0) > 0) ||
+      !((entry.unitPrice ?? 0) > 0)
+    )
+      continue;
+    const trades = tradesByProduct.get(entry.product) ?? [];
+    trades.push(entry);
+    tradesByProduct.set(entry.product, trades);
+  }
+  for (const id of dueProducts) {
     const old = w.publicBenchmarks![id]!;
-    if (at - old.at < GAME_DAY) continue;
-    const trades = w.ledger.filter(
-      (l) =>
-        l.kind === 'trade' &&
-        l.channel === 'wholesale' &&
-        l.product === id &&
-        l.at >= at - GAME_DAY * w.season.config.design.referenceWindowDays &&
-        l.at <= at &&
-        l.from !== l.to &&
-        !institution(l.from) &&
-        !institution(l.to) &&
-        (l.quantity ?? 0) > 0 &&
-        (l.unitPrice ?? 0) > 0,
-    );
+    const trades = tradesByProduct.get(id) ?? [];
     const buyers = new Set(trades.map((l) => l.from)),
       sellers = new Set(trades.map((l) => l.to));
     const pairs = new Map<string, number[]>();

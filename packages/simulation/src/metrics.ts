@@ -13,12 +13,20 @@ import { productionCapacity, availableStock } from './operations';
 
 const clamp = (n: number, min = 0, max = 100) => Math.min(max, Math.max(min, n));
 export function regionFor(position: Position, city?: string) {
-  return (
-    regions.find((r) => r.name === city) ??
-    [...regions].sort(
-      (a, b) => distanceKm(a.coordinates, position) - distanceKm(b.coordinates, position),
-    )[0]
-  );
+  const named = regions.find((region) => region.name === city);
+  if (named) return named;
+  // Stable nearest-neighbour lookup: one distance per region instead of sorting
+  // the complete catalog and recalculating distances for every comparator.
+  let nearest = regions[0];
+  let nearestDistance = nearest ? distanceKm(nearest.coordinates, position) : Infinity;
+  for (let index = 1; index < regions.length; index++) {
+    const distance = distanceKm(regions[index].coordinates, position);
+    if (distance < nearestDistance) {
+      nearest = regions[index];
+      nearestDistance = distance;
+    }
+  }
+  return nearest;
 }
 export function seasonPrice(w: World, product: ProductId) {
   return w.season.config.basePrices[product];
@@ -131,6 +139,63 @@ export function householdDemand(w: World, regionId: string, product: ProductId) 
 function activeRecipe(w: World, e: Establishment) {
   return w.season.config.recipes.find((r) => r.id === e.specialization);
 }
+
+type TradeTotals = { tradedQuantity: number; tradedValue: number };
+type LedgerReadIndex = {
+  ledger: World['ledger'];
+  processed: number;
+  products: Map<ProductId, Map<string, TradeTotals>>;
+  regionStates: Map<string, string>;
+};
+const scopedLedgerIndexes = new WeakMap<World, LedgerReadIndex>();
+
+/**
+ * Internal laboratory optimization for a synchronous, isolated append-only run.
+ * Existing ledger entries and the region catalog must remain immutable inside the callback.
+ * Replacement/truncation rebuilds the index; in-place edits of old entries are not supported.
+ * The index never enters world state and is removed even when the callback throws.
+ * Normal game queries do not enable this scope and always read the live ledger.
+ */
+export function withAppendOnlyMarketLedger<T>(world: World, run: () => T): T {
+  if (scopedLedgerIndexes.has(world)) return run();
+  scopedLedgerIndexes.set(world, {
+    ledger: world.ledger,
+    processed: 0,
+    products: new Map(),
+    regionStates: new Map(regions.map((region) => [region.id, region.state])),
+  });
+  try {
+    return run();
+  } finally {
+    scopedLedgerIndexes.delete(world);
+  }
+}
+
+function indexedTradeTotals(world: World, product: ProductId, scope: string) {
+  const index = scopedLedgerIndexes.get(world);
+  if (!index) return undefined;
+  if (world.ledger !== index.ledger || world.ledger.length < index.processed) {
+    index.ledger = world.ledger;
+    index.processed = 0;
+    index.products.clear();
+  }
+  for (; index.processed < world.ledger.length; index.processed++) {
+    const entry = world.ledger[index.processed];
+    if (!entry.product || entry.channel !== 'wholesale') continue;
+    const state = index.regionStates.get(entry.regionId ?? '');
+    const scopes = ['', ...(state ? [entry.regionId!, `state:${state}`] : [])];
+    const scopesForProduct = index.products.get(entry.product) ?? new Map<string, TradeTotals>();
+    for (const scopeId of scopes) {
+      const totals = scopesForProduct.get(scopeId) ?? { tradedQuantity: 0, tradedValue: 0 };
+      totals.tradedQuantity += entry.quantity ?? 0;
+      totals.tradedValue += entry.amount;
+      scopesForProduct.set(scopeId, totals);
+    }
+    index.products.set(entry.product, scopesForProduct);
+  }
+  return index.products.get(product)?.get(scope) ?? { tradedQuantity: 0, tradedValue: 0 };
+}
+
 export function marketView(w: World, product: ProductId, regionId = '', radiusKm = 120) {
   const region = regions.find((r) => r.id === regionId);
   const state = regionId.startsWith('state:') ? regionId.slice(6) : '';
@@ -173,18 +238,29 @@ export function marketView(w: World, product: ProductId, regionId = '', radiusKm
     .reduce((n, e) => {
       const r = activeRecipe(w, e);
       if (!r) return n;
+      // A configured recipe with no consumption of this product contributes
+      // exactly zero; capacity computation has no side effects.
+      if (!(r.input[product] ?? 0) && w.season.config.operations.profiles[r.id]) return n;
       const cycles =
         Math.min(24, 86400000 / TIME_SCALE / r.duration) * productionCapacity(w, e, r).lines;
       return n + (r.input[product] ?? 0) * cycles;
     }, 0);
   const demand = household + industrial;
-  const entries = w.ledger.filter(
-    (e) =>
-      e.product === product &&
-      e.channel === 'wholesale' &&
-      (!region || e.regionId === region.id) &&
-      (!state || regions.find((r) => r.id === e.regionId)?.state === state),
-  );
+  const indexed = indexedTradeTotals(w, product, region?.id ?? (state ? `state:${state}` : ''));
+  let tradedQuantity = indexed?.tradedQuantity ?? 0;
+  let tradedValue = indexed?.tradedValue ?? 0;
+  if (!indexed)
+    for (const entry of w.ledger) {
+      if (
+        entry.product !== product ||
+        entry.channel !== 'wholesale' ||
+        (region && entry.regionId !== region.id) ||
+        (state && regions.find((candidate) => candidate.id === entry.regionId)?.state !== state)
+      )
+        continue;
+      tradedQuantity += entry.quantity ?? 0;
+      tradedValue += entry.amount;
+    }
   return {
     product,
     regionId,
@@ -199,28 +275,89 @@ export function marketView(w: World, product: ProductId, regionId = '', radiusKm
     suppliers: new Set(offers.map((o) => o.establishment.companyId)).size,
     low: offers.length ? Math.min(...offers.map((o) => o.price)) : null,
     high: offers.length ? Math.max(...offers.map((o) => o.price)) : null,
-    tradedQuantity: entries.reduce((n, e) => n + (e.quantity ?? 0), 0),
-    tradedValue: entries.reduce((n, e) => n + e.amount, 0),
+    tradedQuantity,
+    tradedValue,
     variation: price === null ? null : (price / seasonPrice(w, product) - 1) * 100,
   };
 }
 export function recordMarket(w: World, at: number) {
-  for (const product of Object.keys(products) as ProductId[])
-    for (const regionId of [
-      '',
-      ...regions.map((r) => r.id),
-      ...[...new Set(regions.map((r) => r.state))].map((s) => `state:${s}`),
-    ]) {
-      const row = marketView(w, product, regionId);
+  // Tick-local aggregation: recording a history sample does not need retail/demand
+  // calculations or a full ledger scan for every product × geographical scope.
+  // marketView remains the query contract; no cache survives a mutation of the world.
+  const productIds = Object.keys(products) as ProductId[];
+  const scopeIds = [
+    '',
+    ...regions.map((region) => region.id),
+    ...[...new Set(regions.map((region) => region.state))].map((state) => `state:${state}`),
+  ];
+  const samples = new Map(
+    productIds.map((product) => [
+      product,
+      new Map(
+        scopeIds.map((regionId) => [
+          regionId,
+          { stock: 0, weightedPrice: 0, offerCount: 0, tradedQuantity: 0, tradedValue: 0 },
+        ]),
+      ),
+    ]),
+  );
+  const establishments = new Map(
+    w.establishments.map((establishment) => [establishment.id, establishment]),
+  );
+  const properties = new Map(w.properties.map((property) => [property.id, property]));
+  const regionStates = new Map(regions.map((region) => [region.id, region.state]));
+  const offerScopes = new Map<string, string[]>();
+  for (const offer of w.offers) {
+    const establishment = establishments.get(offer.establishmentId)!;
+    if ((establishment.inventory[offer.product] ?? 0) <= 0) continue;
+    const quantity = availableStock(w, establishment, offer.product);
+    if (quantity <= 0) continue;
+    let scopes = offerScopes.get(establishment.propertyId);
+    if (!scopes) {
+      const property = properties.get(establishment.propertyId)!;
+      scopes = [
+        '',
+        ...regions
+          .filter((region) => distanceKm(property.coordinates, region.coordinates) <= 120)
+          .map((region) => region.id),
+        `state:${property.state}`,
+      ];
+      offerScopes.set(establishment.propertyId, scopes);
+    }
+    for (const scope of scopes) {
+      const sample = samples.get(offer.product)?.get(scope);
+      if (!sample) continue;
+      sample.stock += quantity;
+      sample.weightedPrice += offer.price * quantity;
+      sample.offerCount++;
+    }
+  }
+  // Ledger order and offer order match marketView's reductions, preserving rounding.
+  if (!scopedLedgerIndexes.has(w))
+    for (const entry of w.ledger) {
+      if (!entry.product || entry.channel !== 'wholesale') continue;
+      const state = regionStates.get(entry.regionId ?? '');
+      const scopes = ['', ...(state ? [entry.regionId!, `state:${state}`] : [])];
+      for (const scope of scopes) {
+        const sample = samples.get(entry.product)?.get(scope);
+        if (!sample) continue;
+        sample.tradedQuantity += entry.quantity ?? 0;
+        sample.tradedValue += entry.amount;
+      }
+    }
+  for (const product of productIds)
+    for (const regionId of scopeIds) {
+      const row = samples.get(product)!.get(regionId)!;
+      const indexed = indexedTradeTotals(w, product, regionId);
       w.marketHistory.push({
         at,
         product,
         regionId,
-        price: row.price,
+        price: row.stock ? Math.round(row.weightedPrice / row.stock) : null,
         stock: row.stock,
-        offerCount: row.offers.length,
-        tradedQuantity: row.tradedQuantity,
-        tradedValue: row.tradedValue,
+        offerCount: row.offerCount,
+        tradedQuantity: indexed?.tradedQuantity ?? row.tradedQuantity,
+        tradedValue: indexed?.tradedValue ?? row.tradedValue,
       });
     }
   if (w.marketHistory.length > 33000) w.marketHistory.splice(0, w.marketHistory.length - 33000);

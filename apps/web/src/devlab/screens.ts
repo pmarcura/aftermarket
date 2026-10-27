@@ -1,0 +1,77 @@
+/** Registro compartilhado por catálogo, capturas e laboratório. Não contém regras do jogo. */
+export const screens = [
+  {
+    id: 'map',
+    title: 'Mapa',
+    source: 'pages/MapPage.tsx',
+    purpose: 'Encontrar e inspecionar propriedades.',
+    task: 'Localizar uma propriedade e entender titularidade e acesso.',
+  },
+  {
+    id: 'purchase',
+    title: 'Aquisição',
+    source: 'pages/MapPage.tsx',
+    purpose: 'Revisar imóvel, instalação e capital necessário.',
+    task: 'Entender o custo antes de confirmar a aquisição.',
+  },
+  {
+    id: 'opportunities',
+    title: 'Oportunidades',
+    source: 'pages/OpportunitiesPage.tsx',
+    purpose: 'Comparar mercados e oportunidades por item e região.',
+    task: 'Filtrar um produto e explicar demanda, preço e oferta.',
+  },
+  {
+    id: 'businesses',
+    title: 'Meus Negócios',
+    source: 'pages/BusinessesPage.tsx',
+    purpose: 'Gerenciar estruturas e conexões de abastecimento.',
+    task: 'Identificar uma estrutura parada e abrir sua operação.',
+  },
+  {
+    id: 'industry',
+    title: 'Operação industrial',
+    source: 'pages/OperationPage.tsx',
+    business: 'e-industry',
+    purpose: 'Produzir, abastecer, contratar e vender.',
+    task: 'Revisar insumos, capacidade e custo antes de iniciar produção.',
+  },
+  {
+    id: 'retail',
+    title: 'Varejo',
+    source: 'pages/RetailPage.tsx',
+    business: 'e-retail',
+    purpose: 'Acompanhar estoque, preços e reposição da loja.',
+    task: 'Reconhecer ruptura e configurar uma reposição viável.',
+  },
+  {
+    id: 'market',
+    title: 'Mercado',
+    source: 'pages/MarketPage.tsx',
+    purpose: 'Comprar, negociar e observar concorrentes e editais.',
+    task: 'Comparar custo posto e escolher uma compra compatível.',
+  },
+  {
+    id: 'logistics',
+    title: 'Logística',
+    source: 'pages/LogisticsPage.tsx',
+    purpose: 'Contratar e acompanhar transporte.',
+    task: 'Entender disponibilidade, limite, custo e prazo de uma carga.',
+  },
+  {
+    id: 'carrier',
+    title: 'Transportadora',
+    source: 'pages/CarrierPage.tsx',
+    business: 'e-logistics',
+    purpose: 'Gerenciar veículos, disponibilidade e capacidade.',
+    task: 'Encontrar um veículo livre e comparar sua capacidade.',
+  },
+  {
+    id: 'company',
+    title: 'Empresa e finanças',
+    source: 'pages/CompanyPage.tsx',
+    purpose: 'Explicar caixa, resultado, compromissos e recuperação.',
+    task: 'Distinguir saldo, caixa livre, dívida e resultado operacional.',
+  },
+] as const;
+export type ScreenId = (typeof screens)[number]['id'];

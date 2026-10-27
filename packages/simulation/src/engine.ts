@@ -9,6 +9,7 @@ import {
   type Entry,
 } from './model';
 import { distanceKm } from './geometry';
+import { householdProducts, infrastructurePrograms } from './channels';
 import { committedStorage, fleetAvailability } from './transport';
 import {
   actorState,
@@ -22,6 +23,12 @@ import {
 } from './competition';
 import { runSupplyPolicies, validateSupplyPolicy } from './supply';
 import { runBotDirector } from './director';
+import {
+  emitDecisionTrace,
+  hasDecisionTrace,
+  traceCommand,
+  withDecisionSource,
+} from './decision-trace';
 import {
   freeCash,
   recoveryQuote,
@@ -403,7 +410,18 @@ function dispatch(
 }
 
 // O chamador envolve cada comando em uma transação. Bots usam esta mesma função.
-export function execute(w: World, actor: string, command: Command, now = Date.now()) {
+export function execute(w: World, actor: string, command: Command, now = Date.now()): void {
+  if (!hasDecisionTrace(w)) return executeCommand(w, actor, command, now);
+  try {
+    executeCommand(w, actor, command, now);
+  } catch (error) {
+    if (error instanceof RuleError) traceCommand(w, actor, command, now, error);
+    throw error;
+  }
+  traceCommand(w, actor, command, now);
+}
+
+function executeCommand(w: World, actor: string, command: Command, now: number): void {
   company(w, actor);
   switch (command.type) {
     case 'installBusiness': {
@@ -782,7 +800,7 @@ export function execute(w: World, actor: string, command: Command, now = Date.no
       break;
     }
     case 'extract': {
-      return execute(
+      return executeCommand(
         w,
         actor,
         {
@@ -1315,7 +1333,7 @@ function economicTick(w: World, at: number) {
   const remainingService = new Map(retail.map((e) => [e.id, retailCapacity(w, e)]));
   const calendar = gameCalendar(w, at);
   for (const city of cities)
-    for (const product of ['oil', 'rice', 'beans', 'sugar', 'milk'] as ProductId[]) {
+    for (const product of householdProducts) {
       const stores = retail.filter(
         (e) =>
           w.properties.find((p) => p.id === e.propertyId)!.city === city &&
@@ -1573,50 +1591,6 @@ function openInfrastructure(w: World, at: number) {
     }
     if (c.status === 'open') c.status = 'expired';
   }
-  const programs = [
-    {
-      name: 'Reforço de pontes e acessos',
-      product: 'steel' as ProductId,
-      quantity: 72,
-      quality: 65,
-    },
-    {
-      name: 'Estruturas para escola municipal',
-      product: 'steel' as ProductId,
-      quantity: 24,
-      quality: 75,
-    },
-    {
-      name: 'Ampliação de unidade de saúde',
-      product: 'steel' as ProductId,
-      quantity: 48,
-      quality: 80,
-    },
-    {
-      name: 'Passarelas e drenagem urbana',
-      product: 'steel' as ProductId,
-      quantity: 96,
-      quality: 70,
-    },
-    {
-      name: 'Cobertura de equipamentos públicos',
-      product: 'steel' as ProductId,
-      quantity: 36,
-      quality: 60,
-    },
-    {
-      name: 'Abastecimento de cozinhas comunitárias',
-      product: 'rice' as ProductId,
-      quantity: 500,
-      quality: 60,
-    },
-    {
-      name: 'Programa de alimentação escolar',
-      product: 'milk' as ProductId,
-      quantity: 1200,
-      quality: 70,
-    },
-  ];
   for (const state of [...new Set(w.properties.map((p) => p.state))]) {
     const available = treasuryAvailable(w, state),
       active = w.infrastructure.filter((c) => c.state === state && c.status === 'open').length;
@@ -1635,7 +1609,7 @@ function openInfrastructure(w: World, at: number) {
     );
     if (!cities.length) continue;
     const sequence = w.infrastructure.filter((c) => c.state === state).length,
-      program = programs[sequence % programs.length],
+      program = infrastructurePrograms[sequence % infrastructurePrograms.length],
       destination = cities[sequence % cities.length],
       place = dpOf(w, destination);
     const referencePrice = publicReference(w, program.product),
@@ -1670,9 +1644,32 @@ function openInfrastructure(w: World, at: number) {
   }
 }
 function runAutomations(w: World, at: number) {
+  const tracing = hasDecisionTrace(w);
+  const trace = (
+    e: Establishment,
+    code: string,
+    message: string,
+    action = 'produce',
+    outcome: 'blocked' | 'idle' = 'blocked',
+    targetId?: string,
+  ) => {
+    if (tracing)
+      emitDecisionTrace(w, {
+        at,
+        companyId: e.companyId,
+        source: 'production',
+        outcome,
+        action,
+        code,
+        message,
+        establishmentId: e.id,
+        targetId,
+        productId: targetId && targetId in products ? (targetId as ProductId) : undefined,
+      });
+  };
   const attempt = (actor: string, command: Command) => {
     try {
-      execute(w, actor, command, at);
+      withDecisionSource(w, 'production', () => execute(w, actor, command, at));
       return true;
     } catch (e) {
       if (!(e instanceof RuleError)) throw e;
@@ -1709,7 +1706,17 @@ function runAutomations(w: World, at: number) {
       .filter((o) => o.destinationId === e.id && o.product === product && o.status === 'pending')
       .reduce((n, o) => n + o.quantity, 0);
     const shortage = Math.floor(target - (e.inventory[product] ?? 0) - incoming - ordered);
-    if (shortage <= 0) return;
+    if (shortage <= 0) {
+      trace(
+        e,
+        'replenishment-covered',
+        'Estoque, remessas e pedidos pendentes já cobrem o alvo da reposição.',
+        'restock',
+        'idle',
+        product,
+      );
+      return;
+    }
     const options = w.offers
       .filter((o) => o.product === product && o.establishmentId !== e.id)
       .map((o) => ({ o, origin: establishment(w, o.establishmentId) }))
@@ -1723,7 +1730,22 @@ function runAutomations(w: World, at: number) {
         );
         const q = [e.companyId, 'transbrasil', 'rodoleste', 'expresso']
           .map((c) => quote(w, origin.id, e.id, product, quantity, c))
-          .filter((q) => q.compatible)
+          .filter((q) => {
+            if (tracing && !q.compatible)
+              trace(
+                e,
+                q.routeRequired
+                  ? 'road-route-pending'
+                  : q.fleet.available === 0
+                    ? 'fleet-unavailable'
+                    : 'load-incompatible',
+                `Cotação de reposição incompatível: ${q.unallocated} unidades não alocadas; ${q.fleet.available} veículos disponíveis.`,
+                'restock',
+                'blocked',
+                product,
+              );
+            return q.compatible;
+          })
           .sort((a, b) => a.price - b.price)[0];
         return {
           o,
@@ -1735,12 +1757,22 @@ function runAutomations(w: World, at: number) {
             : Infinity,
         };
       })
-      .filter(
-        (x) =>
+      .filter((x) => {
+        const eligible =
           x.q &&
           x.quantity > 0 &&
-          x.total <= Math.min(company(w, e.companyId).balance * 0.25, budget - spent),
-      )
+          x.total <= Math.min(company(w, e.companyId).balance * 0.25, budget - spent);
+        if (tracing && x.q && x.quantity > 0 && !eligible)
+          trace(
+            e,
+            'replenishment-spending-limit',
+            'O custo cotado excedeu o menor limite entre 25% do saldo e o orçamento restante da reposição.',
+            'restock',
+            'blocked',
+            product,
+          );
+        return eligible;
+      })
       .sort((a, b) => a.total / a.quantity - b.total / b.quantity);
     const best = options[0];
     if (best) {
@@ -1756,12 +1788,33 @@ function runAutomations(w: World, at: number) {
           ? { maxFreight: best.q!.price, deliveryDays: 3, expectedUnitPrice: best.o.price }
           : {}),
       } as Command);
-    }
+    } else
+      trace(
+        e,
+        'no-replenishment-candidate',
+        'Nenhuma oferta passou pelos filtros de origem ativa, estoque, frete compatível e limite de gasto desta reposição.',
+        'restock',
+        'blocked',
+        product,
+      );
   };
+  if (tracing)
+    for (const e of w.establishments) {
+      if (e.automation && !e.enabled)
+        trace(e, 'operation-paused', 'A automação não foi rodada porque a operação está pausada.');
+      else if (!e.automation && ['industry', 'farm', 'mine'].includes(e.category))
+        trace(
+          e,
+          'production-automation-disabled',
+          'A produção automática está desativada nesta unidade.',
+          'produce',
+          'idle',
+        );
+    }
   for (const e of w.establishments.filter((e) => e.enabled && e.automation)) {
     const bot = company(w, e.companyId).bot;
     if (e.category === 'retail' && !e.supplyPolicy?.enabled)
-      for (const product of ['oil', 'rice', 'beans', 'sugar', 'milk'] as ProductId[]) {
+      for (const product of householdProducts) {
         const region = regionFor(dpOf(w, e).coordinates, dpOf(w, e).city);
         const competitors = Math.max(
           1,
@@ -1779,13 +1832,21 @@ function runAutomations(w: World, at: number) {
     if (e.category === 'retail') continue;
     if (w.jobs.some((j) => j.establishmentId === e.id && !j.completed)) {
       e.automationStatus = 'Lote em processamento';
+      trace(e, 'batch-in-progress', e.automationStatus, 'produce', 'idle');
       continue;
     }
     {
       const r = w.season.config.recipes.find(
         (r) => r.id === e.specialization && r.category === e.category,
       );
-      if (!r) continue;
+      if (!r) {
+        trace(
+          e,
+          'recipe-unavailable',
+          'Nenhuma receita corresponde à especialidade e categoria desta unidade.',
+        );
+        continue;
+      }
       const outputProduct = Object.keys(r.output)[0] as ProductId;
       const target =
         outputProduct === 'oil'
@@ -1805,6 +1866,7 @@ function runAutomations(w: World, at: number) {
         );
         if (!cycles) {
           e.automationStatus = 'Reserva mineral esgotada';
+          trace(e, 'mineral-depleted', e.automationStatus);
           continue;
         }
         const dayStart = w.createdAt + Math.floor((at - w.createdAt) / GAME_DAY) * GAME_DAY;
@@ -1822,6 +1884,7 @@ function runAutomations(w: World, at: number) {
           (e.automationDailyBudget ?? 10000000)
         ) {
           e.automationStatus = 'Limite diário de automação atingido';
+          trace(e, 'production-daily-budget', e.automationStatus);
           continue;
         }
         let ready = true;
@@ -1830,6 +1893,14 @@ function runAutomations(w: World, at: number) {
             // Automação humana produz estoque existente; reposição industrial automática é uma escolha dos bots.
             if (bot && !e.supplyPolicy?.enabled) restock(e, id as ProductId, q! * cycles * 4);
             ready = false;
+            trace(
+              e,
+              'inputs-missing',
+              `${products[id as ProductId].name}: estoque ${e.inventory[id as ProductId] ?? 0}; lote exige ${q! * cycles}.`,
+              'produce',
+              'blocked',
+              id,
+            );
           }
         if (ready) {
           const result = attempt(e.companyId, {
@@ -1840,7 +1911,15 @@ function runAutomations(w: World, at: number) {
           });
           e.automationStatus = result === true ? 'Lote iniciado' : result;
         } else e.automationStatus = 'Aguardando insumos no estoque';
-      }
+      } else
+        trace(
+          e,
+          'target-stock-reached',
+          'O estoque do produto principal atingiu o alvo usado pela automação do bot.',
+          'produce',
+          'idle',
+          outputProduct,
+        );
     }
   }
   for (const e of w.establishments.filter((e) => e.enabled && company(w, e.companyId).bot))

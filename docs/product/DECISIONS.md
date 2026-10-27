@@ -77,3 +77,12 @@ Substituir lista cega de empresas por cartões com busca, livres/total, massa/vo
 ### D-027 · Conexões de insumos e alertas recuperáveis
 
 Regra pode fixar unidade própria como origem; quando esgota, aguarda, sem trocar de fornecedor silenciosamente. Atalho informa que orçamento e frota são compartilhados por todas as regras do destino. Rotas, caixa, propriedade e estoque são revalidados por comandos comuns. Alertas de ação ficam na camada do modal, erros não somem por timeout, recebimentos são agrupados por pedido e leitura fica local por empresa/dispositivo. Pendências operacionais não desaparecem ao marcar recebimentos como lidos.
+
+### D-028 · Direção do playtest e da economia (Pedro, 27/10/2026)
+
+- **Playtest em mundo semanal livre:** o mundo roda a semana toda e cada amigo entra quando puder, sem horário combinado. Automação e proteção de quem fica offline passam a ser obrigatórias, e o relógio de laboratório (D-004, 120×) precisa ser recalibrado para um ritmo semanal.
+- **Realismo enxuto, cadeias completas:** só entra o que cria escolha para o jogador, mas cada cadeia fecha do começo ao fim. Semente vira item comprável; o leite vem de vacas que comem ração feita do farelo.
+- **Fechar metal e alimentos antes de crescer:** produto novo só entra para fechar um furo.
+- **Aço ganha compradores privados:** fábrica de bens de consumo (utensílios para lojas) e caminhões para as frotas, junto com uma melhoria da mecânica de logística. O governo continua comprando para obras.
+
+Proposta de desenho em `docs/economia-proposta.html`. Nenhuma regra do motor mudou nesta decisão.

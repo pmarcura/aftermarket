@@ -1,0 +1,275 @@
+<title>Economia Redesenhada</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..800&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: mesma linguagem do Raio-X; cadeias em faixas com peças novas marcadas em dourado, laços de volta destacados */
+:root {
+  --bg: #f2f4f3; --surface: #ffffff; --ink: #13232c; --muted: #56676e; --line: #d6dddf;
+  --gold: #9a6a1c; --gold-soft: #f3e7d1;
+  --ok: #2d7a4d; --ok-soft: #dcefe3; --bad: #ad3a31; --bad-soft: #f6dedb;
+  --mine: #a97c45; --farm: #4f8f5c; --industry: #6c7c85; --retail: #c95c50; --gov: #3f7fae; --logi: #3f7fae;
+  --display: "Archivo", "Arial Narrow", system-ui, sans-serif;
+  --body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f1d24; --surface: #142730; --ink: #e5ecec; --muted: #94a6ab; --line: #24404b;
+  --gold: #e0b066; --gold-soft: #3a3020; --ok: #6cc58f; --ok-soft: #173827; --bad: #ef7d72; --bad-soft: #42211e;
+  --mine: #cfa06a; --farm: #78b884; --industry: #9eadb5; --retail: #e8857a; --gov: #7db6db; --logi: #7db6db;
+  color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0f1d24; --surface: #142730; --ink: #e5ecec; --muted: #94a6ab; --line: #24404b;
+  --gold: #e0b066; --gold-soft: #3a3020; --ok: #6cc58f; --ok-soft: #173827; --bad: #ef7d72; --bad-soft: #42211e;
+  --mine: #cfa06a; --farm: #78b884; --industry: #9eadb5; --retail: #e8857a; --gov: #7db6db; --logi: #7db6db;
+  color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 400 16px/1.6 var(--body); }
+.wrap { max-width: 1040px; margin: 0 auto; padding-block: 48px 80px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 60px; }
+.read { max-width: 70ch; }
+h1, h2, h3 { font-family: var(--display); font-stretch: 85%; line-height: 1.1; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2.3rem, 6vw, 3.4rem); font-weight: 800; }
+h2 { font-size: 1.7rem; font-weight: 700; }
+h3 { font-size: 1.1rem; font-weight: 700; font-stretch: 90%; }
+p { margin: 0; }
+.eyebrow { font: 500 0.75rem/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); }
+.lead { font-size: 1.18rem; line-height: 1.5; }
+.muted { color: var(--muted); }
+section, header { display: grid; gap: 18px; }
+.head { display: grid; gap: 8px; }
+.mono { font-family: var(--mono); font-size: 0.86em; }
+
+.decided { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.decided div { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 4px; align-content: start; }
+.decided b { font: 700 1rem/1.2 var(--display); font-stretch: 90%; }
+.decided span { font-size: 0.86rem; color: var(--muted); line-height: 1.4; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 0.86rem; color: var(--muted); align-items: center; }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 6px; }
+.lane { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; display: grid; gap: 14px; }
+.lane-title { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: baseline; }
+.flow { display: flex; flex-wrap: wrap; gap: 10px; align-items: stretch; }
+.node { flex: 1 1 160px; min-width: 0; border: 1px solid var(--line); border-left: 4px solid var(--c, var(--line));
+  border-radius: 8px; padding: 10px 12px; display: grid; gap: 4px; align-content: start; background: var(--bg); position: relative; }
+.node.new { border-color: var(--gold); border-left-color: var(--c); background: var(--gold-soft); }
+.node.new::after { content: "novo"; position: absolute; top: 8px; right: 8px; font: 700 0.62rem/1 var(--mono); letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--gold); }
+.node .cat { font: 500 0.68rem/1 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--c); }
+.node strong { font-family: var(--display); font-stretch: 90%; font-size: 1rem; padding-right: 30px; }
+.node .rx { font: 400 0.78rem/1.4 var(--mono); color: var(--muted); }
+.arrow { align-self: center; color: var(--muted); font-size: 1.2rem; flex: 0 0 auto; }
+.split { display: grid; gap: 8px; flex: 1 1 200px; min-width: 0; }
+.split .node { flex: none; }
+.c-mine { --c: var(--mine); } .c-farm { --c: var(--farm); } .c-ind { --c: var(--industry); }
+.c-retail { --c: var(--retail); } .c-gov { --c: var(--gov); } .c-logi { --c: var(--logi); }
+.loopback { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: start; font-size: 0.92rem; line-height: 1.45;
+  border-top: 1px dashed var(--line); padding-top: 12px; }
+.loopback i { font-style: normal; font: 700 0.7rem/1 var(--mono); padding: 4px 6px; border-radius: 4px; margin-top: 2px; background: var(--ok-soft); color: var(--ok); white-space: nowrap; }
+
+.tablebox { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 0.93rem; }
+th, td { text-align: left; padding: 11px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+th { font: 500 0.72rem/1 var(--mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); background: var(--bg); }
+td:first-child { font-weight: 600; }
+
+.cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; display: grid; gap: 10px; align-content: start; }
+.card ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+.card.hl { background: var(--gold-soft); border-color: transparent; }
+.pace { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.pace div { background: var(--surface); padding: 14px 16px; display: grid; gap: 4px; }
+.pace b { font: 700 1.5rem/1 var(--display); font-stretch: 80%; font-variant-numeric: tabular-nums; }
+.pace span { font-size: 0.85rem; color: var(--muted); line-height: 1.35; }
+.count { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+.count b { font: 800 2.6rem/1 var(--display); font-stretch: 80%; }
+.count .from { color: var(--muted); text-decoration: line-through; text-decoration-thickness: 2px; }
+.qs { display: grid; gap: 12px; counter-reset: q; list-style: none; padding: 0; margin: 0; }
+.qs li { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px 14px 52px; position: relative; display: grid; gap: 4px; }
+.qs li::before { counter-increment: q; content: counter(q); position: absolute; left: 16px; top: 13px;
+  width: 24px; height: 24px; border-radius: 50%; background: var(--ink); color: var(--bg); display: grid; place-items: center; font: 700 0.8rem/1 var(--mono); }
+.qs li b { font-weight: 600; }
+.qs li span { color: var(--muted); font-size: 0.93rem; }
+footer { font-size: 0.85rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 18px; }
+
+@media (max-width: 760px) {
+  .decided { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cols, .pace { grid-template-columns: 1fr; }
+  .arrow { transform: rotate(90deg); flex-basis: 100%; text-align: center; }
+  .wrap { gap: 44px; padding-block: 32px 56px; }
+}
+</style>
+
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">Etapa B · proposta 1 · para você reagir</p>
+  <h1>Economia redesenhada</h1>
+  <p class="lead read">Tudo que é produzido tem para onde ir, e o que é durável se desgasta. Caminhões e utensílios gastam com o uso e precisam ser repostos, vacas envelhecem. Isso cria uma procura constante por aço e por ração, sem depender só do governo.</p>
+  <div class="decided">
+    <div><b>Mundo semanal livre</b><span>Roda a semana toda; cada um entra quando puder.</span></div>
+    <div><b>Enxuto, mas completo</b><span>Semente comprável, vaca que come ração do farelo.</span></div>
+    <div><b>Fechar duas cadeias</b><span>Produto novo só entra para fechar um furo.</span></div>
+    <div><b>Aço para bens e caminhões</b><span>E uma logística melhor.</span></div>
+  </div>
+</header>
+
+<section>
+  <div class="head">
+    <p class="eyebrow">As cadeias</p>
+    <h2>Duas cadeias completas, ligadas pela logística</h2>
+  </div>
+  <div class="legend">
+    <span><i style="background: var(--mine)"></i>Mineração</span>
+    <span><i style="background: var(--farm)"></i>Fazenda</span>
+    <span><i style="background: var(--industry)"></i>Indústria</span>
+    <span><i style="background: var(--retail)"></i>Comércio</span>
+    <span><i style="background: var(--logi)"></i>Logística e governo</span>
+    <span><i style="background: var(--gold-soft); border: 1px solid var(--gold)"></i>Peça nova</span>
+  </div>
+
+  <div class="lane">
+    <div class="lane-title"><h3>Metal</h3><span class="muted mono">mina → siderúrgica → três compradores</span></div>
+    <div class="flow">
+      <div class="split">
+        <div class="node c-mine"><span class="cat">Mina</span><strong>Minério de ferro</strong><span class="rx">reserva finita</span></div>
+        <div class="node c-mine"><span class="cat">Mina</span><strong>Carvão</strong><span class="rx">reserva finita</span></div>
+        <div class="node c-ind new"><span class="cat">Sucata</span><strong>Sucata de aço</strong><span class="rx">caminhões e utensílios no fim da vida</span></div>
+      </div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="node c-ind"><span class="cat">Siderúrgica</span><strong>Aço em barras</strong><span class="rx">minério + carvão, ou sucata + carvão (mais barato, menos reserva gasta)</span></div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="split">
+        <div class="node c-ind new"><span class="cat">Montadora</span><strong>Caminhão</strong><span class="rx">aço → caminhão leve ou pesado, vendido a quem tem frota</span></div>
+        <div class="node c-ind new"><span class="cat">Fábrica</span><strong>Utensílios de aço</strong><span class="rx">aço → panelas e ferramentas para as lojas</span></div>
+        <div class="node c-gov"><span class="cat">Governo</span><strong>Obras públicas</strong><span class="rx">editais de pontes, escolas, saúde</span></div>
+      </div>
+    </div>
+    <div class="loopback"><i>LAÇO</i><span>Caminhão rodado e utensílio velho viram sucata, que volta para a siderúrgica. As minas duram mais e quem recicla ganha vantagem de custo.</span></div>
+  </div>
+
+  <div class="lane">
+    <div class="lane-title"><h3>Alimentos</h3><span class="muted mono">semente → fazenda → indústria → vaca → loja</span></div>
+    <div class="flow">
+      <div class="node c-farm new"><span class="cat">Semente</span><strong>Semente de soja</strong><span class="rx">comprada no mercado</span></div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="node c-farm"><span class="cat">Fazenda</span><strong>Soja em grão</strong><span class="rx">colheita devolve grão + parte em semente</span></div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="split">
+        <div class="node c-ind"><span class="cat">Esmagadora</span><strong>Óleo de soja</strong><span class="rx">vai para as lojas</span></div>
+        <div class="node c-ind"><span class="cat">Esmagadora</span><strong>Farelo de soja</strong><span class="rx">sai junto com o óleo</span></div>
+      </div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="node c-ind new"><span class="cat">Fábrica</span><strong>Ração</strong><span class="rx">farelo → ração para gado</span></div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="node c-farm new"><span class="cat">Fazenda de leite</span><strong>Vaca</strong><span class="rx">come ração todo dia, dá leite, tem bezerros</span></div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="node c-retail"><span class="cat">Loja</span><strong>Leite</strong><span class="rx">famílias</span></div>
+    </div>
+    <div class="flow">
+      <div class="node c-farm new"><span class="cat">Semente</span><strong>Sementes de arroz e feijão, muda de cana</strong><span class="rx">compradas no mercado</span></div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="node c-farm"><span class="cat">Fazenda</span><strong>Arroz, feijão, açúcar</strong><span class="rx">colheita devolve produto + parte em semente</span></div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="node c-retail"><span class="cat">Loja</span><strong>Famílias</strong><span class="rx">óleo, leite, arroz, feijão, açúcar, utensílios</span></div>
+    </div>
+    <div class="loopback"><i>LAÇO</i><span>A colheita devolve parte em semente. O fazendeiro escolhe: guarda para plantar de novo ou vende para outro fazendeiro. Os bezerros fazem o rebanho crescer ou viram vacas à venda.</span></div>
+  </div>
+
+  <div class="lane">
+    <div class="lane-title"><h3>Logística</h3><span class="muted mono">o elo entre tudo</span></div>
+    <div class="flow">
+      <div class="node c-ind new"><span class="cat">Montadora</span><strong>Caminhão novo</strong><span class="rx">leve 8 t ou pesado 30 t</span></div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="node c-logi"><span class="cat">Transportadora</span><strong>Frota em uso</strong><span class="rx">desgaste por km, manutenção sobe com a idade</span></div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="split">
+        <div class="node c-logi new"><span class="cat">Mercado</span><strong>Caminhão usado</strong><span class="rx">vende para quem está começando</span></div>
+        <div class="node c-ind new"><span class="cat">Sucata</span><strong>Sucata de aço</strong><span class="rx">fim da vida útil</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="head">
+    <p class="eyebrow">Por que cada peça nova existe</p>
+    <h2>Cada peça fecha um furo e cria uma escolha</h2>
+  </div>
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>Peça nova</th><th>Furo que fecha</th><th>Escolha que cria para o jogador</th></tr></thead>
+      <tbody>
+        <tr><td>Caminhão fabricado</td><td>Aço só com o governo; caminhão surgia do nada ao pagar</td><td>Comprar novo ou usado, leve ou pesado; abrir uma montadora</td></tr>
+        <tr><td>Utensílios de aço</td><td>Aço não chegava às famílias</td><td>Loja vende algo que dura e precisa ser reposto; nova indústria para abrir</td></tr>
+        <tr><td>Sucata</td><td>Minas esgotam sem reposição; aço perdia massa sem explicação</td><td>Reciclar é mais barato; vender caminhão velho como sucata ou rodar mais com manutenção cara</td></tr>
+        <tr><td>Sementes e muda</td><td>Plantava-se o pacote de mercado; primeiras unidades vinham do nada</td><td>Guardar semente ou vendê-la; especializar-se em semente</td></tr>
+        <tr><td>Ração</td><td>Farelo encalhado (0,3% usado em 90 dias)</td><td>Abrir fábrica de ração perto das fazendas de leite</td></tr>
+        <tr><td>Vaca</td><td>Leite sem rebanho; leite com prejuízo por construção</td><td>Tamanho do rebanho, comprar vacas ou criar bezerros, quanto gastar em ração</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="count">
+    <span class="from mono">10 produtos</span><span aria-hidden="true">→</span><b>19 produtos</b>
+    <span class="muted">semente de soja, de arroz, de feijão, muda de cana, ração, vaca, caminhão (2 modelos contam como um item), utensílios e sucata</span>
+  </div>
+</section>
+
+<section class="cols">
+  <div class="card">
+    <p class="eyebrow">Logística melhor</p>
+    <h3>O que muda nas frotas</h3>
+    <ul>
+      <li><b>Dois modelos:</b> leve (8 t, barato, bom para cidade) e pesado (30 t, para estrada longa).</li>
+      <li><b>Desgaste:</b> cada caminhão tem vida útil em km; a manutenção encarece com a idade.</li>
+      <li><b>Mercado de usados:</b> quem começa compra mais barato de quem renova a frota.</li>
+      <li><b>Amigo transportador:</b> um jogador aceita fretes de outro e vive só disso. Hoje isso não existe.</li>
+      <li><b>Frete de volta:</b> caminhão que voltaria vazio pode pegar carga no caminho e baratear a viagem.</li>
+    </ul>
+  </div>
+  <div class="card hl">
+    <p class="eyebrow">Regras que vou usar para balancear</p>
+    <h3>Critérios da etapa B</h3>
+    <ul>
+      <li>Toda receita dá lucro numa escala razoável, contando todos os custos.</li>
+      <li>Todo coproduto tem comprador que absorve pelo menos 90% do que é produzido.</li>
+      <li>A diferença de lucro entre atividades fica dentro de uma faixa, para ninguém correr todo para o mesmo lugar.</li>
+      <li>Bens duráveis se desgastam, gerando procura constante.</li>
+      <li>Prova: 90 dias de bots no laboratório, com vários mundos diferentes.</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <div class="head">
+    <p class="eyebrow">Ritmo do mundo semanal</p>
+    <h2>O relógio precisa desacelerar</h2>
+    <p class="muted read">Hoje 1 hora real equivale a 5 dias de jogo, ótimo para testar e rápido demais para uma semana: seriam mais de 800 dias de jogo. Minha recomendação é o ritmo sugerido no GDD.</p>
+  </div>
+  <div class="pace">
+    <div><b>1 h = 6 h</b><span>1 hora real vale 6 horas de jogo</span></div>
+    <div><b>42 dias</b><span>de jogo em uma semana real de playtest</span></div>
+    <div><b>1 a 2 visitas</b><span>por dia bastam; a automação cuida do resto</span></div>
+  </div>
+  <p class="read">Como ninguém combina horário, quem fica offline precisa estar protegido: reposição, produção e venda automáticas com limites que você define, e um resumo “enquanto você estava fora” ao entrar.</p>
+</section>
+
+<section>
+  <div class="head">
+    <p class="eyebrow">Para reagir</p>
+    <h2>O que eu preciso saber antes de calcular</h2>
+  </div>
+  <ol class="qs">
+    <li><b>A proposta como um todo faz sentido?</b><span>Algo sobrando, faltando ou que você imaginava diferente.</span></li>
+    <li><b>Sucata e reciclagem entram já?</b><span>Fecha o laço do aço e faz as minas durarem. Custa uma mecânica a mais.</span></li>
+    <li><b>Vaca velha vira carne?</b><span>Seria um produto ótimo para as lojas, mas é mais uma cadeia. Sugiro deixar para depois do playtest.</span></li>
+    <li><b>Ritmo de 1 hora real = 6 horas de jogo serve?</b><span>Dá 42 dias de jogo na semana de playtest.</span></li>
+  </ol>
+</section>
+
+<footer>Proposta de desenho. Nenhuma regra do jogo foi alterada. Números de produção e preços serão calculados depois da sua aprovação e provados no laboratório.</footer>
+
+</div>

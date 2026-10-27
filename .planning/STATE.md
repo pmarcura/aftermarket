@@ -32,11 +32,9 @@ O jogo roda localmente: mapa real de SP–MG, compra de imóveis, produção, es
 
 Começar a **B · Redesenhar a economia**, primeiro no papel com o Pedro (designer e dono do produto): semente, destino do farelo, compradores do aço, nível de realismo.
 
-Perguntas em aberto para o Pedro:
+Decisões do Pedro em 27/10 (D-028): mundo semanal livre; realismo enxuto com cadeias completas (semente comprável, vaca que come ração do farelo); fechar metal e alimentos antes de crescer; aço vira caminhões e utensílios, com logística melhor.
 
-1. Formato do playtest: sessões juntas de 2–3 h ou mundo rodando a semana toda?
-2. Nível de realismo: rebanho/semente/adubo ou abstrato e enxuto?
-3. Fechar as duas cadeias atuais antes de adicionar produtos?
+Proposta de desenho aguardando reação: [`docs/economia-proposta.html`](../docs/economia-proposta.html). Em aberto: sucata/reciclagem já, carne depois do playtest, ritmo 1 h real = 6 h de jogo.
 
 ## Como rodar
 

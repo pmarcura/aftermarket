@@ -175,6 +175,16 @@ Pedido do Pedro: rota do mapa passava longe do imóvel e cortava a cidade em ret
 - **Mundo versão 2:** valida as entradas e desenha as rotas reais dos caminhões dos jogadores, mas o frete segue a distância estimada (D-034): exigir rota real para ~500 bots travaria a economia. Caminhão sem rota confirmada não aparece com linha reta no mapa.
 - **Defeito achado no caminho:** os ícones de categoria ganharam `xmlns` duplicado com a versão nova da biblioteca de ícones; o SVG ficava inválido e o mapa não terminava de abrir.
 
+### D-038 · Pedido aberto sem resposta não trava a compra das usinas (28/10/2026)
+
+Calibração da cadeia do metal com ~500 bots. Decisões de rotina:
+
+- **Anúncio de procura não é gasto.** Quando falta insumo, o bot publica um pedido aberto para qualquer vendedor responder. O valor desses pedidos contava como dinheiro já gasto no dia; três anúncios parados de minério, carvão e sucata passavam do orçamento inteiro, e 11 de 12 usinas deixavam de comprar das minas cheias a 100 km. Agora só conta pedido com vendedor ou proposta (como a posição de estoque desde a D-036).
+- **Responde quem está perto.** Os bots vendedores que respondem a pedidos abertos são os quatro mais próximos do comprador, não os quatro de menor custo do país (que podiam estar a 1.500 km e nunca cabiam na verba de frete).
+- **Testado e descartado: reservar o estoque do lance em edital.** Com o aço separado até o fechamento, cada usina só disputava um edital por vez e o aço ao governo caiu de 217 para 100 t/dia. Fica como está: a usina pode dar lance em vários editais com o mesmo estoque e o lance cai se o estoque acabar.
+- **Resultado (escala 20, 2 sementes, últimos 10 de 20 dias):** minério de 9 para 36 linhas, carvão de 9 para 35, aço de 16 para 68 (64% da referência; os bots abrem com 80%); siderúrgicas de −R$ 35 mil para +R$ 475 mil por dia; aço ao governo de 11,7 para 213 t/dia (meta 320); procura atendida de 38% para 50%; nenhuma quebra.
+- **Ainda abaixo da meta do governo:** cada edital pede de 6 a 24 t de uma só usina; as fábricas compram o aço assim que sai do forno e os editais de 24 t expiram sem lance. Fica para depois da ração.
+
 ### Ideia em avaliação · Genética de cultivares (Pedro, 28/10/2026)
 
 O Pedro propôs um sistema de genética a partir de uma pesquisa sobre a cana. O produtor compra uma pequena quantidade de mudas de alta tecnologia no viveiro e as multiplica numa área própria. Depois replanta com a própria cana por anos e só volta a comprar para trocar de variedade, para limpar o canavial de doenças ou para expandir a área de uma vez.

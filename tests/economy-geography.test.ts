@@ -9,6 +9,8 @@ import {
 } from '../packages/simulation/src/economy-design';
 import { vehicleModels } from '../packages/simulation/src/catalog';
 import { products } from '../packages/simulation/src/model';
+import { GAME_DAY } from '../packages/simulation/src/operations';
+import { supplySpent } from '../packages/simulation/src/supply';
 
 const NOW = Date.UTC(2026, 9, 27, 12);
 
@@ -67,4 +69,34 @@ describe('economia versão 2 no mapa real', () => {
       coal.target * w.season.config.basePrices.coal,
     );
   });
+
+  // D-038: anúncio de procura sem resposta não ocupa o orçamento do dia.
+  it('não conta pedido aberto sem vendedor como gasto da reposição', () => {
+    const w = createWorld(NOW, { economy: 2, scale: 2 });
+    const mill = w.establishments.find(
+      (e) => e.companyId.startsWith('rival-') && e.specialization === 'steel-bars',
+    )!;
+    const order = {
+      id: 'anuncio',
+      buyerId: mill.companyId,
+      sellerId: '',
+      originId: '',
+      destinationId: mill.id,
+      product: 'iron' as const,
+      quantity: 58,
+      unitPrice: 50000,
+      carrierId: 'transbrasil',
+      maxFreight: 200000,
+      createdAt: NOW,
+      deadline: NOW + 3 * GAME_DAY,
+      status: 'pending' as const,
+      proposals: [],
+    };
+    w.orders.push(order);
+    expect(supplySpent(w, mill, NOW).promised).toBe(0);
+    // Com vendedor definido o pedido passa a ser compromisso.
+    order.sellerId = 'rival-2';
+    expect(supplySpent(w, mill, NOW).promised).toBe(58 * 50000 + 200000);
+  });
+
 });

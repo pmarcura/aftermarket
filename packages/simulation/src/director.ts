@@ -15,7 +15,8 @@ import {
   productionCapacity,
   productionQuality,
 } from './operations';
-import { operatingCosts, productionCharges, marketView } from './metrics';
+import { operatingCosts, productionCharges, marketView, propertyOf } from './metrics';
+import { distanceKm } from './geometry';
 import { arrears, freeCash, recoveryQuote, outstandingLoans } from './design';
 import { emitDecisionTrace, hasDecisionTrace, withDecisionSource } from './decision-trace';
 import { dealershipMarkup, vehicleModels, type VehicleModel } from './catalog';
@@ -222,8 +223,11 @@ export function runBotDirector(w: World, at: number) {
       `Comprou ${vehicleModels[model].label.toLowerCase()} ${offer ? 'de ' + offer.seller.name : 'importado'}`,
     );
   };
+  const destinationAt = (o: { destinationId: string }) =>
+    propertyOf(w, w.establishments.find((e) => e.id === o.destinationId)!.propertyId)!.coordinates;
   for (const o of w.orders.filter((o) => o.status === 'pending' && o.deadline > at)) {
     if (!o.sellerId) {
+      const to = w.season.config.economyVersion ? destinationAt(o) : undefined;
       const candidates = w.establishments
         .filter(
           (e) =>
@@ -231,7 +235,14 @@ export function runBotDirector(w: World, at: number) {
             botIds.has(e.companyId) &&
             (e.inventory[o.product] ?? 0) >= o.quantity,
         )
-        .sort((a, b) => (a.unitCosts[o.product] ?? 0) - (b.unitCosts[o.product] ?? 0));
+        .sort((a, b) =>
+          // Versão 2: no Brasil real os quatro vendedores de menor custo podiam estar a 1.500 km e
+          // nenhum cabia na verba de frete; responde quem está mais perto do comprador.
+          to
+            ? distanceKm(propertyOf(w, a.propertyId)!.coordinates, to) -
+              distanceKm(propertyOf(w, b.propertyId)!.coordinates, to)
+            : (a.unitCosts[o.product] ?? 0) - (b.unitCosts[o.product] ?? 0),
+        );
       if (tracing && !candidates.length)
         trace(
           o.buyerId,

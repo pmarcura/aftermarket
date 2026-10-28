@@ -91,8 +91,16 @@ export function supplySpent(w: World, e: Establishment, at: number) {
   const executed = (w.supplyHistory ?? [])
     .filter((h) => h.establishmentId === e.id && h.at >= start)
     .reduce((n, h) => n + h.cost, 0);
+  // Versão 2: pedido aberto sem vendedor nem proposta não é gasto. Contado, três anúncios parados
+  // de minério, carvão e sucata passavam do orçamento do dia e 11 de 12 usinas deixavam de comprar
+  // das minas cheias a 100 km.
   const promised = w.orders
-    .filter((o) => o.destinationId === e.id && o.status === 'pending')
+    .filter(
+      (o) =>
+        o.destinationId === e.id &&
+        o.status === 'pending' &&
+        (!w.season.config.economyVersion || o.sellerId || o.proposals?.length),
+    )
     .reduce((n, o) => n + o.quantity * o.unitPrice + o.maxFreight, 0);
   return { executed, promised, total: executed + promised };
 }

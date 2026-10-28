@@ -1,0 +1,2352 @@
+<title>Estratégia do Aftermarket</title>
+<meta name="claude:viewport-fit-sides" content="cover" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400;500;600;700&display=swap"
+/>
+<style>
+  /* Layout: o mesmo palco escuro do jogo; cada frente é uma seção com número real da frente, esboços e, no fim, os prompts copiáveis. */
+  :root {
+    --bg: #0b1418;
+    --surface: #12212a;
+    --surface-2: #192c36;
+    --surface-3: #213844;
+    --line: #2a4350;
+    --text: #e9f1f3;
+    --muted: #8ea6b0;
+    --gold: #e6b866;
+    --gold-ink: #2b1d06;
+    --farm: #6fbf73;
+    --mine: #e8995a;
+    --industry: #93a9cf;
+    --retail: #f07f70;
+    --logistics: #5fb4e2;
+    --cream: #f4ead7;
+    --good: #5cc48a;
+    --warn: #f2b44c;
+    --bad: #ef6b5e;
+    --display: 'Bricolage Grotesque', 'Trebuchet MS', system-ui, sans-serif;
+    --body: 'Figtree', 'Segoe UI', system-ui, sans-serif;
+    color-scheme: dark;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.55 var(--body);
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 44px 90px;
+  }
+  main {
+    max-width: 1120px;
+    margin: 0 auto;
+    display: grid;
+    gap: 72px;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--display);
+    margin: 0;
+    line-height: 1.08;
+    text-wrap: balance;
+  }
+  h1 {
+    font-size: clamp(38px, 7vw, 64px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  h2 {
+    font-size: clamp(26px, 4vw, 34px);
+    font-weight: 750;
+  }
+  h3 {
+    font-size: 19px;
+    font-weight: 700;
+  }
+  p {
+    margin: 0;
+  }
+  section {
+    display: grid;
+    gap: 20px;
+  }
+  .tag {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .lead {
+    color: var(--muted);
+    font-size: 18px;
+    max-width: 60ch;
+  }
+  .muted {
+    color: var(--muted);
+  }
+  .num {
+    font-family: var(--display);
+    font-variant-numeric: tabular-nums;
+    font-weight: 750;
+  }
+  .ico {
+    width: 1em;
+    height: 1em;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex: none;
+  }
+  .bubble {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    font-size: 22px;
+    flex: none;
+  }
+  .b-gold {
+    background: #e6b86626;
+    color: var(--gold);
+  }
+  .b-farm {
+    background: #6fbf7326;
+    color: var(--farm);
+  }
+  .b-mine {
+    background: #e8995a26;
+    color: var(--mine);
+  }
+  .b-ind {
+    background: #93a9cf26;
+    color: var(--industry);
+  }
+  .b-retail {
+    background: #f07f7026;
+    color: var(--retail);
+  }
+  .b-log {
+    background: #5fb4e226;
+    color: var(--logistics);
+  }
+  .b-bad {
+    background: #ef6b5e26;
+    color: var(--bad);
+  }
+  .grid2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+  .grid3 {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+  }
+  .grid4 {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+  }
+  .card {
+    background: var(--surface);
+    border-radius: 18px;
+    padding: 18px;
+    display: grid;
+    gap: 10px;
+    align-content: start;
+    min-width: 0;
+  }
+  .card .head {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .card ul {
+    margin: 0;
+    padding-left: 18px;
+    color: var(--muted);
+    font-size: 14px;
+    display: grid;
+    gap: 4px;
+  }
+
+  /* Frentes */
+  .fronts {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    counter-reset: f;
+  }
+  .front {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 14px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .front b {
+    display: block;
+    font-family: var(--display);
+    font-size: 16px;
+  }
+  .front span {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .front .n {
+    counter-increment: f;
+  }
+  .front .n::before {
+    content: counter(f);
+  }
+  .front .n {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    background: var(--gold);
+    color: var(--gold-ink);
+    font: 800 15px var(--display);
+    flex: none;
+  }
+
+  /* Desempenho */
+  .perf {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 14px;
+  }
+  .bars {
+    display: grid;
+    gap: 10px;
+  }
+  .bar {
+    display: grid;
+    grid-template-columns: 90px minmax(0, 1fr) 70px;
+    gap: 10px;
+    align-items: center;
+    font-size: 14px;
+  }
+  .bar .track {
+    height: 18px;
+    border-radius: 6px;
+    background: var(--surface-2);
+    overflow: hidden;
+  }
+  .bar .track i {
+    display: block;
+    height: 100%;
+    border-radius: 6px;
+    background: linear-gradient(90deg, var(--warn), var(--bad));
+  }
+  .bar .track i.ok {
+    background: var(--good);
+  }
+  .bar .v {
+    font: 700 14px var(--display);
+    text-align: right;
+  }
+  .culprits {
+    display: grid;
+    gap: 10px;
+    counter-reset: c;
+  }
+  .culprit {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 12px;
+  }
+  .culprit .rank {
+    counter-increment: c;
+    flex: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font: 800 13px var(--display);
+    background: var(--surface-3);
+  }
+  .culprit .rank::before {
+    content: counter(c);
+  }
+  .culprit:first-child .rank {
+    background: var(--bad);
+    color: #1a0b09;
+  }
+  .culprit b {
+    display: block;
+    font-size: 15px;
+  }
+  .culprit span {
+    color: var(--muted);
+    font-size: 13.5px;
+  }
+  .culprit .fix {
+    display: block;
+    color: var(--good);
+    font-size: 13.5px;
+    margin-top: 4px;
+  }
+
+  /* Mundo real */
+  .chains {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .chain {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 14px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .chain b {
+    display: block;
+    font-size: 15px;
+  }
+  .chain span {
+    color: var(--muted);
+    font-size: 13.5px;
+  }
+  .scale {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .zoomstep {
+    background: var(--surface);
+    border-radius: 16px;
+    overflow: hidden;
+    display: grid;
+  }
+  .zoomstep svg {
+    width: 100%;
+    height: 150px;
+    display: block;
+    background: #10242c;
+  }
+  .zoomstep div {
+    padding: 12px 14px;
+    display: grid;
+    gap: 2px;
+  }
+  .zoomstep b {
+    font-size: 15px;
+  }
+  .zoomstep span {
+    color: var(--muted);
+    font-size: 13.5px;
+  }
+  .note {
+    border-left: 3px solid var(--warn);
+    padding: 4px 0 4px 14px;
+    color: var(--muted);
+    max-width: 70ch;
+  }
+  .note b {
+    color: var(--text);
+  }
+
+  /* Recompensa */
+  .loop {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+  .loop span {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    padding: 10px 14px;
+    border-radius: 99px;
+    font-weight: 700;
+  }
+  .loop i {
+    color: var(--gold);
+    font-style: normal;
+    font-weight: 800;
+  }
+  .level {
+    background: linear-gradient(120deg, #2a2412, #17303b);
+    border-radius: 18px;
+    padding: 18px;
+    display: grid;
+    gap: 12px;
+  }
+  .tiers {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .tier {
+    display: grid;
+    justify-items: center;
+    gap: 6px;
+    text-align: center;
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+  .tier .dot {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 20px;
+    background: var(--surface-2);
+    color: var(--muted);
+  }
+  .tier.done .dot {
+    background: var(--gold);
+    color: var(--gold-ink);
+  }
+  .tier.now .dot {
+    background: var(--surface-3);
+    color: var(--gold);
+    outline: 2px solid var(--gold);
+  }
+  .xp {
+    height: 12px;
+    border-radius: 99px;
+    background: var(--surface-2);
+    overflow: hidden;
+  }
+  .xp i {
+    display: block;
+    height: 100%;
+    width: 38%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, var(--gold), #f6d79b);
+    position: relative;
+  }
+  .xp i::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, #fff6, transparent);
+    animation: shine 2.4s ease-in-out infinite;
+  }
+  @keyframes shine {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(100%);
+    }
+  }
+  .goals {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .goal {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 14px;
+    display: grid;
+    gap: 10px;
+  }
+  .goal .top {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .goal .pbar {
+    height: 8px;
+    border-radius: 99px;
+    background: var(--surface-3);
+    overflow: hidden;
+  }
+  .goal .pbar i {
+    display: block;
+    height: 100%;
+    border-radius: 99px;
+    background: var(--good);
+  }
+  .goal small {
+    color: var(--muted);
+  }
+  .medals {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .medal {
+    display: grid;
+    justify-items: center;
+    gap: 6px;
+    text-align: center;
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+  .medal .m {
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 26px;
+    background: radial-gradient(circle at 35% 30%, #f6d79b, #b98632);
+    color: var(--gold-ink);
+    box-shadow: 0 6px 16px #0006;
+  }
+  .medal.lock .m {
+    background: var(--surface-2);
+    color: var(--muted);
+    box-shadow: none;
+  }
+  .medal.new .m {
+    animation: pop 2.8s ease-in-out infinite;
+  }
+  @keyframes pop {
+    0%,
+    60%,
+    100% {
+      transform: scale(1) rotate(0);
+    }
+    70% {
+      transform: scale(1.15) rotate(-6deg);
+    }
+    80% {
+      transform: scale(0.97) rotate(3deg);
+    }
+  }
+  .board {
+    display: grid;
+    gap: 8px;
+  }
+  .board div {
+    display: grid;
+    grid-template-columns: 30px 40px minmax(0, 1fr) auto auto;
+    gap: 10px;
+    align-items: center;
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 8px 12px;
+  }
+  .board .pos {
+    font: 800 16px var(--display);
+    color: var(--muted);
+  }
+  .board .me {
+    outline: 2px solid var(--gold);
+  }
+  .board .logo {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    font: 800 13px var(--display);
+  }
+  .board .delta {
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--good);
+  }
+  .opp {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    background: linear-gradient(120deg, #3a2a14, #2a1f28);
+    border-radius: 16px;
+    padding: 14px;
+  }
+  .opp .ping {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--gold);
+    position: relative;
+    flex: none;
+    margin: 0 8px;
+  }
+  .opp .ping::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid var(--gold);
+    animation: ping 1.8s ease-out infinite;
+  }
+  @keyframes ping {
+    from {
+      transform: scale(1);
+      opacity: 0.9;
+    }
+    to {
+      transform: scale(3);
+      opacity: 0;
+    }
+  }
+
+  /* Gráficos */
+  .charts {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 14px;
+  }
+  .chartcard {
+    background: var(--surface);
+    border-radius: 18px;
+    padding: 16px;
+    display: grid;
+    gap: 10px;
+    min-width: 0;
+  }
+  .chartcard > svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .runner {
+    animation: run 6s linear infinite;
+    offset-path: path(
+      'M 0 150 L 60 138 L 120 142 L 180 110 L 240 118 L 300 84 L 360 92 L 420 58 L 480 64 L 540 36'
+    );
+  }
+  @keyframes run {
+    from {
+      offset-distance: 0%;
+    }
+    to {
+      offset-distance: 100%;
+    }
+  }
+  .flowrow {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr) 90px;
+    gap: 10px;
+    align-items: center;
+    font-size: 13.5px;
+  }
+  .flowrow .track {
+    height: 14px;
+    border-radius: 5px;
+    background: var(--surface-2);
+    overflow: hidden;
+  }
+  .flowrow .track i {
+    display: block;
+    height: 100%;
+    border-radius: 5px;
+    animation: grow 3.5s ease-in-out infinite alternate;
+    transform-origin: left;
+  }
+  @keyframes grow {
+    from {
+      transform: scaleX(0.92);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+  .flowrow .v {
+    text-align: right;
+    font: 700 14px var(--display);
+  }
+  .blocks {
+    display: grid;
+    grid-template-columns: 3fr 2fr 1fr 4fr;
+    gap: 6px;
+    height: 110px;
+  }
+  .blocks div {
+    border-radius: 12px;
+    padding: 10px;
+    display: grid;
+    align-content: space-between;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #0b1418;
+  }
+
+  /* Empresa */
+  .brand {
+    display: grid;
+    grid-template-columns: 280px minmax(0, 1fr);
+    gap: 18px;
+    background: var(--surface);
+    border-radius: 18px;
+    padding: 18px;
+  }
+  .brand .preview {
+    border-radius: 16px;
+    background: var(--surface-2);
+    padding: 18px;
+    display: grid;
+    justify-items: center;
+    gap: 10px;
+    text-align: center;
+  }
+  .emblem {
+    width: 96px;
+    height: 96px;
+    border-radius: 28px;
+    display: grid;
+    place-items: center;
+    font-size: 48px;
+    background: var(--farm);
+    color: #0b1a12;
+    box-shadow: 0 10px 26px #0007;
+  }
+  .swatches {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .swatches span {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+  }
+  .swatches .sel {
+    outline: 3px solid var(--text);
+    outline-offset: 2px;
+  }
+  .icons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .icons span {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    font-size: 22px;
+    background: var(--surface-2);
+  }
+  .icons .sel {
+    background: var(--surface-3);
+    outline: 2px solid var(--gold);
+    color: var(--gold);
+  }
+  .field {
+    display: grid;
+    gap: 6px;
+  }
+  .field label {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .field .input {
+    background: var(--surface-2);
+    border-radius: 12px;
+    padding: 11px 14px;
+    font-weight: 700;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-weight: 700;
+    font-size: 14px;
+    background: var(--surface-3);
+    color: var(--text);
+    border: 0;
+    font-family: var(--body);
+    cursor: pointer;
+  }
+  .btn.gold {
+    background: var(--gold);
+    color: var(--gold-ink);
+  }
+  .btn .ico {
+    font-size: 17px;
+  }
+  .btn:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
+
+  /* Arte */
+  .swatchrow {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .sw {
+    border-radius: 14px;
+    padding: 46px 10px 10px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #0b1418;
+  }
+  .sw small {
+    display: block;
+    font-weight: 600;
+    opacity: 0.75;
+  }
+  .dodont {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+  .dodont .card ul li::marker {
+    color: var(--good);
+  }
+  .dodont .card.no ul li::marker {
+    color: var(--bad);
+  }
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .step {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 14px;
+    display: grid;
+    gap: 6px;
+  }
+  .step b {
+    font-family: var(--display);
+    font-size: 16px;
+  }
+  .step span {
+    color: var(--muted);
+    font-size: 13.5px;
+  }
+  .step .k {
+    font: 800 12px var(--display);
+    color: var(--gold);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .pgroup {
+    display: grid;
+    gap: 12px;
+  }
+  .pgroup > .h {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .plist {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .prompt {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: grid;
+    gap: 8px;
+    min-width: 0;
+  }
+  .prompt .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  .prompt .top b {
+    font-size: 15px;
+  }
+  .prompt .file {
+    font:
+      600 12px ui-monospace,
+      Consolas,
+      monospace;
+    color: var(--muted);
+  }
+  .prompt p {
+    color: var(--muted);
+    font-size: 13.5px;
+  }
+  .prompt.big {
+    grid-column: 1 / -1;
+    background: linear-gradient(120deg, #2a2412, var(--surface));
+  }
+  .copy {
+    padding: 7px 12px;
+    font-size: 13px;
+  }
+  .copied {
+    background: var(--good) !important;
+    color: #0b1a12 !important;
+  }
+
+  /* Interação e decisões */
+  .decide {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .decide div {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 14px;
+  }
+  .decide b {
+    display: block;
+  }
+  .decide span {
+    color: var(--muted);
+    font-size: 13.5px;
+  }
+
+  @media (max-width: 860px) {
+    .fronts,
+    .chains,
+    .scale,
+    .goals,
+    .grid3,
+    .steps {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .perf,
+    .charts,
+    .brand,
+    .dodont,
+    .plist,
+    .grid2,
+    .decide {
+      grid-template-columns: 1fr;
+    }
+    .medals {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .swatchrow {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .grid4 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 520px) {
+    .fronts,
+    .chains,
+    .scale,
+    .goals,
+    .grid3,
+    .steps,
+    .grid4 {
+      grid-template-columns: 1fr;
+    }
+    .tiers {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      font-size: 11px;
+    }
+    .tier .dot {
+      width: 36px;
+      height: 36px;
+    }
+    .bar {
+      grid-template-columns: 70px minmax(0, 1fr) 60px;
+    }
+    .board div {
+      grid-template-columns: 24px 36px minmax(0, 1fr) auto;
+    }
+    .board .delta {
+      display: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation: none !important;
+    }
+  }
+</style>
+
+<svg width="0" height="0" style="position: absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-gauge" viewBox="0 0 24 24">
+      <path d="M4 18a8 8 0 1116 0M12 14l4-5M4 18h16" />
+    </symbol>
+    <symbol id="i-map" viewBox="0 0 24 24">
+      <path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2zM9 4v14M15 6v14" />
+    </symbol>
+    <symbol id="i-trophy" viewBox="0 0 24 24">
+      <path
+        d="M8 4h8v5a4 4 0 01-8 0zM8 6H4.5c0 3 1.5 4.5 3.7 4.8M16 6h3.5c0 3-1.5 4.5-3.7 4.8M12 13v4M8.5 21h7M9.5 17h5v4h-5z"
+      />
+    </symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24">
+      <path d="M4 20V4M4 20h16M7.5 15l4-4 3 3 5-6" />
+    </symbol>
+    <symbol id="i-badge" viewBox="0 0 24 24">
+      <circle cx="12" cy="9" r="5.5" />
+      <path d="M8.5 13.5L7 21l5-2.5 5 2.5-1.5-7.5" />
+    </symbol>
+    <symbol id="i-hand" viewBox="0 0 24 24">
+      <path d="M2 12l4-4 4 2 4-3 4 3 4-2v5l-6 6-3-2-3 2-6-5zM10 10l3 3" />
+    </symbol>
+    <symbol id="i-brush" viewBox="0 0 24 24">
+      <path
+        d="M14.5 3.5l6 6-8.5 8.5-6-6zM6 12l-2.5 2.5c-1 1-1 3.5-1 6.5 3 0 5.5 0 6.5-1L11.5 17.5"
+      />
+    </symbol>
+    <symbol id="i-coin" viewBox="0 0 24 24">
+      <ellipse cx="12" cy="6" rx="7" ry="3" />
+      <path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6" />
+    </symbol>
+    <symbol id="i-mountain" viewBox="0 0 24 24">
+      <path d="M2.5 20l7-12 4 6.5 2.5-3.5 5.5 9z" />
+    </symbol>
+    <symbol id="i-flame" viewBox="0 0 24 24">
+      <path
+        d="M12 21.5c4 0 6.5-2.7 6.5-6.3 0-3.7-2.6-6.2-4.5-9.7-.7 2.4-2 3.5-3.4 4.3C10.5 8 10 5 8.5 2.5 6.6 6 5.5 9.5 5.5 15.2c0 3.6 2.5 6.3 6.5 6.3z"
+      />
+    </symbol>
+    <symbol id="i-anvil" viewBox="0 0 24 24">
+      <path d="M3 6h14c0 3-2 5-5 5v3l3 4H7l3-4v-3H8C5 11 3 9 3 6zM17 6h4l-4 3" />
+    </symbol>
+    <symbol id="i-fork" viewBox="0 0 24 24">
+      <path d="M5 2.5v7a3 3 0 006 0v-7M8 2.5v19M17.5 2.5c-2 2.2-3 5-3 8h3v11" />
+    </symbol>
+    <symbol id="i-truck" viewBox="0 0 24 24">
+      <path d="M2 6h11v10H2zM13 9h4.5L21 12.5V16h-8" />
+      <circle cx="6.5" cy="17.5" r="2" />
+      <circle cx="17" cy="17.5" r="2" />
+    </symbol>
+    <symbol id="i-bean" viewBox="0 0 24 24">
+      <path
+        d="M9.5 3.8c4.3-2 9.5.8 9.5 6.2s-5 10.2-10.3 10.2S2.6 16 4.6 12s.6-6.3 4.9-8.2zM9 9c1.5 1.3 2 3.5 1 5.5"
+      />
+    </symbol>
+    <symbol id="i-drop" viewBox="0 0 24 24">
+      <path d="M12 2.8s6.2 6.6 6.2 11.2a6.2 6.2 0 01-12.4 0C5.8 9.4 12 2.8 12 2.8z" />
+    </symbol>
+    <symbol id="i-milk" viewBox="0 0 24 24">
+      <path d="M8.5 2.5h7M9.5 2.5V5L7.5 8v13.5h9V8l-2-3V2.5M7.5 12h9" />
+    </symbol>
+    <symbol id="i-wheat" viewBox="0 0 24 24">
+      <path
+        d="M12 22V9M12 9c-2.5-.5-4-2.5-4-5.5 2.5.5 4 2.5 4 5.5zm0 0c2.5-.5 4-2.5 4-5.5-2.5.5-4 2.5-4 5.5zM12 15c-2.5-.5-4.5-2.2-4.5-5 2.5.3 4.5 2.2 4.5 5zm0 0c2.5-.5 4.5-2.2 4.5-5-2.5.3-4.5 2.2-4.5 5z"
+      />
+    </symbol>
+    <symbol id="i-cube" viewBox="0 0 24 24">
+      <path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3zM12 21.5V12M3.5 7.3L12 12l8.5-4.7" />
+    </symbol>
+    <symbol id="i-store" viewBox="0 0 24 24">
+      <path d="M3 9l1.6-5h14.8L21 9M4 9v11h16V9M3 9h18M9 20v-6h6v6" />
+    </symbol>
+    <symbol id="i-sprout" viewBox="0 0 24 24">
+      <path
+        d="M12 21v-9M12 12c0-4.4 3-7 7.5-7 0 4.4-3 7-7.5 7zM12 14.5c0-3.4-2.3-5.5-6-5.5 0 3.4 2.3 5.5 6 5.5"
+      />
+    </symbol>
+    <symbol id="i-up" viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8M15 7h6v6" /></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24">
+      <circle cx="9" cy="8" r="3.5" />
+      <path
+        d="M2.5 20.5c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M16 4.8a3.3 3.3 0 010 6.4M18 14.6c2.2.7 3.5 2.8 3.5 5.9"
+      />
+    </symbol>
+    <symbol id="i-news" viewBox="0 0 24 24">
+      <path
+        d="M4 5h13v14a2 2 0 002 2H6a2 2 0 01-2-2zM17 9h3v10a2 2 0 01-2 2M7.5 9h6M7.5 13h6M7.5 17h4"
+      />
+    </symbol>
+    <symbol id="i-gavel" viewBox="0 0 24 24">
+      <path d="M14 3l7 7M11.5 5.5l7 7M8.5 8.5l7 7-3 3-7-7zM9 15l-6 6" />
+    </symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24">
+      <path d="M4 7.5h3l1.8-2.5h6.4L17 7.5h3v12H4z" />
+      <circle cx="12" cy="13.5" r="3.5" />
+    </symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24">
+      <rect x="8.5" y="8.5" width="12" height="12" rx="2" />
+      <path d="M15.5 8.5V5a1.5 1.5 0 00-1.5-1.5H5A1.5 1.5 0 003.5 5v9A1.5 1.5 0 005 15.5h3.5" />
+    </symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M4.5 12.5l5 5 10-11" /></symbol>
+    <symbol id="i-paw" viewBox="0 0 24 24">
+      <circle cx="7" cy="9" r="2" />
+      <circle cx="12" cy="6.5" r="2" />
+      <circle cx="17" cy="9" r="2" />
+      <path
+        d="M12 12c-3 0-5.5 3.5-5.5 6 0 1.6 1.4 2.5 3 2.5 1 0 1.6-.5 2.5-.5s1.5.5 2.5.5c1.6 0 3-.9 3-2.5 0-2.5-2.5-6-5.5-6z"
+      />
+    </symbol>
+    <symbol id="i-star" viewBox="0 0 24 24">
+      <path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" />
+    </symbol>
+    <symbol id="i-building" viewBox="0 0 24 24">
+      <path d="M4 21V5l8-2v18M12 8h8v13M4 21h16M8 8h.01M8 12h.01M8 16h.01M16 12h.01M16 16h.01" />
+    </symbol>
+  </defs>
+</svg>
+
+<main>
+  <header style="display: grid; gap: 16px">
+    <span class="tag">Estratégia · 30/10/2026</span>
+    <h1>Estratégia do Aftermarket</h1>
+    <p class="lead">
+      Seis frentes para o jogo ficar leve, verdadeiro e gostoso de jogar: mapa rápido, Brasil real,
+      progresso que recompensa, gráficos que explicam, empresa com a cara do jogador e uma estética
+      própria.
+    </p>
+    <div class="fronts">
+      <div class="front">
+        <span class="n"></span>
+        <div><b>Mapa leve e escalável</b><span>o que trava hoje e como resolver</span></div>
+      </div>
+      <div class="front">
+        <span class="n"></span>
+        <div><b>Brasil de verdade</b><span>negócios onde eles existem</span></div>
+      </div>
+      <div class="front">
+        <span class="n"></span>
+        <div><b>Jogo que recompensa</b><span>metas, nível, medalhas, ranking</span></div>
+      </div>
+      <div class="front">
+        <span class="n"></span>
+        <div><b>Gráficos que explicam</b><span>ícones e movimento</span></div>
+      </div>
+      <div class="front">
+        <span class="n"></span>
+        <div><b>Sua empresa</b><span>nome, emblema e foto</span></div>
+      </div>
+      <div class="front">
+        <span class="n"></span>
+        <div><b>Estética e imagens</b><span>direção de arte e prompts</span></div>
+      </div>
+    </div>
+  </header>
+
+  <section>
+    <span class="tag">Frente 1</span>
+    <h2>O que deixa o mapa pesado</h2>
+    <div class="perf">
+      <div class="card">
+        <h3>O navegador baixa o mundo inteiro a cada 3 segundos</h3>
+        <div class="bars">
+          <div class="bar">
+            <span>Dia 0</span><span class="track"><i style="width: 1%"></i></span
+            ><span class="v">0,2 MB</span>
+          </div>
+          <div class="bar">
+            <span>Dia 1</span><span class="track"><i style="width: 4%"></i></span
+            ><span class="v">1,1 MB</span>
+          </div>
+          <div class="bar">
+            <span>Dia 7</span><span class="track"><i style="width: 25%"></i></span
+            ><span class="v">7 MB</span>
+          </div>
+          <div class="bar">
+            <span>Dia 30</span><span class="track"><i style="width: 100%"></i></span
+            ><span class="v">28 MB</span>
+          </div>
+          <div class="bar">
+            <span>Meta</span><span class="track"><i class="ok" style="width: 1%"></i></span
+            ><span class="v" style="color: var(--good)">&lt; 1 MB</span>
+          </div>
+        </div>
+        <p class="muted" style="font-size: 13.5px">
+          Medido no mundo da versão 2: 80% do pacote é o extrato completo de todas as empresas. No
+          mundo principal (63 MB) somam-se 23 MB de desenho de estradas. Com 5 amigos pela internet
+          seriam dezenas de MB por segundo saindo do servidor.
+        </p>
+      </div>
+      <div class="culprits">
+        <div class="culprit">
+          <span class="rank"></span>
+          <div>
+            <b>Mundo inteiro a cada atualização</b
+            ><span>Ler 28 MB trava a tela por um instante; é o engasgo no zoom.</span
+            ><span class="fix">→ pacote enxuto e só o que mudou</span>
+          </div>
+        </div>
+        <div class="culprit">
+          <span class="rank"></span>
+          <div>
+            <b>Estradas inteiras dentro do mundo</b
+            ><span>212 rotas com cerca de 4.300 pontos cada viajam junto em toda atualização.</span
+            ><span class="fix"
+              >→ rotas guardadas à parte, simplificadas e baixadas só ao abrir uma entrega</span
+            >
+          </div>
+        </div>
+        <div class="culprit">
+          <span class="rank"></span>
+          <div>
+            <b>Marcadores refeitos toda vez</b
+            ><span>Cada negócio é um elemento de página apagado e recriado a cada 3 s.</span
+            ><span class="fix">→ ícones desenhados pelo próprio mapa, agrupados por zoom</span>
+          </div>
+        </div>
+        <div class="culprit">
+          <span class="rank"></span>
+          <div>
+            <b>Terrenos verdes recalculados</b
+            ><span>Os quadrados de todos os lotes são refeitos a cada atualização.</span
+            ><span class="fix">→ só quando um lote muda, e só de perto</span>
+          </div>
+        </div>
+        <div class="culprit">
+          <span class="rank"></span>
+          <div>
+            <b>Rastro dos caminhões 20× por segundo</b
+            ><span>Redesenha todas as rotas ativas o tempo todo.</span
+            ><span class="fix">→ 5× por segundo e só o que está na tela</span>
+          </div>
+        </div>
+        <div class="culprit">
+          <span class="rank"></span>
+          <div>
+            <b>Histórico que só cresce</b
+            ><span>A simulação fica mais lenta a cada dia de jogo.</span
+            ><span class="fix">→ histórico antigo resumido por dia</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <span class="tag">Frente 2</span>
+    <h2>Negócios onde eles existem de verdade</h2>
+    <p class="lead">
+      Hoje tudo se amontoa em volta de Campinas. Proposta: o mapa do Centro-Sul, com polos
+      produtivos reais e lojas nas cidades conforme a população.
+    </p>
+    <div class="grid2">
+      <div class="card">
+        <div class="head">
+          <span class="bubble b-bad"
+            ><svg class="ico"><use href="#i-map" /></svg
+          ></span>
+          <h3>Como usamos a geografia hoje</h3>
+        </div>
+        <ul>
+          <li>
+            <b style="color: var(--text)">10 cidades digitadas à mão</b> definem toda a procura das
+            famílias.
+          </li>
+          <li>
+            O catálogo oficial do IBGE com <b style="color: var(--text)">5.571 municípios</b> já
+            está no projeto, mas o jogo não usa.
+          </li>
+          <li>
+            Negócios dos bots ficam <b style="color: var(--text)">a 1 ou 2 km do centro</b> de uma
+            dessas cidades, em rodízio: mina no centro de São Paulo, fazenda no centro de Curitiba.
+          </li>
+          <li>
+            Rotas reais vêm do <b style="color: var(--text)">servidor público de demonstração</b> do
+            OSRM, que tem limite de uso.
+          </li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="head">
+          <span class="bubble b-farm"
+            ><svg class="ico"><use href="#i-map" /></svg
+          ></span>
+          <h3>Como passa a ser</h3>
+        </div>
+        <ul>
+          <li>
+            Municípios do IBGE com
+            <b style="color: var(--text)">coordenadas e população do Censo 2022</b>; a procura vem
+            de todas as cidades do mapa.
+          </li>
+          <li>
+            Cada atividade nasce <b style="color: var(--text)">no seu polo real</b>, a 5 a 25 km da
+            sede do município, fora da área urbana; lojas ficam dentro das cidades.
+          </li>
+          <li>
+            Lotes gerados por polo e por cidade, em quantidade que acompanha o número de jogadores.
+          </li>
+          <li>
+            Rotas guardadas à parte e simplificadas; servidor de rotas próprio quando o jogo for
+            para a internet.
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="chains">
+      <div class="chain">
+        <span class="bubble b-mine"
+          ><svg class="ico"><use href="#i-mountain" /></svg
+        ></span>
+        <div>
+          <b>Minério de ferro</b
+          ><span>Quadrilátero Ferrífero: Itabira, Mariana, Congonhas (MG)</span>
+        </div>
+      </div>
+      <div class="chain">
+        <span class="bubble b-ind"
+          ><svg class="ico"><use href="#i-flame" /></svg
+        ></span>
+        <div><b>Carvão</b><span>Criciúma e Lauro Müller (SC), Candiota (RS)</span></div>
+      </div>
+      <div class="chain">
+        <span class="bubble b-ind"
+          ><svg class="ico"><use href="#i-anvil" /></svg
+        ></span>
+        <div>
+          <b>Aço</b><span>Ipatinga e Ouro Branco (MG), Volta Redonda (RJ), Serra (ES)</span>
+        </div>
+      </div>
+      <div class="chain">
+        <span class="bubble b-log"
+          ><svg class="ico"><use href="#i-truck" /></svg
+        ></span>
+        <div>
+          <b>Caminhões</b><span>São Bernardo do Campo (SP), Resende (RJ), Caxias do Sul (RS)</span>
+        </div>
+      </div>
+      <div class="chain">
+        <span class="bubble b-ind"
+          ><svg class="ico"><use href="#i-fork" /></svg
+        ></span>
+        <div>
+          <b>Utensílios</b><span>Carlos Barbosa e Caxias do Sul (RS), Grande São Paulo</span>
+        </div>
+      </div>
+      <div class="chain">
+        <span class="bubble b-farm"
+          ><svg class="ico"><use href="#i-bean" /></svg
+        ></span>
+        <div>
+          <b>Soja</b><span>Sorriso e Rondonópolis (MT), Rio Verde (GO), Cascavel (PR)</span>
+        </div>
+      </div>
+      <div class="chain">
+        <span class="bubble b-gold"
+          ><svg class="ico"><use href="#i-drop" /></svg
+        ></span>
+        <div>
+          <b>Óleo e farelo</b><span>Rondonópolis (MT), Ponta Grossa (PR), Uberlândia (MG)</span>
+        </div>
+      </div>
+      <div class="chain">
+        <span class="bubble b-farm"
+          ><svg class="ico"><use href="#i-milk" /></svg
+        ></span>
+        <div><b>Leite e ração</b><span>Sul de Minas e Patos de Minas (MG), Castro (PR)</span></div>
+      </div>
+      <div class="chain">
+        <span class="bubble b-farm"
+          ><svg class="ico"><use href="#i-wheat" /></svg
+        ></span>
+        <div><b>Arroz</b><span>Uruguaiana e Itaqui (RS)</span></div>
+      </div>
+      <div class="chain">
+        <span class="bubble b-mine"
+          ><svg class="ico"><use href="#i-bean" /></svg
+        ></span>
+        <div><b>Feijão</b><span>Unaí (MG), Campos Gerais (PR)</span></div>
+      </div>
+      <div class="chain">
+        <span class="bubble b-farm"
+          ><svg class="ico"><use href="#i-sprout" /></svg
+        ></span>
+        <div><b>Cana e açúcar</b><span>Ribeirão Preto, Sertãozinho, Piracicaba (SP)</span></div>
+      </div>
+      <div class="chain">
+        <span class="bubble b-retail"
+          ><svg class="ico"><use href="#i-store" /></svg
+        ></span>
+        <div><b>Lojas</b><span>Capitais e grandes cidades, lotes conforme a população</span></div>
+      </div>
+    </div>
+    <div class="scale">
+      <div class="zoomstep">
+        <svg viewBox="0 0 300 150" aria-hidden="true">
+          <path
+            d="M30 20 C 80 10, 150 30, 210 25 S 280 60, 270 110 C 240 140, 160 145, 110 130 S 20 100, 30 20z"
+            fill="#163640"
+            stroke="#2a4350"
+          />
+          <g
+            font-family="Bricolage Grotesque, sans-serif"
+            font-weight="800"
+            font-size="13"
+            text-anchor="middle"
+          >
+            <circle cx="90" cy="60" r="18" fill="#6fbf73" />
+            <text x="90" y="65" fill="#0b1418">24</text>
+            <circle cx="190" cy="55" r="15" fill="#e8995a" />
+            <text x="190" y="60" fill="#0b1418">9</text>
+            <circle cx="215" cy="100" r="20" fill="#f07f70" />
+            <text x="215" y="105" fill="#0b1418">31</text>
+            <circle cx="130" cy="115" r="13" fill="#93a9cf" />
+            <text x="130" y="120" fill="#0b1418">7</text>
+          </g>
+        </svg>
+        <div><b>De longe</b><span>Polos viram bolhas com o número de negócios.</span></div>
+      </div>
+      <div class="zoomstep">
+        <svg viewBox="0 0 300 150" aria-hidden="true">
+          <path d="M0 110 C 70 90, 140 120, 300 70" stroke="#2a4350" stroke-width="6" fill="none" />
+          <g>
+            <circle cx="60" cy="50" r="12" fill="#6fbf73" />
+            <circle cx="110" cy="70" r="12" fill="#6fbf73" />
+            <circle cx="150" cy="40" r="12" fill="#e6b866" />
+            <circle cx="200" cy="85" r="12" fill="#6fbf73" />
+            <circle cx="240" cy="45" r="12" fill="#f07f70" />
+          </g>
+          <circle cx="150" cy="40" r="20" fill="none" stroke="#e6b866" stroke-width="2" />
+        </svg>
+        <div><b>Na região</b><span>Cada negócio é um ícone; o seu ganha destaque.</span></div>
+      </div>
+      <div class="zoomstep">
+        <svg viewBox="0 0 300 150" aria-hidden="true">
+          <rect
+            x="40"
+            y="25"
+            width="110"
+            height="90"
+            rx="6"
+            fill="#6fbf7333"
+            stroke="#6fbf73"
+            stroke-width="2"
+          />
+          <rect
+            x="170"
+            y="40"
+            width="90"
+            height="70"
+            rx="6"
+            fill="#93a9cf22"
+            stroke="#93a9cf"
+            stroke-dasharray="5 5"
+            stroke-width="2"
+          />
+          <circle cx="95" cy="70" r="14" fill="#6fbf73" />
+          <text
+            x="215"
+            y="80"
+            fill="#8ea6b0"
+            font-size="12"
+            text-anchor="middle"
+            font-family="Figtree, sans-serif"
+          >
+            à venda
+          </text>
+        </svg>
+        <div><b>De perto</b><span>Só aqui aparecem os terrenos e os lotes à venda.</span></div>
+      </div>
+    </div>
+    <p class="note">
+      <b>Efeito na economia:</b> com distâncias reais (Mato Grosso a São Paulo tem mais de 1.500
+      km), o frete passa a pesar de verdade e vira decisão de jogo. Isso exige recalibrar preços e
+      fretes da economia alvo antes de abrir o mundo.
+    </p>
+  </section>
+
+  <section>
+    <span class="tag">Frente 3</span>
+    <h2>Um jogo que recompensa</h2>
+    <div class="loop">
+      <span
+        ><svg class="ico" style="color: var(--gold)"><use href="#i-star" /></svg>Meta</span
+      ><i>→</i><span>Ação em 2 cliques</span><i>→</i><span>Resultado que se mexe</span><i>→</i
+      ><span
+        ><svg class="ico" style="color: var(--gold)"><use href="#i-badge" /></svg>Recompensa</span
+      ><i>→</i><span>Próxima meta</span>
+    </div>
+    <div class="level">
+      <div
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: baseline;
+          gap: 12px;
+          flex-wrap: wrap;
+        "
+      >
+        <h3>Porte da empresa</h3>
+        <span class="muted">patrimônio R$ 1,18 mi · faltam R$ 820 mil para Média</span>
+      </div>
+      <div class="tiers">
+        <div class="tier done">
+          <span class="dot"
+            ><svg class="ico"><use href="#i-store" /></svg></span
+          >Micro
+        </div>
+        <div class="tier now">
+          <span class="dot"
+            ><svg class="ico"><use href="#i-building" /></svg></span
+          >Pequena
+        </div>
+        <div class="tier">
+          <span class="dot"
+            ><svg class="ico"><use href="#i-building" /></svg></span
+          >Média
+        </div>
+        <div class="tier">
+          <span class="dot"
+            ><svg class="ico"><use href="#i-trophy" /></svg></span
+          >Grande
+        </div>
+        <div class="tier">
+          <span class="dot"
+            ><svg class="ico"><use href="#i-star" /></svg></span
+          >Grupo
+        </div>
+      </div>
+      <div class="xp"><i></i></div>
+    </div>
+    <div class="goals">
+      <div class="goal">
+        <div class="top">
+          <span class="bubble b-gold"
+            ><svg class="ico"><use href="#i-coin" /></svg
+          ></span>
+          <div><b>Venda R$ 50 mil</b><br /><small>meta da semana</small></div>
+        </div>
+        <div class="pbar"><i style="width: 64%"></i></div>
+        <small>R$ 32 mil de R$ 50 mil</small>
+      </div>
+      <div class="goal">
+        <div class="top">
+          <span class="bubble b-farm"
+            ><svg class="ico"><use href="#i-sprout" /></svg
+          ></span>
+          <div><b>Faça a 1ª colheita</b><br /><small>meta da semana</small></div>
+        </div>
+        <div class="pbar"><i style="width: 40%"></i></div>
+        <small>colhe em 9 h reais</small>
+      </div>
+      <div class="goal">
+        <div class="top">
+          <span class="bubble b-log"
+            ><svg class="ico"><use href="#i-hand" /></svg
+          ></span>
+          <div><b>Venda a um jogador</b><br /><small>meta da semana</small></div>
+        </div>
+        <div class="pbar"><i style="width: 0%"></i></div>
+        <small>nenhuma ainda</small>
+      </div>
+    </div>
+    <div class="medals">
+      <div class="medal">
+        <span class="m"
+          ><svg class="ico"><use href="#i-coin" /></svg></span
+        >Primeira venda
+      </div>
+      <div class="medal new">
+        <span class="m"
+          ><svg class="ico"><use href="#i-wheat" /></svg></span
+        >Primeira colheita
+      </div>
+      <div class="medal lock">
+        <span class="m"
+          ><svg class="ico"><use href="#i-truck" /></svg></span
+        >Primeiro caminhão
+      </div>
+      <div class="medal lock">
+        <span class="m"
+          ><svg class="ico"><use href="#i-trophy" /></svg></span
+        >Primeiro milhão
+      </div>
+      <div class="medal lock">
+        <span class="m"
+          ><svg class="ico"><use href="#i-hand" /></svg></span
+        >Fornecedor de jogador
+      </div>
+      <div class="medal lock">
+        <span class="m"
+          ><svg class="ico"><use href="#i-anvil" /></svg></span
+        >Obra pública
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="head">
+          <span class="bubble b-gold"
+            ><svg class="ico"><use href="#i-trophy" /></svg
+          ></span>
+          <h3>Ranking da semana</h3>
+        </div>
+        <div class="board">
+          <div>
+            <span class="pos">1</span
+            ><span class="logo" style="background: var(--logistics); color: #0b1418">CT</span
+            ><b>Costa Transportes</b><span class="delta">+18%</span
+            ><span class="num">R$ 2,4 mi</span>
+          </div>
+          <div class="me">
+            <span class="pos">2</span
+            ><span class="logo" style="background: var(--farm); color: #0b1418">SP</span
+            ><b>Silva Participações</b><span class="delta">+12%</span
+            ><span class="num">R$ 1,2 mi</span>
+          </div>
+          <div>
+            <span class="pos">3</span
+            ><span class="logo" style="background: var(--retail); color: #0b1418">MR</span
+            ><b>Mercados Ramos</b><span class="delta">+6%</span><span class="num">R$ 1,1 mi</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="head">
+          <span class="bubble b-gold"
+            ><svg class="ico"><use href="#i-up" /></svg
+          ></span>
+          <h3>Oportunidade do dia</h3>
+        </div>
+        <div class="opp">
+          <span class="ping"></span>
+          <div>
+            <b>Falta leite em Belo Horizonte</b>
+            <div class="muted" style="font-size: 13.5px">
+              lojas pagam 18% acima da referência · 2 fornecedores
+            </div>
+          </div>
+        </div>
+        <p class="muted" style="font-size: 13.5px">
+          A mesma oportunidade pulsa no mapa, em cima da cidade.
+        </p>
+      </div>
+    </div>
+    <p class="note">
+      <b>Regra:</b> recompensa é reconhecimento (porte, medalha, ranking, destaque no mural).
+      Nenhuma meta cria dinheiro do nada, porque a economia precisa continuar fechando.
+    </p>
+  </section>
+
+  <section>
+    <span class="tag">Frente 4</span>
+    <h2>Gráficos que explicam sozinhos</h2>
+    <div class="charts">
+      <div class="chartcard">
+        <div
+          style="display: flex; justify-content: space-between; align-items: baseline; gap: 10px"
+        >
+          <h3>Caixa da semana</h3>
+          <span class="num" style="color: var(--good)">+R$ 214 mil</span>
+        </div>
+        <svg
+          viewBox="0 0 560 190"
+          role="img"
+          aria-label="Caixa subindo ao longo da semana, com marcos de venda grande, compra de terreno e colheita"
+        >
+          <defs>
+            <linearGradient id="area" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0" stop-color="#5cc48a" stop-opacity=".35" />
+              <stop offset="1" stop-color="#5cc48a" stop-opacity="0" />
+            </linearGradient>
+          </defs>
+          <g stroke="#213844" stroke-width="1"><path d="M0 40H560M0 90H560M0 140H560" /></g>
+          <path
+            d="M0 150 L60 138 L120 142 L180 110 L240 118 L300 84 L360 92 L420 58 L480 64 L540 36 L540 180 L0 180z"
+            fill="url(#area)"
+          />
+          <path
+            d="M0 150 L60 138 L120 142 L180 110 L240 118 L300 84 L360 92 L420 58 L480 64 L540 36"
+            stroke="#5cc48a"
+            stroke-width="3.5"
+            fill="none"
+            stroke-linejoin="round"
+            stroke-linecap="round"
+          />
+          <g font-family="Figtree, sans-serif" font-size="11" fill="#8ea6b0">
+            <text x="0" y="186">seg</text>
+            <text x="88" y="186">ter</text>
+            <text x="178" y="186">qua</text>
+            <text x="268" y="186">qui</text>
+            <text x="358" y="186">sex</text>
+            <text x="448" y="186">sáb</text>
+            <text x="525" y="186">dom</text>
+          </g>
+          <g>
+            <circle cx="180" cy="110" r="13" fill="#12212a" stroke="#e6b866" stroke-width="2" />
+            <path
+              d="M174 106h12M174 110h12M174 114h8"
+              stroke="#e6b866"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+            <circle cx="300" cy="84" r="13" fill="#12212a" stroke="#93a9cf" stroke-width="2" />
+            <path d="M294 90l6-12 6 12z" fill="none" stroke="#93a9cf" stroke-width="2" />
+            <circle cx="420" cy="58" r="13" fill="#12212a" stroke="#6fbf73" stroke-width="2" />
+            <path
+              d="M420 66v-14M420 54c-3 0-5-2-5-5 3 0 5 2 5 5zm0 0c3 0 5-2 5-5-3 0-5 2-5 5z"
+              stroke="#6fbf73"
+              stroke-width="1.8"
+              fill="none"
+            />
+          </g>
+          <circle r="6" fill="#e6b866" class="runner" />
+        </svg>
+        <div style="display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px" class="muted">
+          <span><b style="color: var(--gold)">●</b> venda grande</span
+          ><span><b style="color: var(--industry)">●</b> terreno comprado</span
+          ><span><b style="color: var(--farm)">●</b> colheita</span>
+        </div>
+      </div>
+      <div class="chartcard">
+        <h3>De onde vem e para onde vai</h3>
+        <div class="flowrow">
+          <span
+            class="bubble b-retail"
+            style="width: 34px; height: 34px; font-size: 17px; border-radius: 10px"
+            ><svg class="ico"><use href="#i-store" /></svg></span
+          ><span class="track"><i style="width: 100%; background: var(--good)"></i></span
+          ><span class="v" style="color: var(--good)">+R$ 168 mil</span>
+        </div>
+        <div class="flowrow">
+          <span
+            class="bubble b-farm"
+            style="width: 34px; height: 34px; font-size: 17px; border-radius: 10px"
+            ><svg class="ico"><use href="#i-wheat" /></svg></span
+          ><span class="track"><i style="width: 46%; background: var(--good)"></i></span
+          ><span class="v" style="color: var(--good)">+R$ 77 mil</span>
+        </div>
+        <div class="flowrow">
+          <span
+            class="bubble b-log"
+            style="width: 34px; height: 34px; font-size: 17px; border-radius: 10px"
+            ><svg class="ico"><use href="#i-truck" /></svg></span
+          ><span class="track"><i style="width: 14%; background: var(--bad)"></i></span
+          ><span class="v" style="color: var(--bad)">−R$ 23 mil</span>
+        </div>
+        <div class="flowrow">
+          <span
+            class="bubble b-gold"
+            style="width: 34px; height: 34px; font-size: 17px; border-radius: 10px"
+            ><svg class="ico"><use href="#i-users" /></svg></span
+          ><span class="track"><i style="width: 5%; background: var(--bad)"></i></span
+          ><span class="v" style="color: var(--bad)">−R$ 8 mil</span>
+        </div>
+        <h3 style="margin-top: 8px">O que a empresa tem</h3>
+        <div class="blocks">
+          <div style="background: var(--farm)">
+            <svg class="ico" style="font-size: 20px"><use href="#i-map" /></svg>Terras 30%
+          </div>
+          <div style="background: var(--industry)">
+            <svg class="ico" style="font-size: 20px"><use href="#i-anvil" /></svg>Máquinas 20%
+          </div>
+          <div style="background: var(--gold)">
+            <svg class="ico" style="font-size: 20px"><use href="#i-cube" /></svg>10%
+          </div>
+          <div style="background: var(--logistics)">
+            <svg class="ico" style="font-size: 20px"><use href="#i-coin" /></svg>Caixa 40%
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <span class="tag">Frente 5</span>
+    <h2>A empresa com a cara do jogador</h2>
+    <div class="brand">
+      <div class="preview">
+        <span class="emblem"
+          ><svg class="ico"><use href="#i-wheat" /></svg
+        ></span>
+        <h3>Silva Agro</h3>
+        <span class="muted">Pequena empresa · Campinas</span
+        ><span class="btn"
+          ><svg class="ico"><use href="#i-camera" /></svg>Usar uma foto</span
+        >
+      </div>
+      <div style="display: grid; gap: 14px; align-content: start">
+        <div class="field"><label>Nome da empresa</label><span class="input">Silva Agro</span></div>
+        <div class="field">
+          <label>Emblema</label>
+          <div class="icons">
+            <span class="sel"
+              ><svg class="ico"><use href="#i-wheat" /></svg></span
+            ><span
+              ><svg class="ico"><use href="#i-truck" /></svg></span
+            ><span
+              ><svg class="ico"><use href="#i-mountain" /></svg></span
+            ><span
+              ><svg class="ico"><use href="#i-anvil" /></svg></span
+            ><span
+              ><svg class="ico"><use href="#i-drop" /></svg></span
+            ><span
+              ><svg class="ico"><use href="#i-paw" /></svg></span
+            ><span
+              ><svg class="ico"><use href="#i-star" /></svg
+            ></span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Cor no mapa e no ranking</label>
+          <div class="swatches">
+            <span class="sel" style="background: var(--farm)"></span
+            ><span style="background: var(--logistics)"></span
+            ><span style="background: var(--retail)"></span
+            ><span style="background: var(--gold)"></span
+            ><span style="background: var(--industry)"></span
+            ><span style="background: var(--mine)"></span><span style="background: #b48ae6"></span>
+          </div>
+        </div>
+        <p class="muted" style="font-size: 13.5px">
+          O emblema e a cor aparecem nos marcadores do mapa, nas ofertas do mercado e no ranking. A
+          foto fica opcional; os emblemas viram ilustrações da fase de arte.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <span class="tag">Mais jogo</span>
+    <h2>Mais negócios e mais interação</h2>
+    <div class="grid3">
+      <div class="card">
+        <div class="head">
+          <span class="bubble b-log"
+            ><svg class="ico"><use href="#i-hand" /></svg
+          ></span>
+          <h3>Contratos entre jogadores</h3>
+        </div>
+        <p class="muted">Fornecer 500 unidades por dia durante 7 dias, a preço combinado.</p>
+      </div>
+      <div class="card">
+        <div class="head">
+          <span class="bubble b-log"
+            ><svg class="ico"><use href="#i-truck" /></svg
+          ></span>
+          <h3>Frete feito por jogador</h3>
+        </div>
+        <p class="muted">Transportadora de jogador aceita cargas de outros jogadores.</p>
+      </div>
+      <div class="card">
+        <div class="head">
+          <span class="bubble b-ind"
+            ><svg class="ico"><use href="#i-truck" /></svg
+          ></span>
+          <h3>Caminhões usados</h3>
+        </div>
+        <p class="muted">
+          Vender e comprar caminhões entre jogadores, com a quilometragem à vista.
+        </p>
+      </div>
+      <div class="card">
+        <div class="head">
+          <span class="bubble b-gold"
+            ><svg class="ico"><use href="#i-gavel" /></svg
+          ></span>
+          <h3>Leilão de terrenos</h3>
+        </div>
+        <p class="muted">Lotes disputados vão a lance por algumas horas.</p>
+      </div>
+      <div class="card">
+        <div class="head">
+          <span class="bubble b-retail"
+            ><svg class="ico"><use href="#i-news" /></svg
+          ></span>
+          <h3>Mural de notícias</h3>
+        </div>
+        <p class="muted">"Costa Transportes abriu ordenha em Castro", "edital de aço em BH".</p>
+      </div>
+      <div class="card">
+        <div class="head">
+          <span class="bubble b-gold"
+            ><svg class="ico"><use href="#i-trophy" /></svg
+          ></span>
+          <h3>Ranking semanal</h3>
+        </div>
+        <p class="muted">Patrimônio, crescimento e maior fornecedor da semana.</p>
+      </div>
+    </div>
+    <h3>Próximas cadeias (escolha duas)</h3>
+    <div class="grid4">
+      <div class="card">
+        <div class="head">
+          <span class="bubble b-retail"
+            ><svg class="ico"><use href="#i-paw" /></svg></span
+          ><b>Gado e frigorífico</b>
+        </div>
+        <p class="muted" style="font-size: 13.5px">
+          Carne nas lojas; já prevista para depois do primeiro teste.
+        </p>
+      </div>
+      <div class="card">
+        <div class="head">
+          <span class="bubble b-gold"
+            ><svg class="ico"><use href="#i-wheat" /></svg></span
+          ><b>Moinho e padaria</b>
+        </div>
+        <p class="muted" style="font-size: 13.5px">Trigo do Paraná vira farinha e pão.</p>
+      </div>
+      <div class="card">
+        <div class="head">
+          <span class="bubble b-mine"
+            ><svg class="ico"><use href="#i-drop" /></svg></span
+          ><b>Cervejaria</b>
+        </div>
+        <p class="muted" style="font-size: 13.5px">
+          Cevada vira malte e cerveja; estava nas referências originais.
+        </p>
+      </div>
+      <div class="card">
+        <div class="head">
+          <span class="bubble b-log"
+            ><svg class="ico"><use href="#i-flame" /></svg></span
+          ><b>Diesel e postos</b>
+        </div>
+        <p class="muted" style="font-size: 13.5px">O combustível do frete vira mercadoria.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="arte">
+    <span class="tag">Frente 6</span>
+    <h2>Estética: guache de jogo de tabuleiro</h2>
+    <p class="lead">
+      Ilustração pintada à mão, fosca e simples, como as peças de um jogo de tabuleiro brasileiro:
+      negócios em pequenos dioramas sobre um lote de terra, produtos como objetos pintados, luz de
+      fim de tarde. Fica ilustrativo e evita a cara brilhante e detalhada demais das imagens de IA.
+    </p>
+    <div class="swatchrow">
+      <div class="sw" style="background: #163640; color: var(--text)">
+        Petróleo<small>#163640</small>
+      </div>
+      <div class="sw" style="background: #e6b866">Dourado<small>#E6B866</small></div>
+      <div class="sw" style="background: #6fbf73">Lavoura<small>#6FBF73</small></div>
+      <div class="sw" style="background: #d0674f">Terracota<small>#D0674F</small></div>
+      <div class="sw" style="background: #5fb4e2">Rio<small>#5FB4E2</small></div>
+      <div class="sw" style="background: #f4ead7">Creme<small>#F4EAD7</small></div>
+      <div class="sw" style="background: #93a9cf">Aço<small>#93A9CF</small></div>
+    </div>
+    <div class="dodont">
+      <div class="card">
+        <h3>Sempre</h3>
+        <ul>
+          <li>Guache fosco com pincelada visível e papel levemente texturizado</li>
+          <li>Formas simples, bordas feitas à mão</li>
+          <li>Só as sete cores da paleta</li>
+          <li>Luz vinda da esquerda, sombra curta e chapada</li>
+          <li>Mesmo ângulo isométrico em todos os negócios</li>
+        </ul>
+      </div>
+      <div class="card no">
+        <h3>Nunca</h3>
+        <ul>
+          <li>Brilho plástico, reflexos e render 3D realista</li>
+          <li>Excesso de detalhe e texturas fotográficas</li>
+          <li>Desfoque, efeito de lente e luz neon</li>
+          <li>Texto, letras, números e marcas</li>
+          <li>Contorno preto grosso de desenho animado</li>
+        </ul>
+      </div>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <span class="k">Passo 1</span><b>Prancha de estilo</b
+        ><span>Gere a prancha e escolha a melhor. Ela vira a referência de tudo.</span>
+      </div>
+      <div class="step">
+        <span class="k">Passo 2</span><b>Anexe a referência</b
+        ><span>Em cada novo pedido, anexe a prancha aprovada junto com o prompt.</span>
+      </div>
+      <div class="step">
+        <span class="k">Passo 3</span><b>Fundo transparente</b
+        ><span>Peça PNG com fundo transparente, quadrado 1024×1024.</span>
+      </div>
+      <div class="step">
+        <span class="k">Passo 4</span><b>Nome do arquivo</b
+        ><span>Salve com o nome indicado em cada cartão e me envie a pasta.</span>
+      </div>
+    </div>
+    <div id="prompts" style="display: grid; gap: 36px"></div>
+    <noscript><p class="muted">Ative o JavaScript para ver os prompts copiáveis.</p></noscript>
+  </section>
+
+  <section>
+    <span class="tag">Para decidir</span>
+    <h2>Ordem e decisões</h2>
+    <div class="decide">
+      <div>
+        <span class="bubble b-bad"
+          ><svg class="ico"><use href="#i-gauge" /></svg
+        ></span>
+        <div>
+          <b>1 · Mapa leve, já</b><span>Decisão minha; começo assim que você aprovar.</span>
+        </div>
+      </div>
+      <div>
+        <span class="bubble b-gold"
+          ><svg class="ico"><use href="#i-brush" /></svg
+        ></span>
+        <div>
+          <b>Arte em paralelo</b><span>Você gera a prancha de estilo agora e me mostra.</span>
+        </div>
+      </div>
+      <div>
+        <span class="bubble b-farm"
+          ><svg class="ico"><use href="#i-map" /></svg
+        ></span>
+        <div>
+          <b>2 · Centro-Sul com polos reais?</b><span>Inclui recalibrar fretes e preços.</span>
+        </div>
+      </div>
+      <div>
+        <span class="bubble b-log"
+          ><svg class="ico"><use href="#i-trophy" /></svg
+        ></span>
+        <div>
+          <b>3 · Recompensa, gráficos e empresa</b
+          ><span>Junto com as telas da proposta de UX.</span>
+        </div>
+      </div>
+      <div>
+        <span class="bubble b-retail"
+          ><svg class="ico"><use href="#i-hand" /></svg
+        ></span>
+        <div>
+          <b>4 · Interação e novas cadeias</b><span>Quais duas cadeias entram primeiro?</span>
+        </div>
+      </div>
+      <div>
+        <span class="bubble b-ind"
+          ><svg class="ico"><use href="#i-users" /></svg
+        ></span>
+        <div>
+          <b>Depois · jogar com os amigos</b><span>Servidor e login, sobre esta base.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+  const style =
+    "Estilo: ilustração em guache fosco sobre papel com leve textura, pinceladas visíveis e bordas feitas à mão um pouco irregulares, formas simplificadas como nas peças de um jogo de tabuleiro brasileiro, luz suave de fim de tarde vinda da esquerda, sombra curta e chapada. Paleta limitada: azul-petróleo #163640, dourado #E6B866, verde lavoura #6FBF73, terracota #D0674F, azul rio #5FB4E2, creme #F4EAD7, cinza aço #93A9CF. Evitar: brilho plástico, render 3D realista, reflexos, desfoque, efeito de lente, luz neon, excesso de detalhe, textura fotográfica, contorno preto grosso, texto, letras, números, logotipos de marcas e marca d'água.";
+  const ref =
+    'Mantenha exatamente o mesmo traço, a mesma luz e as mesmas cores da imagem de referência anexada.';
+  const groups = [
+    {
+      title: 'Comece por aqui',
+      note: 'Gere esta primeiro e escolha a melhor versão.',
+      big: true,
+      template: '',
+      items: [
+        [
+          'Prancha de estilo',
+          'prancha-estilo.png',
+          'Prancha de referência de estilo para um jogo de economia brasileiro: quatro ilustrações separadas em grade 2×2 sobre fundo creme liso, com espaço entre elas. Um pacote de arroz de 5 kg sem marca, uma vaca leiteira malhada de preto e branco em pé, um caminhão baú pequeno visto de lado em três quartos e um galpão industrial com telhado em dente de serra sobre um lote de terra. Todas com a mesma luz, a mesma paleta e o mesmo traço. Formato quadrado 1536×1536.',
+        ],
+      ],
+    },
+    {
+      title: 'Produtos',
+      note: '20 ícones',
+      template:
+        'Ícone de jogo com um único objeto centralizado, vista de três quartos levemente de cima, ocupando cerca de 70% do quadro, fundo transparente, PNG quadrado 1024×1024. ' +
+        ref,
+      items: [
+        [
+          'Minério de ferro',
+          'produto-minerio.png',
+          'Pequena pilha de pedras de minério de ferro avermelhadas, com reflexos metálicos foscos.',
+        ],
+        [
+          'Carvão mineral',
+          'produto-carvao.png',
+          'Pequena pilha de pedaços de carvão mineral preto fosco.',
+        ],
+        ['Aço em barras', 'produto-aco.png', 'Feixe de vergalhões de aço amarrados com arame.'],
+        [
+          'Soja em grão',
+          'produto-soja.png',
+          'Montinho de grãos de soja dourados com duas vagens secas ao lado.',
+        ],
+        [
+          'Farelo de soja',
+          'produto-farelo.png',
+          'Saco de ráfia aberto com farelo de soja bege aparecendo na boca.',
+        ],
+        [
+          'Óleo de soja 1 L',
+          'produto-oleo.png',
+          'Garrafa plástica de óleo de soja amarelo-dourado, rótulo liso sem texto.',
+        ],
+        [
+          'Arroz 5 kg',
+          'produto-arroz.png',
+          'Pacote plástico transparente de arroz branco de 5 kg, rótulo liso sem texto.',
+        ],
+        [
+          'Feijão 1 kg',
+          'produto-feijao.png',
+          'Pacote plástico de feijão carioca de 1 kg, grãos bege rajados visíveis, sem texto.',
+        ],
+        [
+          'Açúcar 5 kg',
+          'produto-acucar.png',
+          'Pacote de açúcar cristal de 5 kg com janela mostrando os cristais, sem texto.',
+        ],
+        [
+          'Leite 1 L',
+          'produto-leite.png',
+          'Caixa longa vida de leite de 1 litro, branca com faixa azul lisa, sem texto.',
+        ],
+        [
+          'Sucata de aço',
+          'produto-sucata.png',
+          'Pequena pilha de peças de metal velhas e enferrujadas: chapas, um aro e parafusos.',
+        ],
+        [
+          'Utensílios de aço',
+          'produto-utensilios.png',
+          'Kit de cozinha em aço inox: uma panela com tampa, uma concha e talheres.',
+        ],
+        [
+          'Caminhão pesado',
+          'produto-caminhao-pesado.png',
+          'Cavalo mecânico com carreta graneleira, visto em três quartos.',
+        ],
+        [
+          'Caminhão leve',
+          'produto-caminhao-leve.png',
+          'Caminhão baú pequeno de entregas urbanas, visto em três quartos.',
+        ],
+        [
+          'Semente de soja',
+          'produto-semente-soja.png',
+          'Saco de sementes de soja fechado, etiqueta lisa sem texto, alguns grãos na frente.',
+        ],
+        [
+          'Ração para gado',
+          'produto-racao.png',
+          'Saco de ração aberto com grãos peletizados marrons.',
+        ],
+        [
+          'Vaca leiteira',
+          'produto-vaca.png',
+          'Vaca holandesa malhada de preto e branco, em pé, de corpo inteiro.',
+        ],
+        [
+          'Semente de arroz',
+          'produto-semente-arroz.png',
+          'Saco pequeno de sementes de arroz em casca, douradas, com algumas espalhadas.',
+        ],
+        [
+          'Semente de feijão',
+          'produto-semente-feijao.png',
+          'Saco pequeno de sementes de feijão, com punhado de grãos na frente.',
+        ],
+        [
+          'Muda de cana',
+          'produto-muda-cana.png',
+          'Feixe de toletes de cana-de-açúcar amarrados, com pequenos brotos verdes.',
+        ],
+      ],
+    },
+    {
+      title: 'Negócios',
+      note: '15 dioramas, também usados no mapa e nas cenas',
+      template:
+        'Diorama isométrico com ângulo de 30°, sobre um lote de terra quadrado como uma peça de jogo de tabuleiro, bordas de terra visíveis, sem pessoas em destaque, fundo transparente, PNG quadrado 1024×1024. ' +
+        ref,
+      items: [
+        [
+          'Mina de ferro',
+          'negocio-mina-ferro.png',
+          'Cava a céu aberto em degraus de terra avermelhada, com uma pá carregadeira e um caminhão basculante.',
+        ],
+        [
+          'Mina de carvão',
+          'negocio-mina-carvao.png',
+          'Boca de mina com estrutura de madeira, trilho e vagonete com carvão.',
+        ],
+        [
+          'Siderúrgica',
+          'negocio-siderurgica.png',
+          'Pequeno alto-forno com duas chaminés e brilho laranja fosco na boca do forno.',
+        ],
+        [
+          'Fábrica de utensílios',
+          'negocio-utensilios.png',
+          'Galpão industrial com telhado em dente de serra e caixas na doca.',
+        ],
+        [
+          'Montadora de caminhões',
+          'negocio-montadora.png',
+          'Galpão comprido com um caminhão novo saindo pelo portão.',
+        ],
+        [
+          'Fazenda de soja',
+          'negocio-soja.png',
+          'Lavoura de soja em linhas e um silo metálico ao lado.',
+        ],
+        [
+          'Esmagadora de soja',
+          'negocio-oleo.png',
+          'Conjunto de silos cilíndricos e dois tanques de óleo ligados por tubos.',
+        ],
+        [
+          'Fábrica de ração',
+          'negocio-racao.png',
+          'Galpão pequeno com dois silos e sacos empilhados.',
+        ],
+        [
+          'Ordenha',
+          'negocio-ordenha.png',
+          'Estábulo vermelho com vacas malhadas no pasto e um tanque de leite metálico.',
+        ],
+        [
+          'Arrozal',
+          'negocio-arroz.png',
+          'Campo de arroz alagado dividido em quadros por taipas de terra.',
+        ],
+        [
+          'Lavoura de feijão',
+          'negocio-feijao.png',
+          'Lavoura baixa e verde de feijão em linhas, com um galpão pequeno.',
+        ],
+        [
+          'Canavial e usina',
+          'negocio-cana.png',
+          'Cana alta em parte do lote e uma pequena usina de açúcar com chaminé.',
+        ],
+        [
+          'Loja',
+          'negocio-loja.png',
+          'Mercadinho de bairro com toldo listrado e caixas de produtos na entrada.',
+        ],
+        ['Armazém', 'negocio-armazem.png', 'Galpão de distribuição com três docas e paletes.'],
+        [
+          'Transportadora',
+          'negocio-transportadora.png',
+          'Pátio com três caminhões estacionados e um escritório pequeno.',
+        ],
+      ],
+    },
+    {
+      title: 'Emblemas de empresa',
+      note: '12 para o jogador escolher',
+      template:
+        'Emblema circular simples para logotipo de empresa, um único símbolo chapado no centro, no máximo três cores da paleta, legível em tamanho pequeno, fundo transparente, PNG quadrado 1024×1024. ' +
+        ref,
+      items: [
+        ['Espiga', 'emblema-espiga.png', 'Símbolo: espiga de trigo.'],
+        ['Engrenagem', 'emblema-engrenagem.png', 'Símbolo: engrenagem.'],
+        ['Caminhão', 'emblema-caminhao.png', 'Símbolo: caminhão visto de lado.'],
+        ['Folha', 'emblema-folha.png', 'Símbolo: folha de soja.'],
+        ['Montanha', 'emblema-montanha.png', 'Símbolo: montanha com faixa de minério.'],
+        ['Gota', 'emblema-gota.png', 'Símbolo: gota de óleo.'],
+        ['Sol nascente', 'emblema-sol.png', 'Símbolo: sol nascendo sobre o horizonte.'],
+        ['Ponte', 'emblema-ponte.png', 'Símbolo: ponte em arco.'],
+        ['Boi', 'emblema-boi.png', 'Símbolo: cabeça de boi estilizada de frente.'],
+        ['Âncora', 'emblema-ancora.png', 'Símbolo: âncora.'],
+        ['Casa', 'emblema-casa.png', 'Símbolo: casa com telhado de duas águas.'],
+        ['Raio', 'emblema-raio.png', 'Símbolo: raio.'],
+      ],
+    },
+    {
+      title: 'Medalhas',
+      note: '8 conquistas',
+      template:
+        'Medalha de conquista de jogo em forma de selo com fita curta, um símbolo central, fundo transparente, PNG quadrado 1024×1024. ' +
+        ref,
+      items: [
+        ['Primeira venda', 'medalha-primeira-venda.png', 'Símbolo: moeda.'],
+        ['Primeira colheita', 'medalha-colheita.png', 'Símbolo: espiga madura.'],
+        ['Primeiro caminhão', 'medalha-caminhao.png', 'Símbolo: caminhão.'],
+        ['Primeiro milhão', 'medalha-milhao.png', 'Símbolo: pilha de moedas.'],
+        ['Cinco negócios', 'medalha-cinco-negocios.png', 'Símbolo: cinco telhados lado a lado.'],
+        ['Fornecedor de jogador', 'medalha-fornecedor.png', 'Símbolo: aperto de mãos.'],
+        ['Obra pública', 'medalha-obra.png', 'Símbolo: viga de aço e capacete.'],
+        ['Recorde de vendas', 'medalha-recorde.png', 'Símbolo: troféu com seta para cima.'],
+      ],
+    },
+    {
+      title: 'Telas vazias e abertura',
+      note: '5 cenas largas',
+      template:
+        'Composição horizontal 1536×1024 com bastante espaço livre ao redor do tema, fundo creme claro liso. ' +
+        ref,
+      items: [
+        [
+          'Loja vazia',
+          'vazio-loja.png',
+          'Prateleiras vazias de um mercadinho e caixas de mercadoria chegando pela porta.',
+        ],
+        [
+          'Nenhuma entrega',
+          'vazio-entregas.png',
+          'Estrada rural vazia ao entardecer, com uma placa de quilometragem sem texto.',
+        ],
+        [
+          'Lote à venda',
+          'vazio-lote.png',
+          'Terreno vazio cercado com uma estaca de madeira e uma placa em branco.',
+        ],
+        [
+          'Sem notícias',
+          'vazio-noticias.png',
+          'Jornal dobrado ao lado de uma xícara de café, sem texto legível.',
+        ],
+        [
+          'Tela de abertura',
+          'abertura.png',
+          'Panorama do interior do Brasil ao entardecer visto do alto de um morro: rodovia com caminhões, lavouras em faixas, silos, uma pequena cidade com igreja, uma fábrica ao fundo e um rio azul. Céu amplo à esquerda para o título entrar depois. Neste caso, fundo pintado em vez de creme liso.',
+        ],
+      ],
+    },
+  ];
+  const root = document.getElementById('prompts');
+  for (const g of groups) {
+    const wrap = document.createElement('div');
+    wrap.className = 'pgroup';
+    wrap.innerHTML = `<div class="h"><h3>${g.title}</h3><span class="muted">${g.note}</span></div><div class="plist"></div>`;
+    const list = wrap.querySelector('.plist');
+    for (const [name, file, subject] of g.items) {
+      const text = [subject, g.template, style].filter(Boolean).join(' ');
+      const card = document.createElement('div');
+      card.className = 'prompt' + (g.big ? ' big' : '');
+      const id = 'p-' + file.replace(/\W/g, '-');
+      card.innerHTML = `<div class="top"><div><b>${name}</b><div class="file">${file}</div></div><button class="btn copy" type="button" id="${id}"><svg class="ico"><use href="#i-copy"/></svg>Copiar</button></div><p>${subject}</p>`;
+      card.querySelector('button').addEventListener('click', async (event) => {
+        const button = event.currentTarget;
+        try {
+          await navigator.clipboard.writeText(text);
+          button.classList.add('copied');
+          button.lastChild.textContent = 'Copiado';
+          setTimeout(() => {
+            button.classList.remove('copied');
+            button.lastChild.textContent = 'Copiar';
+          }, 1600);
+        } catch {
+          const area = document.createElement('textarea');
+          area.value = text;
+          area.style.cssText =
+            'width:100%;min-height:140px;margin-top:8px;background:#0b1418;color:#e9f1f3;border-radius:10px;padding:10px;border:1px solid #2a4350;font:13px/1.5 Figtree, sans-serif';
+          area.setAttribute('aria-label', 'Prompt completo de ' + name);
+          card.appendChild(area);
+          area.select();
+          button.disabled = true;
+          button.lastChild.textContent = 'Selecione e copie';
+        }
+      });
+      list.appendChild(card);
+    }
+    root.appendChild(wrap);
+  }
+</script>

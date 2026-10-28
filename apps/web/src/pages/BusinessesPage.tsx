@@ -1,17 +1,42 @@
 import { useState } from 'react';
-import { Search, SlidersHorizontal, Plus, ChevronRight, Map, TriangleAlert } from 'lucide-react';
+import {
+  Search,
+  SlidersHorizontal,
+  Plus,
+  ChevronRight,
+  Map,
+  TriangleAlert,
+  LayoutGrid,
+  List,
+} from 'lucide-react';
 import { useGame, CategoryIcon, cr, num } from '../lib/game';
-import { PageHeading, Panel, Stat, Badge, Select, Rows, Empty } from '../components/ui';
+import { PageHeading, Panel, Badge, Select, Rows, Empty } from '../components/ui';
+import { PixelArt } from '../components/PixelArt';
 import { WorldMap } from '../components/WorldMap';
 import { categoryInfo } from '../../../../packages/simulation/src/model';
 import { Orders } from '../features/business/Orders';
 import { SupplyNetwork } from '../features/business/SupplyNetwork';
+import {
+  BusinessCard,
+  ResultadoPorUnidade,
+  estadoDe,
+} from '../features/business/BusinessCards';
+import '../negocios.css';
+
+type Visao = 'cards' | 'lista';
+const guardada = (): Visao =>
+  localStorage.getItem('aftermarket.businessesView') === 'lista' ? 'lista' : 'cards';
 
 export function BusinessesPage() {
   const { world, actor, navigate, openBusiness } = useGame();
   const [search, setSearch] = useState(''),
     [showFilter, setShowFilter] = useState(false),
-    [category, setCategory] = useState('all');
+    [category, setCategory] = useState('all'),
+    [visao, setVisao] = useState<Visao>(guardada);
+  const escolher = (v: Visao) => {
+    setVisao(v);
+    localStorage.setItem('aftermarket.businessesView', v);
+  };
   const mine = world.establishments.filter((e) => e.companyId === actor),
     visible = mine.filter(
       (e) =>
@@ -19,7 +44,8 @@ export function BusinessesPage() {
         (category === 'all' || e.category === category),
     );
   const revenue = mine.reduce((n, e) => n + e.revenue, 0),
-    result = revenue - mine.reduce((n, e) => n + e.expenses, 0);
+    result = revenue - mine.reduce((n, e) => n + e.expenses, 0),
+    pausadas = mine.filter((e) => !e.enabled).length;
   const countStates = new Set(
     mine.map((e) => world.properties.find((p) => p.id === e.propertyId)!.state),
   );
@@ -31,30 +57,36 @@ export function BusinessesPage() {
         description="Acompanhe e administre seus estabelecimentos em diferentes regiões do Brasil."
       />
       <div className="page-body">
-        <div className="stats-grid">
-          <Stat
-            label="Estabelecimentos"
-            value={mine.length}
-            note={`${new Set(mine.map((e) => e.category)).size} tipos de negócio`}
-          />
-          <Stat
-            label="Receita do período"
-            value={cr(revenue)}
-            note="desde a abertura deste mundo"
-          />
-          <Stat
-            label="Resultado operacional"
-            value={`${result >= 0 ? '+' : '−'}${cr(Math.abs(result))}`}
-            note="receitas menos custos registrados"
-            positive={result >= 0}
-          />
-          <Stat
-            label="Unidades pausadas"
-            value={mine.filter((e) => !e.enabled).length}
-            note="podem exigir atenção"
-            gold
-          />
-        </div>
+        {mine.length > 0 && (
+          <section className="neg-resumo" aria-label="Resumo dos negócios">
+            <div className="neg-figuras">
+              <div>
+                <span>Estabelecimentos</span>
+                <strong>{mine.length}</strong>
+                <small>{new Set(mine.map((e) => e.category)).size} tipos de negócio</small>
+              </div>
+              <div>
+                <span>Receita do período</span>
+                <strong>{cr(revenue)}</strong>
+                <small>desde a abertura deste mundo</small>
+              </div>
+              <div>
+                <span>Resultado operacional</span>
+                <strong className={result >= 0 ? 'positive' : 'negative'}>
+                  {result >= 0 ? '+' : '−'}
+                  {cr(Math.abs(result))}
+                </strong>
+                <small>receitas menos custos registrados</small>
+              </div>
+              <div>
+                <span>Unidades pausadas</span>
+                <strong className={pausadas ? 'gold-text' : ''}>{pausadas}</strong>
+                <small>{pausadas ? 'podem exigir atenção' : 'tudo em operação'}</small>
+              </div>
+            </div>
+            <ResultadoPorUnidade itens={mine} />
+          </section>
+        )}
         <div className="businesses-grid">
           <Panel
             title="Meus estabelecimentos"
@@ -69,6 +101,22 @@ export function BusinessesPage() {
                     onChange={(e) => setSearch(e.target.value)}
                   />
                 </label>
+                <div className="neg-visao" role="group" aria-label="Forma de exibição">
+                  <button
+                    className={visao === 'cards' ? 'on' : ''}
+                    aria-pressed={visao === 'cards'}
+                    onClick={() => escolher('cards')}
+                  >
+                    <LayoutGrid size={14} /> Cartões
+                  </button>
+                  <button
+                    className={visao === 'lista' ? 'on' : ''}
+                    aria-pressed={visao === 'lista'}
+                    onClick={() => escolher('lista')}
+                  >
+                    <List size={14} /> Lista
+                  </button>
+                </div>
                 <button className="secondary" onClick={() => setShowFilter(!showFilter)}>
                   <SlidersHorizontal size={15} /> Filtros
                 </button>
@@ -94,7 +142,13 @@ export function BusinessesPage() {
                 </Select>
               </div>
             )}
-            {visible.length ? (
+            {visible.length && visao === 'cards' ? (
+              <div className="neg-grade">
+                {visible.map((e, i) => (
+                  <BusinessCard e={e} indice={i} key={e.id} />
+                ))}
+              </div>
+            ) : visible.length ? (
               <div className="table-scroll">
                 <table>
                   <thead>
@@ -111,6 +165,7 @@ export function BusinessesPage() {
                     {visible.map((e, i) => {
                       const p = world.properties.find((p) => p.id === e.propertyId)!;
                       const balance = e.revenue - e.expenses;
+                      const estado = estadoDe(e);
                       return (
                         <tr key={e.id}>
                           <td>
@@ -133,15 +188,7 @@ export function BusinessesPage() {
                             {cr(Math.abs(balance))}
                           </td>
                           <td>
-                            <Badge tone={e.enabled ? 'green' : 'gold'}>
-                              {e.installed === false
-                                ? 'Instalação pendente'
-                                : e.mothballed
-                                  ? 'Estrutura suspensa'
-                                  : e.enabled
-                                    ? 'Ativo'
-                                    : 'Pausado'}
-                            </Badge>
+                            <Badge tone={estado.tone}>{estado.label}</Badge>
                           </td>
                           <td>
                             <button className="secondary" onClick={() => openBusiness(e.id)}>
@@ -155,7 +202,9 @@ export function BusinessesPage() {
                 </table>
               </div>
             ) : (
-              <Empty
+              <div className="neg-vazio">
+                {!mine.length && <PixelArt name="loja" scale={3} />}
+                <Empty
                 title={mine.length ? 'Nenhuma unidade encontrada' : 'Sua empresa começa aqui'}
                 description={
                   mine.length
@@ -170,6 +219,7 @@ export function BusinessesPage() {
                   )
                 }
               />
+              </div>
             )}
             <p className="panel-footnote">
               Exibindo {visible.length} de {mine.length} estabelecimentos · Estado compartilhado

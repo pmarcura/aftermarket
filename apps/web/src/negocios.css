@@ -1,0 +1,389 @@
+/* Meus Negócios: cartões com ilustração em pixel art, resumo e gráfico divergente. */
+
+.neg-resumo {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(260px, 1fr);
+  margin-bottom: 18px;
+  border: 1px solid #304955;
+  border-radius: 9px;
+  background: #192c35;
+  overflow: hidden;
+}
+.neg-figuras {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.neg-figuras > div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 19px 21px;
+  border-right: 1px solid #2a404a;
+  min-width: 0;
+}
+.neg-figuras > div:last-child {
+  border-right: 0;
+}
+.neg-figuras span {
+  font-size: 11px;
+  color: #9aafb9;
+}
+.neg-figuras strong {
+  font-size: 18px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.neg-figuras small {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* Resultado por unidade, partindo do zero */
+.neg-div {
+  margin: 0;
+  padding: 16px 20px;
+  display: grid;
+  gap: 9px;
+  align-content: start;
+  background: #15262e;
+  border-left: 1px solid #2a404a;
+}
+.neg-div figcaption {
+  font-size: 11px;
+  color: #9aafb9;
+}
+.neg-div-linha {
+  display: grid;
+  grid-template-columns: minmax(64px, 110px) minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  font-size: 11.5px;
+}
+.neg-div-nome {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #c9d6db;
+}
+.neg-div-trilho {
+  position: relative;
+  height: 9px;
+  border-radius: 3px;
+  background: #0f1d24;
+}
+.neg-div-trilho::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -3px;
+  bottom: -3px;
+  width: 1px;
+  background: #56707b;
+}
+.neg-div-trilho i {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: 2px;
+  animation: neg-cresce 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.neg-div-trilho i.pos {
+  background: var(--green);
+  transform-origin: left center;
+}
+.neg-div-trilho i.neg {
+  background: #d4766b;
+  transform-origin: right center;
+}
+.neg-div-valor {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  text-align: right;
+  min-width: 64px;
+}
+
+/* Cartões. A ilustração passa da borda de cima: é a ideia da tela. */
+.neg-grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(262px, 1fr));
+  gap: 108px 16px;
+  padding: 104px 20px 22px;
+}
+.neg-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  padding: 0 16px 16px;
+  border: 1px solid #33505c;
+  border-radius: 10px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--cat) 16%, #15262e) 0, #15262e 96px);
+  cursor: pointer;
+  transition:
+    transform 0.18s,
+    border-color 0.18s;
+  animation: neg-entra 0.45s both;
+}
+.neg-card:hover {
+  transform: translateY(-2px);
+  border-color: #5c8190;
+}
+.neg-card.parado {
+  border-color: #6d5a34;
+  border-style: dashed;
+}
+.neg-arte {
+  position: relative;
+  height: 66px;
+  pointer-events: none;
+}
+.neg-sprite {
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  transform: translateX(-50%);
+  line-height: 0;
+  transition: transform 0.2s steps(3);
+}
+.neg-card:hover .neg-sprite {
+  transform: translateX(-50%) translateY(-4px);
+}
+.pixel-art {
+  display: block;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 5px 3px rgb(0 0 0 / 0.38));
+  user-select: none;
+}
+.neg-card.parado .pixel-art {
+  filter: grayscale(0.8) brightness(0.78) drop-shadow(0 5px 3px rgb(0 0 0 / 0.38));
+}
+.pixel-fumaca {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.pixel-fumaca i {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: #f1ece0;
+  box-shadow: 4px 2px 0 #cfc8b8;
+  opacity: 0;
+  animation: pixel-fumaca 3.4s steps(8) infinite;
+}
+.neg-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+.neg-topo h3 {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 650;
+  line-height: 1.25;
+}
+.neg-local {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 3px;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.neg-estado {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+.neg-cat {
+  font-size: 11px;
+  color: var(--muted);
+}
+.neg-anel {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  flex: none;
+}
+.neg-anel svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.neg-anel circle {
+  fill: none;
+  stroke-width: 4.5;
+}
+.neg-anel-trilho {
+  stroke: #0f1d24;
+}
+.neg-anel-barra {
+  stroke-linecap: round;
+  animation: neg-anel 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.neg-anel b {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+.neg-numeros {
+  margin: 0;
+  padding: 10px 0;
+  display: grid;
+  grid-template-columns: 1.5fr 0.7fr 1fr;
+  gap: 8px;
+  border-top: 1px solid #2a404a;
+  border-bottom: 1px solid #2a404a;
+}
+.neg-numeros dt {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10.5px;
+  color: var(--muted);
+}
+.neg-numeros dd {
+  margin: 3px 0 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.neg-fluxo {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 5px 8px;
+  align-items: center;
+}
+.neg-fluxo-l {
+  font-size: 10px;
+  color: var(--muted);
+}
+.neg-fluxo-b {
+  display: block;
+  height: 5px;
+  border-radius: 2px;
+  background: #0f1d24;
+}
+.neg-fluxo-b i {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  transform-origin: left center;
+  animation: neg-cresce 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.neg-fluxo-b i.rec {
+  background: var(--green);
+}
+.neg-fluxo-b i.cus {
+  background: #d4766b;
+}
+.neg-card .secondary.full {
+  margin-top: auto;
+}
+
+/* Alternador cartões e lista */
+.neg-visao {
+  display: inline-flex;
+  border: 1px solid #40545e;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #13232b;
+}
+.neg-visao button {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #9fb4be;
+  gap: 6px;
+  padding: 0 11px;
+  min-height: 34px;
+}
+.neg-visao button:hover {
+  color: #e0e8eb;
+}
+.neg-visao button.on {
+  background: #2b424d;
+  color: #f0f4f5;
+}
+.neg-vazio {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding-top: 12px;
+}
+
+@keyframes neg-entra {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes neg-cresce {
+  from {
+    transform: scaleX(0);
+  }
+}
+@keyframes neg-anel {
+  from {
+    stroke-dashoffset: 94.25;
+  }
+}
+@keyframes pixel-fumaca {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate(8px, -40px) scale(1.6);
+    opacity: 0;
+  }
+}
+
+@media (max-width: 1100px) {
+  .neg-resumo {
+    grid-template-columns: 1fr;
+  }
+  .neg-div {
+    border-left: 0;
+    border-top: 1px solid #2a404a;
+  }
+}
+@media (max-width: 760px) {
+  .neg-figuras {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .neg-figuras > div:nth-child(2) {
+    border-right: 0;
+  }
+  .neg-figuras > div:nth-child(-n + 2) {
+    border-bottom: 1px solid #2a404a;
+  }
+  .neg-grade {
+    grid-template-columns: 1fr;
+    padding: 96px 8px 16px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .neg-card,
+  .neg-anel-barra,
+  .neg-fluxo-b i,
+  .neg-div-trilho i {
+    animation: none;
+  }
+  .pixel-fumaca {
+    display: none;
+  }
+  .neg-sprite {
+    transition: none;
+  }
+}

@@ -112,7 +112,7 @@ export const designItems: Record<DesignItemId, DesignItem> = {
     isNew: true,
     band: [4000, 9000],
     bandSource: 'jogo',
-    price: { kind: 'band', position: 0.5 },
+    price: { kind: 'band', position: 0.6 }, // aço do alto-forno custa 17% acima da referência (D-040)
     monthlyPerPerson: 0.25,
   },
   truckHeavy: {

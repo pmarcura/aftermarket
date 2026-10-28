@@ -194,6 +194,17 @@ Calibração da ração com ~500 bots. Decisões de rotina:
 - **Resultado (escala 20, 2 sementes, últimos 10 de 20 dias):** ração de −R$ 162 mil para −R$ 20 mil por dia; esmagadoras de −R$ 18 mil para +R$ 36 mil; lojas de +R$ 239 mil para +R$ 324 mil; procura atendida 51%; nenhuma quebra.
 - **Ruído entre rodadas continua grande:** utensílios variaram de −R$ 16 mil a −R$ 164 mil com mudanças que não tocam a cadeia deles; aço ao governo de 184 a 213 t/dia. Próximo a investigar.
 
+### D-040 · Preço de referência dos utensílios sobe para 0,6 da faixa (28/10/2026)
+
+Calibração dos utensílios com ~500 bots. Decisões de rotina:
+
+- **Causa:** o aço que as fábricas de utensílios compram custa cerca de 17% acima da referência, porque as usinas produzem ~64% do previsto e o governo disputa o mesmo aço. A margem de projeto era de 11%, então o resultado oscilava de −R$ 16 mil a −R$ 164 mil por dia entre rodadas com o mesmo código.
+- **Mudança:** ponto de preço dos utensílios de 0,5 para 0,6 da faixa de R$ 40 a R$ 90 (kit de R$ 65 para cerca de R$ 70 na prateleira). Margem de projeto de 11% para 18%. Todas as verificações da calculadora passam.
+- **Custo aceito:** o kit fica mais caro para o jogador. A demanda das famílias no motor não depende do preço, então a receita sobe; os distribuidores pagam mais e perdem cerca de 11%.
+- **Resultado (escala 20, 2 sementes, últimos 10 de 20 dias):** fábricas de utensílios de −R$ 164 mil para +R$ 84 mil por dia (sementes: +49 mil e +118 mil); lojas de +R$ 324 mil para +R$ 478 mil; distribuidores de +R$ 1,66 mi para +R$ 1,48 mi; procura atendida 51%; nenhuma quebra.
+- **Alternativa não feita:** atacar o aço caro, aumentando a produção das usinas. Fica para quando a cadeia do metal estiver mais perto da referência.
+- **Pendência:** o equipamento de cada fábrica é calculado a partir do lucro, então um preço maior encarece a fábrica (de R$ 5,7 mi para R$ 11 mi por linha na conta de projeto). Revisar a regra do equipamento antes de fechar a calibração.
+
 ### Ideia em avaliação · Genética de cultivares (Pedro, 28/10/2026)
 
 O Pedro propôs um sistema de genética a partir de uma pesquisa sobre a cana. O produtor compra uma pequena quantidade de mudas de alta tecnologia no viveiro e as multiplica numa área própria. Depois replanta com a própria cana por anos e só volta a comprar para trocar de variedade, para limpar o canavial de doenças ou para expandir a área de uma vez.

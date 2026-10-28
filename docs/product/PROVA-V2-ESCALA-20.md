@@ -4,15 +4,15 @@ Gerado por `npm run economy:proof -- --days=20 --window=10 --scale=20 --seeds=0,
 
 ## Resumo
 
-| Critério                        | Alvo                    | Observado                         |
-| ------------------------------- | ----------------------- | --------------------------------- |
-| Dinheiro conservado             | diferença 0             | sim, em todas as sementes         |
-| Empresas quebradas ou suspensas | nenhuma                 | 0 / 0                             |
-| Procura atendida pelas lojas    | 70%                     | 51%                               |
-| Aço ao governo                  | 320 t/dia               | 188,7 t/dia                       |
-| Caminhões comprados             | 16 pesado + 16 leve/dia | 11,05 + 4,2/dia (0,55 importados) |
-| Caminhões aposentados           | reposição               | 20,5/dia                          |
-| Tempo de simulação              | —                       | 15,3 s por dia de jogo            |
+| Critério                        | Alvo                    | Observado                       |
+| ------------------------------- | ----------------------- | ------------------------------- |
+| Dinheiro conservado             | diferença 0             | sim, em todas as sementes       |
+| Empresas quebradas ou suspensas | nenhuma                 | 0 / 0                           |
+| Procura atendida pelas lojas    | 70%                     | 51%                             |
+| Aço ao governo                  | 320 t/dia               | 204 t/dia                       |
+| Caminhões comprados             | 16 pesado + 16 leve/dia | 9,9 + 3,55/dia (0,2 importados) |
+| Caminhões aposentados           | reposição               | 19,6/dia                        |
+| Tempo de simulação              | —                       | 21,5 s por dia de jogo          |
 
 ## Desvios explicados
 
@@ -28,22 +28,22 @@ Gerado por `npm run economy:proof -- --days=20 --window=10 --scale=20 --seeds=0,
 
 | Negócio                     | Linhas na referência | Linhas observadas |   % | Resultado dos bots/dia (R$) |
 | --------------------------- | -------------------: | ----------------: | --: | --------------------------: |
-| Extração de minério         |                 56,2 |              34,7 | 62% |                     175.353 |
-| Extração de carvão          |                 53,6 |              33,7 | 63% |                      36.653 |
-| Aço em alto-forno           |                105,4 |              65,6 | 62% |                     399.950 |
-| Aço reciclado               |                   17 |               7,9 | 47% |                           0 |
-| Utensílios de aço           |                124,2 |              91,2 | 73% |                    -164.432 |
-| Montagem de caminhão pesado |                   16 |              10,5 | 65% |                      71.289 |
-| Montagem de caminhão leve   |                    8 |                 2 | 25% |                     -31.589 |
-| Colheita de soja            |                 95,4 |              61,6 | 65% |                     419.643 |
-| Esmagamento de soja         |                 59,6 |              42,9 | 72% |                      35.842 |
-| Fábrica de ração            |                 45,2 |              31,2 | 69% |                     -20.258 |
-| Ordenha                     |                  318 |             217,3 | 68% |                   2.467.147 |
-| Colheita de arroz           |                178,9 |             114,4 | 64% |                     -48.205 |
-| Colheita de feijão          |                268,3 |             193,5 | 72% |                     -14.490 |
-| Colheita de cana e açúcar   |                 99,4 |                80 | 80% |                      65.436 |
-| Lojas                       |                    — |                 — |   — |                     323.575 |
-| Distribuidores              |                    — |                 — |   — |                   1.658.881 |
+| Extração de minério         |                 56,2 |              36,4 | 65% |                     163.116 |
+| Extração de carvão          |                 53,6 |              34,5 | 64% |                     111.264 |
+| Aço em alto-forno           |                105,4 |              68,7 | 65% |                     440.613 |
+| Aço reciclado               |                   17 |               8,2 | 48% |                           0 |
+| Utensílios de aço           |                124,2 |              90,6 | 73% |                      83.772 |
+| Montagem de caminhão pesado |                   16 |               9,7 | 60% |                     224.177 |
+| Montagem de caminhão leve   |                    8 |               1,8 | 22% |                     -15.708 |
+| Colheita de soja            |                 95,4 |              61,6 | 65% |                     394.934 |
+| Esmagamento de soja         |                 59,6 |              42,7 | 72% |                     -19.787 |
+| Fábrica de ração            |                 45,2 |              31,5 | 70% |                       9.135 |
+| Ordenha                     |                  318 |             213,9 | 67% |                   2.493.872 |
+| Colheita de arroz           |                178,9 |             114,4 | 64% |                     -77.292 |
+| Colheita de feijão          |                268,3 |             193,5 | 72% |                         -17 |
+| Colheita de cana e açúcar   |                 99,4 |                80 | 80% |                      64.303 |
+| Lojas                       |                    — |                 — |   — |                     477.614 |
+| Distribuidores              |                    — |                 — |   — |                   1.477.454 |
 
 ## Procura atendida por produto
 
@@ -52,8 +52,8 @@ Gerado por `npm run economy:proof -- --days=20 --window=10 --scale=20 --seeds=0,
 | beans    |      58% |
 | milk     |      49% |
 | oil      |      59% |
-| rice     |      58% |
-| sugar    |      56% |
+| rice     |      57% |
+| sugar    |      57% |
 | utensils |      54% |
 
 ## Estoque parado e concentração
@@ -63,22 +63,22 @@ Dias de estoque: quanto o estoque do mundo duraria no ritmo de vendas recente. C
 | Produto      | Dias de estoque | Concentração |
 | ------------ | --------------: | -----------: |
 | beanSeed     |               0 |            0 |
-| beans        |               1 |          506 |
+| beans        |               1 |          557 |
 | caneSeedling |               0 |            0 |
-| coal         |               4 |          442 |
+| coal         |               4 |          464 |
 | cow          |               0 |            0 |
-| feed         |               1 |          169 |
-| iron         |               4 |          391 |
-| milk         |               1 |          407 |
-| oil          |               2 |          405 |
-| rice         |               1 |          887 |
+| feed         |               1 |          170 |
+| iron         |               4 |          406 |
+| milk         |               1 |          313 |
+| oil          |               2 |          448 |
+| rice         |               1 |        1.013 |
 | riceSeed     |               0 |            0 |
-| scrap        |               2 |        4.221 |
-| soy          |               2 |          351 |
+| scrap        |               2 |        6.551 |
+| soy          |               2 |          349 |
 | soySeed      |               0 |            0 |
-| soymeal      |               2 |          359 |
-| steel        |               2 |          155 |
-| sugar        |               2 |          539 |
-| truckHeavy   |               0 |          802 |
-| truckLight   |               1 |        2.513 |
-| utensils     |               1 |          200 |
+| soymeal      |               1 |          366 |
+| steel        |               2 |          147 |
+| sugar        |               2 |          742 |
+| truckHeavy   |               0 |          801 |
+| truckLight   |               2 |        2.491 |
+| utensils     |               1 |          191 |

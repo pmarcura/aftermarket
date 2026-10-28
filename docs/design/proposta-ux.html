@@ -3,1279 +3,2073 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link
   rel="stylesheet"
-  href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..800&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap"
+  href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400;500;600;700&display=swap"
 />
 <style>
-  /* Layout: documento de proposta em coluna estreita; esboços em "folhas" largas com notas numeradas em azul de revisão. */
+  /* Layout: página escura do próprio jogo; cada tela-proposta é um palco largo com rolagem lateral própria e poucas notas curtas. */
   :root {
-    --paper: #f3f4f1;
-    --sheet: #ffffff;
-    --ink: #1d2427;
-    --muted: #5d6a70;
-    --line: #d3d8d6;
-    --box: #e7eae8;
-    --box-strong: #c9cfcc;
-    --accent: #9a6b1e;
-    --redline: #2f63d8;
-    --good: #2e7d5b;
-    --warn: #a8641a;
-    --bad: #b23b32;
-    --display: 'Archivo', 'Arial Narrow', system-ui, sans-serif;
-    --body: 'Public Sans', system-ui, sans-serif;
-    --mono: 'JetBrains Mono', ui-monospace, Consolas, monospace;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme='light']) {
-      --paper: #121719;
-      --sheet: #192023;
-      --ink: #e6ecee;
-      --muted: #9aa9af;
-      --line: #2e3a3f;
-      --box: #232c30;
-      --box-strong: #36444a;
-      --accent: #d9b16b;
-      --redline: #7aa2ff;
-      --good: #6cc9a0;
-      --warn: #e3a35c;
-      --bad: #ef867a;
-      color-scheme: dark;
-    }
-  }
-  :root[data-theme='dark'] {
-    --paper: #121719;
-    --sheet: #192023;
-    --ink: #e6ecee;
-    --muted: #9aa9af;
-    --line: #2e3a3f;
-    --box: #232c30;
-    --box-strong: #36444a;
-    --accent: #d9b16b;
-    --redline: #7aa2ff;
-    --good: #6cc9a0;
-    --warn: #e3a35c;
-    --bad: #ef867a;
+    --bg: #0b1418;
+    --surface: #12212a;
+    --surface-2: #192c36;
+    --surface-3: #213844;
+    --line: #2a4350;
+    --text: #e9f1f3;
+    --muted: #8ea6b0;
+    --gold: #e6b866;
+    --gold-ink: #2b1d06;
+    --farm: #5cc48a;
+    --mine: #e8995a;
+    --industry: #93a9cf;
+    --retail: #f07f70;
+    --logistics: #5fb4e2;
+    --good: #5cc48a;
+    --warn: #f2b44c;
+    --bad: #ef6b5e;
+    --display: 'Bricolage Grotesque', 'Trebuchet MS', system-ui, sans-serif;
+    --body: 'Figtree', 'Segoe UI', system-ui, sans-serif;
     color-scheme: dark;
   }
   * {
     box-sizing: border-box;
   }
   body {
-    background: var(--paper);
-    color: var(--ink);
-    font: 15px/1.6 var(--body);
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.55 var(--body);
     padding-left: max(16px, env(safe-area-inset-left, 0px));
     padding-right: max(16px, env(safe-area-inset-right, 0px));
-    padding-block: 40px 80px;
+    padding-block: 44px 90px;
   }
   main {
-    max-width: 1040px;
+    max-width: 1180px;
     margin: 0 auto;
     display: grid;
-    gap: 56px;
-  }
-  .prose {
-    max-width: 68ch;
+    gap: 64px;
   }
   h1,
   h2,
-  h3 {
+  h3,
+  h4 {
     font-family: var(--display);
-    font-stretch: 85%;
-    text-wrap: balance;
     margin: 0;
-    line-height: 1.1;
+    line-height: 1.08;
+    text-wrap: balance;
   }
   h1 {
-    font-size: clamp(34px, 6vw, 56px);
+    font-size: clamp(38px, 7vw, 66px);
     font-weight: 800;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
   }
   h2 {
-    font-size: 30px;
+    font-size: clamp(26px, 4vw, 34px);
     font-weight: 750;
-  }
-  h3 {
-    font-size: 19px;
-    font-weight: 700;
-    font-stretch: 90%;
+    letter-spacing: -0.01em;
   }
   p {
     margin: 0;
   }
-  .eyebrow {
-    font: 600 12px var(--mono);
+  .num {
+    font-family: var(--display);
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+  }
+  .tag {
+    font-size: 12px;
+    font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--accent);
+    color: var(--gold);
   }
   .lead {
-    font-size: 18px;
     color: var(--muted);
-    max-width: 62ch;
+    font-size: 18px;
+    max-width: 58ch;
   }
   section {
     display: grid;
-    gap: 22px;
+    gap: 20px;
   }
-  header.top {
+  .ico {
+    width: 1em;
+    height: 1em;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex: none;
+  }
+
+  /* Antes e depois em números */
+  .wins {
     display: grid;
-    gap: 16px;
-  }
-  .ask {
-    border-left: 3px solid var(--accent);
-    padding: 4px 0 4px 16px;
-    display: grid;
-    gap: 6px;
-    max-width: 70ch;
-  }
-  .ask strong {
-    font-family: var(--display);
-    font-stretch: 90%;
-    font-size: 17px;
-  }
-  /* Momentos de jogo */
-  .moments {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 16px;
-  }
-  .moment {
-    background: var(--sheet);
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 18px;
-    display: grid;
-    gap: 8px;
-    align-content: start;
-  }
-  .moment .when {
-    font: 600 12px var(--mono);
-    color: var(--muted);
-  }
-  .moment ul {
-    margin: 0;
-    padding-left: 18px;
-    color: var(--muted);
-    font-size: 14px;
-  }
-  /* Diagnóstico */
-  .issues {
-    display: grid;
-    gap: 0;
-    border-top: 1px solid var(--line);
-  }
-  .issue {
-    display: grid;
-    grid-template-columns: 92px minmax(0, 1fr) 150px;
-    gap: 16px;
-    padding: 14px 0;
-    border-bottom: 1px solid var(--line);
-    align-items: baseline;
-  }
-  .sev {
-    font: 600 11px var(--mono);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
-  .sev.high {
-    color: var(--bad);
-  }
-  .sev.mid {
-    color: var(--warn);
-  }
-  .sev.low {
-    color: var(--muted);
-  }
-  .issue small {
-    color: var(--muted);
-    font-size: 13px;
-    display: block;
-  }
-  .issue .count {
-    font: 600 14px var(--mono);
-    text-align: right;
-    color: var(--ink);
-  }
-  /* Antes e depois */
-  .compare {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
-  }
-  .col {
-    background: var(--sheet);
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 18px;
-    display: grid;
-    gap: 10px;
-    align-content: start;
-  }
-  .col h3 {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-  }
-  .col h3 span {
-    font: 600 12px var(--mono);
-    color: var(--muted);
-    font-stretch: 100%;
-  }
-  .navlist {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    gap: 6px;
-    font-size: 14px;
-  }
-  .navlist li {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-    border-bottom: 1px dashed var(--line);
-    padding-bottom: 6px;
-  }
-  .navlist li em {
-    font-style: normal;
-    color: var(--muted);
-    font-size: 13px;
-    text-align: right;
-  }
-  /* Fluxos */
-  .flows {
-    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 14px;
   }
-  .flow {
-    background: var(--sheet);
-    border: 1px solid var(--line);
-    border-radius: 8px;
+  .win {
+    background: var(--surface);
+    border-radius: 18px;
     padding: 18px;
-    display: grid;
-    grid-template-columns: 200px minmax(0, 1fr) minmax(0, 1fr);
-    gap: 18px;
-  }
-  .flow h3 {
-    font-size: 17px;
-  }
-  .flow .steps {
-    font-size: 14px;
-    color: var(--muted);
-    display: grid;
-    gap: 4px;
-  }
-  .flow .steps b {
-    font: 600 13px var(--mono);
-    color: var(--ink);
-    display: block;
-    margin-bottom: 4px;
-  }
-  .flow .after b {
-    color: var(--good);
-  }
-  /* Esboços */
-  .sheet-wrap {
-    overflow-x: auto;
-    border-radius: 10px;
-    border: 1px solid var(--line);
-    background: var(--sheet);
-  }
-  .wf {
-    min-width: 900px;
-    padding: 18px;
-    font: 13px/1.45 var(--body);
-    color: var(--ink);
-    position: relative;
-  }
-  .wf-caption {
     display: grid;
     gap: 6px;
   }
-  .notes {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px 24px;
-    font-size: 14px;
+  .win .ab {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .win .from {
+    font: 600 20px var(--display);
     color: var(--muted);
-    counter-reset: n;
+    text-decoration: line-through;
+    text-decoration-color: var(--bad);
+  }
+  .win .to {
+    font: 800 40px var(--display);
+    color: var(--gold);
+  }
+  .win span:last-child {
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  /* Palco das telas */
+  .stage {
+    overflow-x: auto;
+    border-radius: 22px;
+    background: radial-gradient(120% 90% at 20% 0%, #16303b 0%, var(--bg) 60%);
+    border: 1px solid var(--line);
+  }
+  .screen {
+    min-width: 1100px;
+    padding: 22px;
+  }
+  .notes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    list-style: none;
     padding: 0;
     margin: 0;
-    list-style: none;
   }
   .notes li {
     display: flex;
-    gap: 10px;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border-radius: 99px;
+    padding: 8px 14px 8px 8px;
+    font-size: 14px;
+    color: var(--muted);
   }
-  .pin {
-    flex: none;
+  .notes li b {
     display: inline-grid;
     place-items: center;
-    width: 22px;
-    height: 22px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
-    background: var(--redline);
-    color: #fff;
-    font: 600 11px var(--mono);
+    background: var(--gold);
+    color: var(--gold-ink);
+    font: 800 12px var(--display);
   }
-  .wf .pin {
-    position: absolute;
-    box-shadow: 0 0 0 3px var(--sheet);
-  }
+
+  /* Estrutura do app */
   .app {
     display: grid;
-    grid-template-columns: 150px minmax(0, 1fr);
-    border: 1px solid var(--box-strong);
-    border-radius: 6px;
+    grid-template-columns: 84px minmax(0, 1fr);
+    background: var(--bg);
+    border-radius: 16px;
     overflow: hidden;
+    box-shadow: 0 30px 80px #0008;
   }
-  .bar {
+  .topbar {
     grid-column: 1 / -1;
     display: flex;
     align-items: center;
-    gap: 18px;
-    padding: 10px 14px;
-    border-bottom: 1px solid var(--box-strong);
-    background: var(--box);
-    font-size: 12px;
+    gap: 12px;
+    padding: 12px 18px;
+    background: var(--surface);
   }
-  .bar .brand {
-    font: 800 13px var(--display);
-    font-stretch: 85%;
-    letter-spacing: 0.04em;
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font: 800 15px var(--display);
+    letter-spacing: 0.06em;
   }
-  .bar .grow {
+  .logo i {
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    background: linear-gradient(135deg, var(--gold), #b98632);
+    display: grid;
+    place-items: center;
+    color: var(--gold-ink);
+  }
+  .grow {
     flex: 1;
   }
-  .bar .kv {
-    display: grid;
-    line-height: 1.2;
-  }
-  .bar .kv b {
-    font: 600 13px var(--mono);
-  }
-  .bar .kv span {
-    color: var(--muted);
-    font-size: 11px;
-  }
-  .side {
-    border-right: 1px solid var(--box-strong);
-    padding: 12px 8px;
-    display: grid;
-    gap: 4px;
-    align-content: start;
-    font-size: 13px;
-  }
-  .side span {
-    padding: 7px 10px;
-    border-radius: 4px;
-  }
-  .side .on {
-    background: var(--box);
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 13px;
+    border-radius: 99px;
+    background: var(--surface-2);
     font-weight: 600;
+    font-size: 14px;
+    white-space: nowrap;
   }
-  .content {
-    padding: 16px;
+  .pill .ico {
+    font-size: 18px;
+  }
+  .pill.money .ico {
+    color: var(--gold);
+  }
+  .pill.up {
+    color: var(--good);
+  }
+  .avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--farm);
+    color: #0b1a12;
     display: grid;
-    gap: 14px;
-    min-width: 0;
+    place-items: center;
+    font: 800 13px var(--display);
   }
-  .row {
-    display: grid;
-    gap: 12px;
-  }
-  .r4 {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-  .r3 {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-  .r21 {
-    grid-template-columns: 2fr 1fr;
-  }
-  .box {
-    border: 1px solid var(--box-strong);
-    border-radius: 5px;
-    padding: 10px 12px;
-    background: var(--sheet);
+  .rail {
+    background: var(--surface);
+    padding: 14px 10px;
     display: grid;
     gap: 6px;
     align-content: start;
+  }
+  .rail span {
+    display: grid;
+    justify-items: center;
+    gap: 4px;
+    padding: 10px 4px;
+    border-radius: 14px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .rail span .ico {
+    font-size: 22px;
+  }
+  .rail .on {
+    background: var(--surface-3);
+    color: var(--gold);
+  }
+  .content {
+    padding: 20px;
+    display: grid;
+    gap: 18px;
     min-width: 0;
   }
-  .box.fill {
-    background: var(--box);
-  }
-  .box h4 {
-    margin: 0;
-    font: 700 13px var(--display);
-    font-stretch: 92%;
-  }
-  .big {
-    font: 600 18px var(--mono);
-  }
-  .dim {
-    color: var(--muted);
-    font-size: 12px;
-  }
-  .line {
+  .h-row {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    gap: 10px;
-    border-top: 1px solid var(--box);
-    padding-top: 7px;
+    justify-content: space-between;
+    gap: 12px;
   }
-  .line:first-of-type {
-    border-top: 0;
-    padding-top: 0;
+  .h-row h3 {
+    font-size: 19px;
+  }
+  .muted {
+    color: var(--muted);
+  }
+
+  /* Início */
+  .away {
+    background: linear-gradient(120deg, #1d3a2f, #17303b 55%, #1f2c42);
+    border-radius: 18px;
+    padding: 18px;
+    display: grid;
+    gap: 14px;
+  }
+  .away-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .stat {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #0b14186b;
+    border-radius: 14px;
+    padding: 12px;
+  }
+  .bubble {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    font-size: 24px;
+    flex: none;
+  }
+  .stat .num {
+    font-size: 22px;
+    display: block;
+  }
+  .stat small {
+    color: var(--muted);
+    font-size: 12.5px;
+  }
+  .b-gold {
+    background: #e6b86626;
+    color: var(--gold);
+  }
+  .b-farm {
+    background: #5cc48a24;
+    color: var(--farm);
+  }
+  .b-log {
+    background: #5fb4e224;
+    color: var(--logistics);
+  }
+  .b-retail {
+    background: #f07f7026;
+    color: var(--retail);
+  }
+  .b-ind {
+    background: #93a9cf26;
+    color: var(--industry);
+  }
+  .b-mine {
+    background: #e8995a26;
+    color: var(--mine);
+  }
+  .two {
+    display: grid;
+    grid-template-columns: 1.35fr 1fr;
+    gap: 18px;
+  }
+  .needs {
+    display: grid;
+    gap: 10px;
+  }
+  .need {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 12px;
+    border: 1px solid transparent;
+  }
+  .need.bad {
+    border-color: #ef6b5e55;
+  }
+  .need.warn {
+    border-color: #f2b44c4d;
+  }
+  .need .txt {
+    flex: 1;
+    display: grid;
+  }
+  .need .txt b {
+    font-size: 15px;
+  }
+  .need .txt small {
+    color: var(--muted);
   }
   .btn {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    border: 1px solid var(--box-strong);
-    border-radius: 4px;
+    gap: 7px;
+    border-radius: 12px;
+    padding: 9px 14px;
+    font-weight: 700;
+    font-size: 14px;
+    background: var(--surface-3);
+    color: var(--text);
+    white-space: nowrap;
+  }
+  .btn.gold {
+    background: var(--gold);
+    color: var(--gold-ink);
+    box-shadow: 0 6px 18px #e6b86633;
+  }
+  .btn .ico {
+    font-size: 17px;
+  }
+  .route {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 14px;
+    display: grid;
+    gap: 10px;
+  }
+  .route > svg {
+    width: 100%;
+    height: 120px;
+    display: block;
+  }
+  .eta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+  }
+  .biz {
+    background: var(--surface);
+    border-radius: 18px;
+    overflow: hidden;
+    display: grid;
+  }
+  .biz .scene {
+    height: 92px;
+    position: relative;
+  }
+  .biz .scene svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     padding: 4px 10px;
-    font-size: 12px;
-    font-weight: 600;
-    white-space: nowrap;
-  }
-  .btn.main {
-    background: var(--ink);
-    color: var(--sheet);
-    border-color: var(--ink);
-  }
-  .chip {
-    font: 600 11px var(--mono);
-    padding: 2px 7px;
     border-radius: 99px;
-    border: 1px solid currentColor;
-    white-space: nowrap;
+    font-size: 12px;
+    font-weight: 700;
+    background: #0b1418cc;
   }
-  .chip.good {
+  .badge i {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  .badge.good {
     color: var(--good);
   }
-  .chip.warn {
-    color: var(--warn);
-  }
-  .chip.bad {
+  .badge.bad {
     color: var(--bad);
   }
-  .meter {
-    height: 6px;
-    border-radius: 3px;
-    background: var(--box);
-    overflow: hidden;
+  .badge.warn {
+    color: var(--warn);
   }
-  .meter i {
-    display: block;
+  .biz .body {
+    padding: 12px 14px 14px;
+    display: grid;
+    gap: 8px;
+  }
+  .biz .body h4 {
+    font-size: 16px;
+  }
+  .biz .meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+  .biz .meta .num {
+    font-size: 20px;
+  }
+  .spark {
+    width: 90px;
+    height: 30px;
+  }
+  .biz.new {
+    place-items: center;
+    text-align: center;
+    border: 2px dashed var(--line);
+    background: transparent;
+    padding: 18px;
+    gap: 8px;
+  }
+  .biz.new .bubble {
+    width: 56px;
+    height: 56px;
+    border-radius: 18px;
+    font-size: 28px;
+  }
+
+  /* Anel de estoque */
+  .ring {
+    --p: 60;
+    --c: var(--good);
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: conic-gradient(var(--c) calc(var(--p) * 1%), var(--surface-3) 0);
+    display: grid;
+    place-items: center;
+    flex: none;
+  }
+  .ring::before {
+    content: '';
+    grid-area: 1 / 1;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--surface);
+  }
+  .ring span {
+    grid-area: 1 / 1;
+    font: 800 13px var(--display);
+    position: relative;
+  }
+
+  /* Loja */
+  .banner {
+    border-radius: 18px;
+    overflow: hidden;
+    position: relative;
+    height: 150px;
+  }
+  .banner svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
     height: 100%;
-    background: var(--box-strong);
+  }
+  .banner .over {
+    position: absolute;
+    left: 20px;
+    bottom: 16px;
+    display: grid;
+    gap: 6px;
+  }
+  .banner .over h3 {
+    font-size: 28px;
+  }
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .kpi {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 14px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .kpi .num {
+    font-size: 24px;
+    display: block;
+  }
+  .kpi small {
+    color: var(--muted);
   }
   .tabs {
     display: flex;
-    gap: 18px;
-    border-bottom: 1px solid var(--box-strong);
-    font-size: 13px;
+    gap: 8px;
   }
   .tabs span {
-    padding: 6px 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 14px;
+    border-radius: 12px;
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .tabs span .ico {
+    font-size: 17px;
   }
   .tabs .on {
-    border-bottom: 2px solid var(--ink);
-    font-weight: 600;
+    background: var(--surface-3);
+    color: var(--text);
   }
-  .drawer-stage {
+  .shelf {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 360px;
-    border: 1px solid var(--box-strong);
-    border-radius: 6px;
-    overflow: hidden;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 12px;
   }
-  .dimmed {
-    background: repeating-linear-gradient(135deg, var(--box) 0 8px, var(--sheet) 8px 16px);
-    opacity: 0.6;
+  .prod {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 14px 12px;
+    display: grid;
+    justify-items: center;
+    gap: 8px;
+    text-align: center;
+    position: relative;
+  }
+  .prod .art {
+    width: 70px;
+    height: 70px;
+    border-radius: 20px;
+    display: grid;
+    place-items: center;
+    font-size: 36px;
+  }
+  .prod b {
+    font-size: 14px;
+  }
+  .prod .price {
+    font: 700 16px var(--display);
+  }
+  .prod.out {
+    outline: 2px solid #ef6b5e88;
+  }
+  .prod .flag {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--bad);
+  }
+  .auto {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 14px;
+  }
+  .switch {
+    width: 46px;
+    height: 26px;
+    border-radius: 99px;
+    background: var(--good);
+    position: relative;
+    flex: none;
+  }
+  .switch::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #fff;
+  }
+
+  /* Painel de reposição */
+  .split {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 420px;
+    gap: 0;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px #0008;
+  }
+  .ghost {
+    background: repeating-linear-gradient(135deg, #12212a 0 14px, #0f1c23 14px 28px);
+    opacity: 0.7;
   }
   .drawer {
-    border-left: 1px solid var(--box-strong);
+    background: var(--surface);
+    padding: 20px;
+    display: grid;
+    gap: 16px;
+    align-content: start;
+  }
+  .drawer .hero {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .drawer .hero .art {
+    width: 64px;
+    height: 64px;
+    border-radius: 20px;
+    display: grid;
+    place-items: center;
+    font-size: 34px;
+  }
+  .chips {
+    display: flex;
+    gap: 8px;
+  }
+  .chips span {
+    padding: 8px 14px;
+    border-radius: 12px;
+    background: var(--surface-2);
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .chips .on {
+    background: var(--gold);
+    color: var(--gold-ink);
+  }
+  .offer {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: center;
+    background: var(--surface-2);
+    border-radius: 14px;
+    padding: 10px 12px;
+    border: 2px solid transparent;
+  }
+  .offer.best {
+    border-color: var(--gold);
+  }
+  .offer .who {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    font: 800 14px var(--display);
+  }
+  .offer .stack {
+    height: 8px;
+    border-radius: 99px;
+    overflow: hidden;
+    display: flex;
+    margin-top: 6px;
+  }
+  .offer .stack i:first-child {
+    background: var(--farm);
+  }
+  .offer .stack i:last-child {
+    background: var(--logistics);
+  }
+  .offer .p {
+    font: 800 18px var(--display);
+    text-align: right;
+  }
+  .offer .p small {
+    display: block;
+    font: 600 12px var(--body);
+    color: var(--muted);
+  }
+  .legend {
+    display: flex;
+    gap: 14px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .legend i {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    margin-right: 5px;
+    vertical-align: -1px;
+  }
+  .gauge {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #5cc48a17;
+    border-radius: 14px;
+    padding: 12px;
+  }
+  .gauge svg {
+    width: 64px;
+    height: 40px;
+    flex: none;
+  }
+  .cta {
+    display: grid;
+    gap: 6px;
+  }
+  .cta .btn {
+    justify-content: center;
+    padding: 14px;
+    font-size: 16px;
+  }
+
+  /* Abrir negócio */
+  .wizard {
+    background: var(--surface);
+    border-radius: 18px;
+    padding: 20px;
+    display: grid;
+    gap: 16px;
+    box-shadow: 0 30px 80px #0008;
+  }
+  .steps {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .steps span {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 99px;
+    background: var(--surface-2);
+    color: var(--muted);
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .steps .on {
+    background: var(--gold);
+    color: var(--gold-ink);
+  }
+  .steps .line {
+    flex: 1;
+    height: 2px;
+    padding: 0;
+    border-radius: 0;
+    background: var(--line);
+  }
+  .acts {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .act {
+    background: var(--surface-2);
+    border-radius: 18px;
+    padding: 14px;
+    display: grid;
+    gap: 10px;
+    position: relative;
+    border: 2px solid transparent;
+  }
+  .act.pick {
+    border-color: var(--gold);
+  }
+  .act .art {
+    width: 100%;
+    height: 76px;
+    border-radius: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+  .act .art svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .act h4 {
+    font-size: 16px;
+  }
+  .act .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .act .row .num {
+    font-size: 17px;
+    color: var(--good);
+  }
+  .payback {
+    height: 8px;
+    border-radius: 99px;
+    background: var(--surface-3);
+    overflow: hidden;
+  }
+  .payback i {
+    display: block;
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, var(--good), var(--gold));
+  }
+  .lock {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 99px;
+    background: #f2b44c26;
+    color: var(--warn);
+  }
+  .receipt {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .receipt div {
+    background: var(--surface-2);
+    border-radius: 14px;
+    padding: 12px;
+    display: grid;
+    gap: 4px;
+    justify-items: start;
+  }
+  .receipt .bubble {
+    width: 36px;
+    height: 36px;
+    border-radius: 11px;
+    font-size: 19px;
+  }
+  .receipt .num {
+    font-size: 17px;
+  }
+  .receipt small {
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  /* Microinterações */
+  .motion {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+  }
+  .demo {
+    background: var(--surface);
+    border-radius: 18px;
     padding: 16px;
     display: grid;
     gap: 12px;
     align-content: start;
   }
-  .offer {
-    border: 1px solid var(--box-strong);
-    border-radius: 5px;
-    padding: 9px 10px;
+  .demo .area {
+    height: 120px;
+    border-radius: 14px;
+    background: var(--surface-2);
+    position: relative;
+    overflow: hidden;
     display: grid;
-    gap: 3px;
+    place-items: center;
   }
-  .offer.pick {
-    border: 2px solid var(--ink);
-  }
-  .stepper {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-  }
-  .stepper b {
-    font: 600 15px var(--mono);
-    border: 1px solid var(--box-strong);
-    padding: 3px 12px;
-    border-radius: 4px;
-  }
-  .wizard-steps {
-    display: flex;
-    gap: 8px;
-    font: 600 12px var(--mono);
-  }
-  .wizard-steps span {
-    padding: 4px 10px;
-    border-radius: 99px;
-    border: 1px solid var(--box-strong);
-    color: var(--muted);
-  }
-  .wizard-steps .on {
-    border-color: var(--ink);
-    color: var(--ink);
-  }
-  .wizard-steps .done {
-    color: var(--good);
-    border-color: var(--good);
-  }
-  .principles {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px 28px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-  .principles li {
-    display: grid;
-    gap: 2px;
-  }
-  .principles strong {
-    font-family: var(--display);
-    font-stretch: 90%;
+  .demo h4 {
     font-size: 16px;
   }
-  .principles span {
+  .demo p {
     color: var(--muted);
     font-size: 14px;
   }
-  .phases {
+  .coin {
+    position: absolute;
+    font: 800 18px var(--display);
+    color: var(--gold);
+    animation: rise 2.6s ease-out infinite;
+  }
+  @keyframes rise {
+    0% {
+      transform: translateY(22px);
+      opacity: 0;
+    }
+    15% {
+      opacity: 1;
+    }
+    70% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-38px);
+      opacity: 0;
+    }
+  }
+  .counter {
+    font: 800 30px var(--display);
+    font-variant-numeric: tabular-nums;
+  }
+  .toast {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    background: var(--surface-3);
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-size: 13px;
+    animation: slide 3.2s ease-in-out infinite;
+  }
+  @keyframes slide {
+    0%,
+    8% {
+      transform: translateY(80px);
+    }
+    18%,
+    78% {
+      transform: translateY(0);
+    }
+    90%,
+    100% {
+      transform: translateY(80px);
+    }
+  }
+  .press {
+    animation: press 2.4s ease-in-out infinite;
+  }
+  @keyframes press {
+    0%,
+    70%,
+    100% {
+      transform: scale(1);
+    }
+    76% {
+      transform: scale(0.94);
+    }
+    84% {
+      transform: scale(1.03);
+    }
+  }
+  .fillring {
+    animation: fill 3s ease-in-out infinite;
+  }
+  @property --p {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0;
+  }
+  @keyframes fill {
+    0% {
+      --p: 8;
+      --c: var(--bad);
+    }
+    60%,
+    100% {
+      --p: 85;
+      --c: var(--good);
+    }
+  }
+  .pulse {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--retail);
+    position: relative;
+  }
+  .pulse::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid var(--retail);
+    animation: ping 1.8s ease-out infinite;
+  }
+  @keyframes ping {
+    from {
+      transform: scale(1);
+      opacity: 0.9;
+    }
+    to {
+      transform: scale(3.2);
+      opacity: 0;
+    }
+  }
+  .truck-move {
+    offset-path: path('M 20 90 C 90 20, 180 110, 300 40');
+    animation: drive 4s linear infinite;
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: var(--logistics);
+    font-size: 26px;
+  }
+  @keyframes drive {
+    from {
+      offset-distance: 0%;
+    }
+    to {
+      offset-distance: 100%;
+    }
+  }
+  .dash {
+    stroke-dasharray: 6 7;
+    animation: flow 1.2s linear infinite;
+  }
+  @keyframes flow {
+    to {
+      stroke-dashoffset: -26;
+    }
+  }
+
+  /* Princípios e decisões */
+  .rules {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 16px;
+    gap: 14px;
   }
-  .phase {
-    background: var(--sheet);
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 18px;
-    display: grid;
-    gap: 8px;
-    align-content: start;
+  .rule {
+    background: var(--surface);
+    border-radius: 18px;
+    padding: 16px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
   }
-  .phase ul {
-    margin: 0;
-    padding-left: 18px;
-    font-size: 14px;
+  .rule b {
+    display: block;
+    font-family: var(--display);
+    font-size: 16px;
+    margin-bottom: 2px;
+  }
+  .rule span {
     color: var(--muted);
+    font-size: 14px;
   }
   .decide {
     display: grid;
-    gap: 10px;
-    counter-reset: q;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
   }
-  .decide p {
+  .decide div {
     display: flex;
     gap: 12px;
-    align-items: baseline;
+    align-items: center;
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 14px;
+    font-weight: 600;
   }
-  .decide p::before {
-    counter-increment: q;
-    content: counter(q);
-    font: 700 14px var(--mono);
-    color: var(--accent);
+  .decide div .bubble {
+    width: 38px;
+    height: 38px;
+    font-size: 18px;
+    border-radius: 12px;
   }
-  @media (max-width: 760px) {
-    .moments,
-    .compare,
-    .phases,
-    .principles,
-    .notes {
+
+  @media (max-width: 820px) {
+    .wins,
+    .motion,
+    .rules,
+    .decide {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 520px) {
+    .wins,
+    .motion,
+    .rules,
+    .decide {
       grid-template-columns: 1fr;
-    }
-    .flow {
-      grid-template-columns: 1fr;
-    }
-    .issue {
-      grid-template-columns: 70px minmax(0, 1fr);
-    }
-    .issue .count {
-      grid-column: 2;
-      text-align: left;
     }
   }
   @media (prefers-reduced-motion: reduce) {
-    * {
-      transition: none !important;
+    *,
+    *::before,
+    *::after {
       animation: none !important;
     }
   }
 </style>
 
+<svg width="0" height="0" style="position: absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-home" viewBox="0 0 24 24">
+      <path d="M3 11l9-7 9 7v9a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z" />
+    </symbol>
+    <symbol id="i-map" viewBox="0 0 24 24">
+      <path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2zM9 4v14M15 6v14" />
+    </symbol>
+    <symbol id="i-store" viewBox="0 0 24 24">
+      <path d="M3 9l1.6-5h14.8L21 9M4 9v11h16V9M3 9h18M9 20v-6h6v6" />
+    </symbol>
+    <symbol id="i-cart" viewBox="0 0 24 24">
+      <path d="M3 4h2.2l2.2 11h10.8l2-8H6.2" />
+      <circle cx="9" cy="19.5" r="1.5" />
+      <circle cx="17.5" cy="19.5" r="1.5" />
+    </symbol>
+    <symbol id="i-building" viewBox="0 0 24 24">
+      <path d="M4 21V5l8-2v18M12 8h8v13M4 21h16M8 8h.01M8 12h.01M8 16h.01M16 12h.01M16 16h.01" />
+    </symbol>
+    <symbol id="i-coin" viewBox="0 0 24 24">
+      <ellipse cx="12" cy="6" rx="7" ry="3" />
+      <path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6" />
+    </symbol>
+    <symbol id="i-wheat" viewBox="0 0 24 24">
+      <path
+        d="M12 22V9M12 9c-2.5-.5-4-2.5-4-5.5 2.5.5 4 2.5 4 5.5zm0 0c2.5-.5 4-2.5 4-5.5-2.5.5-4 2.5-4 5.5zM12 15c-2.5-.5-4.5-2.2-4.5-5 2.5.3 4.5 2.2 4.5 5zm0 0c2.5-.5 4.5-2.2 4.5-5-2.5.3-4.5 2.2-4.5 5z"
+      />
+    </symbol>
+    <symbol id="i-truck" viewBox="0 0 24 24">
+      <path d="M2 6h11v10H2zM13 9h4.5L21 12.5V16h-8" />
+      <circle cx="6.5" cy="17.5" r="2" />
+      <circle cx="17" cy="17.5" r="2" />
+    </symbol>
+    <symbol id="i-up" viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8M15 7h6v6" /></symbol>
+    <symbol id="i-sprout" viewBox="0 0 24 24">
+      <path
+        d="M12 21v-9M12 12c0-4.4 3-7 7.5-7 0 4.4-3 7-7.5 7zM12 14.5c0-3.4-2.3-5.5-6-5.5 0 3.4 2.3 5.5 6 5.5"
+      />
+    </symbol>
+    <symbol id="i-milk" viewBox="0 0 24 24">
+      <path d="M8.5 2.5h7M9.5 2.5V5L7.5 8v13.5h9V8l-2-3V2.5M7.5 12h9" />
+    </symbol>
+    <symbol id="i-drop" viewBox="0 0 24 24">
+      <path d="M12 2.8s6.2 6.6 6.2 11.2a6.2 6.2 0 01-12.4 0C5.8 9.4 12 2.8 12 2.8z" />
+    </symbol>
+    <symbol id="i-bean" viewBox="0 0 24 24">
+      <path
+        d="M9.5 3.8c4.3-2 9.5.8 9.5 6.2s-5 10.2-10.3 10.2S2.6 16 4.6 12s.6-6.3 4.9-8.2zM9 9c1.5 1.3 2 3.5 1 5.5"
+      />
+    </symbol>
+    <symbol id="i-cube" viewBox="0 0 24 24">
+      <path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3zM12 21.5V12M3.5 7.3L12 12l8.5-4.7" />
+    </symbol>
+    <symbol id="i-fork" viewBox="0 0 24 24">
+      <path d="M5 2.5v7a3 3 0 006 0v-7M8 2.5v19M17.5 2.5c-2 2.2-3 5-3 8h3v11" />
+    </symbol>
+    <symbol id="i-hand" viewBox="0 0 24 24">
+      <path d="M2 12l4-4 4 2 4-3 4 3 4-2v5l-6 6-3-2-3 2-6-5zM10 10l3 3" />
+    </symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24">
+      <path d="M12 3.5l9.5 17h-19zM12 10v4.5M12 17.5v.3" />
+    </symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3.2 2" />
+    </symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="4" />
+      <path
+        d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"
+      />
+    </symbol>
+    <symbol id="i-users" viewBox="0 0 24 24">
+      <circle cx="9" cy="8" r="3.5" />
+      <path
+        d="M2.5 20.5c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M16 4.8a3.3 3.3 0 010 6.4M18 14.6c2.2.7 3.5 2.8 3.5 5.9"
+      />
+    </symbol>
+    <symbol id="i-box" viewBox="0 0 24 24">
+      <path d="M3.5 7.5L12 3l8.5 4.5v9L12 21l-8.5-4.5zM3.5 7.5L12 12l8.5-4.5M12 12v9" />
+    </symbol>
+    <symbol id="i-tag" viewBox="0 0 24 24">
+      <path d="M3 12V3.5h8.5L21 13l-8 8zM7.5 7.5h.01" />
+    </symbol>
+    <symbol id="i-repeat" viewBox="0 0 24 24">
+      <path
+        d="M17 2.5l3 3-3 3M4 11v-1a4.5 4.5 0 014.5-4.5H20M7 21.5l-3-3 3-3M20 13v1a4.5 4.5 0 01-4.5 4.5H4"
+      />
+    </symbol>
+    <symbol id="i-star" viewBox="0 0 24 24">
+      <path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" />
+    </symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M4.5 12.5l5 5 10-11" /></symbol>
+    <symbol id="i-paw" viewBox="0 0 24 24">
+      <circle cx="7" cy="9" r="2" />
+      <circle cx="12" cy="6.5" r="2" />
+      <circle cx="17" cy="9" r="2" />
+      <path
+        d="M12 12c-3 0-5.5 3.5-5.5 6 0 1.6 1.4 2.5 3 2.5 1 0 1.6-.5 2.5-.5s1.5.5 2.5.5c1.6 0 3-.9 3-2.5 0-2.5-2.5-6-5.5-6z"
+      />
+    </symbol>
+    <symbol id="i-factory" viewBox="0 0 24 24">
+      <path d="M3 21V10.5l6 3.5v-3.5l6 3.5V6h6v15zM3 21h18M7 17.5h2M12 17.5h2M17 17.5h2" />
+    </symbol>
+  </defs>
+</svg>
+
 <main>
-  <header class="top">
-    <span class="eyebrow">Proposta para aprovação · 30/10/2026</span>
+  <header style="display: grid; gap: 16px">
+    <span class="tag">Proposta 2 · telas ilustradas</span>
     <h1>UX do Aftermarket</h1>
     <p class="lead">
-      O jogo funciona, mas se usa como um painel administrativo: tudo é tabela, cada tarefa passa
-      por várias telas e nada avisa o que mudou. Esta proposta reorganiza o jogo em volta do que o
-      jogador faz num mundo semanal. Nada aqui é cor ou estilo; a identidade visual vem depois,
-      sobre esta estrutura.
+      Menos texto, mais imagem: cada produto tem ícone e cor, cada negócio tem sua cena, estoque
+      vira anel e problema vira cartão com o botão que resolve.
     </p>
-    <div class="ask">
-      <strong>O que preciso de você</strong>
-      <p>
-        Aprovar a estrutura (menu de 5 itens e negócio com 4 abas), os quatro fluxos e a ordem de
-        execução no fim da página. Ajustes de texto e detalhes eu resolvo durante a construção.
-      </p>
-    </div>
   </header>
 
   <section>
-    <span class="eyebrow">Para quem desenhamos</span>
-    <h2>Três momentos de jogo no mundo semanal</h2>
-    <p class="prose">
-      Com o relógio lento (1 hora real = 6 horas de jogo), ninguém fica horas grudado. O jogador
-      entra, entende o que aconteceu, decide e sai; a automação trabalha enquanto ele está fora. A
-      interface tem de servir bem cada momento.
-    </p>
-    <div class="moments">
-      <div class="moment">
-        <span class="when">1ª hora · uma vez</span>
-        <h3>Começar</h3>
-        <ul>
-          <li>Entender o objetivo e a loja que recebeu</li>
-          <li>Fazer a primeira compra e a primeira venda</li>
-          <li>Deixar a loja repondo sozinha</li>
-        </ul>
+    <div class="wins">
+      <div class="win">
+        <div class="ab"><span class="from">7</span><span class="to">2</span></div>
+        <span>cliques para repor a loja</span>
       </div>
-      <div class="moment">
-        <span class="when">5 a 10 min · 2 ou 3 vezes ao dia</span>
-        <h3>Visita curta</h3>
-        <ul>
-          <li>O que aconteceu desde a última visita</li>
-          <li>O que está parado e por quê</li>
-          <li>Resolver com um clique e sair</li>
-        </ul>
+      <div class="win">
+        <div class="ab"><span class="from">4</span><span class="to">1</span></div>
+        <span>confirmação para abrir negócio</span>
       </div>
-      <div class="moment">
-        <span class="when">30 a 60 min · algumas vezes na semana</span>
-        <h3>Crescer</h3>
-        <ul>
-          <li>Escolher o próximo negócio pelo retorno</li>
-          <li>Abrir, equipar e ligar a produção</li>
-          <li>Ligar fornecedor, fábrica e loja</li>
-        </ul>
+      <div class="win">
+        <div class="ab"><span class="from">9</span><span class="to">4</span></div>
+        <span>abas na página da loja</span>
+      </div>
+      <div class="win">
+        <div class="ab"><span class="from">0</span><span class="to">1</span></div>
+        <span>tela "enquanto você esteve fora"</span>
       </div>
     </div>
   </section>
 
   <section>
-    <span class="eyebrow">Diagnóstico</span>
-    <h2>O que atrapalha hoje</h2>
-    <div class="issues">
-      <div class="issue">
-        <span class="sev high">Alto</span>
-        <div>
-          Nenhuma tela responde "o que aconteceu enquanto eu estava fora"<small
-            >Num mundo semanal é a primeira pergunta de toda visita. Hoje o jogador abre o mapa e
-            precisa caçar a informação em 6 páginas.</small
-          >
-        </div>
-        <span class="count">0 telas</span>
-      </div>
-      <div class="issue">
-        <span class="sev high">Alto</span>
-        <div>
-          Comprar mercadoria atravessa duas páginas<small
-            >Mercado: escolher oferta, digitar quantidade, continuar. Logística: escolher
-            transportadora entre 23, contratar, confirmar, pagar.</small
-          >
-        </div>
-        <span class="count">7 cliques · 2 páginas</span>
-      </div>
-      <div class="issue">
-        <span class="sev high">Alto</span>
-        <div>
-          Abrir um negócio são quatro tarefas soltas<small
-            >Comprar o terreno no mapa, instalar equipamento, contratar na aba Funcionários e ainda
-            "Retomar operação". Quem esquece uma etapa fica com a unidade parada sem
-            entender.</small
-          >
-        </div>
-        <span class="count">4 etapas · 3 telas</span>
-      </div>
-      <div class="issue">
-        <span class="sev high">Alto</span>
-        <div>
-          "Parado" sem dizer como resolver<small
-            >A fazenda aparece como Pausada ou "Aguardando insumos"; a correção (comprar semente,
-            ligar operação) fica em outra aba.</small
-          >
-        </div>
-        <span class="count">status sem ação</span>
-      </div>
-      <div class="issue">
-        <span class="sev mid">Médio</span>
-        <div>
-          Abas demais dentro de cada negócio<small
-            >Loja com 9 abas, produção com 8, transportadora com 7. Abastecimento, Pedidos e Consumo
-            são assuntos de jogador avançado.</small
-          >
-        </div>
-        <span class="count">9 · 8 · 7 abas</span>
-      </div>
-      <div class="issue">
-        <span class="sev mid">Médio</span>
-        <div>
-          Menu espalha o mesmo assunto<small
-            >Oportunidades e Mercado mostram preços; Logística e Minha frota mostram caminhões; Meus
-            Negócios e Empresa mostram resultado.</small
-          >
-        </div>
-        <span class="count">6 itens, 3 sobrepostos</span>
-      </div>
-      <div class="issue">
-        <span class="sev mid">Médio</span>
-        <div>
-          Linguagem de sistema<small
-            >"Contexto da compra", "Custo posto", "Titularidade (opcional)", "Mercadoria
-            (opcional)", "Resultado operacional" no topo.</small
-          >
-        </div>
-        <span class="count">dezenas de rótulos</span>
-      </div>
-      <div class="issue">
-        <span class="sev low">Baixo</span>
-        <div>
-          Nada reage quando algo acontece<small
-            >Venda, entrega e colheita mudam números em silêncio. O mundo está vivo, mas parece
-            parado.</small
-          >
-        </div>
-        <span class="count">sem retorno</span>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <span class="eyebrow">Estrutura</span>
-    <h2>Menu de 6 para 5, e negócio com 4 abas</h2>
-    <div class="compare">
-      <div class="col">
-        <h3>Hoje <span>6 itens + até 9 abas</span></h3>
-        <ul class="navlist">
-          <li>Mapa <em>abre direto no mapa</em></li>
-          <li>Oportunidades <em>preços e análise</em></li>
-          <li>Meus Negócios <em>lista + página com 7 a 9 abas</em></li>
-          <li>Mercado <em>ofertas, pedidos, editais</em></li>
-          <li>Logística <em>entregas + frete + frota</em></li>
-          <li>Empresa <em>finanças e crédito</em></li>
-        </ul>
-      </div>
-      <div class="col">
-        <h3>Proposta <span>5 itens + 4 abas</span></h3>
-        <ul class="navlist">
-          <li>
-            <b>Início</b> <em>novo: o que aconteceu, o que precisa de você, entregas a caminho</em>
-          </li>
-          <li>Mapa <em>explorar e abrir negócio no terreno</em></li>
-          <li>Negócios <em>cartões com estado; frota entra aqui</em></li>
-          <li>Mercado <em>comprar, vender, editais; oportunidades viram a aba Preços</em></li>
-          <li>Empresa <em>finanças, crédito e, depois, ranking</em></li>
-        </ul>
-        <p class="dim">
-          Página do negócio: Visão geral · Estoque e compras · Vendas e preços · Equipe e
-          equipamento. Abastecimento automático, pedidos e consumo detalhado ficam em "Avançado".
-        </p>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <span class="eyebrow">Fluxos</span>
-    <h2>Quatro tarefas, antes e depois</h2>
-    <div class="flows">
-      <div class="flow">
-        <h3>Repor um produto na loja</h3>
-        <div class="steps">
-          <b>Hoje · 7 cliques</b>Mercado → oferta → quantidade → Continuar para frete → escolher
-          transportadora → Contratar e comprar → Pagar
-        </div>
-        <div class="steps after">
-          <b>Proposta · 2 cliques</b>"Repor" no produto abre um painel com a melhor oferta já
-          escolhida pelo custo na sua porta (preço + frete), quantidade para 7 dias e transportadora
-          mais barata. Confirmar.
-        </div>
-      </div>
-      <div class="flow">
-        <h3>Abrir um negócio</h3>
-        <div class="steps">
-          <b>Hoje · 4 etapas em 3 telas</b>Comprar terreno no mapa → instalar equipamento →
-          contratar na aba Funcionários → Retomar operação → comprar insumo
-        </div>
-        <div class="steps after">
-          <b>Proposta · assistente de 3 passos</b>Atividade (custo, lucro, retorno) → terreno (só os
-          que comportam) → resumo com tudo incluído: terreno, equipamento, equipe, primeiro insumo e
-          produção ligada. Uma confirmação.
-        </div>
-      </div>
-      <div class="flow">
-        <h3>Voltar ao jogo</h3>
-        <div class="steps">
-          <b>Hoje · sem tela</b>Abre no mapa; vendas, entregas e alertas espalhados entre Meus
-          Negócios, Logística e o sino.
-        </div>
-        <div class="steps after">
-          <b>Proposta · tela Início</b>"Desde sua última visita (há 7 h)" com vendas, colheitas e
-          entregas; lista "Precisa de você" com o botão da correção em cada linha.
-        </div>
-      </div>
-      <div class="flow">
-        <h3>Resolver algo parado</h3>
-        <div class="steps">
-          <b>Hoje · descobrir sozinho</b>Ler o gargalo na aba Produção, ir à aba Insumos, comprar,
-          voltar e retomar.
-        </div>
-        <div class="steps after">
-          <b>Proposta · status com ação</b>Todo "parado" diz o motivo em uma frase e traz o botão
-          certo: "Falta semente · Comprar 300 kg", "Sem equipe · Contratar 5".
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <span class="eyebrow">Esboço 1</span>
-    <h2>Início: a visita curta inteira numa tela</h2>
-    <div class="sheet-wrap">
-      <div class="wf">
+    <span class="tag">Tela 1</span>
+    <h2>Início</h2>
+    <div class="stage">
+      <div class="screen">
         <div class="app">
-          <div class="bar">
-            <span class="brand">AFTERMARKET</span><span class="grow"></span>
-            <span class="kv"><b>R$ 812.430</b><span>caixa livre</span></span>
-            <span class="kv"><b>+R$ 2.140</b><span>lucro hoje</span></span>
-            <span class="kv"><b>Dia 6 · 14h</b><span>1 h real = 6 h de jogo</span></span>
-            <span class="btn">Silva Participações</span>
+          <div class="topbar">
+            <span class="logo"
+              ><i
+                ><svg class="ico" style="font-size: 18px"><use href="#i-up" /></svg></i
+              >AFTERMARKET</span
+            >
+            <span class="grow"></span>
+            <span class="pill money"
+              ><svg class="ico"><use href="#i-coin" /></svg
+              ><span class="num">R$ 812.430</span></span
+            >
+            <span class="pill up"
+              ><svg class="ico"><use href="#i-up" /></svg>+R$ 2.140 hoje</span
+            >
+            <span class="pill"
+              ><svg class="ico" style="color: var(--gold)"><use href="#i-sun" /></svg>Dia 6 ·
+              14h</span
+            >
+            <span class="avatar">SP</span>
           </div>
-          <nav class="side">
-            <span class="on">Início</span><span>Mapa</span><span>Negócios</span><span>Mercado</span
-            ><span>Empresa</span>
+          <nav class="rail">
+            <span class="on"
+              ><svg class="ico"><use href="#i-home" /></svg>Início</span
+            >
+            <span
+              ><svg class="ico"><use href="#i-map" /></svg>Mapa</span
+            >
+            <span
+              ><svg class="ico"><use href="#i-store" /></svg>Negócios</span
+            >
+            <span
+              ><svg class="ico"><use href="#i-cart" /></svg>Mercado</span
+            >
+            <span
+              ><svg class="ico"><use href="#i-building" /></svg>Empresa</span
+            >
           </nav>
           <div class="content">
-            <div class="box fill">
-              <h4>Desde sua última visita · há 7 horas</h4>
-              <div class="row r4">
-                <div>
-                  <div class="big">R$ 18.240</div>
-                  <div class="dim">vendas nas lojas</div>
-                </div>
-                <div>
-                  <div class="big">1.200 un</div>
-                  <div class="dim">arroz colhido em Sorocaba</div>
-                </div>
-                <div>
-                  <div class="big">3</div>
-                  <div class="dim">entregas recebidas</div>
-                </div>
-                <div>
-                  <div class="big">+R$ 9.870</div>
-                  <div class="dim">no caixa, já pagos os custos</div>
-                </div>
-              </div>
-            </div>
-            <div class="row r21">
-              <div class="box">
-                <h4>Precisa de você · 3</h4>
-                <div class="line">
-                  <span
-                    ><span class="chip bad">Parado</span> Fazenda Sorocaba: falta semente de
-                    arroz</span
-                  ><span class="btn main">Comprar 300 kg</span>
-                </div>
-                <div class="line">
-                  <span
-                    ><span class="chip warn">Sem estoque</span> Loja Campinas sem leite há 2 h · ~R$
-                    640 em vendas perdidas</span
-                  ><span class="btn main">Repor leite</span>
-                </div>
-                <div class="line">
-                  <span
-                    ><span class="chip warn">Proposta</span> Primavera Agro quer 21.854 kg de
-                    ração</span
-                  ><span class="btn">Ver proposta</span>
-                </div>
-              </div>
-              <div class="box">
-                <h4>A caminho</h4>
-                <div class="line">
-                  <span>Arroz 5 kg · 532 un</span><span class="dim">chega em 40 min</span>
-                </div>
-                <div class="meter"><i style="width: 70%"></i></div>
-                <div class="line">
-                  <span>Semente de arroz · 300 kg</span><span class="dim">chega em 2 h</span>
-                </div>
-                <div class="meter"><i style="width: 25%"></i></div>
-              </div>
-            </div>
-            <div class="row r3">
-              <div class="box">
-                <h4>Loja Campinas</h4>
-                <span class="chip good">Vendendo</span
-                ><span class="dim">R$ 2,4 mil/dia · estoque para 3 dias</span>
-              </div>
-              <div class="box">
-                <h4>Fazenda Sorocaba</h4>
-                <span class="chip bad">Parada · falta semente</span
-                ><span class="dim">1 de 4 linhas · próxima colheita em —</span>
-              </div>
-              <div class="box fill">
-                <h4>+ Abrir negócio</h4>
-                <span class="dim">Ordenha se paga em 37 dias com o seu caixa</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <span class="pin" style="left: 212px; top: 66px">1</span>
-        <span class="pin" style="left: 212px; top: 178px">2</span>
-        <span class="pin" style="left: 690px; top: 178px">3</span>
-        <span class="pin" style="left: 212px; top: 320px">4</span>
-      </div>
-    </div>
-    <ol class="notes">
-      <li>
-        <span class="pin">1</span>Resumo desde a última visita, calculado pelo extrato e pelas
-        colheitas; o jogador lê em 3 segundos.
-      </li>
-      <li>
-        <span class="pin">2</span>Cada alerta diz o motivo, o custo de não agir e traz o botão da
-        correção. Sem botão, não vira alerta.
-      </li>
-      <li>
-        <span class="pin">3</span>Entregas a caminho saem da página Logística e ficam onde o jogador
-        olha primeiro.
-      </li>
-      <li>
-        <span class="pin">4</span>Negócios como cartões com estado e um número que importa; o último
-        cartão sugere o próximo passo pelo retorno.
-      </li>
-    </ol>
-  </section>
-
-  <section>
-    <span class="eyebrow">Esboço 2</span>
-    <h2>Repor: painel lateral em vez de duas páginas</h2>
-    <div class="sheet-wrap">
-      <div class="wf">
-        <div class="drawer-stage">
-          <div class="dimmed"></div>
-          <div class="drawer">
-            <h3>Repor leite 1 L · Loja Campinas</h3>
-            <div class="line">
-              <span>Quantidade</span
-              ><span class="stepper"
-                ><span class="btn">−</span><b>1.540 un</b><span class="btn">+</span></span
-              >
-            </div>
-            <span class="dim">7 dias de venda na sua loja · cabe no estoque</span>
-            <div class="offer pick">
-              <div class="line">
-                <b>AgroVale Alimentos · Sorocaba</b><span class="chip good">melhor</span>
-              </div>
-              <span class="dim"
-                >R$ 5,41 + frete R$ 0,22 = <b>R$ 5,63 na sua porta</b> · chega em 3 h</span
-              >
-            </div>
-            <div class="offer">
-              <div class="line">
-                <b>Laticínios Serra · Piracicaba</b><span class="dim">R$ 5,81</span>
-              </div>
-              <span class="dim">chega em 5 h</span>
-            </div>
-            <div class="offer">
-              <div class="line">
-                <b>Distribuidora Aurora · Americana</b><span class="dim">R$ 6,02</span>
-              </div>
-              <span class="dim">chega em 2 h</span>
-            </div>
-            <div class="line">
-              <span>Transportadora</span><span>TransBrasil, a mais barata · <u>trocar</u></span>
-            </div>
-            <div class="line">
-              <span>Vendendo a R$ 6,10 na prateleira</span><span class="chip good">margem 8%</span>
-            </div>
-            <div class="line">
-              <span><b>Total R$ 8.670</b></span
-              ><span class="dim">caixa depois R$ 803.760</span>
-            </div>
-            <span class="btn main">Comprar por R$ 8.670</span>
-            <span class="dim">Ligar "repor sozinho quando baixar de 2 dias" →</span>
-          </div>
-        </div>
-        <span class="pin" style="left: 520px; top: 78px">1</span>
-        <span class="pin" style="left: 520px; top: 142px">2</span>
-        <span class="pin" style="left: 520px; top: 300px">3</span>
-        <span class="pin" style="left: 520px; top: 420px">4</span>
-      </div>
-    </div>
-    <ol class="notes">
-      <li>
-        <span class="pin">1</span>Abre a partir do produto, da loja ou de um alerta, sem sair da
-        tela atual.
-      </li>
-      <li>
-        <span class="pin">2</span>Ofertas ordenadas pelo custo na porta do jogador; a melhor já vem
-        escolhida. Comparar continua possível.
-      </li>
-      <li>
-        <span class="pin">3</span>A transportadora mais barata é escolhida sozinha; trocar é
-        opcional. Hoje são 23 opções sempre abertas.
-      </li>
-      <li>
-        <span class="pin">4</span>Margem e caixa depois da compra antes de confirmar; um atalho liga
-        a reposição automática.
-      </li>
-    </ol>
-  </section>
-
-  <section>
-    <span class="eyebrow">Esboço 3</span>
-    <h2>Abrir negócio: um assistente, uma confirmação</h2>
-    <div class="sheet-wrap">
-      <div class="wf">
-        <div class="box" style="padding: 16px; gap: 12px">
-          <div class="wizard-steps">
-            <span class="done">1 Atividade ✓</span><span class="done">2 Terreno ✓</span
-            ><span class="on">3 Confirmar</span>
-          </div>
-          <h3>Colheita de arroz em Sorocaba</h3>
-          <div class="row r21">
-            <div class="box">
-              <div class="line"><span>Terreno · 80 ha, cabem 4 linhas</span><b>R$ 120.000</b></div>
-              <div class="line">
-                <span>Linhas de produção</span
-                ><span class="stepper"
-                  ><span class="btn">−</span><b>1</b><span class="btn">+</span></span
+            <div class="away">
+              <div class="h-row">
+                <h3>Enquanto você esteve fora</h3>
+                <span class="pill"
+                  ><svg class="ico"><use href="#i-clock" /></svg>7 h</span
                 >
               </div>
-              <div class="line"><span>Equipamento · 1 linha</span><b>R$ 54.000</b></div>
-              <div class="line">
-                <span>Equipe · 5 pessoas contratadas agora</span><span>R$ 1.036/dia</span>
-              </div>
-              <div class="line">
-                <span>☑ Semente para 2 colheitas · 200 kg</span><b>R$ 2.900</b>
-              </div>
-              <div class="line">
-                <span>☑ Ligar produção automática</span><span class="dim">orçamento sugerido</span>
-              </div>
-              <div class="line">
-                <span><b>Total agora</b></span
-                ><b>R$ 176.900</b>
+              <div class="away-grid">
+                <div class="stat">
+                  <span class="bubble b-gold"
+                    ><svg class="ico"><use href="#i-coin" /></svg
+                  ></span>
+                  <div><span class="num">R$ 18.240</span><small>em vendas</small></div>
+                </div>
+                <div class="stat">
+                  <span class="bubble b-farm"
+                    ><svg class="ico"><use href="#i-wheat" /></svg
+                  ></span>
+                  <div><span class="num">1.200</span><small>arroz colhido</small></div>
+                </div>
+                <div class="stat">
+                  <span class="bubble b-log"
+                    ><svg class="ico"><use href="#i-truck" /></svg
+                  ></span>
+                  <div><span class="num">3</span><small>entregas chegaram</small></div>
+                </div>
+                <div class="stat">
+                  <span class="bubble b-farm"
+                    ><svg class="ico"><use href="#i-up" /></svg
+                  ></span>
+                  <div><span class="num">+R$ 9.870</span><small>de lucro</small></div>
+                </div>
               </div>
             </div>
-            <div class="box fill">
-              <h4>Estimativa a preços de referência</h4>
-              <div class="big">R$ 2.800/dia</div>
-              <span class="dim">lucro com a linha sempre ocupada</span>
-              <div class="big">~62 dias</div>
-              <span class="dim">para se pagar</span>
-              <span class="dim">Caixa depois: R$ 635.530</span>
+            <div class="two">
+              <div class="needs">
+                <div class="h-row">
+                  <h3>Precisa de você</h3>
+                  <span class="muted">3</span>
+                </div>
+                <div class="need bad">
+                  <span class="bubble b-retail"
+                    ><svg class="ico"><use href="#i-sprout" /></svg
+                  ></span>
+                  <div class="txt"><b>Fazenda parou</b><small>falta semente de arroz</small></div>
+                  <span class="btn gold"
+                    ><svg class="ico"><use href="#i-cart" /></svg>Comprar</span
+                  >
+                </div>
+                <div class="need warn">
+                  <span class="bubble" style="background: #f2b44c26; color: var(--warn)"
+                    ><svg class="ico"><use href="#i-milk" /></svg
+                  ></span>
+                  <div class="txt"><b>Leite acabou</b><small>Loja Campinas · −R$ 640</small></div>
+                  <span class="btn gold"
+                    ><svg class="ico"><use href="#i-repeat" /></svg>Repor</span
+                  >
+                </div>
+                <div class="need">
+                  <span class="bubble b-log"
+                    ><svg class="ico"><use href="#i-hand" /></svg
+                  ></span>
+                  <div class="txt">
+                    <b>Proposta de compra</b><small>Primavera Agro · ração</small>
+                  </div>
+                  <span class="btn">Ver</span>
+                </div>
+              </div>
+              <div class="route">
+                <div class="h-row">
+                  <h3>A caminho</h3>
+                  <span class="muted">2</span>
+                </div>
+                <svg
+                  viewBox="0 0 320 120"
+                  role="img"
+                  aria-label="Rota de Americana até Campinas com um caminhão no meio do caminho"
+                >
+                  <path
+                    d="M20 95 C 90 25, 180 110, 300 40"
+                    stroke="#2a4350"
+                    stroke-width="10"
+                    fill="none"
+                    stroke-linecap="round"
+                  />
+                  <path
+                    class="dash"
+                    d="M20 95 C 90 25, 180 110, 300 40"
+                    stroke="#5fb4e2"
+                    stroke-width="3"
+                    fill="none"
+                    stroke-linecap="round"
+                  />
+                  <circle cx="20" cy="95" r="8" fill="#93a9cf" />
+                  <circle cx="300" cy="40" r="9" fill="#f07f70" />
+                  <text
+                    x="12"
+                    y="116"
+                    fill="#8ea6b0"
+                    font-size="11"
+                    font-family="Figtree, sans-serif"
+                  >
+                    Americana
+                  </text>
+                  <text
+                    x="262"
+                    y="22"
+                    fill="#8ea6b0"
+                    font-size="11"
+                    font-family="Figtree, sans-serif"
+                  >
+                    Campinas
+                  </text>
+                </svg>
+                <div class="eta">
+                  <span
+                    ><svg class="ico" style="color: var(--gold)"><use href="#i-wheat" /></svg> 532
+                    arroz</span
+                  ><span>chega em 40 min</span>
+                </div>
+              </div>
             </div>
-          </div>
-          <div class="line">
-            <span class="btn">Voltar</span
-            ><span class="btn main">Abrir negócio por R$ 176.900</span>
+            <div class="cards">
+              <div class="biz">
+                <div class="scene">
+                  <svg viewBox="0 0 300 92" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                    <rect width="300" height="92" fill="#3b2a35" />
+                    <circle cx="250" cy="22" r="14" fill="#f2b44c55" />
+                    <rect x="0" y="70" width="300" height="22" fill="#2a1f28" />
+                    <rect x="90" y="30" width="120" height="44" rx="4" fill="#f07f70" />
+                    <path d="M84 30h132l-8-14H92z" fill="#e6b866" />
+                    <path
+                      d="M92 16h16v14H92zM124 16h16v14h-16zM156 16h16v14h-16zM188 16h16v14h-16z"
+                      fill="#f07f70"
+                      opacity=".7"
+                    />
+                    <rect x="138" y="48" width="24" height="26" fill="#2a1f28" />
+                    <rect x="100" y="42" width="28" height="18" fill="#ffd9a6" opacity=".8" />
+                    <rect x="172" y="42" width="28" height="18" fill="#ffd9a6" opacity=".8" />
+                  </svg>
+                  <span class="badge good"><i></i>Vendendo</span>
+                </div>
+                <div class="body">
+                  <h4>Loja Campinas</h4>
+                  <div class="meta">
+                    <div><span class="num">R$ 2,4 mil</span><span class="muted"> /dia</span></div>
+                    <svg class="spark" viewBox="0 0 90 30" aria-hidden="true">
+                      <path
+                        d="M0 24 L15 20 L30 22 L45 14 L60 16 L75 8 L90 6"
+                        stroke="#5cc48a"
+                        stroke-width="2.5"
+                        fill="none"
+                        stroke-linecap="round"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              <div class="biz">
+                <div class="scene">
+                  <svg viewBox="0 0 300 92" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                    <rect width="300" height="92" fill="#22382c" />
+                    <circle cx="46" cy="22" r="12" fill="#f2b44c66" />
+                    <path d="M0 56 Q75 40 150 52 T300 46 V92 H0z" fill="#2f5a3c" />
+                    <path d="M0 70 Q90 58 170 68 T300 62 V92 H0z" fill="#3e7a4c" />
+                    <path
+                      d="M20 92 L120 58 M60 92 L150 60 M100 92 L180 62 M140 92 L210 63 M180 92 L240 62"
+                      stroke="#5cc48a"
+                      stroke-width="3"
+                      opacity=".5"
+                    />
+                    <rect x="226" y="34" width="34" height="26" fill="#c9553f" />
+                    <path d="M222 34l21-14 21 14z" fill="#8e3a2d" />
+                  </svg>
+                  <span class="badge bad"><i></i>Parada</span>
+                </div>
+                <div class="body">
+                  <h4>Fazenda Sorocaba</h4>
+                  <div class="meta">
+                    <span class="muted">falta semente</span
+                    ><span class="btn gold" style="padding: 6px 12px"
+                      ><svg class="ico"><use href="#i-cart" /></svg>Resolver</span
+                    >
+                  </div>
+                </div>
+              </div>
+              <div class="biz new">
+                <span class="bubble b-gold"
+                  ><svg class="ico"><use href="#i-plus" /></svg
+                ></span>
+                <h4>Abrir negócio</h4>
+                <span class="muted">Ordenha se paga em 37 dias</span>
+              </div>
+            </div>
           </div>
         </div>
-        <span class="pin" style="left: 20px; top: 22px">1</span>
-        <span class="pin" style="left: 20px; top: 140px">2</span>
-        <span class="pin" style="left: 560px; top: 110px">3</span>
       </div>
     </div>
-    <ol class="notes">
-      <li>
-        <span class="pin">1</span>Passo 1 é a lista "Negócios para abrir" que já existe; passo 2
-        mostra no mapa só terrenos que comportam a atividade.
-      </li>
-      <li>
-        <span class="pin">2</span>O resumo inclui tudo que hoje são etapas soltas. O jogo executa os
-        mesmos comandos de antes, em sequência.
-      </li>
-      <li>
-        <span class="pin">3</span>Lucro e retorno ao lado do custo, marcados como estimativa, para a
-        decisão ser sobre o negócio e não sobre telas.
-      </li>
-    </ol>
-  </section>
-
-  <section>
-    <span class="eyebrow">Esboço 4</span>
-    <h2>Página do negócio: estado primeiro, detalhe depois</h2>
-    <div class="sheet-wrap">
-      <div class="wf">
-        <div class="box" style="padding: 16px; gap: 12px">
-          <div class="line">
-            <h3>Loja Campinas</h3>
-            <span class="chip good">Vendendo · 8 de 8 funcionários</span>
-          </div>
-          <div class="row r3">
-            <div>
-              <div class="big">R$ 2.410</div>
-              <div class="dim">vendas hoje</div>
-            </div>
-            <div>
-              <div class="big">14%</div>
-              <div class="dim">margem depois do frete</div>
-            </div>
-            <div>
-              <div class="big">3 dias</div>
-              <div class="dim">até o estoque acabar</div>
-            </div>
-          </div>
-          <div class="tabs">
-            <span class="on">Visão geral</span><span>Estoque e compras</span
-            ><span>Vendas e preços</span><span>Equipe e equipamento</span
-            ><span class="dim">Avançado ▾</span>
-          </div>
-          <div class="line">
-            <span><b>Arroz 5 kg</b> · 522 un · R$ 24,50</span
-            ><span style="flex: 1; max-width: 260px"
-              ><span class="meter" style="display: block"><i style="width: 60%"></i></span></span
-            ><span class="dim">5 dias</span><span class="btn">Repor</span>
-          </div>
-          <div class="line">
-            <span><b>Leite 1 L</b> · 0 un · R$ 6,10</span
-            ><span style="flex: 1; max-width: 260px"
-              ><span class="meter" style="display: block"><i style="width: 0%"></i></span></span
-            ><span class="chip bad">acabou</span><span class="btn main">Repor</span>
-          </div>
-          <div class="line">
-            <span><b>Óleo de soja 1 L</b> · 900 un · R$ 8,90</span
-            ><span style="flex: 1; max-width: 260px"
-              ><span class="meter" style="display: block"><i style="width: 80%"></i></span></span
-            ><span class="dim">6 dias</span><span class="btn">Repor</span>
-          </div>
-          <div class="line">
-            <span>Repor sozinho quando baixar de 2 dias</span><span class="btn">Ligar</span>
-          </div>
-        </div>
-        <span class="pin" style="left: 20px; top: 22px">1</span>
-        <span class="pin" style="left: 20px; top: 130px">2</span>
-        <span class="pin" style="left: 700px; top: 190px">3</span>
-      </div>
-    </div>
-    <ol class="notes">
-      <li>
-        <span class="pin">1</span>Três números que respondem "está indo bem?" antes de qualquer
-        tabela.
-      </li>
-      <li>
-        <span class="pin">2</span>Quatro abas com nomes do dia a dia; o que é raro vai para
-        "Avançado".
-      </li>
-      <li>
-        <span class="pin">3</span>Cada linha mostra quanto tempo o estoque dura e o botão Repor abre
-        o painel do esboço 2.
-      </li>
-    </ol>
-  </section>
-
-  <section>
-    <span class="eyebrow">Regras para todas as telas</span>
-    <h2>Princípios</h2>
-    <ul class="principles">
-      <li>
-        <strong>Uma ação principal por tela</strong
-        ><span>O botão mais forte é sempre o próximo passo mais provável.</span>
-      </li>
-      <li>
-        <strong>Todo problema traz a correção</strong
-        ><span>Status parado ou alerta sem botão de solução não entra no jogo.</span>
-      </li>
-      <li>
-        <strong>Resumo antes do detalhe</strong
-        ><span>Três números e o estado em cima; tabelas embaixo ou em outra aba.</span>
-      </li>
-      <li>
-        <strong>Escolha boa já feita</strong
-        ><span>Quantidade, fornecedor e transportadora vêm sugeridos; trocar é opcional.</span>
-      </li>
-      <li>
-        <strong>Palavras de quem joga</strong
-        ><span>"Custo na sua porta", não "custo posto"; sem "(opcional)" em todo campo.</span>
-      </li>
-      <li>
-        <strong>O mundo responde</strong
-        ><span
-          >Venda, entrega e colheita aparecem na hora, com um aviso curto e o número mudando.</span
-        >
-      </li>
+    <ul class="notes">
+      <li><b>1</b>Resumo da ausência em 4 ícones</li>
+      <li><b>2</b>Cada problema já traz o botão</li>
+      <li><b>3</b>Caminhão andando na rota</li>
+      <li><b>4</b>Negócios com cena e estado</li>
     </ul>
   </section>
 
   <section>
-    <span class="eyebrow">Ordem de execução</span>
-    <h2>Três entregas, do maior ganho para o menor</h2>
-    <div class="phases">
-      <div class="phase">
-        <span class="eyebrow">Entrega 1</span>
-        <h3>Visita curta</h3>
-        <ul>
-          <li>Tela Início com resumo e "Precisa de você"</li>
-          <li>Status com motivo e botão de correção</li>
-          <li>Painel de reposição em 2 cliques</li>
-        </ul>
-      </div>
-      <div class="phase">
-        <span class="eyebrow">Entrega 2</span>
-        <h3>Crescer</h3>
-        <ul>
-          <li>Assistente Abrir negócio</li>
-          <li>Página do negócio com 4 abas</li>
-          <li>Menu de 5 itens; frota dentro de Negócios</li>
-        </ul>
-      </div>
-      <div class="phase">
-        <span class="eyebrow">Entrega 3</span>
-        <h3>Clareza e retorno</h3>
-        <ul>
-          <li>Revisão de todos os rótulos</li>
-          <li>Avisos de venda, entrega e colheita</li>
-          <li>Depois disso: identidade visual, animações e imagens</li>
-        </ul>
+    <span class="tag">Tela 2</span>
+    <h2>Loja como prateleira</h2>
+    <div class="stage">
+      <div class="screen">
+        <div class="app" style="grid-template-columns: minmax(0, 1fr)">
+          <div class="content">
+            <div class="banner">
+              <svg viewBox="0 0 1060 150" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                <defs>
+                  <linearGradient id="dusk" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0" stop-color="#3b2a45" />
+                    <stop offset="1" stop-color="#5a3436" />
+                  </linearGradient>
+                </defs>
+                <rect width="1060" height="150" fill="url(#dusk)" />
+                <circle cx="900" cy="40" r="22" fill="#f2b44c66" />
+                <path d="M0 120h1060v30H0z" fill="#2a1f28" />
+                <rect x="560" y="40" width="300" height="84" rx="6" fill="#f07f70" />
+                <path d="M548 40h324l-14-24H562z" fill="#e6b866" />
+                <rect x="690" y="74" width="40" height="50" fill="#2a1f28" />
+                <rect x="580" y="62" width="80" height="34" fill="#ffd9a6" opacity=".85" />
+                <rect x="760" y="62" width="80" height="34" fill="#ffd9a6" opacity=".85" />
+                <rect x="380" y="70" width="150" height="54" rx="4" fill="#4a3441" />
+                <rect x="900" y="78" width="120" height="46" rx="4" fill="#4a3441" />
+              </svg>
+              <div class="over">
+                <span class="badge good" style="position: static; width: max-content"
+                  ><i></i>Vendendo · 8 de 8</span
+                >
+                <h3>Loja Campinas</h3>
+              </div>
+            </div>
+            <div class="kpis">
+              <div class="kpi">
+                <span class="bubble b-gold"
+                  ><svg class="ico"><use href="#i-coin" /></svg
+                ></span>
+                <div><span class="num">R$ 2.410</span><small>vendas hoje</small></div>
+              </div>
+              <div class="kpi">
+                <span class="bubble b-farm"
+                  ><svg class="ico"><use href="#i-up" /></svg
+                ></span>
+                <div><span class="num">14%</span><small>margem</small></div>
+              </div>
+              <div class="kpi">
+                <span class="bubble b-log"
+                  ><svg class="ico"><use href="#i-box" /></svg
+                ></span>
+                <div><span class="num">3 dias</span><small>de estoque</small></div>
+              </div>
+            </div>
+            <div class="tabs">
+              <span class="on"
+                ><svg class="ico"><use href="#i-store" /></svg>Prateleira</span
+              >
+              <span
+                ><svg class="ico"><use href="#i-box" /></svg>Estoque e compras</span
+              >
+              <span
+                ><svg class="ico"><use href="#i-tag" /></svg>Preços</span
+              >
+              <span
+                ><svg class="ico"><use href="#i-users" /></svg>Equipe</span
+              >
+            </div>
+            <div class="shelf">
+              <div class="prod">
+                <span class="art b-gold"
+                  ><svg class="ico"><use href="#i-wheat" /></svg></span
+                ><b>Arroz 5 kg</b><span class="price">R$ 24,50</span
+                ><span class="ring" style="--p: 62"><span>5d</span></span
+                ><span class="btn" style="padding: 6px 12px">Repor</span>
+              </div>
+              <div class="prod out">
+                <span class="flag">ACABOU</span
+                ><span class="art" style="background: #e9f1f31f; color: #e9f1f3"
+                  ><svg class="ico"><use href="#i-milk" /></svg></span
+                ><b>Leite 1 L</b><span class="price">R$ 6,10</span
+                ><span class="ring" style="--p: 2; --c: var(--bad)"><span>0d</span></span
+                ><span class="btn gold" style="padding: 6px 12px">Repor</span>
+              </div>
+              <div class="prod">
+                <span class="art" style="background: #f2b44c26; color: var(--warn)"
+                  ><svg class="ico"><use href="#i-drop" /></svg></span
+                ><b>Óleo 1 L</b><span class="price">R$ 8,90</span
+                ><span class="ring" style="--p: 78"><span>6d</span></span
+                ><span class="btn" style="padding: 6px 12px">Repor</span>
+              </div>
+              <div class="prod">
+                <span class="art b-mine"
+                  ><svg class="ico"><use href="#i-bean" /></svg></span
+                ><b>Feijão 1 kg</b><span class="price">R$ 9,25</span
+                ><span class="ring" style="--p: 30; --c: var(--warn)"><span>2d</span></span
+                ><span class="btn" style="padding: 6px 12px">Repor</span>
+              </div>
+              <div class="prod">
+                <span class="art" style="background: #e9f1f31a; color: #f4ece0"
+                  ><svg class="ico"><use href="#i-cube" /></svg></span
+                ><b>Açúcar 5 kg</b><span class="price">R$ 18,50</span
+                ><span class="ring" style="--p: 55"><span>4d</span></span
+                ><span class="btn" style="padding: 6px 12px">Repor</span>
+              </div>
+              <div class="prod">
+                <span class="art b-ind"
+                  ><svg class="ico"><use href="#i-fork" /></svg></span
+                ><b>Utensílios</b><span class="price">R$ 65,00</span
+                ><span class="ring" style="--p: 90"><span>9d</span></span
+                ><span class="btn" style="padding: 6px 12px">Repor</span>
+              </div>
+            </div>
+            <div class="auto">
+              <span class="bubble b-farm"
+                ><svg class="ico"><use href="#i-repeat" /></svg
+              ></span>
+              <div style="flex: 1">
+                <b>Repor sozinho</b>
+                <div class="muted" style="font-size: 13px">quando um produto baixar de 2 dias</div>
+              </div>
+              <span class="switch" role="img" aria-label="Ligado"></span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-    <p class="prose dim">
-      Regra que não muda: a interface só dispara os mesmos comandos que bots e jogadores já usam. O
-      assistente e o painel de reposição executam esses comandos em sequência, sem atalhos que mexam
-      em saldo ou estoque.
-    </p>
+    <ul class="notes">
+      <li><b>1</b>Cena da loja no topo</li>
+      <li><b>2</b>Três números com ícone</li>
+      <li><b>3</b>Produtos como cartões, não linhas</li>
+      <li><b>4</b>Anel mostra dias de estoque pela cor</li>
+    </ul>
   </section>
 
   <section>
-    <span class="eyebrow">Decisões</span>
-    <h2>Para aprovar</h2>
-    <div class="decide">
-      <p>Menu de 5 itens com a nova tela Início, absorvendo Oportunidades e Logística.</p>
-      <p>Negócio com 4 abas e o resto em "Avançado".</p>
-      <p>Painel de reposição e assistente Abrir negócio como nos esboços 2 e 3.</p>
-      <p>Começar pela Entrega 1.</p>
+    <span class="tag">Tela 3</span>
+    <h2>Repor em dois cliques</h2>
+    <div class="stage">
+      <div class="screen">
+        <div class="split">
+          <div class="ghost"></div>
+          <div class="drawer">
+            <div class="hero">
+              <span class="art" style="background: #e9f1f31f"
+                ><svg class="ico"><use href="#i-milk" /></svg
+              ></span>
+              <div>
+                <h3 style="font-size: 22px">Repor leite</h3>
+                <span class="muted">Loja Campinas</span>
+              </div>
+            </div>
+            <div class="chips">
+              <span>3 dias</span><span class="on">7 dias · 1.540</span><span>14 dias</span>
+            </div>
+            <div class="offer best">
+              <span class="who b-farm">AV</span>
+              <div>
+                <b>AgroVale</b>
+                <div class="muted" style="font-size: 12px">
+                  <svg class="ico" style="color: var(--gold)"><use href="#i-star" /></svg> melhor ·
+                  chega em 3 h
+                </div>
+                <div class="stack"><i style="width: 94%"></i><i style="width: 6%"></i></div>
+              </div>
+              <span class="p">R$ 5,63<small>na sua porta</small></span>
+            </div>
+            <div class="offer">
+              <span class="who b-ind">LS</span>
+              <div>
+                <b>Laticínios Serra</b>
+                <div class="muted" style="font-size: 12px">chega em 5 h</div>
+                <div class="stack"><i style="width: 90%"></i><i style="width: 10%"></i></div>
+              </div>
+              <span class="p">R$ 5,81<small>na sua porta</small></span>
+            </div>
+            <div class="offer">
+              <span class="who b-retail">DA</span>
+              <div>
+                <b>Distribuidora Aurora</b>
+                <div class="muted" style="font-size: 12px">chega em 2 h</div>
+                <div class="stack"><i style="width: 92%"></i><i style="width: 8%"></i></div>
+              </div>
+              <span class="p">R$ 6,02<small>na sua porta</small></span>
+            </div>
+            <div class="legend">
+              <span><i style="background: var(--farm)"></i>produto</span
+              ><span><i style="background: var(--logistics)"></i>frete</span
+              ><span
+                ><svg class="ico" style="color: var(--logistics)"><use href="#i-truck" /></svg>
+                TransBrasil · trocar</span
+              >
+            </div>
+            <div class="gauge">
+              <svg viewBox="0 0 64 40" aria-hidden="true">
+                <path
+                  d="M6 34 A26 26 0 0 1 58 34"
+                  stroke="#213844"
+                  stroke-width="8"
+                  fill="none"
+                  stroke-linecap="round"
+                />
+                <path
+                  d="M6 34 A26 26 0 0 1 24 10"
+                  stroke="#5cc48a"
+                  stroke-width="8"
+                  fill="none"
+                  stroke-linecap="round"
+                />
+              </svg>
+              <div>
+                <b>Margem 8%</b>
+                <div class="muted" style="font-size: 13px">vendendo a R$ 6,10</div>
+              </div>
+            </div>
+            <div class="cta">
+              <span class="btn gold"
+                ><svg class="ico"><use href="#i-cart" /></svg>Comprar por R$ 8.670</span
+              ><span class="muted" style="text-align: center; font-size: 13px"
+                >caixa depois R$ 803.760</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+    <ul class="notes">
+      <li><b>1</b>Abre por cima da tela atual</li>
+      <li><b>2</b>Quantidade em botões de dias</li>
+      <li><b>3</b>Barra mostra quanto é frete</li>
+      <li><b>4</b>Margem num medidor</li>
+    </ul>
+  </section>
+
+  <section>
+    <span class="tag">Tela 4</span>
+    <h2>Abrir negócio</h2>
+    <div class="stage">
+      <div class="screen">
+        <div class="wizard">
+          <div class="steps">
+            <span class="on">1 · Atividade</span><span class="line"></span><span>2 · Terreno</span
+            ><span class="line"></span><span>3 · Confirmar</span>
+          </div>
+          <div class="acts">
+            <div class="act pick">
+              <div class="art">
+                <svg viewBox="0 0 220 76" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                  <rect width="220" height="76" fill="#22382c" />
+                  <path d="M0 50 Q60 36 120 46 T220 40 V76 H0z" fill="#3e7a4c" />
+                  <rect x="140" y="22" width="44" height="30" fill="#e9f1f3" />
+                  <path d="M136 22l26-14 26 14z" fill="#c9553f" />
+                  <g fill="#e9f1f3">
+                    <ellipse cx="50" cy="58" rx="14" ry="8" />
+                    <ellipse cx="86" cy="60" rx="14" ry="8" />
+                  </g>
+                  <g fill="#2a1f28">
+                    <circle cx="46" cy="56" r="3" />
+                    <circle cx="90" cy="58" r="3" />
+                  </g>
+                </svg>
+              </div>
+              <h4>Ordenha</h4>
+              <div class="row"><span>lucro/dia</span><span class="num">R$ 15.170</span></div>
+              <div class="payback"><i style="width: 84%"></i></div>
+              <div class="row">
+                <span>se paga em</span><b style="color: var(--text)">37 dias</b>
+              </div>
+            </div>
+            <div class="act">
+              <div class="art">
+                <svg viewBox="0 0 220 76" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                  <rect width="220" height="76" fill="#2c3340" />
+                  <rect x="40" y="26" width="120" height="44" fill="#93a9cf" />
+                  <path d="M40 26l30-16v16l30-16v16l30-16v16" fill="#6f84a8" />
+                  <rect x="170" y="8" width="14" height="62" fill="#6f84a8" />
+                  <circle cx="177" cy="4" r="6" fill="#8ea6b066" />
+                  <g fill="#f2b44c">
+                    <rect x="56" y="44" width="16" height="10" />
+                    <rect x="88" y="44" width="16" height="10" />
+                    <rect x="120" y="44" width="16" height="10" />
+                  </g>
+                </svg>
+              </div>
+              <h4>Aço em alto-forno</h4>
+              <div class="row"><span>lucro/dia</span><span class="num">R$ 11.558</span></div>
+              <div class="payback"><i style="width: 80%"></i></div>
+              <div class="row">
+                <span>se paga em</span><b style="color: var(--text)">38 dias</b>
+              </div>
+            </div>
+            <div class="act">
+              <div class="art">
+                <svg viewBox="0 0 220 76" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                  <rect width="220" height="76" fill="#33402a" />
+                  <circle cx="190" cy="16" r="10" fill="#f2b44c88" />
+                  <path d="M0 46 Q70 34 140 44 T220 40 V76 H0z" fill="#6b8f3a" />
+                  <g stroke="#e6b866" stroke-width="3" stroke-linecap="round">
+                    <path
+                      d="M30 76 L30 50M50 76 L50 46M70 76 L70 50M90 76 L90 46M110 76 L110 50M130 76 L130 46M150 76 L150 50"
+                    />
+                  </g>
+                </svg>
+              </div>
+              <h4>Colheita de soja</h4>
+              <div class="row"><span>lucro/dia</span><span class="num">R$ 10.057</span></div>
+              <div class="payback"><i style="width: 78%"></i></div>
+              <div class="row">
+                <span>se paga em</span><b style="color: var(--text)">39 dias</b>
+              </div>
+            </div>
+            <div class="act">
+              <span class="lock">acima do caixa</span>
+              <div class="art">
+                <svg viewBox="0 0 220 76" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                  <rect width="220" height="76" fill="#24323c" />
+                  <rect x="20" y="20" width="110" height="50" fill="#93a9cf" />
+                  <path d="M20 20h110l-10-12H30z" fill="#6f84a8" />
+                  <g transform="translate(140 40)">
+                    <rect width="46" height="22" rx="3" fill="#5fb4e2" />
+                    <rect x="46" y="6" width="18" height="16" rx="3" fill="#3f8fbb" />
+                    <circle cx="12" cy="24" r="6" fill="#0b1418" />
+                    <circle cx="52" cy="24" r="6" fill="#0b1418" />
+                  </g>
+                </svg>
+              </div>
+              <h4>Montadora de caminhão</h4>
+              <div class="row"><span>lucro/dia</span><span class="num">R$ 26.898</span></div>
+              <div class="payback"><i style="width: 86%"></i></div>
+              <div class="row">
+                <span>se paga em</span><b style="color: var(--text)">35 dias</b>
+              </div>
+            </div>
+          </div>
+          <div class="receipt">
+            <div>
+              <span class="bubble b-farm"
+                ><svg class="ico"><use href="#i-map" /></svg></span
+              ><span class="num">R$ 120 mil</span><small>terreno 80 ha</small>
+            </div>
+            <div>
+              <span class="bubble b-ind"
+                ><svg class="ico"><use href="#i-factory" /></svg></span
+              ><span class="num">R$ 98 mil</span><small>equipamento</small>
+            </div>
+            <div>
+              <span class="bubble b-retail"
+                ><svg class="ico"><use href="#i-paw" /></svg></span
+              ><span class="num">R$ 375 mil</span><small>150 vacas</small>
+            </div>
+            <div>
+              <span class="bubble b-log"
+                ><svg class="ico"><use href="#i-users" /></svg></span
+              ><span class="num">7 pessoas</span><small>contratadas já</small>
+            </div>
+            <div style="background: var(--gold); color: var(--gold-ink)">
+              <span class="bubble" style="background: #2b1d0622"
+                ><svg class="ico"><use href="#i-check" /></svg></span
+              ><span class="num">Abrir</span
+              ><small style="color: var(--gold-ink)">R$ 593 mil · 1 clique</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <ul class="notes">
+      <li><b>1</b>Atividades como cartões ilustrados</li>
+      <li><b>2</b>Barra de retorno em vez de tabela</li>
+      <li><b>3</b>Recibo em ícones com tudo incluído</li>
+    </ul>
+  </section>
+
+  <section>
+    <span class="tag">O mundo responde</span>
+    <h2>Animações e microinterações</h2>
+    <div class="motion">
+      <div class="demo">
+        <div class="area">
+          <span class="coin">+R$ 245</span
+          ><svg class="ico" style="font-size: 44px; color: var(--retail)">
+            <use href="#i-store" />
+          </svg>
+        </div>
+        <h4>Venda</h4>
+        <p>O valor sobe da loja e soma no caixa.</p>
+      </div>
+      <div class="demo">
+        <div class="area">
+          <svg
+            viewBox="0 0 320 120"
+            style="position: absolute; inset: 0; width: 100%; height: 100%"
+            aria-hidden="true"
+          >
+            <path
+              class="dash"
+              d="M 20 90 C 90 20, 180 110, 300 40"
+              stroke="#5fb4e2"
+              stroke-width="3"
+              fill="none"
+            /></svg
+          ><svg class="ico truck-move"><use href="#i-truck" /></svg>
+        </div>
+        <h4>Entrega</h4>
+        <p>O caminhão anda na rota até o destino.</p>
+      </div>
+      <div class="demo">
+        <div class="area">
+          <span class="ring fillring" style="width: 84px; height: 84px"
+            ><span style="font-size: 15px">estoque</span></span
+          >
+        </div>
+        <h4>Reposição</h4>
+        <p>O anel enche e passa do vermelho ao verde.</p>
+      </div>
+      <div class="demo">
+        <div class="area">
+          <div class="toast">
+            <span
+              class="bubble b-farm"
+              style="width: 32px; height: 32px; font-size: 17px; border-radius: 10px"
+              ><svg class="ico"><use href="#i-wheat" /></svg></span
+            ><span><b>Colheita pronta</b> · 1.200 arroz</span>
+          </div>
+        </div>
+        <h4>Aviso</h4>
+        <p>Um aviso curto entra e sai sozinho.</p>
+      </div>
+      <div class="demo">
+        <div class="area">
+          <span class="btn gold press" style="font-size: 16px; padding: 12px 18px"
+            ><svg class="ico"><use href="#i-cart" /></svg>Comprar</span
+          >
+        </div>
+        <h4>Botão</h4>
+        <p>Afunda ao clicar e confirma com um pulo.</p>
+      </div>
+      <div class="demo">
+        <div class="area"><span class="pulse"></span></div>
+        <h4>Alerta no mapa</h4>
+        <p>O negócio parado pulsa até ser resolvido.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <span class="tag">Regras</span>
+    <h2>Para todas as telas</h2>
+    <div class="rules">
+      <div class="rule">
+        <span class="bubble b-gold"
+          ><svg class="ico"><use href="#i-star" /></svg
+        ></span>
+        <div>
+          <b>Ícone e cor antes da palavra</b
+          ><span>Produto, negócio e estado se reconhecem de longe.</span>
+        </div>
+      </div>
+      <div class="rule">
+        <span class="bubble b-retail"
+          ><svg class="ico"><use href="#i-alert" /></svg
+        ></span>
+        <div>
+          <b>Problema traz a solução</b><span>Sem botão de correção, não vira alerta.</span>
+        </div>
+      </div>
+      <div class="rule">
+        <span class="bubble b-farm"
+          ><svg class="ico"><use href="#i-check" /></svg
+        ></span>
+        <div><b>Escolha boa já feita</b><span>Quantidade, fornecedor e frete sugeridos.</span></div>
+      </div>
+      <div class="rule">
+        <span class="bubble b-log"
+          ><svg class="ico"><use href="#i-box" /></svg
+        ></span>
+        <div>
+          <b>Cartões no lugar de tabelas</b
+          ><span>Tabela só onde comparar linhas é o objetivo.</span>
+        </div>
+      </div>
+      <div class="rule">
+        <span class="bubble b-ind"
+          ><svg class="ico"><use href="#i-tag" /></svg
+        ></span>
+        <div><b>Até cinco palavras</b><span>Rótulos curtos; detalhe ao passar o mouse.</span></div>
+      </div>
+      <div class="rule">
+        <span class="bubble b-mine"
+          ><svg class="ico"><use href="#i-up" /></svg
+        ></span>
+        <div>
+          <b>Tudo que muda se mexe</b><span>Venda, entrega e colheita aparecem na hora.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <span class="tag">Para aprovar</span>
+    <h2>Decisões</h2>
+    <div class="decide">
+      <div>
+        <span class="bubble b-gold"
+          ><svg class="ico"><use href="#i-home" /></svg></span
+        >Menu de 5 com a tela Início
+      </div>
+      <div>
+        <span class="bubble b-retail"
+          ><svg class="ico"><use href="#i-store" /></svg></span
+        >Loja como prateleira, 4 abas
+      </div>
+      <div>
+        <span class="bubble b-log"
+          ><svg class="ico"><use href="#i-cart" /></svg></span
+        >Repor em 2 cliques
+      </div>
+      <div>
+        <span class="bubble b-farm"
+          ><svg class="ico"><use href="#i-plus" /></svg></span
+        >Abrir negócio com recibo
+      </div>
+    </div>
+    <p class="muted" style="max-width: 62ch">
+      Cenas e ícones aqui são provisórios, desenhados à mão. Na fase de arte, eles viram imagens
+      geradas por você no GPT a partir dos meus prompts, no mesmo lugar e no mesmo estilo.
+    </p>
   </section>
 </main>

@@ -8,12 +8,18 @@ import type { Command, World } from '../../../packages/simulation/src/model';
 import { migrateWorld, needsMigration } from '../../../packages/simulation/src/migrate';
 import { archiveHistory } from '../../../packages/simulation/src/history';
 import { GAME_DAY } from '../../../packages/simulation/src/operations';
+import type { RoadAccessUpdate } from './road-access';
 
 const SAVE_INTERVAL_MS = 5000;
 
 export function createStore(
   path: string,
-  options: { requireRoadRoutes?: boolean; scenario?: ScenarioName; scale?: number } = {},
+  options: {
+    requireRoadRoutes?: boolean;
+    roadAccess?: boolean;
+    scenario?: ScenarioName;
+    scale?: number;
+  } = {},
 ) {
   if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true });
   const db = new DatabaseSync(path);
@@ -99,6 +105,20 @@ export function createStore(
   const flush = () => {
     if (dirty) transaction(writeWorld);
   };
+  // Migração geográfica explícita e idempotente. O backup antecede inclusive a ativação
+  // do bloqueio de fretes; a rede externa só preencherá os acessos depois de validá-los.
+  // O acesso vale em todo mundo jogável; o bloqueio de fretes, só onde o servidor exige rotas.
+  if ((options.roadAccess ?? options.requireRoadRoutes) && world.roadAccessVersion !== 1) {
+    if (path !== ':memory:') {
+      const backup = resolve(dirname(path), 'backups', `pre-road-access-${Date.now()}.sqlite`);
+      mkdirSync(dirname(backup), { recursive: true });
+      db.exec(`VACUUM INTO '${backup.replaceAll("'", "''")}'`);
+    }
+    world.roadAccessVersion = 1;
+    if (options.requireRoadRoutes) world.requireRoadRoutes = true;
+    world.revision++;
+    transaction(writeWorld);
+  }
   if (
     options.requireRoadRoutes !== undefined &&
     world.requireRoadRoutes !== options.requireRoadRoutes
@@ -109,6 +129,45 @@ export function createStore(
   }
   return {
     read: () => world,
+    roadAccess(updates: RoadAccessUpdate[]) {
+      const applicable = updates.filter((u) => {
+        const p = world.properties.find((p) => p.id === u.id);
+        return p && p.coordinates.every((n, i) => n === u.expectedCoordinates[i]);
+      });
+      if (!applicable.length) return;
+      const before = structuredClone(world);
+      try {
+        const moved = new Set(
+          applicable
+            .filter((u) => u.coordinates.some((n, i) => n !== u.expectedCoordinates[i]))
+            .map((u) => u.id),
+        );
+        for (const [key, route] of Object.entries(world.routes)) {
+          if (!key.split(':').some((id) => moved.has(id))) continue;
+          // Remessas antigas podem apontar para o cache visual: congelar antes de invalidar.
+          for (const s of world.shipments)
+            if (s.mapRouteKey === key) {
+              s.mapRoute = structuredClone(route.coordinates);
+              delete s.mapRouteKey;
+            }
+          delete world.routes[key];
+        }
+        for (const update of applicable) {
+          const p = world.properties.find((p) => p.id === update.id)!;
+          p.roadAccess = structuredClone(update.access);
+          if (update.access.status === 'connected') {
+            p.coordinates = [...update.coordinates];
+            p.road = update.road;
+            p.roadDistance = 0;
+          }
+        }
+        world.revision++;
+        transaction(writeWorld);
+      } catch (error) {
+        world = before;
+        throw error;
+      }
+    },
     tick(now = Date.now()) {
       if (advance(world, now)) dirty = true;
       if (dirty && Date.now() - lastSave >= SAVE_INTERVAL_MS) transaction(writeWorld);

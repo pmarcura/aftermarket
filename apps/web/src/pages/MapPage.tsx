@@ -22,7 +22,8 @@ import { useGame, CategoryIcon, cr, num } from '../lib/game';
 import { equipmentCostFor, freeCash } from '../../../../packages/simulation/src/design';
 import { WorldMap, defaultLayers, type Layers } from '../components/WorldMap';
 import { Badge, Panel, PageHeading, Rows, Modal } from '../components/ui';
-import { categoryInfo, products } from '../../../../packages/simulation/src/model';
+import { categoryInfo, products, type Property } from '../../../../packages/simulation/src/model';
+import { hasRoadAccess } from '../../../../packages/simulation/src/road-access';
 import { inventoryQuality, openingWorkers } from '../../../../packages/simulation/src/operations';
 import {
   laborMarket,
@@ -30,6 +31,26 @@ import {
   utilityTariff,
 } from '../../../../packages/simulation/src/metrics';
 import { InfrastructureDetails } from '../components/InfrastructureDetails';
+
+function accessLabel(property: Property, strict?: boolean) {
+  if (hasRoadAccess(property)) return 'Conectado às estradas';
+  if (!strict) return 'Acesso simulado';
+  return property.roadAccess?.status === 'unreachable'
+    ? 'Acesso indisponível'
+    : 'Verificando acesso às estradas';
+}
+
+function AccessNotice({ property, strict }: { property: Property; strict?: boolean }) {
+  if (!strict || hasRoadAccess(property)) return null;
+  return (
+    <p className="warning-text small" role="status">
+      {property.roadAccess?.status === 'unreachable'
+        ? (property.roadAccess.reason ??
+          'Não foi encontrado acesso conectado à malha rodoviária. Escolha outro imóvel.')
+        : 'A localização está sendo verificada. A compra e os novos transportes ficam disponíveis após confirmar o acesso.'}
+    </p>
+  );
+}
 
 export function MapPage() {
   const { world, actor, selectedId, select, navigate, openBusiness, openMarket, focusMap } =
@@ -273,10 +294,14 @@ export function MapPage() {
                 {
                   label: (
                     <>
-                      <Route size={15} /> Rodovia mais próxima
+                      <Route size={15} /> Via de acesso
                     </>
                   ),
-                  value: `${p.road} (${p.roadDistance} km)`,
+                  value: hasRoadAccess(p)
+                    ? p.road
+                    : world.requireRoadRoutes
+                      ? 'Aguardando validação'
+                      : `${p.road} (${p.roadDistance} km estimados)`,
                 },
                 {
                   label: (
@@ -292,10 +317,11 @@ export function MapPage() {
                       <Truck size={15} /> Acesso rodoviário
                     </>
                   ),
-                  value: 'Acesso cadastrado no jogo',
+                  value: accessLabel(p, world.requireRoadRoutes),
                 },
               ]}
             />
+            <AccessNotice property={p} strict={world.requireRoadRoutes} />
           </section>
           <section className="sidebar-section">
             <h3>Recursos na região</h3>
@@ -348,7 +374,11 @@ export function MapPage() {
           </section>
           <div className="property-actions">
             {!p.ownerId ? (
-              <button className="primary full" onClick={() => navigate('purchase')}>
+              <button
+                className="primary full"
+                disabled={world.requireRoadRoutes && !hasRoadAccess(p)}
+                onClick={() => navigate('purchase')}
+              >
                 <ShoppingCart size={17} /> Comprar propriedade
               </button>
             ) : p.ownerId === actor && e ? (
@@ -384,7 +414,8 @@ export function PurchasePage() {
         <button onClick={() => navigate('map')}>Selecionar uma propriedade no mapa</button>
       </div>
     );
-  const balance = freeCash(world, actor);
+  const balance = freeCash(world, actor),
+    accessBlocked = Boolean(world.requireRoadRoutes && !hasRoadAccess(p));
   const labor = laborMarket(world, p),
     tariff = utilityTariff(world, p);
   return (
@@ -413,8 +444,8 @@ export function PurchasePage() {
           title={`Propriedade ${categoryInfo[p.category].label.toLowerCase()}`}
           subtitle={`${p.city} — ${p.state} · ID BR-${p.state}-${p.id}`}
           action={
-            <Badge tone={p.ownerId ? 'muted' : 'green'}>
-              {p.ownerId ? 'Adquirida' : 'Disponível'}
+            <Badge tone={p.ownerId ? 'muted' : accessBlocked ? 'gold' : 'green'}>
+              {p.ownerId ? 'Adquirida' : accessBlocked ? 'Acesso não confirmado' : 'Disponível'}
             </Badge>
           }
         >
@@ -443,8 +474,15 @@ export function PurchasePage() {
             <h3>Acesso e infraestrutura</h3>
             <Rows
               rows={[
-                { label: 'Rodovia mais próxima', value: `${p.road} · ${p.roadDistance} km` },
-                { label: 'Acesso rodoviário', value: 'Disponível' },
+                {
+                  label: 'Via de acesso',
+                  value: hasRoadAccess(p)
+                    ? p.road
+                    : world.requireRoadRoutes
+                      ? 'Aguardando validação'
+                      : `${p.road} · ${p.roadDistance} km estimados`,
+                },
+                { label: 'Acesso rodoviário', value: accessLabel(p, world.requireRoadRoutes) },
                 {
                   label: 'Energia',
                   value:
@@ -473,6 +511,7 @@ export function PurchasePage() {
                 },
               ]}
             />
+            <AccessNotice property={p} strict={world.requireRoadRoutes} />
             <h3>Condições de aquisição</h3>
             <p className="check-line">
               <Check size={16} /> Atividade compatível com o zoneamento do jogo
@@ -494,7 +533,7 @@ export function PurchasePage() {
               </button>
               <button
                 className="primary"
-                disabled={Boolean(p.ownerId) || balance < p.price}
+                disabled={Boolean(p.ownerId) || balance < p.price || accessBlocked}
                 onClick={() => {
                   setName(`${categoryInfo[p.category].label} ${p.city}`);
                   setConfirm(true);
@@ -546,7 +585,7 @@ export function PurchasePage() {
           />
           <button
             className="primary full"
-            disabled={pending || name.trim().length < 3}
+            disabled={pending || name.trim().length < 3 || accessBlocked || Boolean(p.ownerId)}
             onClick={async () => {
               if (
                 await run(

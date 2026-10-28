@@ -45,6 +45,14 @@ export interface Property {
   ownerId: string | null;
   road: string;
   roadDistance: number;
+  // A posição do imóvel passa a representar sua entrada na via, após validação de ida e volta.
+  roadAccess?: {
+    status: 'connected' | 'unreachable';
+    originalCoordinates: Position;
+    checkedAt: number;
+    network: string;
+    reason?: string;
+  };
   water: boolean;
   energyConnected?: boolean;
 }
@@ -222,6 +230,7 @@ export interface World {
   competitionVersion?: number;
   designVersion?: number;
   requireRoadRoutes?: boolean;
+  roadAccessVersion?: 1;
   obligations?: Obligation[];
   loans?: RecoveryLoan[];
   publicBenchmarks?: Partial<Record<ProductId, PublicBenchmark>>;

@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { resolve } from 'node:path';
 import { createStore } from './store';
 import { createRoutingService } from './routing';
+import { createRoadAccessService, createRoadFetcher } from './road-access';
 import type { ScenarioName } from '../../../packages/simulation/src/scenarios';
 import { RuleError } from '../../../packages/simulation/src/engine';
 import { commandSchema, product } from './commands';
@@ -18,15 +19,23 @@ const scenario = z
   .enum(['baseline', 'starter', 'low-demand', 'economy-2'])
   .parse(process.env.AFTERMARKET_SCENARIO ?? 'baseline') as ScenarioName;
 const store = createStore(resolve(process.env.AFTERMARKET_DB_FILE ?? '.runtime/world.sqlite'), {
-  // Mundo versão 2: frete pela distância estimada de estrada, como na prova da economia; as
-  // rotas reais só desenham o caminho. Com dezenas de cidades, esperar o serviço público de
-  // rotas (1 pedido por segundo) travaria as compras.
+  // Todo mundo jogável valida o acesso dos imóveis e desenha rotas reais. O frete exige rota
+  // confirmada no mundo principal; no mundo versão 2, com ~500 bots, segue a distância estimada
+  // (D-034, D-036): esperar o serviço público de rotas (1 pedido a cada 1,2 s) travaria a economia.
   requireRoadRoutes: scenario !== 'economy-2',
+  roadAccess: true,
   // Escala do mundo versão 2: 20 dá cerca de 500 empresas-bot.
   scale: Number(process.env.AFTERMARKET_WORLD_SCALE ?? 1),
   scenario,
 });
-const routing = createRoutingService(store);
+const roadFetcher = createRoadFetcher();
+const roadAccess = createRoadAccessService(store, { fetcher: roadFetcher });
+const routing = createRoutingService(store, {
+  fetcher: roadFetcher,
+  intervalMs: 0,
+  ensureAccess: (ids) => roadAccess.ensure(ids),
+});
+roadAccess.prepare();
 const allowedOrigins = new Set([
   `http://127.0.0.1:${port}`,
   `http://localhost:${port}`,
@@ -66,7 +75,9 @@ app.get('/api/world', (req, res) => {
     return res.status(204).end();
   sendJson(req, res, worldView(w, actor));
 });
-app.get('/api/routing-status', (_req, res) => res.json(routing.status()));
+app.get('/api/routing-status', (_req, res) =>
+  res.json({ ...routing.status(), access: roadAccess.status() }),
+);
 app.get('/api/market-history', (req, res) => {
   const parsed = product.safeParse(req.query.product);
   if (!parsed.success)
@@ -119,7 +130,10 @@ app.get('/api/route', async (req, res, next) => {
     if (!route)
       return res.status(503).json({
         error:
-          'Não foi possível calcular a rota pelas estradas. A contratação aguarda; tente novamente em um minuto.',
+          [origin.id, dest.id]
+            .map((id) => store.read().properties.find((p) => p.id === id))
+            .find((p) => p?.roadAccess?.status === 'unreachable')?.roadAccess?.reason ??
+          'Não foi possível confirmar o acesso e a rota pelas estradas. Nenhum transporte foi contratado; tente novamente em um minuto.',
       });
     res.json(route);
   } catch (error) {
@@ -146,6 +160,7 @@ app.use(
 const tick = setInterval(() => {
   try {
     const w = store.tick();
+    roadAccess.prepare();
     routing.prepare(w);
   } catch (e) {
     console.error('Falha ao processar eventos', e);
@@ -157,6 +172,7 @@ const server = app.listen(port, '127.0.0.1', () =>
 function stop() {
   clearInterval(tick);
   routing.stop();
+  roadAccess.stop();
   server.close(() => {
     store.close();
     process.exit(0);

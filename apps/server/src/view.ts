@@ -5,6 +5,7 @@ import { simplifyPath } from '../../../packages/simulation/src/geometry';
 import {
   seasonProducts,
   type Entry,
+  type Position,
   type World,
   type WorldViewSummary,
 } from '../../../packages/simulation/src/model';
@@ -15,8 +16,22 @@ import {
 export const VIEW_LEDGER_DAYS = 7;
 const RECENT_DAYS = 2;
 const MAX_LEDGER = 4000;
-const ROUTE_POINTS = 150;
+// Desvio máximo do desenho: 10 m ficam abaixo de 2 pixels no zoom de rua e cortam 58% do
+// pacote em relação a 2 m (medido no mundo principal, D-036). As pontas são sempre preservadas.
+const ROUTE_TOLERANCE_M = 10;
 const OTHERS_LIMIT = 150;
+
+// Cache de rotas e trajetos contratados substitui arrays, nunca edita seus pontos. Reutiliza o
+// desenho entre jogadores/revisões e deixa o GC liberar trajetos que saíram do mundo.
+const mapPaths = new WeakMap<Position[], Position[]>();
+function mapPath(path: Position[]) {
+  let simplified = mapPaths.get(path);
+  if (!simplified) {
+    simplified = simplifyPath(path, ROUTE_TOLERANCE_M);
+    mapPaths.set(path, simplified);
+  }
+  return simplified;
+}
 
 // Indicadores que não dependem do jogador: calculados uma vez por revisão do mundo.
 const shared = new WeakMap<
@@ -78,21 +93,18 @@ export function worldView(w: World, actor: string): World {
     shipments.flatMap((s) => [s.routeKey, s.mapRouteKey].filter(Boolean) as string[]),
   );
   // Estradas: resumo de todas (distância e duração entram no cálculo do frete), desenho só das
-  // que tocam um imóvel do jogador, simplificado.
+  // que tocam um imóvel do jogador, com desvio máximo de ROUTE_TOLERANCE_M, mesmo em trajetos longos.
   const routes = Object.fromEntries(
     Object.entries(w.routes).map(([key, route]) => {
       const [origin, destination] = key.split(':');
       const draw = properties.has(origin) || properties.has(destination) || usedPaths.has(key);
-      return [
-        key,
-        { ...route, coordinates: draw ? simplifyPath(route.coordinates, ROUTE_POINTS) : [] },
-      ];
+      return [key, { ...route, coordinates: draw ? mapPath(route.coordinates) : [] }];
     }),
   );
   const roadPaths = Object.fromEntries(
     Object.entries(w.roadPaths ?? {})
       .filter(([key]) => usedPaths.has(key))
-      .map(([key, path]) => [key, simplifyPath(path, ROUTE_POINTS)]),
+      .map(([key, path]) => [key, mapPath(path)]),
   );
   const common = sharedSummary(w);
   return {

@@ -8,7 +8,7 @@ import { Badge, Empty, Modal, PageHeading, Panel, Rows, Tabs } from '../../compo
 import { WorldMap } from '../../components/WorldMap';
 import { products, TIME_SCALE } from '../../../../../packages/simulation/src/model';
 import { quote } from '../../../../../packages/simulation/src/engine';
-import { useRoute } from '../../lib/routing';
+import { useRouteStatus } from '../../lib/routing';
 import '../../economy.css';
 
 export function LogisticsPage() {
@@ -27,7 +27,8 @@ export function LogisticsPage() {
   const goodsCost = offer && quantity && origin?.companyId !== actor ? offer.price * quantity : 0;
   const op = world.properties.find((p) => p.id === origin?.propertyId),
     dp = world.properties.find((p) => p.id === dest?.propertyId),
-    loading = useRoute(op?.id, dp?.id);
+    routeStatus = useRouteStatus(op?.id, dp?.id),
+    loading = routeStatus.loading;
   const quotes =
     offer && origin && dest && quantity
       ? world.companies
@@ -105,10 +106,20 @@ export function LogisticsPage() {
                       ? 'Calculando…'
                       : preview.source === 'osrm'
                         ? 'Rodoviária'
-                        : 'Estimativa geográfica'}
+                        : world.requireRoadRoutes
+                          ? 'Rota não confirmada'
+                          : 'Estimativa geográfica'}
                   </Badge>
                 }
               >
+                {routeStatus.error && (
+                  <div className="panel-content" role="alert">
+                    <p>{routeStatus.error}</p>
+                    <button className="secondary" onClick={routeStatus.retry} disabled={loading}>
+                      Tentar calcular rota novamente
+                    </button>
+                  </div>
+                )}
                 <div className="freight-map">
                   <WorldMap route={preview.routeRequired ? undefined : preview.coordinates} />
                 </div>
@@ -267,7 +278,7 @@ export function LogisticsPage() {
           />
           <button
             className="primary full"
-            disabled={pending}
+            disabled={pending || loading || !selected.compatible}
             onClick={async () => {
               if (
                 await run(

@@ -39,43 +39,61 @@ export function positionAlongRoute(
     (Math.atan2((b[0] - a[0]) * Math.cos((a[1] * Math.PI) / 180), b[1] - a[1]) * 180) / Math.PI;
   return { position, completed: [...route.slice(0, i), position], bearing };
 }
-// Simplificação de Douglas-Peucker com no máximo `maxPoints` pontos, preservando início e fim.
-// Uma rota rodoviária tem milhares de pontos; o mapa precisa de algumas centenas.
-export function simplifyPath(route: Position[], maxPoints = 150): Position[] {
-  if (route.length <= maxPoints) return route;
+// Douglas-Peucker por erro espacial, sem teto de pontos que corte ruas em trajetos longos.
+// Usa a maior escala longitudinal da rota: o desvio em metros é conservador em toda ela.
+export function simplifyPath(route: Position[], toleranceM = 2): Position[] {
+  if (route.length < 3 || !Number.isFinite(toleranceM) || toleranceM <= 0) return route;
+  const radians = Math.PI / 180,
+    metersPerDegree = 6371000 * radians;
+  let minLatitude = 90,
+    maxLatitude = -90;
+  for (const [, latitude] of route) {
+    minLatitude = Math.min(minLatitude, latitude);
+    maxLatitude = Math.max(maxLatitude, latitude);
+  }
+  const nearestEquator =
+      minLatitude <= 0 && maxLatitude >= 0
+        ? 0
+        : Math.min(Math.abs(minLatitude), Math.abs(maxLatitude)),
+    longitudeScale = metersPerDegree * Math.cos(nearestEquator * radians),
+    toleranceSquared = toleranceM ** 2;
   const keep = new Uint8Array(route.length);
   keep[0] = keep[route.length - 1] = 1;
-  const distance = (p: Position, a: Position, b: Position) => {
-    const dx = b[0] - a[0],
-      dy = b[1] - a[1];
-    const t = dx || dy ? ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / (dx * dx + dy * dy) : 0;
-    const c = Math.max(0, Math.min(1, t));
-    return Math.hypot(p[0] - (a[0] + c * dx), p[1] - (a[1] + c * dy));
-  };
-  // Mantém sempre o ponto mais distante do trecho com maior desvio até atingir o limite.
-  const spans: { from: number; to: number; index: number; gap: number }[] = [];
-  const measure = (from: number, to: number) => {
+  const spans: [number, number][] = [[0, route.length - 1]];
+  // Douglas-Peucker pode ser quadrático. Ao esgotar o orçamento, mantém o trecho completo,
+  // preservando a precisão; trabalho e memória permanecem proporcionais ao tamanho da rota.
+  let budget = route.length * 32;
+  while (spans.length) {
+    const [from, to] = spans.pop()!;
+    const count = to - from - 1;
+    if (count <= 0) continue;
+    if (count > budget) {
+      keep.fill(1, from + 1, to);
+      continue;
+    }
+    budget -= count;
+    const a = route[from],
+      b = route[to],
+      dx = (b[0] - a[0]) * longitudeScale,
+      dy = (b[1] - a[1]) * metersPerDegree,
+      squaredLength = dx * dx + dy * dy;
     let index = -1,
-      gap = 0;
+      gap = toleranceSquared;
     for (let i = from + 1; i < to; i++) {
-      const d = distance(route[i], route[from], route[to]);
-      if (d > gap) {
-        gap = d;
+      const x = (route[i][0] - a[0]) * longitudeScale,
+        y = (route[i][1] - a[1]) * metersPerDegree,
+        fraction = squaredLength ? Math.max(0, Math.min(1, (x * dx + y * dy) / squaredLength)) : 0,
+        squaredDistance = (x - fraction * dx) ** 2 + (y - fraction * dy) ** 2;
+      if (squaredDistance > gap) {
+        gap = squaredDistance;
         index = i;
       }
     }
-    if (index > 0) spans.push({ from, to, index, gap });
-  };
-  measure(0, route.length - 1);
-  let kept = 2;
-  while (kept < maxPoints && spans.length) {
-    let best = 0;
-    for (let i = 1; i < spans.length; i++) if (spans[i].gap > spans[best].gap) best = i;
-    const { from, to, index } = spans.splice(best, 1)[0];
-    keep[index] = 1;
-    kept++;
-    measure(from, index);
-    measure(index, to);
+    if (index >= 0) {
+      keep[index] = 1;
+      spans.push([from, index], [index, to]);
+    }
   }
-  return route.filter((_, i) => keep[i]);
+  const simplified = route.filter((_, i) => keep[i]);
+  return simplified.length === route.length ? route : simplified;
 }

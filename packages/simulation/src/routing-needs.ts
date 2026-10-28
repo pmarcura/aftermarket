@@ -1,6 +1,7 @@
 import type { World } from './model';
 import { distanceKm } from './geometry';
 import { inventoryQuality } from './operations';
+import { routeMatchesProperties } from './road-access';
 
 export interface RoadNeed {
   origin: string;
@@ -14,7 +15,14 @@ export function roadNeeds(w: World): RoadNeed[] {
       b = w.establishments.find((e) => e.id === destinationId);
     if (!a || !b || a.propertyId === b.propertyId) return;
     const key = `${a.propertyId}:${b.propertyId}`;
-    if (w.routes[key]?.source === 'osrm') return;
+    if (
+      routeMatchesProperties(
+        w.routes[key],
+        w.properties.find((p) => p.id === a.propertyId),
+        w.properties.find((p) => p.id === b.propertyId),
+      )
+    )
+      return;
     if (!needs.has(key) || needs.get(key)!.priority > priority)
       needs.set(key, { origin: a.propertyId, destination: b.propertyId, priority });
   };

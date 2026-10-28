@@ -9,9 +9,24 @@ const server = createServer((req, res) => {
   const points = decodeURIComponent(path.split('/').at(-1))
     .split(';')
     .map((p) => p.split(',').map(Number));
-  if (points.length !== 2 || points.some((p) => p.length !== 2 || !p.every(Number.isFinite))) {
+  if (points.length < 2 || points.some((p) => p.length !== 2 || !p.every(Number.isFinite))) {
     res.writeHead(400);
     res.end('{}');
+    return;
+  }
+  const waypoints = points.map((location) => ({ location, name: 'Estrada de teste', distance: 0 }));
+  if (path.startsWith('/table/')) {
+    res.setHeader('content-type', 'application/json');
+    res.end(
+      JSON.stringify({
+        code: 'Ok',
+        sources: waypoints,
+        destinations: waypoints,
+        durations: points.map((a) =>
+          points.map((b) => Math.hypot(a[0] - b[0], a[1] - b[1]) * 5000),
+        ),
+      }),
+    );
     return;
   }
   const [a, b] = points,
@@ -21,6 +36,7 @@ const server = createServer((req, res) => {
   res.end(
     JSON.stringify({
       code: 'Ok',
+      waypoints,
       routes: [
         {
           distance: km * 1000,

@@ -10,6 +10,7 @@ import {
   type Vehicle,
 } from './model';
 import { distanceKm } from './geometry';
+import { hasRoadAccess, routeMatchesProperties } from './road-access';
 import { householdItems, infrastructurePrograms } from './channels';
 import { committedStorage, fleetAvailability } from './transport';
 import {
@@ -179,7 +180,9 @@ export function quote(
     dest = establishment(w, destinationId);
   const op = propertyOf(w, origin.propertyId)!,
     dp = propertyOf(w, dest.propertyId)!;
-  const route = w.routes[`${op.id}:${dp.id}`];
+  const cachedRoute = w.routes[`${op.id}:${dp.id}`];
+  const route =
+    !w.requireRoadRoutes || routeMatchesProperties(cachedRoute, op, dp) ? cachedRoute : undefined;
   const km = route?.distanceKm ?? Math.max(3, distanceKm(op.coordinates, dp.coordinates) * 1.3);
   const load = loadOf({ [product]: quantity });
   const cfg = w.season.config.parameters;
@@ -649,6 +652,10 @@ function executeCommand(w: World, actor: string, command: Command, now: number):
       const p = w.properties.find((x) => x.id === command.propertyId);
       ensure(p, 'Propriedade não encontrada.');
       ensure(p.ownerId === null, 'Esta propriedade já foi adquirida por outra empresa.');
+      ensure(
+        !w.requireRoadRoutes || hasRoadAccess(p),
+        'O acesso rodoviário deste imóvel ainda não foi confirmado. Aguarde a validação antes de comprar; nada foi cobrado.',
+      );
       ensure(
         command.name.trim().length >= 3 && command.name.trim().length <= 70,
         'Informe um nome entre 3 e 70 caracteres.',

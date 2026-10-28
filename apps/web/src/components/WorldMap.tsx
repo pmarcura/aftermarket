@@ -15,7 +15,7 @@ import {
 } from '../../../../packages/simulation/src/model';
 import { createMapStyle } from '../lib/map-style';
 import { positionAlongRoute, routeLengths } from '../../../../packages/simulation/src/geometry';
-import { shipmentRoute } from '../../../../packages/simulation/src/road-path';
+import { shipmentRoadPath, shipmentRoute } from '../../../../packages/simulation/src/road-path';
 import { shipmentStatus } from '../../../../packages/simulation/src/shipment';
 import { marketView, regionsOf } from '../../../../packages/simulation/src/metrics';
 maplibregl.setWorkerUrl(workerUrl);
@@ -27,9 +27,13 @@ const iconImages = Promise.all(
   categories.map(
     (category) =>
       new Promise<[string, HTMLImageElement]>((resolve) => {
-        const svg = renderToStaticMarkup(<CategoryIcon category={category} size={44} />)
-          .replaceAll('currentColor', '#ffffff')
-          .replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+        const markup = renderToStaticMarkup(
+          <CategoryIcon category={category} size={44} />,
+        ).replaceAll('currentColor', '#ffffff');
+        // Os ícones novos já trazem xmlns; repetir o atributo invalida o SVG e o mapa não abre.
+        const svg = markup.includes('xmlns=')
+          ? markup
+          : markup.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
         const image = new Image(44, 44);
         image.onload = () => resolve([category, image]);
         image.onerror = () => resolve([category, image]);
@@ -469,9 +473,8 @@ export function WorldMap({
               .filter(
                 (s) =>
                   !s.delivered &&
-                  (!world.requireRoadRoutes ||
-                    s.routeSource === 'osrm' ||
-                    s.mapRouteSource === 'osrm') &&
+                  // D-036: só caminho de estrada confirmado; a estimativa riscaria retas no mapa.
+                  Boolean(shipmentRoadPath(world, s)) &&
                   (ownership !== 'mine' ||
                     s.buyerId === actor ||
                     s.sellerId === actor ||
@@ -516,9 +519,7 @@ export function WorldMap({
             )
           : []);
     const moving = items
-      .filter(
-        (s) => !world.requireRoadRoutes || s.routeSource === 'osrm' || s.mapRouteSource === 'osrm',
-      )
+      .filter((s) => Boolean(shipmentRoadPath(world, s)))
       .map((s) => {
         const path = shipmentRoute(world, s);
         const element = document.createElement('div');

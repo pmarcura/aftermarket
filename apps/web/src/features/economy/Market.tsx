@@ -464,7 +464,9 @@ export function MarketPage() {
                           value: loading
                             ? 'Calculando rota…'
                             : freight
-                              ? cr(freight.price)
+                              ? freight.routeRequired
+                                ? 'Aguardando rota confirmada'
+                                : cr(freight.price)
                               : 'Preencha o contexto',
                         },
                       ]}
@@ -513,8 +515,9 @@ export function MarketPage() {
                     </button>
                     {validAmount && !loading && freight && !freight.compatible && (
                       <p className="warning-text small">
-                        A frota disponível não comporta esta massa e volume. Compare outra
-                        transportadora ou reduza a quantidade.
+                        {freight.routeRequired
+                          ? 'O transporte aguarda uma rota confirmada entre a origem e o destino. Tente novamente em um minuto ou escolha outro destino.'
+                          : 'A frota disponível não comporta esta massa e volume. Compare outra transportadora ou reduza a quantidade.'}
                       </p>
                     )}
                     <p className="muted small">

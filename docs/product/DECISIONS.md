@@ -165,6 +165,16 @@ Pedido do Pedro: calibrar a economia versão 2 no Brasil real com cerca de 500 b
 - **Defeitos de escala corrigidos:** (1) o bot comparava o próprio estoque com a procura do país inteiro e todo vendedor se achava em falta, cobrando 8% acima da referência; agora conta o estoque do mercado todo. (2) Os editais de aço e a reserva de obras dos tesouros não cresciam com a escala; com 20× siderúrgicas o governo pedia 1/20 do aço. (3) Pedido aberto do bot pedia o alvo inteiro (400 t de arroz), não achava vendedor e travava a reposição por dias; agora pede até duas cargas e pedido aberto sem vendedor não conta como compra feita.
 - **Régua da prova:** o resultado por especialidade soma o estoque formado e deixa de fora caminhões comprados e educação da equipe (investimentos); empresa com duas unidades contava duas vezes. Lojas e distribuidores entram na tabela.
 
+### D-037 · Rotas saem e chegam pela entrada dos imóveis (30/10/2026)
+
+Pedido do Pedro: rota do mapa passava longe do imóvel e cortava a cidade em retas. Decisões de rotina:
+
+- **Entrada na via:** cada imóvel é encaixado na rua mais próxima (até 5 km), confirmada com ida e volta no serviço de rotas; a posição do imóvel passa a ser essa entrada. Sem acesso confirmado, o imóvel não pode ser comprado nem receber transporte no mundo principal. O mundo principal ganhou backup antes da primeira validação (`.runtime/backups/pre-road-access-*.sqlite`); economia, estoques e viagens não mudam.
+- **Rota só vale entre as duas entradas** (até 25 m de cada ponta); rota antiga que não bate é pedida de novo.
+- **Desenho fiel:** o traçado deixa de ser cortado em 150 pontos (retas de ~9 km nas viagens longas) e passa a ter desvio máximo de 10 m, com as pontas exatas. Medido no mundo principal: 0 m entre a ponta e a entrada em todas as viagens; 10 m pesam 58% menos que 2 m.
+- **Mundo versão 2:** valida as entradas e desenha as rotas reais dos caminhões dos jogadores, mas o frete segue a distância estimada (D-034): exigir rota real para ~500 bots travaria a economia. Caminhão sem rota confirmada não aparece com linha reta no mapa.
+- **Defeito achado no caminho:** os ícones de categoria ganharam `xmlns` duplicado com a versão nova da biblioteca de ícones; o SVG ficava inválido e o mapa não terminava de abrir.
+
 ### Ideia em avaliação · Genética de cultivares (Pedro, 28/10/2026)
 
 O Pedro propôs um sistema de genética a partir de uma pesquisa sobre a cana. O produtor compra uma pequena quantidade de mudas de alta tecnologia no viveiro e as multiplica numa área própria. Depois replanta com a própria cana por anos e só volta a comprar para trocar de variedade, para limpar o canavial de doenças ou para expandir a área de uma vez.

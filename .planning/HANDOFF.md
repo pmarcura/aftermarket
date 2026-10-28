@@ -79,7 +79,7 @@ Commits: `1288da6` (economia, D-036) e `edf70da` (rotas pela entrada dos imóvei
 
 Próximos passos, em ordem:
 
-1. ~~Cadeia do metal a ~15%~~ **resolvida na D-038** (commit seguinte a `1c9c992`): a causa era o orçamento das usinas ocupado por pedidos abertos sem resposta, não o tempo de viagem do carvão. Duas sementes (`.runtime/geo-m0.json`, `geo-m1.json`): aço 68 de 105 linhas, siderúrgicas +R$ 475 mil/dia, aço ao governo 213 t/dia (meta 320), procura atendida 50%. Sobra: editais de 24 t expiram sem lance porque nenhuma usina junta 24 t; utensílios (−R$ 58 mil/dia) e caminhão leve (−R$ 67 mil/dia) ficaram no vermelho com o aço mais disputado.
+1. ~~Cadeia do metal a ~15%~~ **resolvida na D-038** (commit `5c8c36f`): a causa era o orçamento das usinas ocupado por pedidos abertos sem resposta, não o tempo de viagem do carvão. Duas sementes (`.runtime/geo-m0.json`, `geo-m1.json`): aço 68 de 105 linhas, siderúrgicas +R$ 475 mil/dia, aço ao governo 213 t/dia (meta 320), procura atendida 50%. Sobra: editais de 24 t expiram sem lance porque nenhuma usina junta 24 t; utensílios (−R$ 58 mil/dia) e caminhão leve (−R$ 67 mil/dia) ficaram no vermelho com o aço mais disputado.
 2. **Ração (−R$ 162 mil/dia):** as fábricas de Patos de Minas compram farelo de Rondonópolis a ~1.170 km (R$ 480/t de frete, mais que os R$ 172/t da calculadora). Ou aproximar fábricas de ração dos esmagadores, ou ajustar a distância de projeto do farelo.
 3. **Arroz e feijão nas fazendas:** formam estoque e vendem a 92% da referência; conferir se a procura das lojas já alcança a produção.
 4. **Leite atendido em 35%:** depende da ração.

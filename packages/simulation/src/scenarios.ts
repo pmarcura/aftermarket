@@ -2,11 +2,11 @@ import { createWorld } from './seed';
 import { defaultSupplyPolicy } from './competition';
 import { operatingCosts } from './metrics';
 import type { ProductId } from './model';
-export type ScenarioName = 'baseline' | 'starter' | 'low-demand';
+export type ScenarioName = 'baseline' | 'starter' | 'low-demand' | 'economy-2';
 export function createScenario(at: number, scenario: ScenarioName = 'baseline', seed = 0) {
-  const w = createWorld(at);
+  const w = createWorld(at, scenario === 'economy-2' ? { economy: 2 } : {});
   if (
-    !['baseline', 'starter', 'low-demand'].includes(scenario) ||
+    !['baseline', 'starter', 'low-demand', 'economy-2'].includes(scenario) ||
     !Number.isSafeInteger(seed) ||
     seed < 0 ||
     seed > 10000
@@ -19,7 +19,9 @@ export function createScenario(at: number, scenario: ScenarioName = 'baseline', 
       ? 'Iniciante · laboratório separado'
       : scenario === 'low-demand'
         ? 'Demanda reduzida · experimento'
-        : 'Temporada local';
+        : scenario === 'economy-2'
+          ? 'Economia versão 2 · teste separado'
+          : 'Temporada local';
   if (scenario === 'low-demand') w.season.config.parameters.playableConsumerShare *= 0.25;
   if (scenario === 'starter') {
     const gov = w.establishments.find((e) => e.id === 'e-public-works')!;

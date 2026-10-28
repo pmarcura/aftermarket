@@ -11,5 +11,5 @@
 
 - Estado em uma página: `.planning/STATE.md`. Roteiro A–F: `.planning/ROADMAP.md`.
 - Economia em linguagem simples: `docs/product/ECONOMIA-HOJE.md`; relatórios técnicos regenerados por `npm run economy:report`.
-- Jogar sem tocar no mundo principal: `npm run dev:starter` (porta 5185). Configurações do painel de navegador em `.claude/launch.json`.
+- Jogar sem tocar no mundo principal: `npm run dev:starter` (porta 5185) ou `npm run dev:v2` (economia versão 2, porta 5186). Configurações do painel de navegador em `.claude/launch.json`.
 - Não há repositório remoto; commits ficam locais em `main`.

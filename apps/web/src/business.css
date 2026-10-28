@@ -320,3 +320,26 @@ summary:focus-visible {
     width: 100%;
   }
 }
+
+/* Compra de caminhão: vendedor à esquerda, preço e botão à direita; quebra linha no celular. */
+.seller-list {
+  margin: 8px 0 4px;
+}
+.seller-entry {
+  flex-wrap: wrap;
+}
+.seller-entry .table-name {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+.seller-action {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+  text-align: right;
+}
+.seller-action .badge {
+  display: block;
+  margin-top: 4px;
+}

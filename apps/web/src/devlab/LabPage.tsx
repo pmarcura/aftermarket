@@ -26,6 +26,7 @@ const names: Record<Scenario, string> = {
   baseline: 'Abertura atual',
   starter: 'Iniciante',
   'low-demand': 'Demanda reduzida',
+  'economy-2': 'Economia versão 2',
 };
 const money = (n: number) =>
   (n / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });

@@ -7,6 +7,7 @@ import {
   type ProductId,
   type Establishment,
   type Entry,
+  type Vehicle,
 } from './model';
 import { distanceKm } from './geometry';
 import { householdItems, infrastructurePrograms } from './channels';
@@ -150,6 +151,18 @@ function capacity(w: World, e: Establishment, extra: Partial<Record<ProductId, n
     'O destino não tem espaço. Considere também cargas a caminho e produção reservada.',
   );
 }
+// Versão 2: quanto do caminhão já rodou (0 = novo, 1 = fim da vida útil; pode passar de 1).
+export function vehicleWear(w: World, v: Vehicle) {
+  return v.model && w.season.config.economyVersion
+    ? (v.odometerKm ?? 0) / vehicleModels[v.model].lifeKm
+    : 0;
+}
+// Venda ao fundo estadual com 35% de desconto; na versão 2 perde até metade com o uso.
+export function vehicleSalePrice(w: World, v: Vehicle) {
+  return Math.floor(
+    (v.purchasePrice ?? 28000000) * 0.65 * (1 - 0.5 * Math.min(1, vehicleWear(w, v))),
+  );
+}
 export function quote(
   w: World,
   originId: string,
@@ -195,10 +208,7 @@ export function quote(
       ((route?.durationSeconds ?? (km / cfg.averageSpeedKmH) * 3600) * 1000) / TIME_SCALE;
     const fuel = Math.round((totalKm / cfg.kmPerLiter) * cfg.dieselPerLiter);
     // Versão 2: a manutenção por km cresce com os quilômetros já rodados pelo caminhão.
-    const wear =
-      vehicle.model && w.season.config.economyVersion
-        ? 1 + (vehicle.odometerKm ?? 0) / vehicleModels[vehicle.model].lifeKm
-        : 1;
+    const wear = 1 + vehicleWear(w, vehicle);
     const maintenance = Math.round(totalKm * cfg.maintenancePerKm * wear);
     const driver = Math.round(
       (totalKm / cfg.averageSpeedKmH + cfg.loadingMinutes / 60) * cfg.driverPerHour,
@@ -618,7 +628,7 @@ function executeCommand(w: World, actor: string, command: Command, now: number):
       ensure(v && v.status === 'available', 'Somente veículo próprio e livre pode ser vendido.');
       const state = w.properties.find((p) => p.id === v.propertyId)!.state,
         buyer = treasuryId(state);
-      const price = Math.floor((v.purchasePrice ?? 28000000) * 0.65);
+      const price = vehicleSalePrice(w, v);
       ensure(
         price > 0 && treasuryAvailable(w, state) >= price,
         'Fundo estadual sem verba livre para comprar o veículo.',

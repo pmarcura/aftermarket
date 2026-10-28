@@ -8,6 +8,12 @@
       "port": 5185
     },
     {
+      "name": "v2",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev:v2"],
+      "port": 5186
+    },
+    {
       "name": "dev",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],

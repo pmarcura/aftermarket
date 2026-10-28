@@ -12,6 +12,7 @@ import {
   collateral,
 } from '../../../../../packages/simulation/src/design';
 import { operatingCosts } from '../../../../../packages/simulation/src/metrics';
+import { vehicleSalePrice } from '../../../../../packages/simulation/src/engine';
 import {
   products,
   type ProductId,
@@ -181,9 +182,10 @@ export function Recovery() {
                 {v && (
                   <>
                     <p className="analysis-caption">
-                      Liquidação por {cr(Math.floor((v.purchasePrice ?? 28000000) * 0.65))}, paga
-                      pelo fundo estadual, se houver verba livre. Desconto de 35%; o veículo sai da
-                      sua frota. Garantias de crédito são revalidadas.
+                      Liquidação por {cr(vehicleSalePrice(world, v))}, paga pelo fundo estadual, se
+                      houver verba livre. Desconto de 35%
+                      {world.season.config.economyVersion ? ', maior com a quilometragem' : ''}; o
+                      veículo sai da sua frota. Garantias de crédito são revalidadas.
                     </p>
                     <button
                       className="secondary"
@@ -191,7 +193,7 @@ export function Recovery() {
                       onClick={() =>
                         setConfirm({
                           title: 'Vender veículo usado',
-                          text: `Receber ${cr(Math.floor((v.purchasePrice ?? 28000000) * 0.65))} e transferir ${v.name} para o fundo estadual. Esta venda é definitiva.`,
+                          text: `Receber ${cr(vehicleSalePrice(world, v))} e transferir ${v.name} para o fundo estadual. Esta venda é definitiva.`,
                           command: { type: 'sellVehicle', vehicleId: v.id },
                         })
                       }

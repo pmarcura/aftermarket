@@ -13,7 +13,26 @@ import type {
   Category,
   ProductId,
 } from '../../../../packages/simulation/src/model';
-import { Factory, Store, Sprout, Pickaxe, Truck, Warehouse } from 'lucide-react';
+import {
+  Factory,
+  Store,
+  Sprout,
+  Pickaxe,
+  Truck,
+  Warehouse,
+  Mountain,
+  Flame,
+  Anvil,
+  Bean,
+  Wheat,
+  Droplet,
+  Candy,
+  Milk,
+  Recycle,
+  Utensils,
+  PawPrint,
+  Package,
+} from 'lucide-react';
 import { Notice } from '../components/Notice';
 
 export const cr = (value: number, decimals = 2) =>
@@ -44,6 +63,33 @@ export function CategoryIcon({
 }) {
   const Icon = categoryIcons[category];
   return <Icon size={size} className={className} strokeWidth={1.7} />;
+}
+// Ícones simples por item; sementes e mudas compartilham o broto.
+const productIcons: Partial<Record<ProductId, typeof Package>> = {
+  iron: Mountain,
+  coal: Flame,
+  steel: Anvil,
+  soy: Bean,
+  soymeal: Wheat,
+  oil: Droplet,
+  rice: Wheat,
+  beans: Bean,
+  sugar: Candy,
+  milk: Milk,
+  scrap: Recycle,
+  utensils: Utensils,
+  truckHeavy: Truck,
+  truckLight: Truck,
+  soySeed: Sprout,
+  riceSeed: Sprout,
+  beanSeed: Sprout,
+  caneSeedling: Sprout,
+  feed: Wheat,
+  cow: PawPrint,
+};
+export function ProductIcon({ product, size = 16 }: { product: ProductId; size?: number }) {
+  const Icon = productIcons[product] ?? Package;
+  return <Icon size={size} strokeWidth={1.7} aria-hidden="true" />;
 }
 export type Page =
   | 'map'

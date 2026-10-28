@@ -105,6 +105,15 @@ Decisões de rotina da fatia 8, reversíveis e válidas só no mundo versão 2:
 - **Caminhão em qualquer unidade própria:** sem transportadora ou armazém, o caminhão comprado fica no pátio de qualquer unidade da empresa. As três transportadoras-bot ganham pátio próprio.
 - **Compra em dias de uso e teto de frete:** os bots repõem insumos para 3 dias de consumo e não aceitam frete acima de 30% do preço do item. Carga pequena espera juntar volume.
 
+### D-032 · Telas de frota e venda de caminhão usado no mundo versão 2 (28/10/2026)
+
+Decisões de rotina da fatia 9, reversíveis:
+
+- **Venda ao fundo estadual cai com a quilometragem (só versão 2):** o caminhão vale 65% do preço pago quando novo e perde até metade disso no fim da vida útil (piso de 32,5%). Antes, um caminhão no fim da vida valia os mesmos 65% de um novo, então ninguém desmontaria nada e a sucata dos caminhões não chegaria às siderúrgicas. A versão 1 continua com 65% fixos.
+- **Compra de caminhão escolhe o vendedor:** a tela lista as montadoras com o caminhão anunciado, do mais barato ao mais caro, e a concessionária por último, como teto. Montadora própria entrega pelo custo do estoque.
+- **Pátio da transportadora tem estoque e vendas:** a sucata de um caminhão desmontado fica no pátio e pode ser anunciada ou enviada a outra unidade.
+- **Mundo de teste da versão 2:** `npm run dev:v2` abre um mundo separado (`.runtime/economy-2.sqlite`, porta 5186) sem tocar no mundo principal. O laboratório também aceita o cenário `economy-2`.
+
 ### Ideia em avaliação · Genética de cultivares (Pedro, 28/10/2026)
 
 O Pedro propôs um sistema de genética a partir de uma pesquisa sobre a cana. O produtor compra uma pequena quantidade de mudas de alta tecnologia no viveiro e as multiplica numa área própria. Depois replanta com a própria cana por anos e só volta a comprar para trocar de variedade, para limpar o canavial de doenças ou para expandir a área de uma vez.

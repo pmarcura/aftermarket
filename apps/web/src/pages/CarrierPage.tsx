@@ -12,13 +12,20 @@ import {
   Modal,
   Empty,
 } from '../components/ui';
-import type { Vehicle } from '../../../../packages/simulation/src/model';
+import type { ProductId, Vehicle } from '../../../../packages/simulation/src/model';
+import { Stock } from '../features/business/Stock';
+import { SalesCatalog } from '../features/business/SalesCatalog';
+import { OfferModal } from '../features/business/OfferModal';
 import { freeCash } from '../../../../packages/simulation/src/design';
+import { vehicleWear } from '../../../../packages/simulation/src/engine';
+import { TruckPurchase } from '../components/TruckPurchase';
+import { VehicleDetails, vehicleStatus, vehicleType } from '../components/VehicleDetails';
 export function CarrierPage() {
   const { world, actor, navigate, run, pending } = useGame();
   const [tab, setTab] = useState('Frota'),
     [vehicle, setVehicle] = useState<Vehicle>(),
-    [buy, setBuy] = useState(false);
+    [buy, setBuy] = useState(false),
+    [offerProduct, setOfferProduct] = useState<ProductId>();
   const fleet = world.vehicles.filter((v) => v.companyId === actor),
     available = fleet.filter((v) => v.status === 'available');
   const shipments = world.shipments.filter((s) => s.carrierId === actor),
@@ -28,18 +35,26 @@ export function CarrierPage() {
   const logistics = world.establishments.find(
     (e) => e.companyId === actor && e.category === 'logistics',
   );
+  const v2 = !!world.season.config.economyVersion;
   const vehiclePrice = 28000000;
   const cashAvailable = freeCash(world, actor);
-  const vehicleDepot = world.establishments.find(
-    (e) => e.companyId === actor && (e.category === 'logistics' || e.category === 'warehouse'),
-  );
+  // Mesma regra do comando: na versão 2 qualquer unidade própria recebe o caminhão.
+  const vehicleDepot =
+    world.establishments.find(
+      (e) => e.companyId === actor && (e.category === 'logistics' || e.category === 'warehouse'),
+    ) ?? (v2 ? world.establishments.find((e) => e.companyId === actor) : undefined);
+  const home = logistics ?? (v2 ? vehicleDepot : undefined);
   const cashMissing = Math.max(0, vehiclePrice - cashAvailable);
   return (
     <>
       <PageHeading
-        eyebrow="Logística / Minha transportadora"
-        title={logistics?.name ?? 'Minha transportadora'}
-        description="Gerencie veículos, disponibilidade e receitas com transporte de cargas."
+        eyebrow={logistics || !v2 ? 'Logística / Minha transportadora' : 'Logística / Minha frota'}
+        title={logistics?.name ?? (v2 ? 'Minha frota' : 'Minha transportadora')}
+        description={
+          v2
+            ? 'Compre caminhões de montadoras, acompanhe o desgaste e venda ou desmonte os velhos.'
+            : 'Gerencie veículos, disponibilidade e receitas com transporte de cargas.'
+        }
         action={
           <button className="secondary" onClick={() => navigate('logistics')}>
             <Route size={16} /> Contratar frete
@@ -71,16 +86,27 @@ export function CarrierPage() {
         </div>
         <div className="carrier-grid">
           <Panel
-            title={`${logistics?.name ?? 'Transportadora'} — Frota`}
-            subtitle={`Sede: ${logistics ? world.properties.find((p) => p.id === logistics.propertyId)?.city : 'Sem sede'} — SP`}
+            title={`${home?.name ?? 'Transportadora'} — Frota`}
+            subtitle={(() => {
+              const p = home && world.properties.find((p) => p.id === home.propertyId);
+              return p ? `Sede: ${p.city} — ${p.state}` : 'Sem sede';
+            })()}
             action={
               <button className="primary" onClick={() => setBuy(true)}>
-                <Plus size={17} /> Comprar veículo
+                <Plus size={17} /> {v2 ? 'Comprar caminhão' : 'Comprar veículo'}
               </button>
             }
           >
             <Tabs
-              values={['Frota', 'Fretes', 'Rotas', 'Custos', 'Funcionários']}
+              values={[
+                'Frota',
+                // Versão 2: sucata de caminhões desmontados fica no pátio e pode ser vendida.
+                ...(v2 && logistics ? ['Estoque', 'Vendas'] : []),
+                'Fretes',
+                'Rotas',
+                'Custos',
+                'Funcionários',
+              ]}
               value={tab}
               onChange={setTab}
             />
@@ -93,6 +119,7 @@ export function CarrierPage() {
                         <th>Veículo</th>
                         <th>Tipo</th>
                         <th>Capacidade</th>
+                        {v2 && <th>Uso</th>}
                         <th>Localização</th>
                         <th>Estado</th>
                         <th aria-label="Ações" />
@@ -109,13 +136,28 @@ export function CarrierPage() {
                               <strong>{v.name}</strong>
                             </div>
                           </td>
-                          <td>
-                            Caminhão{' '}
-                            {v.capacityT === 30 ? 'pesado' : v.capacityT === 16 ? 'médio' : 'leve'}
-                          </td>
+                          <td>{vehicleType(v)}</td>
                           <td>
                             {v.capacityT} t / {v.capacityM3} m³
                           </td>
+                          {v2 && (
+                            <td>
+                              {v.model ? (
+                                <>
+                                  <small className="block">
+                                    {num(v.odometerKm ?? 0)} km · {num(vehicleWear(world, v) * 100)}
+                                    % da vida
+                                  </small>
+                                  <Progress
+                                    value={vehicleWear(world, v) * 100}
+                                    color={vehicleWear(world, v) >= 0.8 ? 'gold' : 'green'}
+                                  />
+                                </>
+                              ) : (
+                                '—'
+                              )}
+                            </td>
+                          )}
                           <td>{world.properties.find((p) => p.id === v.propertyId)?.city}</td>
                           <td>
                             <Badge
@@ -127,11 +169,7 @@ export function CarrierPage() {
                                     : 'red'
                               }
                             >
-                              {v.status === 'available'
-                                ? 'Disponível'
-                                : v.status === 'route'
-                                  ? 'Em rota'
-                                  : 'Manutenção'}
+                              {vehicleStatus(v)}
                             </Badge>
                           </td>
                           <td>
@@ -146,10 +184,18 @@ export function CarrierPage() {
                 </div>
               ) : (
                 <Empty
-                  title="Sua frota começa com um veículo"
-                  description="Adquira um caminhão após abrir uma base logística."
+                  title={v2 ? 'Nenhum caminhão na frota' : 'Sua frota começa com um veículo'}
+                  description={
+                    v2
+                      ? 'Compre de uma montadora ou da concessionária; ele fica registrado numa unidade sua.'
+                      : 'Adquira um caminhão após abrir uma base logística.'
+                  }
                 />
               ))}
+            {tab === 'Estoque' && logistics && <Stock establishment={logistics} />}
+            {tab === 'Vendas' && logistics && (
+              <SalesCatalog establishment={logistics} onEdit={setOfferProduct} />
+            )}
             {(tab === 'Fretes' || tab === 'Rotas') && (
               <div className="panel-content">
                 {shipments.length ? (
@@ -283,31 +329,16 @@ export function CarrierPage() {
           </div>
         </div>
       </div>
-      {vehicle && (
-        <Modal title={vehicle.name} onClose={() => setVehicle(undefined)}>
-          <Rows
-            rows={[
-              { label: 'Capacidade de carga', value: `${vehicle.capacityT} toneladas` },
-              { label: 'Capacidade volumétrica', value: `${vehicle.capacityM3} m³` },
-              {
-                label: 'Localização',
-                value: world.properties.find((p) => p.id === vehicle.propertyId)?.city,
-              },
-              {
-                label: 'Estado',
-                value:
-                  vehicle.status === 'available'
-                    ? 'Disponível'
-                    : vehicle.status === 'route'
-                      ? 'Em rota'
-                      : 'Manutenção',
-              },
-              { label: 'Valor de referência', value: cr(28000000) },
-            ]}
-          />
-        </Modal>
+      {offerProduct && logistics && (
+        <OfferModal
+          establishment={logistics}
+          product={offerProduct}
+          onClose={() => setOfferProduct(undefined)}
+        />
       )}
-      {buy && (
+      {vehicle && <VehicleDetails vehicle={vehicle} onClose={() => setVehicle(undefined)} />}
+      {buy && v2 && <TruckPurchase depot={vehicleDepot} onClose={() => setBuy(false)} />}
+      {buy && !v2 && (
         <Modal title="Comprar caminhão pesado" onClose={() => setBuy(false)}>
           <p>
             Amplie sua frota com um veículo de <strong>30 t e 85 m³</strong>. O caminhão será

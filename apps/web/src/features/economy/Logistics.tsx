@@ -51,7 +51,9 @@ export function LogisticsPage() {
         description="A posição da carga acompanha o prazo da remessa. Recarregar a página preserva o progresso."
         action={
           <button className="secondary" onClick={() => navigate('carrier')}>
-            <Truck size={17} /> Minha transportadora <ChevronRight size={14} />
+            <Truck size={17} />{' '}
+            {world.season.config.economyVersion ? 'Minha frota' : 'Minha transportadora'}{' '}
+            <ChevronRight size={14} />
           </button>
         }
       />

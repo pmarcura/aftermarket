@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { TransferStock } from './TransferStock';
 import { PackagePlus } from 'lucide-react';
-import { useGame, cr, num } from '../../lib/game';
+import { useGame, cr, num, ProductIcon } from '../../lib/game';
 import { Badge, Empty, Progress } from '../../components/ui';
 import {
   products,
@@ -33,9 +33,12 @@ export function Stock({
       ...incoming.map((s) => s.product),
       ...jobs.flatMap((j) => Object.keys(j.output ?? {})),
       ...Object.keys(recipe?.input ?? {}),
+      ...Object.keys(recipe?.requires ?? {}),
     ]),
   ] as ProductId[];
-  const visible = inputsOnly ? ids.filter((id) => id in (recipe?.input ?? {})) : ids;
+  const visible = inputsOnly
+    ? ids.filter((id) => id in (recipe?.input ?? {}) || id in (recipe?.requires ?? {}))
+    : ids;
   const current = loadOf(e.inventory);
   const reserved = loadOf(
     Object.fromEntries(
@@ -96,15 +99,27 @@ export function Stock({
                 {visible.map((id) => {
                   const q = e.inventory[id] ?? 0,
                     input = recipe?.input[id] ?? 0;
+                  // Rebanho fica na linha e não é consumido; semente volta na colheita.
+                  const herd = (recipe?.requires?.[id] ?? 0) * (e.equipmentLines ?? 1),
+                    seed = input > 0 && (recipe?.output[id] ?? 0) > 0;
                   return (
                     <tr key={id}>
                       <td>
-                        <strong>{products[id].name}</strong>
-                        <small className="block">
-                          {products[id].unit} · {num(q * products[id].massT, 2)} t
-                        </small>
+                        <div className="table-name">
+                          <i className="table-icon">
+                            <ProductIcon product={id} size={17} />
+                          </i>
+                          <div>
+                            <strong>{products[id].name}</strong>
+                            <small className="block">
+                              {products[id].unit} · {num(q * products[id].massT, 2)} t
+                              {herd > 0 && ' · rebanho: fica na linha, não é consumido'}
+                              {seed && ' · a colheita devolve a semente'}
+                            </small>
+                          </div>
+                        </div>
                       </td>
-                      <td className="numeric">{num(q)}</td>
+                      <td className="numeric">{num(q, 2)}</td>
                       <td className="numeric">
                         {num(
                           incoming
@@ -116,13 +131,20 @@ export function Stock({
                         {num(jobs.reduce((n, j) => n + (j.output?.[id] ?? 0), 0))}
                       </td>
                       <td>
-                        <Badge tone={inputsOnly && input && q < input ? 'gold' : 'blue'}>
-                          {inputsOnly
-                            ? input
-                              ? `${num(Math.floor(q / input))} ciclos`
-                              : '—'
-                            : `${num(inventoryQuality(e, id))}/100`}
-                        </Badge>
+                        {herd > 0 ? (
+                          <Badge tone={q < herd ? 'gold' : 'green'}>
+                            {num(q)} de {num(herd)} para {num(e.equipmentLines ?? 1)}{' '}
+                            {(e.equipmentLines ?? 1) === 1 ? 'linha' : 'linhas'}
+                          </Badge>
+                        ) : (
+                          <Badge tone={inputsOnly && input && q < input ? 'gold' : 'blue'}>
+                            {inputsOnly
+                              ? input
+                                ? `${num(Math.floor(q / input))} ciclos`
+                                : '—'
+                              : `${num(inventoryQuality(e, id))}/100`}
+                          </Badge>
+                        )}
                       </td>
                       <td className="numeric">{cr(e.unitCosts[id] ?? 0)}</td>
                       <td>
@@ -132,7 +154,11 @@ export function Stock({
                             openMarket({
                               product: id,
                               destinationId: e.id,
-                              quantity: input ? input * 4 : 200,
+                              quantity: herd
+                                ? Math.max(herd - q, recipe!.requires![id]!)
+                                : input
+                                  ? input * 4
+                                  : 200,
                             })
                           }
                         >

@@ -15,15 +15,12 @@ import {
 import { products, TIME_SCALE, type ProductId } from '../../../../packages/simulation/src/model';
 import { loadOf } from '../../../../packages/simulation/src/engine';
 import { useClock } from '../lib/clock';
-import {
-  operatingCosts,
-  productionCharges,
-  seasonPrice,
-} from '../../../../packages/simulation/src/metrics';
+import { operatingCosts, productionCharges } from '../../../../packages/simulation/src/metrics';
 import { InfrastructureDetails } from '../components/InfrastructureDetails';
 import { SupplyPlanner } from '../features/business/SupplyPlanner';
 import { Stock } from '../features/business/Stock';
 import { SalesCatalog } from '../features/business/SalesCatalog';
+import { OfferModal } from '../features/business/OfferModal';
 import { Workforce } from '../features/business/Workforce';
 import { Installation } from '../features/business/Installation';
 import { Orders } from '../features/business/Orders';
@@ -43,8 +40,7 @@ export function OperationPage() {
     [recipeId, setRecipe] = useState('steel-bars'),
     [queue, setQueue] = useState(false),
     [cycles, setCycles] = useState(1),
-    [offerProduct, setOfferProduct] = useState<ProductId>(),
-    [price, setPrice] = useState(0);
+    [offerProduct, setOfferProduct] = useState<ProductId>();
   const [showCosts, setShowCosts] = useState(false);
   const [auto, setAuto] = useState(false),
     [autoCycles, setAutoCycles] = useState('1'),
@@ -93,10 +89,6 @@ export function OperationPage() {
   const charges = recipe ? productionCharges(world, e, recipe.id, cycles) : null;
   const line = recipe ? productionCapacity(world, e, recipe, cycles) : null;
   const daily = operatingCosts(world, e);
-  const sell = (product: ProductId) => {
-    setOfferProduct(product);
-    setPrice(seasonPrice(world, product));
-  };
   return (
     <>
       <PageHeading
@@ -224,7 +216,7 @@ export function OperationPage() {
                       ? Object.entries(recipe.input)
                           .map(
                             ([id, q]) =>
-                              `${q} ${products[id as ProductId].unit} ${products[id as ProductId].name}`,
+                              `${num(q!, 2)} ${products[id as ProductId].unit} ${products[id as ProductId].name}`,
                           )
                           .join(' + ')
                       : 'Depósito mineral virtual'}
@@ -237,6 +229,12 @@ export function OperationPage() {
                   <small>
                     Consumo: {num(recipe.energyKwh)} kWh + {num(recipe.waterM3, 1)} m³ por ciclo
                   </small>
+                  {Object.entries(recipe.requires ?? {}).map(([id, q]) => (
+                    <small key={id} className="block">
+                      Rebanho por linha: {products[id as ProductId].name} × {num(q!)} (não
+                      consumido) · você tem {num(e.inventory[id as ProductId] ?? 0)}
+                    </small>
+                  ))}
                 </div>
                 <div className="recipe-arrow">
                   <ArrowRight size={32} />
@@ -250,7 +248,10 @@ export function OperationPage() {
                   <p>Saída por ciclo · qualidade {productionQuality(world, e, recipe)}/100</p>
                   <strong>
                     {Object.entries(recipe.output)
-                      .map(([id, q]) => `${q} ${products[id as ProductId].unit}`)
+                      .map(
+                        ([id, q]) =>
+                          `${num(q!, 2)} ${products[id as ProductId].unit} ${products[id as ProductId].name}`,
+                      )
                       .join(' + ')}
                   </strong>
                   <small>por ciclo concluído</small>
@@ -336,7 +337,7 @@ export function OperationPage() {
           {(tab === 'Estoque' || tab === 'Insumos') && (
             <Stock establishment={e} inputsOnly={tab === 'Insumos'} />
           )}
-          {tab === 'Vendas' && <SalesCatalog establishment={e} onEdit={sell} />}
+          {tab === 'Vendas' && <SalesCatalog establishment={e} onEdit={setOfferProduct} />}
           {tab === 'Pedidos' && <Orders establishment={e} />}
           {tab === 'Finanças' && <BusinessFinance establishment={e} />}
           {tab === 'Funcionários' && <Workforce key={e.id} establishment={e} />}
@@ -577,41 +578,11 @@ export function OperationPage() {
         </Modal>
       )}
       {offerProduct && (
-        <Modal title="Anunciar no mercado" onClose={() => setOfferProduct(undefined)}>
-          <p>
-            {products[offerProduct].name} · {num(e.inventory[offerProduct] ?? 0)}{' '}
-            {products[offerProduct].unit} em estoque
-          </p>
-          <label className="field">
-            Preço por {products[offerProduct].unit} (R$)
-            <input
-              type="number"
-              min="0.01"
-              step="0.01"
-              value={price / 100}
-              onChange={(event) => setPrice(Math.round(Number(event.target.value) * 100))}
-            />
-          </label>
-          <p className="muted small">
-            A oferta permite vender apenas o estoque existente. A quantidade disponível diminui a
-            cada compra.
-          </p>
-          <button
-            className="primary full"
-            disabled={pending || price <= 0}
-            onClick={async () => {
-              if (
-                await run(
-                  { type: 'publishOffer', establishmentId: e.id, product: offerProduct, price },
-                  'Oferta publicada no mercado compartilhado.',
-                )
-              )
-                setOfferProduct(undefined);
-            }}
-          >
-            Publicar oferta
-          </button>
-        </Modal>
+        <OfferModal
+          establishment={e}
+          product={offerProduct}
+          onClose={() => setOfferProduct(undefined)}
+        />
       )}
       {showCosts && <InfrastructureDetails property={p} onClose={() => setShowCosts(false)} />}
     </>

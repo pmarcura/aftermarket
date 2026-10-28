@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { createWorld } from '../packages/simulation/src/seed';
-import { advance, execute, quote, RuleError } from '../packages/simulation/src/engine';
+import {
+  advance,
+  execute,
+  quote,
+  RuleError,
+  vehicleSalePrice,
+} from '../packages/simulation/src/engine';
 import {
   ECONOMIC_INTERVAL,
   products,
@@ -166,6 +172,21 @@ describe('mundo versão 2 · aço para bens e caminhões', () => {
     execute(w, 'player', { type: 'scrapVehicle', vehicleId: truck.id }, NOW);
     expect(w.vehicles.some((v) => v.id === truck.id)).toBe(false);
     expect(yard.inventory.scrap! - scrapBefore).toBeCloseTo(9 * 0.9, 9);
+  });
+
+  it('venda ao fundo estadual perde valor com a quilometragem só na versão 2', () => {
+    const w = quiet();
+    const truck = w.vehicles.find((v) => v.companyId === 'player' && v.status === 'available')!;
+    Object.assign(truck, { model: 'truckHeavy', purchasePrice: 30000000, odometerKm: 0 });
+    expect(vehicleSalePrice(w, truck)).toBe(19500000);
+    truck.odometerKm = vehicleModels.truckHeavy.lifeKm / 2;
+    expect(vehicleSalePrice(w, truck)).toBe(14625000);
+    truck.odometerKm = vehicleModels.truckHeavy.lifeKm * 3; // passa da vida útil: piso de metade
+    expect(vehicleSalePrice(w, truck)).toBe(9750000);
+    const v1 = quiet(1),
+      old = v1.vehicles.find((v) => v.companyId === 'player')!;
+    old.odometerKm = 1e6;
+    expect(vehicleSalePrice(v1, old)).toBe(Math.floor((old.purchasePrice ?? 28000000) * 0.65));
   });
 
   it('mundo da versão 1 mantém só a compra antiga e não desmonta caminhões', () => {

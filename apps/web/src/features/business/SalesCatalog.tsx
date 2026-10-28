@@ -1,5 +1,5 @@
 import { Tag } from 'lucide-react';
-import { useGame, cr, num } from '../../lib/game';
+import { useGame, cr, num, ProductIcon } from '../../lib/game';
 import { Badge, Empty } from '../../components/ui';
 import {
   products,
@@ -54,10 +54,17 @@ export function SalesCatalog({
                 return (
                   <tr key={id}>
                     <td>
-                      <strong>{products[id].name}</strong>
-                      <small className="block">por {products[id].unit}</small>
+                      <div className="table-name">
+                        <i className="table-icon">
+                          <ProductIcon product={id} size={17} />
+                        </i>
+                        <div>
+                          <strong>{products[id].name}</strong>
+                          <small className="block">por {products[id].unit}</small>
+                        </div>
+                      </div>
                     </td>
-                    <td className="numeric">{num(q)}</td>
+                    <td className="numeric">{num(q, 2)}</td>
                     <td>
                       <Badge tone="blue">{num(inventoryQuality(e, id))}/100</Badge>
                     </td>

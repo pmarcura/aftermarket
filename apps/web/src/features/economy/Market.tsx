@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useGame, cr, num, ProductIcon } from '../../lib/game';
 import { PageHeading, Panel, Select, Badge, Rows, Empty, Modal, Tabs } from '../../components/ui';
+import { SecaoAbas } from '../../components/SecaoAbas';
 import { ProductAnalysisModal } from '../../components/ProductAnalysis';
 import {
   products,
@@ -30,6 +31,9 @@ import {
   seasonPrice,
 } from '../../../../../packages/simulation/src/metrics';
 import { freeCash } from '../../../../../packages/simulation/src/design';
+import { Carga } from './Carga';
+import { PixelArt } from '../../components/PixelArt';
+import { spriteDoNegocio } from '../../design/arte';
 import { avaliar, procuraDiaria, quantidadeSugerida, type Avaliacao } from './compra';
 
 export function MarketPage() {
@@ -39,7 +43,7 @@ export function MarketPage() {
     [supplierId, setSupplier] = useState(intent.supplierId ?? ''),
     [quantity, setQuantity] = useState(String(intent.quantity ?? '')),
     [destinationId, setDestination] = useState(
-      intent.destinationId ?? (meus.length === 1 ? meus[0].id : ''),
+      intent.destinationId ?? meus.find((e) => e.category === 'retail')?.id ?? meus[0]?.id ?? '',
     ),
     [offerId, setOffer] = useState(intent.offerId ?? ''),
     [sort, setSort] = useState('');
@@ -162,6 +166,8 @@ export function MarketPage() {
       ? avaliar(world, actor, selected, destination, amount)
       : undefined;
   const caixa = freeCash(world, actor);
+  // Com destino escolhido, a lista simplificada junta origem ao fornecedor e preço ao custo na porta.
+  const compacto = Boolean(destination) && mode === 'Simplificada';
   const comprar = async () => {
     if (!selected || !destination || !compra?.frete) return;
     const minutos = Math.max(1, Math.round(compra.frete.durationMs / 60000));
@@ -197,10 +203,10 @@ export function MarketPage() {
   };
   return (
     <>
+      <SecaoAbas secao="comercio" />
       <PageHeading
-        eyebrow="Mercado / Negociação entre empresas"
-        title="Mercado de mercadorias"
-        description="Encontre ofertas reais do mundo. Escolha fornecedor, destino e quantidade antes de contratar."
+        title="Comprar mercadorias"
+        description="Escolha para onde vai a carga e o que comprar. Todo preço já inclui o frete até a sua porta."
         action={<Tabs values={['Simplificada', 'Avançada']} value={mode} onChange={setMode} />}
       />
       <div className="page-body">
@@ -215,56 +221,6 @@ export function MarketPage() {
             </button>
           </div>
         )}
-        <div className="economic-filter-panel">
-          <label className="search-input">
-            <Search size={16} />
-            <input
-              aria-label="Buscar oferta"
-              placeholder="Fornecedor, item ou cidade…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </label>
-          <Select
-            label="Produto"
-            value={product}
-            onChange={(e) => {
-              setProduct(e.target.value);
-              setOffer('');
-              setSort('');
-            }}
-          >
-            <option value="">Mercadoria (opcional)</option>
-            {seasonProducts(world)
-              .map((id) => [id, products[id]] as const)
-              .map(([id, p]) => (
-                <option value={id} key={id}>
-                  {p.name}
-                </option>
-              ))}
-          </Select>
-          <Select label="Ordenar ofertas" value={sort} onChange={(e) => setSort(e.target.value)}>
-            <option value="">Ordenação (opcional)</option>
-            <option value="price" disabled={!product}>
-              Menor preço da mercadoria
-            </option>
-            <option value="total" disabled={!product || !destination || !validAmount}>
-              Menor custo por carga
-            </option>
-            <option value="distance" disabled={!destination}>
-              Menor distância ao destino
-            </option>
-          </Select>
-          <button className="secondary" onClick={() => setAdvanced(true)}>
-            <SlidersHorizontal size={15} /> Filtros avançados
-          </button>
-          <button className="secondary" onClick={() => void refresh()}>
-            Atualizar ofertas
-          </button>
-          <button className="text-button" onClick={clear}>
-            <X size={14} /> Limpar
-          </button>
-        </div>
         {!destinations.length ? (
           <Empty
             title="Escolha um imóvel para receber mercadorias"
@@ -277,45 +233,83 @@ export function MarketPage() {
           />
         ) : (
           <>
-            <div className="purchase-context">
-              <span>
-                <Truck size={17} /> Contexto da compra
-              </span>
-              <Select
-                label="Destino da compra"
-                value={destinationId}
-                onChange={(e) => setDestination(e.target.value)}
-              >
-                <option value="">Selecione o destino</option>
-                {destinations.map((e) => (
-                  <option key={e.id} value={e.id}>
-                    {e.name}
-                  </option>
-                ))}
-              </Select>
-              <label className="quantity-field">
-                Quantidade
+            <div className="comprar-para" role="group" aria-label="Comprar para">
+              <span>Comprar para</span>
+              {destinations.map((e) => {
+                const p = world.properties.find((p) => p.id === e.propertyId)!;
+                return (
+                  <button
+                    key={e.id}
+                    aria-pressed={e.id === destinationId}
+                    className={e.id === destinationId ? 'on' : ''}
+                    onClick={() => {
+                      setDestination(e.id);
+                      setOffer('');
+                      setQuantity('');
+                    }}
+                  >
+                    <PixelArt name={spriteDoNegocio(e, world)} scale={1} />
+                    <span>
+                      <b>{e.name}</b>
+                      <small>{p.city}</small>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="economic-filter-panel">
+              <label className="search-input">
+                <Search size={16} />
                 <input
-                  aria-label="Quantidade de mercadoria"
-                  placeholder="Informe"
-                  type="number"
-                  min="1"
-                  step="1"
-                  value={quantity}
-                  onChange={(e) => setQuantity(e.target.value)}
+                  aria-label="Buscar oferta"
+                  placeholder="Fornecedor, item ou cidade…"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
                 />
-                <span>
-                  {selected
-                    ? products[selected.product].unit
-                    : product
-                      ? products[product as ProductId].unit
-                      : 'unidade do item'}
-                </span>
               </label>
-              <small>
-                Os filtros começam sem escolhas. O contexto só é preenchido quando você decide
-                comprar.
-              </small>
+              <Select
+                label="Produto"
+                value={product}
+                onChange={(e) => {
+                  setProduct(e.target.value);
+                  setOffer('');
+                  setSort('');
+                }}
+              >
+                <option value="">Mercadoria (opcional)</option>
+                {seasonProducts(world)
+                  .map((id) => [id, products[id]] as const)
+                  .map(([id, p]) => (
+                    <option value={id} key={id}>
+                      {p.name}
+                    </option>
+                  ))}
+              </Select>
+              <Select
+                label="Ordenar ofertas"
+                value={sort}
+                onChange={(e) => setSort(e.target.value)}
+              >
+                <option value="">Ordenação (opcional)</option>
+                <option value="price" disabled={!product}>
+                  Menor preço da mercadoria
+                </option>
+                <option value="total" disabled={!product || !destination || !validAmount}>
+                  Menor custo por carga
+                </option>
+                <option value="distance" disabled={!destination}>
+                  Menor distância ao destino
+                </option>
+              </Select>
+              <button className="secondary" onClick={() => setAdvanced(true)}>
+                <SlidersHorizontal size={15} /> Filtros avançados
+              </button>
+              <button className="secondary" onClick={() => void refresh()}>
+                Atualizar ofertas
+              </button>
+              <button className="text-button" onClick={clear}>
+                <X size={14} /> Limpar
+              </button>
             </div>
             <div className="market-grid">
               <Panel
@@ -341,9 +335,9 @@ export function MarketPage() {
                       <thead>
                         <tr>
                           <th>Fornecedor / mercadoria</th>
-                          <th>Origem</th>
+                          {!compacto && <th>Origem</th>}
                           <th className="numeric">Disponível</th>
-                          <th className="numeric">Preço / unidade</th>
+                          {!compacto && <th className="numeric">Preço / unidade</th>}
                           {destination && <th className="numeric">Na sua porta</th>}
                           {mode === 'Avançada' && (
                             <>
@@ -381,25 +375,37 @@ export function MarketPage() {
                                   </i>
                                   <div>
                                     <strong>{e.name}</strong>
-                                    <small>{products[o.product].name}</small>
+                                    <small>
+                                      {products[o.product].name}
+                                      {compacto && ` · ${p.city} ${p.state}`}
+                                    </small>
                                   </div>
                                 </div>
                               </td>
-                              <td>
-                                {p.city}
-                                <small>{p.state}</small>
-                              </td>
+                              {!compacto && (
+                                <td>
+                                  {p.city}
+                                  <small>{p.state}</small>
+                                </td>
+                              )}
                               <td className="numeric">
                                 {num(stock, 1)} {products[o.product].unit}
                               </td>
-                              <td className="numeric">
-                                {cr(o.price)} / {products[o.product].unit}
-                              </td>
+                              {!compacto && (
+                                <td className="numeric">
+                                  {cr(o.price)} / {products[o.product].unit}
+                                </td>
+                              )}
                               {destination && (
                                 <td className="numeric">
                                   {aval ? (
                                     <>
                                       {cr(aval.naPorta)} / {products[o.product].unit}
+                                      {compacto && (
+                                        <small className="muted">
+                                          {cr(o.price)} + frete {cr(aval.naPorta - o.price)}
+                                        </small>
+                                      )}
                                       <small>
                                         {aval.margem !== undefined ? (
                                           <Badge tone={aval.margem >= 0 ? 'green' : 'red'}>
@@ -491,22 +497,7 @@ export function MarketPage() {
                           label: 'Preço unitário',
                           value: `${cr(selected.price)} / ${products[selected.product].unit}`,
                         },
-                        { label: 'Destino', value: destination?.name ?? 'Selecione um destino' },
-                        {
-                          label: 'Quantidade',
-                          value: validAmount
-                            ? `${num(amount)} ${products[selected.product].unit}`
-                            : 'Informe a quantidade',
-                        },
                         { label: 'Subtotal', value: validAmount ? cr(cost) : '—' },
-                        {
-                          label: 'Frete',
-                          value: loading
-                            ? 'Calculando rota…'
-                            : compra?.frete
-                              ? `${cr(compra.frete.price)} · ${world.companies.find((c) => c.id === compra.frete!.carrierId)?.name ?? 'frota'}`
-                              : 'Escolha destino e quantidade',
-                        },
                       ]}
                     />
                     {retailDestination && destination && (
@@ -515,7 +506,13 @@ export function MarketPage() {
                           const estoque = seller.inventory[selected.product] ?? 0;
                           const anterior =
                             i > 0
-                              ? quantidadeSugerida(world, destination, selected.product, estoque, todos[i - 1])
+                              ? quantidadeSugerida(
+                                  world,
+                                  destination,
+                                  selected.product,
+                                  estoque,
+                                  todos[i - 1],
+                                )
                               : -1;
                           const q = quantidadeSugerida(
                             world,
@@ -526,7 +523,9 @@ export function MarketPage() {
                           );
                           const repetido = q === anterior;
                           const a =
-                            q && !repetido ? avaliar(world, actor, selected, destination, q) : undefined;
+                            q && !repetido
+                              ? avaliar(world, actor, selected, destination, q)
+                              : undefined;
                           return (
                             <button
                               key={d}
@@ -552,6 +551,34 @@ export function MarketPage() {
                         })}
                       </div>
                     )}
+                    <label className="compra-qtd">
+                      Quantidade
+                      <input
+                        aria-label="Quantidade de mercadoria"
+                        type="number"
+                        min="1"
+                        step="1"
+                        value={quantity}
+                        onChange={(e) => setQuantity(e.target.value)}
+                      />
+                      <span>{products[selected.product].unit}</span>
+                    </label>
+                    {loading && <p className="muted small">Calculando a rota do caminhão…</p>}
+                    {compra?.frete && destination && (
+                      <Carga
+                        frete={compra.frete}
+                        product={selected.product}
+                        quantidade={amount}
+                        origem={seller}
+                        destino={destination}
+                        estoque={seller.inventory[selected.product] ?? 0}
+                        precoUnidade={selected.price}
+                        precoVenda={
+                          retailDestination ? seasonPrice(world, selected.product) : undefined
+                        }
+                        onQuantidade={(q) => setQuantity(String(q))}
+                      />
+                    )}
                     {compra && (
                       <>
                         <div className="total-row">
@@ -559,16 +586,28 @@ export function MarketPage() {
                           <strong>{cr(compra.total)}</strong>
                         </div>
                         {compra.margem !== undefined && (
-                          <p className={`small ${compra.margem >= 0 ? 'positive' : 'warning-text'}`}>
+                          <p
+                            className={`small ${compra.margem >= 0 ? 'positive' : 'warning-text'}`}
+                          >
                             {compra.margem >= 0
                               ? `Vendendo tudo a ${cr(seasonPrice(world, selected.product))}, sobram ${num(compra.margem * 100)}% depois do frete.`
                               : `Prejuízo de ${num(-compra.margem * 100)}%: o frete pesa demais nesta quantidade. Compre para mais dias ou escolha um fornecedor mais perto.`}{' '}
                             Dura cerca de{' '}
-                            {num(amount / Math.max(1e-9, procuraDiaria(world, destination!, selected.product)))}{' '}
+                            {num(
+                              amount /
+                                Math.max(
+                                  1e-9,
+                                  procuraDiaria(world, destination!, selected.product),
+                                ),
+                            )}{' '}
                             dias na loja.
                           </p>
                         )}
-                        <Rows rows={[{ label: 'Caixa depois da compra', value: cr(caixa - compra.total) }]} />
+                        <Rows
+                          rows={[
+                            { label: 'Caixa depois da compra', value: cr(caixa - compra.total) },
+                          ]}
+                        />
                       </>
                     )}
                     <button
@@ -583,7 +622,11 @@ export function MarketPage() {
                       onClick={() => void comprar()}
                     >
                       <ShoppingCart size={16} />{' '}
-                      {pending ? 'Comprando…' : compra ? `Comprar por ${cr(compra.total)}` : 'Comprar'}
+                      {pending
+                        ? 'Comprando…'
+                        : compra
+                          ? `Comprar por ${cr(compra.total)}`
+                          : 'Comprar'}
                     </button>
                     {validAmount && !loading && compra && !compra.frete?.compatible && (
                       <p className="warning-text small">
@@ -593,7 +636,9 @@ export function MarketPage() {
                       </p>
                     )}
                     {compra && caixa < compra.total && (
-                      <p className="warning-text small">O caixa não cobre esta compra. Reduza a quantidade.</p>
+                      <p className="warning-text small">
+                        O caixa não cobre esta compra. Reduza a quantidade.
+                      </p>
                     )}
                     <button
                       className="text-button"

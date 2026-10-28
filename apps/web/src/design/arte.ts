@@ -1,4 +1,9 @@
-import type { Category, Establishment, ProductId, World } from '../../../../packages/simulation/src/model';
+import type {
+  Category,
+  Establishment,
+  ProductId,
+  World,
+} from '../../../../packages/simulation/src/model';
 
 // Peças em pixel art de apps/web/public/arte. Tamanho natural em pixels; o jogo as amplia em múltiplos inteiros.
 export const sprites = {

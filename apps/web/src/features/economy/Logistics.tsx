@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { Truck, ChevronRight, MapPin, ShoppingCart } from 'lucide-react';
 import { useGame, cr, num } from '../../lib/game';
 import { Badge, Empty, Modal, PageHeading, Panel, Rows, Tabs } from '../../components/ui';
+import { SecaoAbas } from '../../components/SecaoAbas';
 import { WorldMap } from '../../components/WorldMap';
 import { products, TIME_SCALE } from '../../../../../packages/simulation/src/model';
 import { quote } from '../../../../../packages/simulation/src/engine';
@@ -46,9 +47,9 @@ export function LogisticsPage() {
   const balance = freeCash(world, actor);
   return (
     <>
+      <SecaoAbas secao="comercio" />
       <PageHeading
-        eyebrow="Logística / Controle de entregas"
-        title={view === 'Contratar frete' ? 'Contratar frete' : 'Logística e entregas'}
+        title={view === 'Contratar frete' ? 'Contratar frete' : 'Entregas'}
         description="A posição da carga acompanha o prazo da remessa. Recarregar a página preserva o progresso."
         action={
           <button className="secondary" onClick={() => navigate('carrier')}>

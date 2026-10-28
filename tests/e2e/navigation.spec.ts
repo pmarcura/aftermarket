@@ -16,7 +16,11 @@ test('as dez telas carregam, navegam e mantêm o estado do mundo', async ({ page
     page.getByRole('heading', { name: 'Comprar propriedade', exact: true }),
   ).toBeVisible();
   await page
-    .getByRole('navigation')
+    .getByRole('navigation', { name: 'Menu principal' })
+    .getByRole('button', { name: 'Comércio', exact: true })
+    .click();
+  await page
+    .getByRole('navigation', { name: 'Comércio' })
     .getByRole('button', { name: 'Oportunidades', exact: true })
     .click();
   await expect(page.getByRole('heading', { name: 'Análise de oportunidades' })).toBeVisible();
@@ -48,14 +52,21 @@ test('as dez telas carregam, navegam e mantêm o estado do mundo', async ({ page
   await expect(
     page.getByRole('heading', { name: 'Loja Campinas', exact: true, level: 1 }),
   ).toBeVisible();
-  await page.getByRole('navigation').getByRole('button', { name: 'Mercado', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Mercado de mercadorias' })).toBeVisible();
+  await page
+    .getByRole('navigation', { name: 'Menu principal' })
+    .getByRole('button', { name: 'Comércio', exact: true })
+    .click();
+  await expect(page.getByRole('heading', { name: 'Comprar mercadorias' })).toBeVisible();
   await page.screenshot({ path: 'test-results/mercado-desktop.png', fullPage: true });
   await page
-    .getByRole('navigation')
-    .getByRole('button', { name: 'Logística', exact: true })
+    .getByRole('navigation', { name: 'Menu principal' })
+    .getByRole('button', { name: 'Comércio', exact: true })
     .click();
-  await expect(page.getByRole('heading', { name: 'Logística e entregas' })).toBeVisible();
+  await page
+    .getByRole('navigation', { name: 'Comércio' })
+    .getByRole('button', { name: 'Entregas', exact: true })
+    .click();
+  await expect(page.getByRole('heading', { name: 'Entregas' })).toBeVisible();
   await page.getByRole('button', { name: 'Minha transportadora' }).click();
   await expect(
     page.getByRole('heading', { name: 'Transportadora Aurora', exact: true }),

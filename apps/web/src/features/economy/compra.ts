@@ -67,7 +67,10 @@ export function quantidadeSugerida(
   dias = DIAS_SUGERIDOS,
 ) {
   if (destino.category !== 'retail') return 0;
-  return Math.max(0, Math.min(Math.floor(estoque), Math.ceil(procuraDiaria(world, destino, product) * dias)));
+  return Math.max(
+    0,
+    Math.min(Math.floor(estoque), Math.ceil(procuraDiaria(world, destino, product) * dias)),
+  );
 }
 
 export interface Avaliacao {

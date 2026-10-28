@@ -11,16 +11,13 @@ import {
 } from 'lucide-react';
 import { useGame, CategoryIcon, cr, num } from '../lib/game';
 import { PageHeading, Panel, Badge, Select, Rows, Empty } from '../components/ui';
+import { SecaoAbas } from '../components/SecaoAbas';
 import { PixelArt } from '../components/PixelArt';
 import { WorldMap } from '../components/WorldMap';
 import { categoryInfo } from '../../../../packages/simulation/src/model';
 import { Orders } from '../features/business/Orders';
 import { SupplyNetwork } from '../features/business/SupplyNetwork';
-import {
-  BusinessCard,
-  ResultadoPorUnidade,
-  estadoDe,
-} from '../features/business/BusinessCards';
+import { BusinessCard, ResultadoPorUnidade, estadoDe } from '../features/business/BusinessCards';
 import '../negocios.css';
 
 type Visao = 'cards' | 'lista';
@@ -51,8 +48,8 @@ export function BusinessesPage() {
   );
   return (
     <>
+      <SecaoAbas secao="negocios" />
       <PageHeading
-        eyebrow="Gestão / Portfólio empresarial"
         title="Meus Negócios"
         description="Acompanhe e administre seus estabelecimentos em diferentes regiões do Brasil."
       />
@@ -205,20 +202,20 @@ export function BusinessesPage() {
               <div className="neg-vazio">
                 {!mine.length && <PixelArt name="loja" scale={3} />}
                 <Empty
-                title={mine.length ? 'Nenhuma unidade encontrada' : 'Sua empresa começa aqui'}
-                description={
-                  mine.length
-                    ? 'Experimente outro nome ou categoria.'
-                    : 'Explore o mapa, encontre uma propriedade e abra seu primeiro negócio.'
-                }
-                action={
-                  !mine.length && (
-                    <button className="primary" onClick={() => navigate('map')}>
-                      Explorar propriedades
-                    </button>
-                  )
-                }
-              />
+                  title={mine.length ? 'Nenhuma unidade encontrada' : 'Sua empresa começa aqui'}
+                  description={
+                    mine.length
+                      ? 'Experimente outro nome ou categoria.'
+                      : 'Explore o mapa, encontre uma propriedade e abra seu primeiro negócio.'
+                  }
+                  action={
+                    !mine.length && (
+                      <button className="primary" onClick={() => navigate('map')}>
+                        Explorar propriedades
+                      </button>
+                    )
+                  }
+                />
               </div>
             )}
             <p className="panel-footnote">

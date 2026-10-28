@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Search, SlidersHorizontal, X, ArrowUpRight, Box, Globe2, Info } from 'lucide-react';
 import { useGame, cr, num } from '../../lib/game';
 import { Badge, Empty, Modal, PageHeading, Panel, Select, Tabs } from '../../components/ui';
+import { SecaoAbas } from '../../components/SecaoAbas';
 import { WorldMap } from '../../components/WorldMap';
 import { ProductAnalysisModal } from '../../components/ProductAnalysis';
 import { EconomicChart } from '../../components/EconomicChart';
@@ -89,8 +90,8 @@ export function OpportunitiesPage() {
             : 'Demanda modelada em R$/dia';
   return (
     <>
+      <SecaoAbas secao="comercio" />
       <PageHeading
-        eyebrow="Inteligência econômica / Mercado interno"
         title="Análise de oportunidades"
         description="Compare preços e disponibilidade do jogo. Comece pela visão geral e aprofunde cada mercadoria."
         action={<Tabs values={['Simplificada', 'Avançada']} value={mode} onChange={setMode} />}

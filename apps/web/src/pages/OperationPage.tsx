@@ -69,7 +69,7 @@ export function OperationPage() {
     return (
       <>
         <PageHeading
-          eyebrow="Meus Negócios / Instalação"
+          eyebrow="Meus Negócios › Instalação"
           title={e.name}
           description="Imóvel adquirido. Instale equipamentos, depois contrate e abasteça."
         />
@@ -92,7 +92,7 @@ export function OperationPage() {
   return (
     <>
       <PageHeading
-        eyebrow={`Meus Negócios / ${e.name}`}
+        eyebrow={`Meus Negócios › ${e.name}`}
         title={
           e.category === 'industry'
             ? 'Operação industrial'

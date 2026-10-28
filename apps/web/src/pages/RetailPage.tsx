@@ -55,7 +55,7 @@ export function RetailPage() {
     return (
       <>
         <PageHeading
-          eyebrow="Meus Negócios / Instalação"
+          eyebrow="Meus Negócios › Instalação"
           title={e.name}
           description="Prepare sua loja em etapas: imóvel, equipamento, equipe e abastecimento."
         />
@@ -91,7 +91,7 @@ export function RetailPage() {
   return (
     <>
       <PageHeading
-        eyebrow={`Meus Negócios / ${e.name}`}
+        eyebrow={`Meus Negócios › ${e.name}`}
         title={e.name}
         description="Decida o que vender, quando repor e quanto cada produto contribui para a operação."
         action={

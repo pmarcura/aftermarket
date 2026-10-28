@@ -9,7 +9,10 @@ test('compra, frete, entrega e produção alteram o estado real e persistem apó
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/');
-  await page.getByRole('navigation').getByRole('button', { name: 'Mercado', exact: true }).click();
+  await page
+    .getByRole('navigation', { name: 'Menu principal' })
+    .getByRole('button', { name: 'Comércio', exact: true })
+    .click();
   await page.getByLabel('Produto', { exact: true }).selectOption('coal');
   await page.getByLabel('Destino da compra').selectOption('e-industry');
   await page.getByLabel('Quantidade de mercadoria').fill('3');

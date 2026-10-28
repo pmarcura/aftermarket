@@ -17,7 +17,11 @@ test('titularidade, filtros vazios e análise profissional usam dados internos',
     .toBe(true);
   expect(await page.locator('.main-map .map-access button').count()).toBeGreaterThan(0);
   await page
-    .getByRole('navigation')
+    .getByRole('navigation', { name: 'Menu principal' })
+    .getByRole('button', { name: 'Comércio', exact: true })
+    .click();
+  await page
+    .getByRole('navigation', { name: 'Comércio' })
     .getByRole('button', { name: 'Oportunidades', exact: true })
     .click();
   for (const label of [
@@ -60,7 +64,10 @@ test('titularidade, filtros vazios e análise profissional usam dados internos',
     path: 'test-results/economy/opportunities-advanced.png',
     fullPage: true,
   });
-  await page.getByRole('navigation').getByRole('button', { name: 'Mercado', exact: true }).click();
+  await page
+    .getByRole('navigation', { name: 'Menu principal' })
+    .getByRole('button', { name: 'Comércio', exact: true })
+    .click();
   await expect(page.getByLabel('Produto', { exact: true })).toHaveValue('');
   await expect(page.getByLabel('Destino da compra', { exact: true })).toHaveValue('');
   await expect(page.getByLabel('Quantidade de mercadoria', { exact: true })).toHaveValue('');

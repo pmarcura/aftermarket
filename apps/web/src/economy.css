@@ -1260,3 +1260,357 @@
 .compra-dias button:disabled {
   opacity: 0.45;
 }
+
+/* Comprar para: os negócios do jogador como cartões */
+.comprar-para {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 16px;
+}
+.comprar-para > span {
+  font-size: 12px;
+  color: var(--muted);
+  margin-right: 4px;
+}
+.comprar-para button {
+  gap: 10px;
+  min-height: 52px;
+  padding: 4px 14px 4px 6px;
+  border: 1px solid #40545e;
+  border-radius: 10px;
+  background: #15262e;
+  color: #e0e8eb;
+  text-align: left;
+}
+.comprar-para button span {
+  display: grid;
+  line-height: 1.25;
+}
+.comprar-para button small {
+  color: var(--muted);
+  font-size: 11px;
+}
+.comprar-para button .pixel-art {
+  width: 52px;
+  height: auto;
+}
+.comprar-para button.on {
+  border-color: var(--gold);
+  box-shadow: inset 0 0 0 1px var(--gold);
+  background: #2a2b20;
+}
+.compra-qtd {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0 12px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.compra-qtd input {
+  width: 120px;
+}
+
+/* Cartão da carga */
+.carga {
+  display: grid;
+  gap: 12px;
+  margin: 4px 0 14px;
+  padding: 14px;
+  border: 1px solid #33505c;
+  border-radius: 10px;
+  background: #13232b;
+}
+.carga-rota {
+  display: grid;
+  grid-template-columns: auto minmax(30px, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.carga-rota span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.carga-rota small {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 11.5px;
+}
+.carga-estrada {
+  position: relative;
+  height: 2px;
+  border-top: 2px dashed #56707b;
+}
+.carga-estrada i {
+  position: absolute;
+  top: -5px;
+  left: 0;
+  width: 8px;
+  height: 8px;
+  background: var(--gold);
+  animation: carga-anda 2.6s steps(12) infinite;
+}
+@keyframes carga-anda {
+  to {
+    left: calc(100% - 8px);
+  }
+}
+.carga-frota {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+.carga-caminhao {
+  margin: 0;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  width: 92px;
+}
+.carga-caminhao .pixel-art {
+  filter: drop-shadow(0 3px 2px rgb(0 0 0 / 0.4));
+}
+.carga-cheio {
+  display: block;
+  width: 100%;
+  height: 7px;
+  border-radius: 4px;
+  background: #0b171d;
+  overflow: hidden;
+}
+.carga-cheio i {
+  display: block;
+  height: 100%;
+  background: var(--green);
+  transition: width 0.5s;
+}
+.carga-cheio i.medio {
+  background: var(--gold);
+}
+.carga-cheio i.pouco {
+  background: #d4766b;
+}
+.carga-caminhao figcaption {
+  font-size: 10.5px;
+  color: var(--muted);
+  text-align: center;
+}
+.carga-mais {
+  align-self: center;
+  font-weight: 650;
+  color: var(--muted);
+}
+.carga-valor {
+  display: grid;
+  gap: 2px;
+  margin-left: auto;
+  text-align: right;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.carga-valor strong {
+  font-size: 17px;
+  color: #e7edef;
+  font-variant-numeric: tabular-nums;
+}
+.carga-dica {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--gold);
+  border-radius: 4px;
+  background: #2a2b2066;
+}
+.carga-dica p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.carga-dica button {
+  justify-self: start;
+  gap: 6px;
+}
+.carga-abrir {
+  justify-self: start;
+  gap: 4px;
+}
+.carga-abrir .virado {
+  transform: rotate(180deg);
+}
+.carga-custos {
+  display: grid;
+  gap: 8px;
+}
+.carga-barra {
+  display: flex;
+  height: 10px;
+  border-radius: 5px;
+  overflow: hidden;
+}
+.carga-custos ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 11.5px;
+}
+.carga-custos li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.carga-custos li i {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  flex: none;
+}
+.carga-custos li b {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+@media (prefers-reduced-motion: reduce) {
+  .carga-estrada i {
+    animation: none;
+  }
+}
+
+/* A compra precisa de espaço para mostrar a carga; fica visível enquanto a lista rola. */
+.market-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 420px);
+  align-items: start;
+}
+.market-grid .purchase-summary {
+  position: sticky;
+  top: 84px;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+}
+@media (max-width: 1280px) {
+  .market-grid {
+    grid-template-columns: minmax(0, 1fr) 340px;
+  }
+}
+@media (max-width: 1000px) {
+  .market-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .market-grid .purchase-summary {
+    position: static;
+    max-height: none;
+  }
+}
+@media (max-width: 480px) {
+  .carga-custos ul {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Cartão de transporte, versão com veredito e comparação */
+.carga-cab {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.carga-cab h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 650;
+}
+.carga-veredito {
+  padding: 3px 9px;
+  border-radius: 99px;
+  font-size: 11.5px;
+  font-weight: 650;
+}
+.carga-veredito.leve {
+  color: #84d6ab;
+  background: #123a2d;
+}
+.carga-veredito.medio {
+  color: #eac079;
+  background: #403827;
+}
+.carga-veredito.pesado {
+  color: #f3a59b;
+  background: #4a2b28;
+}
+.carga-rota p {
+  grid-column: 1 / -1;
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.carga-caminhoes {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+.carga-traducao {
+  margin: 0;
+  padding: 9px 12px;
+  border-radius: 6px;
+  background: #0f1d24;
+  font-size: 12.5px;
+}
+.carga-traducao b {
+  color: var(--gold);
+}
+.carga-dica strong {
+  font-size: 13px;
+}
+.carga-comparar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.carga-comparar > div {
+  display: grid;
+  gap: 1px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: #0f1d24;
+}
+.carga-comparar > div.melhor {
+  box-shadow: inset 0 0 0 1px #2a7358;
+}
+.carga-comparar b {
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+}
+.carga-comparar .melhor b {
+  color: var(--green);
+}
+.carga-comparar small {
+  font-size: 11px;
+  color: var(--muted);
+}
+.carga-ok {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--green);
+  font-size: 12.5px;
+}
+.carga-custos li small {
+  width: 34px;
+  text-align: right;
+  color: var(--muted);
+}
+.carga-custos ul {
+  grid-template-columns: 1fr;
+}

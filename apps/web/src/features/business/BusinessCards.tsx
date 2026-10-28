@@ -3,10 +3,7 @@ import { useGame, cr, num } from '../../lib/game';
 import { Badge } from '../../components/ui';
 import { PixelArt, Fumaca } from '../../components/PixelArt';
 import { spriteDoNegocio, type Sprite } from '../../design/arte';
-import {
-  categoryInfo,
-  type Establishment,
-} from '../../../../../packages/simulation/src/model';
+import { categoryInfo, type Establishment } from '../../../../../packages/simulation/src/model';
 import { loadOf } from '../../../../../packages/simulation/src/engine';
 
 // Onde sai a fumaça, em % da ilustração. Só as chamines.
@@ -26,7 +23,10 @@ export function estadoDe(e: Establishment): { label: string; tone: 'green' | 'go
 /** Ocupação do armazém: o que estiver mais cheio, massa ou volume. */
 function ocupacao(e: Establishment) {
   const { mass, volume } = loadOf(e.inventory);
-  const f = Math.max(e.capacityT ? mass / e.capacityT : 0, e.capacityM3 ? volume / e.capacityM3 : 0);
+  const f = Math.max(
+    e.capacityT ? mass / e.capacityT : 0,
+    e.capacityM3 ? volume / e.capacityM3 : 0,
+  );
   return Math.min(1, Math.max(0, f));
 }
 
@@ -67,7 +67,12 @@ export function BusinessCard({ e, indice }: { e: Establishment; indice: number }
   return (
     <article
       className={`neg-card ${parado ? 'parado' : ''}`}
-      style={{ '--cat': categoryInfo[e.category].color, animationDelay: `${indice * 45}ms` } as React.CSSProperties}
+      style={
+        {
+          '--cat': categoryInfo[e.category].color,
+          animationDelay: `${indice * 45}ms`,
+        } as React.CSSProperties
+      }
       onClick={() => openBusiness(e.id)}
     >
       <div className="neg-arte">

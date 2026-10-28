@@ -105,8 +105,8 @@ export function Empate({ loja }: { loja: Establishment }) {
         </div>
       )}
       <small className="muted">
-        Estimativa com a procura média da cidade e as lojas concorrentes. Preço, qualidade e
-        estoque dos rivais mudam a venda real.
+        Estimativa com a procura média da cidade e as lojas concorrentes. Preço, qualidade e estoque
+        dos rivais mudam a venda real.
       </small>
     </section>
   );

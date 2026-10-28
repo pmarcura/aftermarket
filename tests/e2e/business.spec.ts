@@ -6,7 +6,7 @@ async function actor(page: Page, id: string) {
     localStorage.setItem('aftermarket.page', 'market');
   }, id);
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'Mercado de mercadorias' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Comprar mercadorias' })).toBeVisible();
 }
 async function orders(page: Page) {
   await page.locator('summary').filter({ hasText: 'Pedidos e negociações' }).click();
@@ -84,8 +84,12 @@ test('negocia pedido real, agrupa caminhões e configura abastecimento e educaç
   expect(after.orders.find((o) => o.id === order.id)?.status).toBe('accepted');
   expect(after.shipments.filter((s) => s.orderId === order.id)).toHaveLength(3);
   await page
-    .getByRole('navigation')
-    .getByRole('button', { name: 'Logística', exact: true })
+    .getByRole('navigation', { name: 'Menu principal' })
+    .getByRole('button', { name: 'Comércio', exact: true })
+    .click();
+  await page
+    .getByRole('navigation', { name: 'Comércio' })
+    .getByRole('button', { name: 'Entregas', exact: true })
     .click();
   await page
     .locator('.shipment-item')

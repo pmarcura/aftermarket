@@ -12,6 +12,7 @@ import {
   Modal,
   Empty,
 } from '../components/ui';
+import { SecaoAbas } from '../components/SecaoAbas';
 import type { ProductId, Vehicle } from '../../../../packages/simulation/src/model';
 import { Stock } from '../features/business/Stock';
 import { SalesCatalog } from '../features/business/SalesCatalog';
@@ -50,8 +51,8 @@ export function CarrierPage() {
   const cashMissing = Math.max(0, vehiclePrice - cashAvailable);
   return (
     <>
+      <SecaoAbas secao="negocios" />
       <PageHeading
-        eyebrow={logistics || !v2 ? 'Logística / Minha transportadora' : 'Logística / Minha frota'}
         title={logistics?.name ?? (v2 ? 'Minha frota' : 'Minha transportadora')}
         description={
           v2

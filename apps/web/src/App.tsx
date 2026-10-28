@@ -5,8 +5,6 @@ import {
   Map,
   TrendingUp,
   Store,
-  ChartNoAxesColumnIncreasing,
-  Truck,
   Building2,
   Search,
   ChevronDown,
@@ -19,6 +17,7 @@ import {
   Check,
   MapPin,
   ExternalLink,
+  ArrowLeftRight,
 } from 'lucide-react';
 import { GameProvider, useGame, cr, type Page } from './lib/game';
 import { Modal, Badge, Rows } from './components/ui';
@@ -62,15 +61,18 @@ const normalized = (value: string) =>
 
 const destinations: { id: Page; label: string; icon: typeof Map; pages: Page[] }[] = [
   { id: 'map', label: 'Mapa', icon: Map, pages: ['map', 'purchase'] },
-  { id: 'opportunities', label: 'Oportunidades', icon: TrendingUp, pages: ['opportunities'] },
   {
     id: 'businesses',
     label: 'Meus Negócios',
     icon: Store,
-    pages: ['businesses', 'industry', 'retail'],
+    pages: ['businesses', 'industry', 'retail', 'carrier'],
   },
-  { id: 'market', label: 'Mercado', icon: ChartNoAxesColumnIncreasing, pages: ['market'] },
-  { id: 'logistics', label: 'Logística', icon: Truck, pages: ['logistics', 'carrier'] },
+  {
+    id: 'market',
+    label: 'Comércio',
+    icon: ArrowLeftRight,
+    pages: ['market', 'opportunities', 'logistics'],
+  },
   { id: 'company', label: 'Empresa', icon: Building2, pages: ['company'] },
 ];
 function Brand() {

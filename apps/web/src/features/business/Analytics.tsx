@@ -198,7 +198,7 @@ export function Consumption({ establishment: e }: { establishment: Establishment
     sold = recent.reduce((n, s) => n + s.sold, 0),
     desired = recent.reduce((n, s) => n + s.desired, 0);
   const p = world.properties.find((p) => p.id === e.propertyId)!,
-    region = regionFor(p.coordinates, p.city);
+    region = regionFor(world, p.coordinates, p.city);
   const competitors = Math.max(
     1,
     world.establishments.filter(

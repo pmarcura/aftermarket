@@ -6,7 +6,7 @@ import {
   type Category,
   type SupplyPolicy,
 } from './model';
-import { regions } from '../../world/src/regions';
+import { regionsOf } from './metrics';
 import { GAME_DAY, defaultSpecialization } from './operations';
 import { householdItems } from './channels';
 
@@ -145,7 +145,7 @@ export function regionalizeTreasury(w: World, at: number) {
   const committed = w.infrastructure
     .filter((c) => c.status === 'open' && !c.treasuryId)
     .reduce((n, c) => n + c.reserved, 0);
-  const states = [...new Set(regions.map((r) => r.state))];
+  const states = [...new Set(regionsOf(w).map((r) => r.state))];
   let free = Math.max(0, legacy.balance - committed);
   for (let i = 0; i < states.length; i++) {
     const amount = Math.floor(free / (states.length - i));
@@ -182,7 +182,7 @@ export function initializeCompetition(w: World, at = w.updatedAt) {
     w.stateWages[state] ??= { index: 1, updatedAt: at, history: [{ at, index: 1 }] };
   }
   regionalizeTreasury(w, at);
-  for (const r of regions) {
+  for (const r of regionsOf(w)) {
     const pid = `municipal-${r.id}`,
       id = `e-${pid}`;
     if (!w.properties.some((p) => p.id === pid))
@@ -251,7 +251,7 @@ export function initializeCompetition(w: World, at = w.updatedAt) {
     { category: 'farm', recipe: 'milk-production', inventory: { soymeal: 500, milk: 200 } },
   ];
   for (const i of missing) {
-    const r = regions[(i + Math.floor(i / 10) * 4) % regions.length],
+    const r = regionsOf(w)[(i + Math.floor(i / 10) * 4) % regionsOf(w).length],
       template = portfolio[i % portfolio.length],
       cid = `rival-${i + 1}`,
       pid = `site-${cid}`,

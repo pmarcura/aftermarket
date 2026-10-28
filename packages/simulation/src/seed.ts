@@ -6,10 +6,20 @@ import { operatingCosts, recordMarket } from './metrics';
 import { initializeOperations } from './operations';
 import { initializeCompetition } from './competition';
 import { initializeDesign } from './design';
-import { alignLegacyProducers, normalizeV2Lot, openV2Rivals, prepareV2Fleet } from './opening-v2';
+import {
+  alignLegacyProducers,
+  normalizeV2Lot,
+  openV2Carriers,
+  openV2Rivals,
+  placeV2Geography,
+  prepareV2Fleet,
+} from './opening-v2';
 
 // Mundo versão 1 por padrão; `economy: 2` abre a economia alvo da etapa B (D-028 a D-030).
-export function createWorld(now = Date.now(), options: { economy?: 1 | 2 } = {}): World {
+export function createWorld(
+  now = Date.now(),
+  options: { economy?: 1 | 2; scale?: number } = {},
+): World {
   const properties: Property[] = [];
   const establishments: Establishment[] = [];
   const add = (
@@ -278,7 +288,13 @@ export function createWorld(now = Date.now(), options: { economy?: 1 | 2 } = {})
         ['expresso', 'Expresso Paulista'],
       ].map(([id, name]) => ({ id, name, bot: true, balance: 650000000 })),
       { id: 'treasury', name: 'Serviços e propriedades do mundo', bot: true, balance: 0 },
-      { id: 'consumers', name: 'Orçamento dos consumidores', bot: true, balance: 5000000000 },
+      // Na versão 2 o orçamento das famílias acompanha a escala do mundo (capital dos bots).
+      {
+        id: 'consumers',
+        name: 'Orçamento dos consumidores',
+        bot: true,
+        balance: options.economy === 2 ? 8000000000 * Math.max(1, options.scale ?? 1) : 5000000000,
+      },
     ],
     properties,
     establishments,
@@ -309,7 +325,7 @@ export function createWorld(now = Date.now(), options: { economy?: 1 | 2 } = {})
       startedAt: now,
       config:
         options.economy === 2
-          ? v2SeasonConfig()
+          ? v2SeasonConfig(options.scale ?? 1)
           : createSeasonConfig(
               Object.fromEntries(
                 Object.entries(legacyProducts).map(([id, p]) => [id, p.basePrice]),
@@ -337,6 +353,8 @@ export function createWorld(now = Date.now(), options: { economy?: 1 | 2 } = {})
   initializeCompetition(world, now);
   openV2Rivals(world, now);
   alignLegacyProducers(world);
+  placeV2Geography(world);
+  openV2Carriers(world, now);
   for (const p of world.properties) normalizeV2Lot(world, p);
   initializeDesign(world, now);
   recordMarket(world, now);

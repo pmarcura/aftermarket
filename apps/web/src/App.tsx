@@ -23,7 +23,7 @@ import {
 import { GameProvider, useGame, cr, type Page } from './lib/game';
 import { Modal, Badge, Rows } from './components/ui';
 import './business.css';
-import { regions } from '../../../packages/world/src/regions';
+import { regionsOf } from '../../../packages/simulation/src/metrics';
 import { products, type Position } from '../../../packages/simulation/src/model';
 import { freeCash } from '../../../packages/simulation/src/design';
 const MapPage = lazy(() => import('./pages/MapPage').then((m) => ({ default: m.MapPage })));
@@ -110,7 +110,7 @@ function Shell() {
       : undefined;
   const visibleRegions =
     query.trim().length >= 2
-      ? regions
+      ? regionsOf(world)
           .filter((r) => normalized(`${r.name} ${r.state}`).includes(normalized(query)))
           .slice(0, 5)
       : [];

@@ -128,6 +128,18 @@ Pedido do Pedro: "faça todos os balanceamentos necessários e deixe a interface
 - **Começo enxuto no mundo jogável.** Cada jogador começa com uma loja vazia, 8 funcionários e R$ 1 milhão livre. Os outros negócios voltam ao mapa como lotes à venda. Só no cenário jogável (`npm run dev:v2`); o mundo dos testes automáticos segue igual.
 - **Primeiros passos na interface.** Guia de 5 etapas conferidas pelo estado do jogo (comprar, receber, vender, abrir produção, produzir), aberto na primeira visita e no menu lateral. Mercado mostra primeiro o que o destino usa, com margem sobre a prateleira e quantidade sugerida; Oportunidades mostra quanto custa e quanto rende abrir cada negócio.
 
+### D-034 · Brasil real, 500 bots e motor leve (30/10/2026)
+
+Pedido do Pedro: mapa leve, negócios onde existem de verdade, 500 bots. Decisões de rotina, válidas para mundos novos (versão 2); o mundo principal salvo não muda:
+
+- **Pacote enxuto do navegador:** cada jogador recebe o próprio extrato de 7 dias, o recente dos outros e totais calculados no servidor. No dia 30, 32 MB viraram 477 KB (67 KB comprimidos); com 557 empresas, 1,5 MB (197 KB) uma vez por rodada.
+- **Servidor com o mundo na memória:** grava a cada 5 s e a cada comando; comando recusado no meio volta ao estado anterior. O histórico com mais de 15 dias vai para tabelas de arquivo, sem apagar nada.
+- **Centro-Sul real:** 59 municípios com código do IBGE (coordenadas aproximadas da sede, Censo 2022 arredondado). Cada atividade nasce no seu polo real: ferro no Quadrilátero, carvão em SC e RS, aço em Ipatinga, Ouro Branco, Volta Redonda e Serra, soja em MT, GO e PR, arroz em Uruguaiana, cana em Ribeirão Preto e assim por diante.
+- **Escala do mundo:** a abertura sai da calculadora vezes a escala (1 = mundo de referência; 20 = cerca de 500 empresas-bot). Bots ficam com 80% das linhas, em empresas de 1 a 4 linhas; lojas-bot por cidade conforme a procura; distribuidores regionais nas cidades acima de 600 mil habitantes; 22 transportadoras regionais nos polos.
+- **Frete pela estrada estimada nos mundos novos:** a prova da economia sempre usou distância estimada; esperar o serviço público de rotas (1 pedido por segundo) travaria as compras com dezenas de cidades. A rota real só desenha o caminho.
+- **Defeitos achados no caminho:** compra de quantidade quebrada em toneladas era sempre recusada como carga incompatível (estrangulava a cadeia do metal desde a versão 2); o teto de frete dos bots usava o insumo mais barato para todos (carvão distante sempre recusado), agora é por produto; lojas da mesma cidade estocavam a cidade inteira cada uma.
+- **Busca de fornecedor em escala:** cada compra cota a própria empresa, as transportadoras, o vendedor e as 4 frotas mais próximas da carga, e só as 6 ofertas mais baratas com frete estimado. Com 260 bots, o dia de jogo caiu de 36 s para 1,2 s; com 486 bots fica perto de 8 s.
+
 ### Ideia em avaliação · Genética de cultivares (Pedro, 28/10/2026)
 
 O Pedro propôs um sistema de genética a partir de uma pesquisa sobre a cana. O produtor compra uma pequena quantidade de mudas de alta tecnologia no viveiro e as multiplica numa área própria. Depois replanta com a própria cana por anos e só volta a comprar para trocar de variedade, para limpar o canavial de doenças ou para expandir a área de uma vez.

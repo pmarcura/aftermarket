@@ -27,6 +27,7 @@ const supplyPolicy = z
             target: amount.max(1000000),
             maxBuy: amount.max(1000000),
             maxPrice: z.number().int().min(0).max(1e9),
+            maxFreightPerUnit: z.number().int().min(0).max(1e9).optional(),
           })
           .strict(),
       )

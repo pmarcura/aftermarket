@@ -38,7 +38,12 @@ function leanStart(w: World, at: number) {
       v.status = 'available';
     }
     if (!shop) {
-      const lot = w.properties.find((p) => p.id === 'newretail' && p.ownerId === null)!;
+      // Ponto comercial livre em Campinas (no mundo versão 2 os lotes são gerados por cidade).
+      const lot =
+        w.properties.find((p) => p.id === 'newretail' && p.ownerId === null) ??
+        w.properties.find(
+          (p) => p.category === 'retail' && p.ownerId === null && p.city === 'Campinas',
+        )!;
       lot.ownerId = actor;
       shop = {
         id: `e-start-${actor}`,
@@ -100,8 +105,13 @@ function leanStart(w: World, at: number) {
   }
 }
 export type ScenarioName = 'baseline' | 'starter' | 'low-demand' | 'economy-2';
-export function createScenario(at: number, scenario: ScenarioName = 'baseline', seed = 0) {
-  const w = createWorld(at, scenario === 'economy-2' ? { economy: 2 } : {});
+export function createScenario(
+  at: number,
+  scenario: ScenarioName = 'baseline',
+  seed = 0,
+  options: { scale?: number } = {},
+) {
+  const w = createWorld(at, scenario === 'economy-2' ? { economy: 2, scale: options.scale } : {});
   if (
     !['baseline', 'starter', 'low-demand', 'economy-2'].includes(scenario) ||
     !Number.isSafeInteger(seed) ||

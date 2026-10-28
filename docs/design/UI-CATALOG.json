@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "fixtureFingerprint": "f9ee5200f2006b1e50158f834069127cfa98f5d747e3d3dcba04aad3d26d7b80",
+  "fixtureFingerprint": "2cc139eb1a9dad1e0435a5ce3a7ab09bb7e545453ef9f91b81935b34a2237876",
   "note": "Inventário estático alcançável por tela; inclui componentes compartilhados e ramos condicionais. Textos dinâmicos e estados visíveis precisam da evidência de navegador. Comandos type são candidatos, não prova de execução.",
   "screens": [
     {
@@ -9,7 +9,7 @@
       "source": "pages/MapPage.tsx",
       "purpose": "Encontrar e inspecionar propriedades.",
       "task": "Localizar uma propriedade e entender titularidade e acesso.",
-      "fingerprint": "1be837e2fc14315ceb88fa845c1ab72f0247845ae006467a15880eb69d7ee4ec",
+      "fingerprint": "69f16ecfc9cb82eefb48ba4ac834002c81158c99868bc132909fde73fdb8197c",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -36,7 +36,7 @@
       "source": "pages/MapPage.tsx",
       "purpose": "Revisar imóvel, instalação e capital necessário.",
       "task": "Entender o custo antes de confirmar a aquisição.",
-      "fingerprint": "1be837e2fc14315ceb88fa845c1ab72f0247845ae006467a15880eb69d7ee4ec",
+      "fingerprint": "69f16ecfc9cb82eefb48ba4ac834002c81158c99868bc132909fde73fdb8197c",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -63,7 +63,7 @@
       "source": "pages/OpportunitiesPage.tsx",
       "purpose": "Comparar mercados e oportunidades por item e região.",
       "task": "Filtrar um produto e explicar demanda, preço e oferta.",
-      "fingerprint": "fb3fc5de735796467571a3bfaeee38c6810e22208151288ef7d5f346a0972000",
+      "fingerprint": "d44b818b8d8df53c38d41cf385b3509a4318ac9e4ffa24e19f2307f79f31bb20",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -93,7 +93,7 @@
       "source": "pages/BusinessesPage.tsx",
       "purpose": "Gerenciar estruturas e conexões de abastecimento.",
       "task": "Identificar uma estrutura parada e abrir sua operação.",
-      "fingerprint": "0fcd30340d61df175701633d18db1436b2b3723ca37a5ae58e78183c0120975d",
+      "fingerprint": "d90fdbdb30e72029940954373bf5faf5324a6320457d2e1b4f173e96e36734fe",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -127,7 +127,7 @@
       "business": "e-industry",
       "purpose": "Produzir, abastecer, contratar e vender.",
       "task": "Revisar insumos, capacidade e custo antes de iniciar produção.",
-      "fingerprint": "3f37f13c17fee2dcdba3ce6ad664cac8b2a595e9599998faf0833f48003cc7c8",
+      "fingerprint": "7c23a4f50b9bf9b93d37a1f6e7d7fc83ee89133870cee1ae3f661a338897e685",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -168,7 +168,7 @@
       "business": "e-retail",
       "purpose": "Acompanhar estoque, preços e reposição da loja.",
       "task": "Reconhecer ruptura e configurar uma reposição viável.",
-      "fingerprint": "5bbbf4e3de24b0e0de2093ccd2f9c67671daaf447c64e99b198e372c429515be",
+      "fingerprint": "1e9284bdbced8225044308d4ab9b5704a16af706d6cbe72c36568ca480bbd3be",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -207,7 +207,7 @@
       "source": "pages/MarketPage.tsx",
       "purpose": "Comprar, negociar e observar concorrentes e editais.",
       "task": "Comparar custo posto e escolher uma compra compatível.",
-      "fingerprint": "1f27dfa20c3b6fd18626601455dec06a60857530a1679ff960490307aaeb1aca",
+      "fingerprint": "afefdece528af0f3b856d39631301252fcc3a51fe2dd7bb3772533266a65d923",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -241,7 +241,7 @@
       "source": "pages/LogisticsPage.tsx",
       "purpose": "Contratar e acompanhar transporte.",
       "task": "Entender disponibilidade, limite, custo e prazo de uma carga.",
-      "fingerprint": "c7a677a979be55aa64ec24988cb024f1efc26ab36df21991fbbb2460a921211d",
+      "fingerprint": "38085d805517e561d7687d4ed6eeabeb4988ab62f9800fd7366edaad577cb047",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -274,7 +274,7 @@
       "business": "e-logistics",
       "purpose": "Gerenciar veículos, disponibilidade e capacidade.",
       "task": "Encontrar um veículo livre e comparar sua capacidade.",
-      "fingerprint": "b9de67adf47692f4fbe2ee521020a6bd80f0b713161152f1707ff98e16ff0f0c",
+      "fingerprint": "998e2eff8db9df580f6880aa2b5278102dffe027f903f6e87e099c658d98ace1",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -307,7 +307,7 @@
       "source": "pages/CompanyPage.tsx",
       "purpose": "Explicar caixa, resultado, compromissos e recuperação.",
       "task": "Distinguir saldo, caixa livre, dívida e resultado operacional.",
-      "fingerprint": "76d9efc0a9c273c8860f29842b0d111a773c77afdd44753c6a0cfd9e696c3869",
+      "fingerprint": "2c3820444348f34a2b7ffe97a1193392b33c39b564d79c114fb1e731f853d929",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -338,7 +338,7 @@
     },
     {
       "path": "apps/web/src/App.tsx",
-      "hash": "ffcd25aa55bbf49dd0651fd9b5fe1b945873b9c3f4c2fcc637d37850074c0dac",
+      "hash": "f6594e1049019b0ee18aebcc05d87455497a4e4274c0739927a7413a2daf982a",
       "components": [
         "ArrowUpRight",
         "Badge",
@@ -990,7 +990,7 @@
     },
     {
       "path": "apps/web/src/components/WorldMap.tsx",
-      "hash": "e1ed15653327f7f4e9acd50b4668c81b717238d6ec20244363bc4fa3eb800c9d",
+      "hash": "e600843de586c1e39347fcef5aec8aa87bf2e2b455ee685761f0c5f9ee268651",
       "components": [
         "CategoryIcon",
         "LocateFixed",
@@ -1001,27 +1001,27 @@
         {
           "kind": "role",
           "text": "group",
-          "line": 730
+          "line": 729
         },
         {
           "kind": "aria-label",
           "text": "Negócios no mapa",
-          "line": 730
+          "line": 729
         },
         {
           "kind": "button",
           "text": "{dinâmico} · {dinâmico} {dinâmico}",
-          "line": 732
+          "line": 731
         },
         {
           "kind": "role",
           "text": "status",
-          "line": 746
+          "line": 745
         },
         {
           "kind": "button",
           "text": "Recarregar mapa",
-          "line": 791
+          "line": 790
         }
       ],
       "commands": []
@@ -1042,7 +1042,7 @@
     },
     {
       "path": "apps/web/src/features/business/Analytics.tsx",
-      "hash": "4f5ce6bd324321272ecefb25240d6a99d8ffd590735e2755911186ba93415a81",
+      "hash": "126a781b6a31544540fc19299580f58991a0882a647634f82dc418af6fabbb04",
       "components": [
         "EconomicChart",
         "Empty",
@@ -2828,7 +2828,7 @@
     },
     {
       "path": "apps/web/src/features/economy/Market.tsx",
-      "hash": "bdc391d99718b5ef84e74a9a9df50376cc75eb311926a54a6a9e601481eb6e6e",
+      "hash": "a840382980d27e9c0f626640ea93dbab3aca399bb5b7296ca9289437d71064a0",
       "components": [
         "ArrowRight",
         "Badge",
@@ -3132,7 +3132,7 @@
     },
     {
       "path": "apps/web/src/features/economy/Opportunities.tsx",
-      "hash": "ad48980d15dc80074db5d26578bcd40b0c3916ae0ffed72e059dfddcc71334f5",
+      "hash": "6445e9c3adf497303825c0f49872e70b6dcc2bdae5e159e85833889070e242c1",
       "components": [
         "ArrowUpRight",
         "Badge",
@@ -3157,242 +3157,242 @@
         {
           "kind": "title",
           "text": "Análise de oportunidades",
-          "line": 95
+          "line": 94
         },
         {
           "kind": "aria-label",
           "text": "Buscar mercadoria",
-          "line": 112
+          "line": 111
         },
         {
           "kind": "placeholder",
           "text": "Buscar mercadoria…",
-          "line": 113
+          "line": 112
         },
         {
           "kind": "option",
           "text": "Categoria (opcional)",
-          "line": 128
+          "line": 127
         },
         {
           "kind": "option",
           "text": "{dinâmico}",
-          "line": 130
+          "line": 129
         },
         {
           "kind": "option",
           "text": "Mercadoria (opcional)",
-          "line": 138
+          "line": 137
         },
         {
           "kind": "option",
           "text": "{dinâmico}",
-          "line": 143
+          "line": 142
         },
         {
           "kind": "option",
           "text": "Estado (opcional)",
-          "line": 156
+          "line": 155
         },
         {
           "kind": "option",
           "text": "{dinâmico}",
-          "line": 158
+          "line": 157
         },
         {
           "kind": "option",
           "text": "Município (opcional)",
-          "line": 166
+          "line": 165
         },
         {
           "kind": "option",
           "text": "{dinâmico}",
-          "line": 170
+          "line": 169
         },
         {
           "kind": "button",
           "text": "Filtros avançados {dinâmico} {dinâmico}",
-          "line": 175
+          "line": 174
         },
         {
           "kind": "button",
           "text": "Limpar",
-          "line": 180
+          "line": 179
         },
         {
           "kind": "title",
           "text": "Mapa da economia",
-          "line": 206
+          "line": 205
         },
         {
           "kind": "option",
           "text": "Demanda do jogo",
-          "line": 220
+          "line": 219
         },
         {
           "kind": "option",
           "text": "Estoque anunciado",
-          "line": 221
+          "line": 220
         },
         {
           "kind": "option",
           "text": "Cobertura em dias",
-          "line": 222
+          "line": 221
         },
         {
           "kind": "option",
           "text": "Preço por unidade",
-          "line": 223
+          "line": 222
         },
         {
           "kind": "h3",
           "text": "Compare o custo no destino",
-          "line": 310
+          "line": 309
         },
         {
           "kind": "h3",
           "text": "Observe a disponibilidade",
-          "line": 315
+          "line": 314
         },
         {
           "kind": "h3",
           "text": "Confira as premissas",
-          "line": 320
+          "line": 319
         },
         {
           "kind": "h2",
           "text": "Mercadorias da temporada",
-          "line": 329
+          "line": 328
         },
         {
           "kind": "h3",
           "text": "{dinâmico}",
-          "line": 349
+          "line": 348
         },
         {
           "kind": "button",
           "text": "Ver mais",
-          "line": 379
+          "line": 378
         },
         {
           "kind": "th",
           "text": "Mercadoria / unidade",
-          "line": 396
+          "line": 395
         },
         {
           "kind": "th",
           "text": "Oferta média",
-          "line": 397
+          "line": 396
         },
         {
           "kind": "th",
           "text": "Menor / maior",
-          "line": 398
+          "line": 397
         },
         {
           "kind": "th",
           "text": "Abertura",
-          "line": 399
+          "line": 398
         },
         {
           "kind": "th",
           "text": "Estoque",
-          "line": 400
+          "line": 399
         },
         {
           "kind": "th",
           "text": "Demanda / dia",
-          "line": 401
+          "line": 400
         },
         {
           "kind": "th",
           "text": "Negociado",
-          "line": 402
+          "line": 401
         },
         {
           "kind": "aria-label",
           "text": "Análise",
-          "line": 403
+          "line": 402
         },
         {
           "kind": "button",
           "text": "Analisar",
-          "line": 430
+          "line": 429
         },
         {
           "kind": "title",
           "text": "Nenhuma mercadoria atende aos filtros",
-          "line": 443
+          "line": 442
         },
         {
           "kind": "button",
           "text": "Limpar filtros",
-          "line": 446
+          "line": 445
         },
         {
           "kind": "title",
           "text": "Filtros avançados de mercado",
-          "line": 458
+          "line": 457
         },
         {
           "kind": "label",
           "text": "Estoque mínimo",
-          "line": 460
+          "line": 459
         },
         {
           "kind": "aria-label",
           "text": "Estoque mínimo",
-          "line": 463
+          "line": 462
         },
         {
           "kind": "placeholder",
           "text": "Sem mínimo",
-          "line": 466
+          "line": 465
         },
         {
           "kind": "label",
           "text": "Preço máximo por unidade (R$)",
-          "line": 471
+          "line": 470
         },
         {
           "kind": "aria-label",
           "text": "Preço máximo por unidade",
-          "line": 474
+          "line": 473
         },
         {
           "kind": "placeholder",
           "text": "Sem limite",
-          "line": 478
+          "line": 477
         },
         {
           "kind": "label",
           "text": "Raio econômico da praça (km)",
-          "line": 483
+          "line": 482
         },
         {
           "kind": "aria-label",
           "text": "Raio econômico",
-          "line": 486
+          "line": 485
         },
         {
           "kind": "placeholder",
           "text": "Padrão do modelo: 120 km",
-          "line": 490
+          "line": 489
         },
         {
           "kind": "label",
           "text": "{dinâmico} Apenas itens com ofertas disponíveis",
-          "line": 495
+          "line": 494
         },
         {
           "kind": "button",
           "text": "Limpar todos",
-          "line": 504
+          "line": 503
         },
         {
           "kind": "button",
           "text": "Aplicar filtros",
-          "line": 507
+          "line": 506
         }
       ],
       "commands": []
@@ -4260,7 +4260,7 @@
     },
     {
       "path": "apps/web/src/pages/RetailPage.tsx",
-      "hash": "2a62d5c7d4e6b97413e3fd65b5970b8cc0f966c632bd4bb853fafd5a4c5d1f1d",
+      "hash": "7c5aff8fecc9154040537ad89e5f3cd7b32080b8454b81e3fe45eb03f9e4a3e7",
       "components": [
         "Badge",
         "Box",

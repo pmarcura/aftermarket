@@ -20,7 +20,8 @@ const seeds = from.length
   ? from.flatMap((f) => f.results.map((r) => r.seed))
   : arg('seeds', '0,1,2').split(',').map(Number);
 const window = Math.min(30, days);
-const out = arg('out', 'test-results/economy-proof.json'); // últimos dias, depois da partida
+const out = arg('out', 'test-results/economy-proof.json');
+const scale = Number(arg('scale', '1')); // últimos dias, depois da partida
 const AT = Date.UTC(2026, 9, 26, 12);
 const flows = dailyFlows();
 
@@ -43,7 +44,7 @@ interface SeedResult {
 const money = (w: World) => w.companies.reduce((n, c) => n + c.balance, 0);
 
 function run(seed: number): SeedResult {
-  const w = createScenario(AT, 'economy-2', seed);
+  const w = createScenario(AT, 'economy-2', seed, { scale });
   applyLabOpening(w, {
     seed,
     seedMode: 'conditions',

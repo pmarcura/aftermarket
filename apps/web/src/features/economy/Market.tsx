@@ -75,7 +75,7 @@ export function MarketPage() {
         world.properties.find((p) => p.id === x.propertyId)!.city === dp.city,
     ).length;
     const want = retailDestination
-      ? (householdDemand(world, regionFor(dp.coordinates, dp.city).id, id) * 7) /
+      ? (householdDemand(world, regionFor(world, dp.coordinates, dp.city).id, id) * 7) /
         Math.max(1, stores)
       : (recipe?.input[id] ?? recipe?.requires?.[id] ?? 0) * 4;
     return Math.max(0, Math.min(Math.floor(stock), Math.ceil(want)));

@@ -211,6 +211,10 @@ export interface SeasonConfig {
   wholesalePrices?: Record<string, number>;
   // Versão 2: o servidor arquiva extrato, lotes e entregas com mais de keepDays dias de jogo.
   history?: { keepDays: number };
+  // Versão 2: municípios do mundo (geography-v2.ts) e escala da economia (1 = mundo de
+  // referência da calculadora; 10 = cerca de 500 empresas-bot). Ausente: 10 praças piloto.
+  regions?: import('../../world/src/geography-v2').City[];
+  worldScale?: number;
   design: typeof designRules & { equipmentByRecipe?: Record<string, number> };
   competition: typeof competitionRules;
   operations: typeof operationRules;

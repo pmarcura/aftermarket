@@ -44,7 +44,13 @@ describe('mundo versão 2 · configuração da economia alvo', () => {
   });
 
   it('usa a calibração da calculadora: consumo, loja e equipamento por receita', () => {
-    expect(v2.season.config.parameters.playableConsumerShare).toBe(designWorld.consumerShare);
+    // Centro-Sul real: a parcela de consumidores reparte pela população a procura do mundo de
+    // referência vezes a escala.
+    const population = Object.values(v2.season.config.population).reduce((n, p) => n + p, 0);
+    expect(population * v2.season.config.parameters.playableConsumerShare).toBeCloseTo(
+      designWorld.consumers * (v2.season.config.worldScale ?? 1),
+      3,
+    );
     expect(householdItems(v2)).toContain('utensils');
     expect(v2.season.config.operations.retailUnitsPerWorker * 12).toBe(
       designWorld.retail.unitsPerWorkerDay,
@@ -53,10 +59,17 @@ describe('mundo versão 2 · configuração da economia alvo', () => {
       const cost = equipmentCostFor(v2, r.category, r.id);
       expect(Math.abs(cost - r.equipment)).toBeLessThanOrEqual(50000);
     }
-    const region = Object.keys(v2.season.config.population)[0];
-    expect(householdDemand(v2, region, 'milk')).toBeCloseTo(
-      householdDemand(v1, region, 'milk') * 2,
-      6,
+    // Procura total de leite do mundo: consumidores de referência vezes o consumo mensal / 30.
+    const milk = Object.keys(v2.season.config.population).reduce(
+      (n, region) => n + householdDemand(v2, region, 'milk'),
+      0,
+    );
+    expect(milk).toBeCloseTo(
+      (designWorld.consumers *
+        (v2.season.config.worldScale ?? 1) *
+        v2.season.config.consumption.milk!) /
+        30,
+      3,
     );
   });
 

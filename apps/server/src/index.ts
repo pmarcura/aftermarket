@@ -1,5 +1,5 @@
 import express from 'express';
-import { regions } from '../../../packages/world/src/regions';
+import { regionsOf } from '../../../packages/simulation/src/metrics';
 import { z } from 'zod';
 import { resolve } from 'node:path';
 import { createStore } from './store';
@@ -18,7 +18,12 @@ const scenario = z
   .enum(['baseline', 'starter', 'low-demand', 'economy-2'])
   .parse(process.env.AFTERMARKET_SCENARIO ?? 'baseline') as ScenarioName;
 const store = createStore(resolve(process.env.AFTERMARKET_DB_FILE ?? '.runtime/world.sqlite'), {
-  requireRoadRoutes: true,
+  // Mundo versão 2: frete pela distância estimada de estrada, como na prova da economia; as
+  // rotas reais só desenham o caminho. Com dezenas de cidades, esperar o serviço público de
+  // rotas (1 pedido por segundo) travaria as compras.
+  requireRoadRoutes: scenario !== 'economy-2',
+  // Escala do mundo versão 2: 20 dá cerca de 500 empresas-bot.
+  scale: Number(process.env.AFTERMARKET_WORLD_SCALE ?? 1),
   scenario,
 });
 const routing = createRoutingService(store);
@@ -83,7 +88,7 @@ app.get('/api/market-history', (req, res) => {
           e.channel === 'wholesale' &&
           (!regionId ||
             (regionId.startsWith('state:')
-              ? regions.find((r) => r.id === e.regionId)?.state === regionId.slice(6)
+              ? regionsOf(w).find((r) => r.id === e.regionId)?.state === regionId.slice(6)
               : e.regionId === regionId)),
       )
       .slice(-2000),

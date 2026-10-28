@@ -8,11 +8,23 @@ import {
   type SupplyPolicy,
   type World,
 } from './model';
-import { regions } from '../../world/src/regions';
-import { designWorld, storeEconomics, vehicleModels, type VehicleModel } from './economy-design';
+import { cities, hubCity, hubs, siteNear, type City } from '../../world/src/geography-v2';
+import {
+  dailyFlows,
+  designWorld,
+  storeEconomics,
+  vehicleModels,
+  type VehicleModel,
+} from './economy-design';
 import { openingTransfer, rivalNames, treasuryId } from './competition';
 import { equipmentCostFor } from './design';
-import { householdDemand, operatingCosts, productionCharges, regionFor } from './metrics';
+import {
+  householdDemand,
+  operatingCosts,
+  productionCharges,
+  regionFor,
+  regionsOf,
+} from './metrics';
 import { GAME_DAY, automationCyclesPerDay } from './operations';
 import { householdItems } from './channels';
 
@@ -20,42 +32,59 @@ import { householdItems } from './channels';
 // alvo, com linhas, equipamento, rebanho e sementes declarados e pagos. Nada nasce de graça:
 // o capital sai do orçamento dos consumidores e cada compra inaugural vai ao tesouro estadual.
 
-// Linhas por rival: cobrem cerca de 75 a 90% das linhas da calculadora, deixando espaço aos jogadores.
-export const v2Portfolio: { recipe?: string; lines: number }[] = [
-  { recipe: 'steel-bars', lines: 2 },
-  { recipe: 'soy-harvest', lines: 2 },
-  { lines: 1 }, // loja: cidade e equipe definidas pela procura (retailSites)
-  { recipe: 'utensils', lines: 2 },
-  { recipe: 'milk-production', lines: 4 },
-  { recipe: 'iron-extraction', lines: 1 },
-  { recipe: 'rice-harvest', lines: 4 },
-  { recipe: 'coal-extraction', lines: 2 },
-  { recipe: 'feed-mill', lines: 1 },
-  { recipe: 'beans-harvest', lines: 6 },
-  { recipe: 'truck-heavy', lines: 1 },
-  { lines: 1 },
-  { recipe: 'soy-oil', lines: 1 },
-  { recipe: 'steel-bars', lines: 2 },
-  { recipe: 'milk-production', lines: 4 },
-  { recipe: 'sugar-harvest', lines: 4 },
-  { recipe: 'utensils', lines: 2 },
-  { recipe: 'coal-extraction', lines: 1 },
-  { lines: 1 },
-  { recipe: 'soy-harvest', lines: 2 },
-  { recipe: 'truck-light', lines: 1 },
-  { recipe: 'rice-harvest', lines: 4 },
-  { recipe: 'feed-mill', lines: 1 },
-  { recipe: 'milk-production', lines: 4 },
-  { recipe: 'beans-harvest', lines: 6 },
-  { lines: 1 },
-  { recipe: 'steel-bars', lines: 2 },
-  { recipe: 'utensils', lines: 2 },
-  { recipe: 'soy-oil', lines: 1 },
-  { lines: 1 },
-];
+// Abertura gerada pela calculadora (etapa 2): as linhas que a economia alvo pede para cada
+// receita, vezes a escala do mundo, divididas em empresas pequenas de 1 a 4 linhas, cada uma num
+// polo real da atividade. Os bots ficam com BOT_SHARE das linhas; o resto é espaço dos jogadores.
+const BOT_SHARE = 0.8;
+const STORE_STAFF = 40; // equipe máxima de uma loja-bot; cidades grandes recebem várias lojas
+export interface RivalTemplate {
+  recipe?: string;
+  lines: number;
+  city: City;
+  employees?: number;
+  share?: number; // parte da procura da cidade que a loja atende
+  kind?: Category; // 'warehouse': distribuidor regional de produtos de mercado
+}
+export function v2PortfolioFor(w: World): RivalTemplate[] {
+  const flows = dailyFlows(),
+    scale = w.season.config.worldScale ?? 1;
+  const out: RivalTemplate[] = [];
+  for (const r of w.season.config.recipes.filter((x) => !x.alternativeOf)) {
+    const total = Math.max(1, Math.round((flows.lines[r.id] ?? 0) * scale * BOT_SHARE));
+    const per = r.id.startsWith('truck') ? 1 : r.category === 'farm' ? 4 : 2;
+    const count = Math.ceil(total / per);
+    for (let n = 0; n < count; n++)
+      out.push({
+        recipe: r.id,
+        lines: Math.floor(total / count) + (n < total % count ? 1 : 0),
+        city: hubCity(r.id, n),
+      });
+  }
+  for (const city of [...regionsOf(w)].sort((x, y) => y.population - x.population)) {
+    const units = householdItems(w).reduce((n, id) => n + householdDemand(w, city.id, id), 0);
+    const staff = (units * RETAIL_COVERAGE) / designWorld.retail.unitsPerWorkerDay;
+    // Cidade pequena demais para uma loja-bot fica para os jogadores.
+    if (staff < designWorld.retail.workersPerStore / 2) continue;
+    const stores = Math.max(1, Math.round(staff / STORE_STAFF));
+    for (let n = 0; n < stores; n++)
+      out.push({
+        lines: 1,
+        city,
+        employees: Math.max(designWorld.retail.workersPerStore, Math.ceil(staff / stores)),
+        share: 1 / stores,
+      });
+    // Atacadista regional nas cidades grandes: traz caminhões cheios dos polos e revende em
+    // pequenas cargas às lojas da cidade (frete longo de carga pequena não fecha a conta).
+    if (city.population >= DISTRIBUTOR_POPULATION)
+      out.push({ lines: 1, city, employees: 6, share: 1, kind: 'warehouse' });
+  }
+  return out;
+}
 // Lojas-bot atendem 60% da procura das famílias da sua cidade (produção dos bots cobre algo parecido).
 const RETAIL_COVERAGE = 0.6;
 const RETAIL_STOCK_DAYS = 3;
+const DISTRIBUTOR_POPULATION = 600000;
+const DISTRIBUTOR_STOCK_DAYS = 7;
 const WORKING_CAPITAL_DAYS = 7;
 
 const isSeed = (r: Recipe, id: string) => Boolean(r.output[id as ProductId]);
@@ -75,32 +104,51 @@ export function v2SupplyPolicy(w: World, e: Establishment): SupplyPolicy {
   const r = w.season.config.recipes.find((x) => x.id === e.specialization);
   const cycles = e.automationCycles ?? 1;
   const site = w.properties.find((p) => p.id === e.propertyId)!;
-  const region = regionFor(site.coordinates, site.city);
+  const region = regionFor(w, site.coordinates, site.city);
+  // Lojas-bot da mesma cidade repartem a procura; antes cada uma estocava a cidade inteira.
+  const peers = Math.max(
+    1,
+    w.establishments.filter(
+      (x) =>
+        x.category === e.category &&
+        x.companyId.startsWith('rival-') &&
+        w.properties.find((p) => p.id === x.propertyId)?.city === site.city,
+    ).length,
+  );
   const retailDaily = (product: ProductId) =>
-    householdDemand(w, region.id, product) * RETAIL_COVERAGE;
+    (householdDemand(w, region.id, product) * RETAIL_COVERAGE) / peers;
   const rules: SupplyPolicy['rules'] = r
     ? purchasedInputs(w, r).map(({ product, perCycle }) => {
         // Compra em dias de uso, não em lotes: lotes curtos comprados aos poucos pagam frete demais.
         const batch = perCycle * cycles,
           daily = perCycle * automationCyclesPerDay(w, e, r);
-        const target = Math.ceil(Math.max(batch * 4, daily * 3));
+        // Frete longo custa o mesmo com o caminhão meio vazio: se a carga cheia de um caminhão
+        // pesado cabe em até uma semana de uso, compra a carga cheia.
+        const truckload = Math.floor(vehicleModels.truckHeavy.capacityT / products[product].massT);
+        const target = Math.ceil(Math.max(batch * 4, daily * 3, Math.min(truckload, daily * 7)));
         return {
           product,
           minimum: Math.ceil(Math.max(batch * 2, daily)),
           target,
           maxBuy: target,
           maxPrice: Math.round(w.season.config.basePrices[product] * 1.5),
+          // Teto de frete por produto: 30% do preço do próprio item (carvão distante segue viável).
+          maxFreightPerUnit: Math.round(0.3 * w.season.config.basePrices[product]),
         };
       })
-    : e.category === 'retail'
+    : e.category === 'retail' || e.category === 'warehouse'
       ? householdItems(w).map((product) => {
-          const target = Math.ceil(retailDaily(product) * RETAIL_STOCK_DAYS);
+          const target = Math.ceil(
+            retailDaily(product) *
+              (e.category === 'warehouse' ? DISTRIBUTOR_STOCK_DAYS : RETAIL_STOCK_DAYS),
+          );
           return {
             product,
             minimum: Math.ceil(target / 3),
             target,
             maxBuy: target,
             maxPrice: Math.round(w.season.config.basePrices[product] * 1.5),
+            maxFreightPerUnit: Math.round(0.3 * w.season.config.basePrices[product]),
           };
         })
       : [];
@@ -125,7 +173,8 @@ export function v2SupplyPolicy(w: World, e: Establishment): SupplyPolicy {
     cashReserve: 500000,
     source: 'internal-first',
     purchaseMode: 'immediate',
-    maxDistanceKm: 1500,
+    // Centro-Sul real: carvão de SC e RS abastece siderúrgicas de MG e RJ; o teto de frete limita o resto.
+    maxDistanceKm: 3500,
     minQuality: 40,
     maxFreightPerUnit: rules.length ? freightCap : 0,
     carrierId: 'auto',
@@ -140,43 +189,35 @@ export function openV2Rivals(w: World, at: number) {
   if (!w.season.config.economyVersion || w.companies.some((c) => c.id.startsWith('rival-'))) return;
   const config = w.season.config;
   const wholesaleShare = 1 - storeEconomics().grossMargin;
-  // Lojas vão às cidades ainda sem loja, da mais populosa para a menor.
-  const served = new Set(
-    w.establishments
-      .filter((e) => e.category === 'retail')
-      .map((e) => {
-        const p = w.properties.find((x) => x.id === e.propertyId)!;
-        return regionFor(p.coordinates, p.city).id;
-      }),
-  );
-  const retailSites = regions
-    .filter((r) => !served.has(r.id))
-    .sort((a, b) => b.population - a.population);
-  let stores = 0;
-  v2Portfolio.forEach((template, i) => {
-    const region = template.recipe
-        ? regions[(i + Math.floor(i / 10) * 4) % regions.length]
-        : retailSites[stores++ % retailSites.length],
+  const used = new Set(w.companies.map((c) => c.name));
+  v2PortfolioFor(w).forEach((template, i) => {
+    const region = template.city,
       recipe = config.recipes.find((r) => r.id === template.recipe),
       profile = recipe ? config.operations.profiles[recipe.id] : undefined,
-      category: Category = recipe?.category ?? 'retail',
+      category: Category = recipe?.category ?? template.kind ?? 'retail',
       lines = template.lines,
       cid = `rival-${i + 1}`,
       pid = `site-${cid}`;
-    const regionUnits = householdItems(w).reduce(
-      (n, id) => n + householdDemand(w, region.id, id),
-      0,
-    );
     const employees = profile
       ? profile.workers * lines
-      : Math.max(
-          designWorld.retail.workersPerStore,
-          Math.ceil((regionUnits * RETAIL_COVERAGE) / designWorld.retail.unitsPerWorkerDay),
-        );
+      : (template.employees ?? designWorld.retail.workersPerStore);
     const area = profile
       ? profile.areaM2 * lines
       : designWorld.retail.storeAreaM2 * Math.ceil(employees / designWorld.retail.workersPerStore);
-    const name = `${rivalNames[i]} ${category === 'industry' ? 'Industrial' : category === 'mine' ? 'Recursos' : category === 'farm' ? 'Agro' : 'Comercial'}`;
+    const word =
+      category === 'industry'
+        ? 'Industrial'
+        : category === 'mine'
+          ? 'Recursos'
+          : category === 'farm'
+            ? 'Agro'
+            : 'Comercial';
+    // Nomes sem repetição: com centenas de bots, o nome leva a cidade e, se preciso, um número.
+    let name = `${rivalNames[i % rivalNames.length]} ${word}`;
+    if (used.has(name)) name = `${name} ${region.name}`;
+    for (let n = 2; used.has(name); n++)
+      name = `${rivalNames[i % rivalNames.length]} ${word} ${region.name} ${n}`;
+    used.add(name);
     w.companies.push({
       id: cid,
       name,
@@ -189,13 +230,10 @@ export function openV2Rivals(w: World, at: number) {
     const sitePrice = Math.round(area * designWorld.landPerM2[category]);
     w.properties.push({
       id: pid,
-      name: `Unidade ${rivalNames[i]}`,
+      name: `Unidade ${name}`,
       city: region.name,
       state: region.state,
-      coordinates: [
-        region.coordinates[0] + ((i % 3) - 1) * 0.018 - 0.012,
-        region.coordinates[1] + 0.015 + Math.floor(i / 10) * 0.008,
-      ],
+      coordinates: siteNear(region, i, Boolean(recipe)),
       category,
       ownerId: cid,
       area,
@@ -253,7 +291,10 @@ export function openV2Rivals(w: World, at: number) {
       for (const id of householdItems(w))
         stock[id] = roundFor(
           id,
-          householdDemand(w, region.id, id) * RETAIL_COVERAGE * RETAIL_STOCK_DAYS,
+          householdDemand(w, region.id, id) *
+            RETAIL_COVERAGE *
+            RETAIL_STOCK_DAYS *
+            (template.share ?? 1),
         );
     e.inventory = {};
     // Produtor custeia o estoque inicial na porta da fábrica; a loja, no preço de loja sem a margem.
@@ -322,13 +363,18 @@ export function openV2Rivals(w: World, at: number) {
     openingTransfer(w, cid, state, vehiclePrice, 'Veículo inaugural usado · concorrente', at);
     e.dailyCost = operatingCosts(w, e).total;
   });
+  // Com todas as lojas e distribuidores abertos, cada um reparte a procura da cidade com os pares.
+  for (const e of w.establishments)
+    if (e.companyId.startsWith('rival-') && (e.category === 'retail' || e.category === 'warehouse'))
+      e.supplyPolicy = v2SupplyPolicy(w, e);
 }
 
 // Transportadoras-bot ganham pátio próprio para receber, guardar e desmontar caminhões.
 const carrierYards: [string, string, string, [number, number]][] = [
   ['transbrasil', 'Pátio TransBrasil', 'Campinas', [-47.12, -22.94]],
-  ['rodoleste', 'Pátio RodoLeste', 'São José dos Campos', [-45.93, -23.21]],
-  ['expresso', 'Pátio Expresso Paulista', 'Sorocaba', [-47.44, -23.47]],
+  // Pátios espalhados pelo Centro-Sul: caminhão longe da carga paga o deslocamento até ela.
+  ['rodoleste', 'Pátio RodoLeste', 'Belo Horizonte', [-44.01, -19.88]],
+  ['expresso', 'Pátio Expresso Sul', 'Curitiba', [-49.33, -25.47]],
 ];
 export function prepareV2Fleet(w: World) {
   for (const [companyId, name, city, coordinates] of carrierYards) {
@@ -337,7 +383,7 @@ export function prepareV2Fleet(w: World) {
       id: pid,
       name,
       city,
-      state: 'SP',
+      state: cities.find((c) => c.name === city)?.state ?? 'SP',
       coordinates,
       category: 'logistics',
       ownerId: companyId,
@@ -427,4 +473,185 @@ export function normalizeV2Lot(w: World, p: Property) {
   if (!w.season.config.economyVersion || p.ownerId !== null) return;
   p.area = v2LotArea[p.category];
   p.price = Math.round(p.area * designWorld.landPerM2[p.category]);
+}
+
+// Geografia real do mundo versão 2: unidades produtivas das empresas antigas vão para o polo da
+// sua atividade, e os lotes livres herdados da versão 1 (todos em volta de Campinas) dão lugar
+// a lotes em cada polo e em cada cidade, para os jogadores escolherem onde crescer.
+const LOTS_PER_HUB = 2;
+export function placeV2Geography(w: World) {
+  if (!w.season.config.regions) return;
+  const legacy = (id: string) =>
+    !id.startsWith('rival-') &&
+    !id.startsWith('treasury') &&
+    !['player', 'player2', 'consumers'].includes(id);
+  const placed = new Map<string, number>();
+  for (const e of w.establishments) {
+    if (!legacy(e.companyId) || !e.specialization) continue;
+    const n = placed.get(e.specialization) ?? 0;
+    placed.set(e.specialization, n + 1);
+    const hub = hubCity(e.specialization, n + 7);
+    const p = w.properties.find((x) => x.id === e.propertyId)!;
+    Object.assign(p, {
+      city: hub.name,
+      state: hub.state,
+      coordinates: siteNear(hub, 400 + w.establishments.indexOf(e), true),
+    });
+  }
+  w.properties = w.properties.filter((p) => p.ownerId !== null);
+  const lot = (category: Category, base: City, n: number): Property => ({
+    id: `lot-${category}-${base.id}-${n}`,
+    name: `${category === 'farm' ? 'Área rural' : category === 'mine' ? 'Concessão' : category === 'industry' ? 'Terreno industrial' : category === 'retail' ? 'Ponto comercial' : category === 'warehouse' ? 'Galpão' : 'Pátio'} ${base.name}${n ? ` ${n + 1}` : ''}`,
+    city: base.name,
+    state: base.state,
+    category,
+    coordinates: siteNear(base, 900 + w.properties.length, category !== 'retail'),
+    area: 0,
+    price: 0,
+    ownerId: null,
+    road: 'Rodovia regional',
+    roadDistance: 1 + (n % 4),
+    water: true,
+    energyConnected: true,
+  });
+  const seen = new Set<string>();
+  for (const r of w.season.config.recipes.filter((x) => !x.alternativeOf))
+    for (const [hub] of (hubs[r.id] ?? []) as [City, number][]) {
+      const key = `${r.category}:${hub.id}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      for (let n = 0; n < LOTS_PER_HUB; n++) w.properties.push(lot(r.category, hub, n));
+    }
+  for (const city of cities) {
+    const shops = Math.min(4, 1 + Math.floor(city.population / 2000000));
+    for (let n = 0; n < shops; n++) w.properties.push(lot('retail', city, n));
+    if (city.population >= 600000) {
+      w.properties.push(lot('warehouse', city, 0));
+      w.properties.push(lot('logistics', city, 0));
+    }
+  }
+}
+
+// Transportadoras regionais (etapa 2): com os polos espalhados pelo Centro-Sul, o caminhão mais
+// perto da carga decide o frete. Três pátios em SP, MG e PR deixavam carvão de SC e minério de
+// MG sem transporte a preço viável. Cada base tem frota que acompanha a escala do mundo.
+const carrierBases = [
+  'São Paulo',
+  'Campinas',
+  'Rio de Janeiro',
+  'Belo Horizonte',
+  'Ipatinga',
+  'Uberlândia',
+  'Patos de Minas',
+  'Curitiba',
+  'Ponta Grossa',
+  'Cascavel',
+  'Criciúma',
+  'Porto Alegre',
+  'Caxias do Sul',
+  'Uruguaiana',
+  'Goiânia',
+  'Rio Verde',
+  'Rondonópolis',
+  'Sorriso',
+  'Campo Grande',
+  'Ribeirão Preto',
+  'Brasília',
+  'Vitória',
+];
+export function openV2Carriers(w: World, at: number) {
+  if (!w.season.config.regions || w.companies.some((c) => c.id.startsWith('carrier-'))) return;
+  const scale = w.season.config.worldScale ?? 1;
+  const trucks = Math.min(10, Math.max(2, Math.round(scale / 2)));
+  carrierBases.forEach((name, i) => {
+    const base = cities.find((c) => c.name === name)!;
+    const cid = `carrier-${i + 1}`,
+      pid = `yard-${cid}`;
+    const label = `Transportes ${base.name}`;
+    w.companies.push({
+      id: cid,
+      name: label,
+      bot: true,
+      balance: 0,
+      homeState: base.state,
+      strategy: (['regional', 'quality', 'value'] as const)[i % 3],
+      behaviorVersion: 1,
+    });
+    const area = 15000,
+      sitePrice = area * designWorld.landPerM2.logistics;
+    w.properties.push({
+      id: pid,
+      name: `Pátio ${label}`,
+      city: base.name,
+      state: base.state,
+      coordinates: siteNear(base, 700 + i, true),
+      category: 'logistics',
+      ownerId: cid,
+      area,
+      price: sitePrice,
+      road: 'Rodovia federal',
+      roadDistance: 1,
+      water: true,
+      energyConnected: true,
+    });
+    const e: Establishment = {
+      id: `e-${pid}`,
+      name: label,
+      companyId: cid,
+      propertyId: pid,
+      category: 'logistics',
+      inventory: {},
+      unitCosts: {},
+      prices: {},
+      capacityT: 2000,
+      capacityM3: 4000,
+      employees: 2 + trucks,
+      dailyCost: 0,
+      revenue: 0,
+      expenses: 0,
+      enabled: true,
+      installed: true,
+    };
+    w.establishments.push(e);
+    e.dailyCost = operatingCosts(w, e).total;
+    const fleet = Array.from({ length: trucks }, (_, n) => {
+      const model: VehicleModel = n % 4 === 3 ? 'truckLight' : 'truckHeavy';
+      const spec = vehicleModels[model];
+      const odometerKm = Math.round(spec.lifeKm * (0.05 + (((i * 31 + n) * 9973) % 900) / 1000));
+      return {
+        model,
+        odometerKm,
+        price: Math.round(
+          w.season.config.basePrices[model] * (1 - (0.5 * odometerKm) / spec.lifeKm),
+        ),
+      };
+    });
+    const vehicles = fleet.reduce((n, v) => n + v.price, 0);
+    const capital = sitePrice + vehicles + e.dailyCost * WORKING_CAPITAL_DAYS * 3 + 500000;
+    const state = treasuryId(base.state);
+    openingTransfer(
+      w,
+      'consumers',
+      cid,
+      capital,
+      'Capital finito de abertura · transportadora',
+      at,
+    );
+    openingTransfer(w, cid, state, sitePrice, 'Pátio inaugural pago · transportadora', at);
+    fleet.forEach((v, n) => {
+      w.vehicles.push({
+        id: `truck-${cid}-${n + 1}`,
+        name: `${base.name.slice(0, 3).toUpperCase()}-${i + 1}${String(n + 1).padStart(2, '0')}`,
+        companyId: cid,
+        propertyId: pid,
+        capacityT: vehicleModels[v.model].capacityT,
+        capacityM3: vehicleModels[v.model].capacityM3,
+        status: 'available',
+        purchasePrice: v.price,
+        model: v.model,
+        odometerKm: v.odometerKm,
+      });
+      openingTransfer(w, cid, state, v.price, 'Caminhão inaugural usado · transportadora', at);
+    });
+  });
 }

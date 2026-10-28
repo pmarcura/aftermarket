@@ -64,6 +64,7 @@ import {
   seasonPrice,
   propertyOf,
   establishmentOf,
+  vehiclesOf,
   wholesaleReference,
 } from './metrics';
 export { distanceKm } from './geometry';
@@ -184,7 +185,7 @@ export function quote(
   const cfg = w.season.config.parameters;
   // Distância de cada caminhão até a origem calculada uma vez, não dentro da ordenação.
   const gap = new Map<string, number>();
-  const available = w.vehicles.filter((x) => x.companyId === carrierId && x.status === 'available');
+  const available = vehiclesOf(w, carrierId).filter((x) => x.status === 'available');
   for (const v of available)
     gap.set(v.id, distanceKm(propertyOf(w, v.propertyId)!.coordinates, op.coordinates));
   available.sort((a, b) => gap.get(a.id)! - gap.get(b.id)!);
@@ -333,7 +334,7 @@ function dispatch(
         product,
         quantity,
         unitPrice,
-        regionId: regionFor(dpOf(w, dest).coordinates).id,
+        regionId: regionFor(w, dpOf(w, dest).coordinates).id,
         channel: 'wholesale',
       },
     );
@@ -1459,11 +1460,12 @@ function economicTick(w: World, at: number) {
     for (const product of householdItems(w)) {
       const stores = retail.filter(
         (e) =>
-          w.properties.find((p) => p.id === e.propertyId)!.city === city &&
+          propertyOf(w, e.propertyId)!.city === city &&
           product in e.inventory &&
           (e.prices[product] ?? 0) > 0,
       );
       const region = regionFor(
+        w,
         dpOf(w, stores[0] ?? retail.find((e) => dpOf(w, e).city === city)!).coordinates,
         city,
       );
@@ -2001,7 +2003,7 @@ function runAutomations(w: World, at: number) {
     const bot = company(w, e.companyId).bot;
     if (e.category === 'retail' && !e.supplyPolicy?.enabled)
       for (const product of householdItems(w)) {
-        const region = regionFor(dpOf(w, e).coordinates, dpOf(w, e).city);
+        const region = regionFor(w, dpOf(w, e).coordinates, dpOf(w, e).city);
         const competitors = Math.max(
           1,
           w.establishments.filter(

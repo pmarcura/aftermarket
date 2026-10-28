@@ -20,6 +20,10 @@ const env = {
   AFTERMARKET_SCENARIO: name,
   AFTERMARKET_PORT: campaign.api,
   AFTERMARKET_WEB_PORT: campaign.web,
+  // Mundo versão 2 com cerca de 500 empresas-bot.
+  ...(name === 'economy-2'
+    ? { AFTERMARKET_WORLD_SCALE: process.env.AFTERMARKET_WORLD_SCALE ?? '20' }
+    : {}),
 };
 const api = spawn(process.execPath, ['node_modules/tsx/dist/cli.mjs', 'apps/server/src/index.ts'], {
   env,

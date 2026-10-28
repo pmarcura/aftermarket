@@ -1,5 +1,5 @@
 import { GAME_DAY } from './operations';
-import { regions } from '../../world/src/regions';
+import { regionsOf } from './metrics';
 import type { Entry, Job, Shipment, World } from './model';
 
 // Histórico resumido (etapa C): registros com mais de `keepDays` dias de jogo saem do mundo
@@ -17,7 +17,7 @@ export function emptyBaseline(): HistoryBaseline {
 export function archiveHistory(w: World, now: number, keepDays: number) {
   const cutoff = now - GAME_DAY * keepDays;
   const base = (w.history ??= emptyBaseline());
-  const states = new Map(regions.map((r) => [r.id, r.state]));
+  const states = new Map(regionsOf(w).map((r) => [r.id, r.state]));
   const ledger: Entry[] = [];
   const keep: Entry[] = [];
   for (const l of w.ledger) (l.at < cutoff ? ledger : keep).push(l);

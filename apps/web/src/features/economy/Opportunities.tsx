@@ -10,8 +10,7 @@ import {
   type ProductId,
   seasonProducts,
 } from '../../../../../packages/simulation/src/model';
-import { marketView, seasonPrice } from '../../../../../packages/simulation/src/metrics';
-import { regions } from '../../../../../packages/world/src/regions';
+import { marketView, regionsOf, seasonPrice } from '../../../../../packages/simulation/src/metrics';
 import '../../economy.css';
 import { BusinessIdeas } from './BusinessIdeas';
 
@@ -49,7 +48,7 @@ export function OpportunitiesPage() {
       (!maximumPrice || (row.price !== null && row.price <= Number(maximumPrice) * 100)),
   );
   const categories = [...new Set(Object.values(products).map((p) => p.category))];
-  const selectedRegion = regions.find((r) => r.id === region),
+  const selectedRegion = regionsOf(world).find((r) => r.id === region),
     activeFilters = [
       category,
       product,
@@ -154,7 +153,7 @@ export function OpportunitiesPage() {
             }}
           >
             <option value="">Estado (opcional)</option>
-            {[...new Set(regions.map((r) => r.state))].map((s) => (
+            {[...new Set(regionsOf(world).map((r) => r.state))].map((s) => (
               <option key={s}>{s}</option>
             ))}
           </Select>
@@ -164,7 +163,7 @@ export function OpportunitiesPage() {
             onChange={(e) => setRegion(e.target.value)}
           >
             <option value="">Município (opcional)</option>
-            {regions
+            {regionsOf(world)
               .filter((r) => !state || r.state === state)
               .map((r) => (
                 <option value={r.id} key={r.id}>

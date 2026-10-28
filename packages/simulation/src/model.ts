@@ -624,6 +624,8 @@ export interface SupplyRule {
   target: number;
   maxBuy: number;
   maxPrice: number;
+  // Teto de frete por unidade só deste produto; sem ele vale o da política.
+  maxFreightPerUnit?: number;
 }
 export interface SupplyPolicy {
   reserveOrders?: boolean;

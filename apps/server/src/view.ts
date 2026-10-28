@@ -16,6 +16,7 @@ export const VIEW_LEDGER_DAYS = 7;
 const RECENT_DAYS = 2;
 const MAX_LEDGER = 4000;
 const ROUTE_POINTS = 150;
+const OTHERS_LIMIT = 150;
 
 // Indicadores que não dependem do jogador: calculados uma vez por revisão do mundo.
 const shared = new WeakMap<
@@ -65,7 +66,14 @@ export function worldView(w: World, actor: string): World {
       retailByEstablishment[l.establishmentId] =
         (retailByEstablishment[l.establishmentId] ?? 0) + l.amount;
   }
-  const shipments = w.shipments.filter((s) => !s.delivered || s.arrivesAt >= recent);
+  // Com centenas de bots: tudo o que é do jogador, e dos outros só as últimas OTHERS_LIMIT
+  // movimentações (painel de concorrentes e mapa de rotas).
+  const involved = (s: World['shipments'][number]) =>
+    s.buyerId === actor || s.sellerId === actor || s.carrierId === actor;
+  const shipments = [
+    ...w.shipments.filter((s) => involved(s) && (!s.delivered || s.arrivesAt >= recent)),
+    ...w.shipments.filter((s) => !involved(s) && !s.delivered).slice(-OTHERS_LIMIT),
+  ];
   const usedPaths = new Set(
     shipments.flatMap((s) => [s.routeKey, s.mapRouteKey].filter(Boolean) as string[]),
   );
@@ -89,11 +97,23 @@ export function worldView(w: World, actor: string): World {
   const common = sharedSummary(w);
   return {
     ...w,
+    // Política de abastecimento é configuração privada; as telas só usam a do próprio jogador.
+    establishments: w.establishments.map((e) =>
+      e.companyId === actor || !e.supplyPolicy ? e : { ...e, supplyPolicy: undefined },
+    ),
     ledger,
-    jobs: w.jobs.filter((j) => !j.completed || j.finishesAt >= recent),
+    jobs: [
+      ...w.jobs.filter(
+        (j) => units.has(j.establishmentId) && (!j.completed || j.finishesAt >= recent),
+      ),
+      ...w.jobs.filter((j) => !units.has(j.establishmentId) && !j.completed).slice(-OTHERS_LIMIT),
+    ],
     shipments,
     orders: w.orders.filter(
-      (o) => o.status === 'pending' || o.status === 'accepted' || o.createdAt >= recent,
+      (o) =>
+        o.status === 'pending' ||
+        ((o.buyerId === actor || o.sellerId === actor) &&
+          (o.status === 'accepted' || o.createdAt >= recent)),
     ),
     consumptionHistory: w.consumptionHistory.filter(
       (h) => h.at >= recent && units.has(h.establishmentId),

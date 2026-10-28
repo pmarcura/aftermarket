@@ -4,7 +4,7 @@ import { advance } from '../packages/simulation/src/engine';
 import { GAME_DAY, SCRAP_COLLECTION } from '../packages/simulation/src/operations';
 import { seasonPrice, wholesaleReference } from '../packages/simulation/src/metrics';
 import { householdItems } from '../packages/simulation/src/channels';
-import { v2Portfolio } from '../packages/simulation/src/opening-v2';
+import { v2PortfolioFor } from '../packages/simulation/src/opening-v2';
 import type { World } from '../packages/simulation/src/model';
 
 // Fatia 8 da etapa B: rivais em todas as especialidades do mundo versão 2, com os mesmos comandos.
@@ -15,7 +15,7 @@ describe('mundo versão 2 · abertura dos bots', () => {
   it('cada especialidade da economia alvo tem rival, e tudo o que ele tem foi pago', () => {
     const w = createWorld(NOW, { economy: 2 });
     const rivals = w.establishments.filter((e) => e.companyId.startsWith('rival-'));
-    expect(rivals).toHaveLength(v2Portfolio.length);
+    expect(rivals).toHaveLength(v2PortfolioFor(w).length);
     const specialties = w.season.config.recipes.filter((r) => !r.alternativeOf).map((r) => r.id);
     for (const id of specialties) expect(rivals.some((e) => e.specialization === id)).toBe(true);
     for (const e of rivals) {

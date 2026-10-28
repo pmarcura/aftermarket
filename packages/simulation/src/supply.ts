@@ -6,7 +6,9 @@ import {
   type SupplyPolicy,
   type ProductId,
   type Command,
+  type Position,
 } from './model';
+import { distanceKm } from './geometry';
 import { emitDecisionTrace, hasDecisionTrace, withDecisionSource } from './decision-trace';
 import {
   GAME_DAY,
@@ -15,10 +17,27 @@ import {
   retailCapacity,
   availableStock,
 } from './operations';
-import { householdDemand, regionFor, operatingCosts, productionCharges } from './metrics';
+import {
+  householdDemand,
+  regionFor,
+  operatingCosts,
+  productionCharges,
+  propertyOf,
+} from './metrics';
 import { freeCash } from './design';
 import { storageQuantity } from './transport';
 
+// Busca de fornecedor em escala: transportadoras profissionais sempre cotam; das demais, só as
+// mais próximas da carga. Estimativa grosseira de frete (centavos por tonelada-km) só ordena.
+const CARRIERS = ['transbrasil', 'rodoleste', 'expresso'];
+// Transportadoras regionais (carrier-*) entram pela proximidade, como qualquer frota.
+const SEARCH_CARRIERS = 4;
+const SEARCH_OFFERS = 6;
+const ROUGH_FREIGHT_PER_TKM = 15;
+const nearbyByRound = new WeakMap<
+  World,
+  { at: number; map: Map<string, string[]>; fleets: Map<string, Position[]> | undefined }
+>();
 export function validateSupplyPolicy(policy: SupplyPolicy) {
   const int = (n: number, min = 0, max = 1e9) => Number.isSafeInteger(n) && n >= min && n <= max;
   if (
@@ -50,7 +69,8 @@ export function validateSupplyPolicy(policy: SupplyPolicy) {
       !int(r.target, 1, 1000000) ||
       r.minimum >= r.target ||
       !int(r.maxBuy, 1, 1000000) ||
-      !int(r.maxPrice)
+      !int(r.maxPrice) ||
+      (r.maxFreightPerUnit !== undefined && !int(r.maxFreightPerUnit))
     )
       throw new RuleError(
         'Use mínimo menor que alvo, quantidade por compra positiva e preços em centavos.',
@@ -113,22 +133,75 @@ export function supplyCandidates(
       )
         options.push({ origin, price: o.price, offerId: o.id, internal: false });
     }
-  const carriers =
-    policy.carrierId === 'own'
-      ? [e.companyId]
-      : policy.carrierId === 'auto'
-        ? [
-            e.companyId,
-            ...w.companies
-              .filter(
-                (c) =>
-                  c.bot &&
-                  w.vehicles.some((v) => v.companyId === c.id) &&
-                  !c.id.startsWith('treasury'),
-              )
-              .map((c) => c.id),
-          ]
-        : [policy.carrierId];
+  // Escala (500 bots): todo bot com caminhão pode fazer frete, mas quem está longe da carga
+  // nunca é o mais barato, porque paga o deslocamento até a origem. Para cada origem, cotam a
+  // própria empresa, as transportadoras, o vendedor e as SEARCH_CARRIERS empresas com caminhão
+  // livre mais perto. Antes eram cotadas todas, dezenas de milhares de cotações por rodada.
+  // Transportadoras próximas de cada origem valem para a rodada inteira; a cotação ainda confere
+  // se há caminhão livre no momento.
+  // Só nos mundos da versão 2: o mundo principal salvo (versão 1) mantém a busca completa para
+  // não mudar a temporada em andamento.
+  const scaled = Boolean(w.season.config.economyVersion);
+  let round = nearbyByRound.get(w);
+  if (!round || round.at !== traceAt) {
+    round = { at: traceAt, map: new Map(), fleets: undefined };
+    nearbyByRound.set(w, round);
+  }
+  const nearby = round.map,
+    companies = new Map(w.companies.map((c) => [c.id, c]));
+  const carriersFor = (origin: Establishment) => {
+    if (policy.carrierId === 'own') return [e.companyId];
+    if (policy.carrierId !== 'auto') return [policy.carrierId];
+    if (!scaled)
+      return [
+        e.companyId,
+        ...w.companies
+          .filter(
+            (c) =>
+              c.bot && w.vehicles.some((v) => v.companyId === c.id) && !c.id.startsWith('treasury'),
+          )
+          .map((c) => c.id),
+      ];
+    const cached = nearby.get(origin.propertyId);
+    if (cached) return [e.companyId, ...cached];
+    const at = propertyOf(w, origin.propertyId)!.coordinates;
+    if (!round!.fleets) {
+      round!.fleets = new Map<string, Position[]>();
+      for (const v of w.vehicles)
+        if (v.status === 'available' && !v.companyId.startsWith('treasury')) {
+          const spot = propertyOf(w, v.propertyId)?.coordinates;
+          if (spot)
+            round!.fleets.set(v.companyId, [...(round!.fleets.get(v.companyId) ?? []), spot]);
+        }
+    }
+    const near = [...round!.fleets]
+      .map(([company, spots]) => ({
+        company,
+        km: Math.min(...spots.map((spot) => distanceKm(spot, at))),
+      }))
+      .sort((a, b) => a.km - b.km)
+      .slice(0, SEARCH_CARRIERS)
+      .map((x) => x.company);
+    const shared = [...CARRIERS, origin.companyId, ...near].filter((id) => companies.get(id)?.bot);
+    nearby.set(origin.propertyId, shared);
+    return [e.companyId, ...shared];
+  };
+  const room = storageQuantity(w, e, product);
+  // Teto de frete do produto: o da regra, se houver; senão o da política inteira.
+  const freightCap =
+    policy.rules.find((r) => r.product === product)?.maxFreightPerUnit ?? policy.maxFreightPerUnit;
+  // Só as ofertas mais baratas contando uma estimativa de frete recebem cotação completa.
+  const destination = propertyOf(w, e.propertyId)!.coordinates;
+  const rough = (o: (typeof options)[number]) =>
+    o.price +
+    distanceKm(propertyOf(w, o.origin.propertyId)!.coordinates, destination) *
+      products[product].massT *
+      ROUGH_FREIGHT_PER_TKM;
+  const market = options
+    .filter((o) => !o.internal)
+    .sort((a, b) => rough(a) - rough(b))
+    .slice(0, SEARCH_OFFERS);
+  if (scaled) options.splice(0, options.length, ...options.filter((o) => o.internal), ...market);
   if (tracing && !options.length)
     trace(
       pinned ? 'pinned-origin-unavailable' : 'no-stock-source',
@@ -148,20 +221,17 @@ export function supplyCandidates(
       return eligible;
     })
     .flatMap((o) => {
-      const amount = Math.min(
-        quantity,
-        availableStock(w, o.origin, product),
-        storageQuantity(w, e, product),
-      );
+      // Cotação e compra só aceitam quantidade inteira: estoque em toneladas fica quebrado
+      // depois de produzir (o aço consome 1,6 t de minério), e uma compra de 199,2 t era sempre
+      // recusada como carga incompatível.
+      const amount = Math.floor(Math.min(quantity, availableStock(w, o.origin, product), room));
       if (tracing && amount <= 0)
         trace(
-          storageQuantity(w, e, product) <= 0
-            ? 'destination-storage-full'
-            : 'source-stock-unavailable',
+          room <= 0 ? 'destination-storage-full' : 'source-stock-unavailable',
           'A quantidade admissível após estoque disponível e espaço comprometido é zero.',
           o.origin.id,
         );
-      const quotes = [...new Set(carriers)]
+      const quotes = [...new Set(carriersFor(o.origin))]
         .filter((c) => w.companies.some((x) => x.id === c))
         .map((c) => quote(w, o.origin.id, e.id, product, amount, c))
         .map((q) => {
@@ -180,7 +250,7 @@ export function supplyCandidates(
             q.compatible &&
             q.distanceKm <= policy.maxDistanceKm &&
             quantity > 0 &&
-            (!policy.maxFreightPerUnit || q.price / quantity <= policy.maxFreightPerUnit);
+            (!freightCap || q.price / quantity <= freightCap);
           if (!eligible && tracing) {
             if (q.routeRequired)
               trace(
@@ -243,7 +313,7 @@ export function dailyNeed(w: World, e: Establishment, product: ProductId) {
         w.properties.find((p) => p.id === x.propertyId)!.city === p.city,
     ).length;
     const model =
-      householdDemand(w, regionFor(p.coordinates, p.city).id, product) / Math.max(1, stores);
+      householdDemand(w, regionFor(w, p.coordinates, p.city).id, product) / Math.max(1, stores);
     const count = Math.max(
       1,
       new Set([...Object.keys(e.prices), ...(e.supplyPolicy?.rules.map((r) => r.product) ?? [])])

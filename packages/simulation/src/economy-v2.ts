@@ -4,7 +4,7 @@ import { designItems, designRecipes, referencePrice, type DesignItemId } from '.
 import { analyzeDesign, designWorld, priceList } from './economy-design';
 import { infrastructurePrograms } from './channels';
 import { GAME_DAY } from './operations';
-import { regions } from '../../world/src/regions';
+import { cities } from '../../world/src/geography-v2';
 
 // Mundo versão 2 (etapa B): configuração congelada a partir do catálogo da economia alvo.
 export const ECONOMY_V2 = 2;
@@ -41,7 +41,7 @@ export function v2Recipes(): Recipe[] {
   });
 }
 
-export function v2SeasonConfig(): SeasonConfig {
+export function v2SeasonConfig(scale = 1): SeasonConfig {
   const ids = Object.keys(products) as ProductId[];
   const config = createSeasonConfig(
     Object.fromEntries(ids.map((id) => [id, referencePrice(id as DesignItemId)])) as Record<
@@ -62,7 +62,7 @@ export function v2SeasonConfig(): SeasonConfig {
   // Editais a 1/4 do tamanho original, para caber no estoque de uma siderúrgica, e oferta de
   // 2,2× o aço público alvo: na prova de 90 dias cerca de metade expira sem proposta válida.
   const lotScale = 0.25,
-    states = new Set(regions.map((r) => r.state)).size;
+    states = new Set(cities.map((r) => r.state)).size;
   const steelPerContract =
     (infrastructurePrograms
       .filter((p) => p.product === 'steel')
@@ -74,7 +74,13 @@ export function v2SeasonConfig(): SeasonConfig {
     lotScale,
     contractIntervalMs: Math.round((GAME_DAY * states) / contractsPerDay),
   };
-  config.parameters.playableConsumerShare = designWorld.consumerShare;
+  // Centro-Sul real: a procura de jogo é a do mundo de referência vezes a escala, repartida
+  // pelos municípios conforme a população.
+  const population = cities.reduce((n, city) => n + city.population, 0);
+  config.regions = cities;
+  config.worldScale = scale;
+  config.population = Object.fromEntries(cities.map((city) => [city.id, city.population]));
+  config.parameters.playableConsumerShare = (designWorld.consumers * scale) / population;
   config.consumption = Object.fromEntries(
     (Object.entries(designItems) as [DesignItemId, (typeof designItems)[DesignItemId]][])
       .filter(([, item]) => item.monthlyPerPerson)

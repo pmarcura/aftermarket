@@ -141,6 +141,15 @@ export function runBotDirector(w: World, at: number) {
     }
   };
   const bots = w.companies.filter((c) => c.bot && !institutional(c.id));
+  const botIds = new Set(bots.map((b) => b.id));
+  // Procura do último dia por loja e produto, lida uma vez por rodada (antes, cada loja relia o
+  // histórico inteiro para cada produto).
+  const desiredToday = new Map<string, number>();
+  for (const h of w.consumptionHistory)
+    if (h.at > at - GAME_DAY) {
+      const key = `${h.establishmentId}:${h.product}`;
+      desiredToday.set(key, (desiredToday.get(key) ?? 0) + h.desired);
+    }
   // Versão 2: frota como mercadoria. Conta as rodadas com a frota toda ocupada; uma vez por dia
   // desmonta o que passou da vida útil e compra um caminhão se a frota ficou ocupada a maior parte do dia.
   const fleetDecision = (c: World['companies'][number]) => {
@@ -219,7 +228,7 @@ export function runBotDirector(w: World, at: number) {
         .filter(
           (e) =>
             e.companyId !== o.buyerId &&
-            bots.some((b) => b.id === e.companyId) &&
+            botIds.has(e.companyId) &&
             (e.inventory[o.product] ?? 0) >= o.quantity,
         )
         .sort((a, b) => (a.unitCosts[o.product] ?? 0) - (b.unitCosts[o.product] ?? 0));
@@ -307,7 +316,7 @@ export function runBotDirector(w: World, at: number) {
         );
     }
     const negotiatedSeller = o.sellerId || o.proposals?.at(-1)?.sellerId;
-    if (negotiatedSeller && bots.some((b) => b.id === negotiatedSeller) && o.status === 'pending') {
+    if (negotiatedSeller && botIds.has(negotiatedSeller) && o.status === 'pending') {
       const latest = o.proposals?.at(-1);
       if (latest && latest.proposedBy === o.buyerId) {
         const e = w.establishments.find((e) => e.id === latest.originId)!;
@@ -535,7 +544,10 @@ export function runBotDirector(w: World, at: number) {
               a.at > at - GAME_DAY / 2,
           )
         ) {
-          const qty = Math.min(rule.maxBuy, rule.target - (e.inventory[rule.product] ?? 0));
+          // Pedido só aceita quantidade inteira; estoque em toneladas fica quebrado após produzir.
+          const qty = Math.ceil(
+            Math.min(rule.maxBuy, rule.target - (e.inventory[rule.product] ?? 0)),
+          );
           const unitPrice = rule.maxPrice || Math.round(publicReference(w, rule.product) * 1.2),
             maxFreight = Math.max(
               200000,
@@ -654,12 +666,7 @@ export function runBotDirector(w: World, at: number) {
         );
       if (e.category !== 'retail' || !e.enabled) continue;
       for (const id of Object.keys(e.inventory) as ProductId[]) {
-        const demand = Math.max(
-          1,
-          w.consumptionHistory
-            .filter((h) => h.establishmentId === e.id && h.product === id && h.at > at - GAME_DAY)
-            .reduce((n, h) => n + h.desired, 0) || 100,
-        );
+        const demand = Math.max(1, desiredToday.get(`${e.id}:${id}`) || 100);
         const previousPrice = tracing ? e.prices[id] : undefined;
         const cost =
           (e.unitCosts[id] ?? w.season.config.basePrices[id]) + fixed / Math.max(100, demand * 5);
@@ -693,7 +700,7 @@ export function runBotDirector(w: World, at: number) {
   }
   // Preços de oferta cobrem também a parcela operacional da capacidade instalada.
   for (const e of w.establishments.filter(
-    (e) => bots.some((b) => b.id === e.companyId) && e.enabled && e.category !== 'retail',
+    (e) => botIds.has(e.companyId) && e.enabled && e.category !== 'retail',
   )) {
     const r = w.season.config.recipes.find((r) => r.id === e.specialization),
       lines = r ? productionCapacity(w, e, r).lines : 0;

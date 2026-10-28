@@ -13,12 +13,11 @@ import {
   type Shipment,
   seasonProducts,
 } from '../../../../packages/simulation/src/model';
-import { regions } from '../../../../packages/world/src/regions';
 import { createMapStyle } from '../lib/map-style';
 import { positionAlongRoute, routeLengths } from '../../../../packages/simulation/src/geometry';
 import { shipmentRoute } from '../../../../packages/simulation/src/road-path';
 import { shipmentStatus } from '../../../../packages/simulation/src/shipment';
-import { marketView } from '../../../../packages/simulation/src/metrics';
+import { marketView, regionsOf } from '../../../../packages/simulation/src/metrics';
 maplibregl.setWorkerUrl(workerUrl);
 // Ícones das categorias desenhados uma vez como imagens do mapa (traço branco sobre o círculo
 // colorido da camada). Antes cada negócio era um elemento de página recriado a cada rodada e
@@ -205,7 +204,7 @@ export function WorldMap({
         type: 'geojson',
         data: {
           type: 'FeatureCollection',
-          features: regions.map((r) => ({
+          features: regionsOf(world).map((r) => ({
             type: 'Feature',
             geometry: { type: 'Point', coordinates: r.coordinates },
             properties: { demand: 0 },
@@ -442,7 +441,7 @@ export function WorldMap({
     if (!ready || !m) return;
     m.setLayoutProperty('demand-circles', 'visibility', layers.demand ? 'visible' : 'none');
     if (!layers.demand) return;
-    const values = regions.map((r) => ({
+    const values = regionsOf(world).map((r) => ({
       r,
       amount: seasonProducts(world).reduce(
         (n, id) => n + marketView(world, id, r.id).demand * world.season.config.basePrices[id],
@@ -608,7 +607,7 @@ export function WorldMap({
   useEffect(() => {
     const m = map.current;
     if (!m || !ready || !economic) return;
-    const values = regions
+    const values = regionsOf(world)
       .filter((r) => !economic.state || r.state === economic.state)
       .map((r) => {
         const rows = economic.product

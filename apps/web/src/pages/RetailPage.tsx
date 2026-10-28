@@ -66,7 +66,7 @@ export function RetailPage() {
       </>
     );
   const p = world.properties.find((p) => p.id === e.propertyId)!,
-    region = regionFor(p.coordinates, p.city);
+    region = regionFor(world, p.coordinates, p.city);
   const stock = Object.entries(e.inventory) as [ProductId, number][];
   const competitors = Math.max(
     1,

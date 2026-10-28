@@ -8,11 +8,7 @@ import {
 } from '../packages/simulation/src/metrics';
 import { createScenario } from '../packages/simulation/src/scenarios';
 import { advance } from '../packages/simulation/src/engine';
-import {
-  seasonProducts,
-  type MarketSample,
-  type World,
-} from '../packages/simulation/src/model';
+import { seasonProducts, type MarketSample, type World } from '../packages/simulation/src/model';
 import { GAME_DAY } from '../packages/simulation/src/operations';
 import { regions } from '../packages/world/src/regions';
 

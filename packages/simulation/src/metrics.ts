@@ -11,7 +11,12 @@ import { distanceKm } from './geometry';
 import { automationCyclesPerDay, availableStock } from './operations';
 
 const clamp = (n: number, min = 0, max = 100) => Math.min(max, Math.max(min, n));
-export function regionFor(position: Position, city?: string) {
+// Municípios do mundo: os da temporada na versão 2 (Centro-Sul real), senão as 10 praças piloto.
+export function regionsOf(w: Pick<World, 'season'>) {
+  return w.season.config.regions ?? regions;
+}
+export function regionFor(w: Pick<World, 'season'>, position: Position, city?: string) {
+  const regions = regionsOf(w);
   const named = regions.find((region) => region.name === city);
   if (named) return named;
   // Stable nearest-neighbour lookup: one distance per region instead of sorting
@@ -38,7 +43,7 @@ export function utilityTariff(w: World, p: Property) {
   return w.season.config.utilities[p.state] ?? w.season.config.utilities.SP;
 }
 export function laborMarket(w: World, p: Property) {
-  const region = regionFor(p.coordinates, p.city),
+  const region = regionFor(w, p.coordinates, p.city),
     cfg = w.season.config;
   const factor = cfg.competition.stateFactors[p.state] ?? 1,
     index = w.stateWages?.[p.state]?.index ?? 1;
@@ -131,7 +136,7 @@ export function logisticsQuality(w: World, p: Property) {
   };
 }
 export function householdDemand(w: World, regionId: string, product: ProductId) {
-  const region = regions.find((r) => r.id === regionId)!;
+  const region = regionsOf(w).find((r) => r.id === regionId)!;
   return (
     (w.season.config.population[region.id] *
       w.season.config.parameters.playableConsumerShare *
@@ -141,7 +146,7 @@ export function householdDemand(w: World, regionId: string, product: ProductId) 
 }
 // Procura diária do mundo inteiro: famílias mais insumos das linhas ativas (sem ler o razão).
 export function dailyDemand(w: World, product: ProductId) {
-  const household = regions.reduce((n, r) => n + householdDemand(w, r.id, product), 0);
+  const household = regionsOf(w).reduce((n, r) => n + householdDemand(w, r.id, product), 0);
   return w.establishments.reduce((n, e) => {
     if (!e.enabled) return n;
     const r = activeRecipe(w, e);
@@ -176,6 +181,22 @@ function byId<T extends { id: string }>(list: T[]): Map<string, T> {
   idIndexes.set(list, { length: list.length, map });
   return map;
 }
+// Caminhões por empresa: refeito quando a lista muda de tamanho ou o mundo muda de revisão
+// (cada comando, inclusive venda de caminhão, avança a revisão).
+const fleetIndexes = new WeakMap<
+  World,
+  { length: number; revision: number; map: Map<string, World['vehicles']> }
+>();
+export function vehiclesOf(w: World, companyId: string): World['vehicles'] {
+  let index = fleetIndexes.get(w);
+  if (!index || index.length !== w.vehicles.length || index.revision !== w.revision) {
+    const map = new Map<string, World['vehicles']>();
+    for (const v of w.vehicles) map.set(v.companyId, [...(map.get(v.companyId) ?? []), v]);
+    index = { length: w.vehicles.length, revision: w.revision, map };
+    fleetIndexes.set(w, index);
+  }
+  return index.map.get(companyId) ?? [];
+}
 export function propertyOf(w: World, id: string) {
   return byId(w.properties).get(id);
 }
@@ -196,7 +217,7 @@ export function withAppendOnlyMarketLedger<T>(world: World, run: () => T): T {
     ledger: world.ledger,
     processed: 0,
     products: new Map(),
-    regionStates: new Map(regions.map((region) => [region.id, region.state])),
+    regionStates: new Map(regionsOf(world).map((region) => [region.id, region.state])),
   });
   try {
     return run();
@@ -215,7 +236,7 @@ function indexedTradeTotals(world: World, product: ProductId, scope: string): Tr
       ledger: world.ledger,
       processed: 0,
       products: new Map(),
-      regionStates: new Map(regions.map((region) => [region.id, region.state])),
+      regionStates: new Map(regionsOf(world).map((region) => [region.id, region.state])),
     };
     liveLedgerIndexes.set(world, index);
   }
@@ -250,7 +271,7 @@ function indexedTradeTotals(world: World, product: ProductId, scope: string): Tr
 }
 
 export function marketView(w: World, product: ProductId, regionId = '', radiusKm = 120) {
-  const region = regions.find((r) => r.id === regionId);
+  const region = regionsOf(w).find((r) => r.id === regionId);
   const state = regionId.startsWith('state:') ? regionId.slice(6) : '';
   const within = (e: Establishment) =>
     region
@@ -280,7 +301,7 @@ export function marketView(w: World, product: ProductId, regionId = '', radiusKm
     : null;
   const household = region
     ? householdDemand(w, region.id, product)
-    : regions
+    : regionsOf(w)
         .filter((r) => !state || r.state === state)
         .reduce((n, r) => n + householdDemand(w, r.id, product), 0);
   const industrial = w.establishments
@@ -322,8 +343,8 @@ export function marketView(w: World, product: ProductId, regionId = '', radiusKm
 export function tradeTotalsByScope(w: World) {
   const scopes = [
     '',
-    ...regions.map((region) => region.id),
-    ...[...new Set(regions.map((region) => region.state))].map((state) => `state:${state}`),
+    ...regionsOf(w).map((region) => region.id),
+    ...[...new Set(regionsOf(w).map((region) => region.state))].map((state) => `state:${state}`),
   ];
   return Object.fromEntries(
     seasonProducts(w).map((product) => [
@@ -339,8 +360,8 @@ export function recordMarket(w: World, at: number) {
   const productIds = seasonProducts(w);
   const scopeIds = [
     '',
-    ...regions.map((region) => region.id),
-    ...[...new Set(regions.map((region) => region.state))].map((state) => `state:${state}`),
+    ...regionsOf(w).map((region) => region.id),
+    ...[...new Set(regionsOf(w).map((region) => region.state))].map((state) => `state:${state}`),
   ];
   const samples = new Map(
     productIds.map((product) => [
@@ -368,7 +389,7 @@ export function recordMarket(w: World, at: number) {
       const property = properties.get(establishment.propertyId)!;
       scopes = [
         '',
-        ...regions
+        ...regionsOf(w)
           .filter((region) => distanceKm(property.coordinates, region.coordinates) <= 120)
           .map((region) => region.id),
         `state:${property.state}`,

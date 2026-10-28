@@ -1,8 +1,9 @@
 import { products, type World, type ProductId, type Establishment } from './model';
+import { vehiclesOf } from './metrics';
 
 // Limite por veículo: somar capacidades antes de arredondar criaria unidades impossíveis.
 export function fleetAvailability(w: World, companyId: string, product: ProductId) {
-  const vehicles = w.vehicles.filter((v) => v.companyId === companyId);
+  const vehicles = vehiclesOf(w, companyId);
   const available = vehicles.filter((v) => v.status === 'available');
   const p = products[product];
   return {

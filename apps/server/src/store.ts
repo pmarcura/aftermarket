@@ -13,7 +13,7 @@ const SAVE_INTERVAL_MS = 5000;
 
 export function createStore(
   path: string,
-  options: { requireRoadRoutes?: boolean; scenario?: ScenarioName } = {},
+  options: { requireRoadRoutes?: boolean; scenario?: ScenarioName; scale?: number } = {},
 ) {
   if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true });
   const db = new DatabaseSync(path);
@@ -23,7 +23,9 @@ export function createStore(
   if (!db.prepare('SELECT id FROM worlds WHERE id=1').get())
     db.prepare('INSERT INTO worlds VALUES(1, ?)').run(
       JSON.stringify(
-        options.scenario ? createScenario(Date.now(), options.scenario) : createWorld(),
+        options.scenario
+          ? createScenario(Date.now(), options.scenario, 0, { scale: options.scale })
+          : createWorld(),
       ),
     );
   const existing = JSON.parse(

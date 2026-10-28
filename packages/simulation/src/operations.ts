@@ -197,6 +197,7 @@ export function initializeOperations(w: World) {
       water: true,
       energyConnected: true,
     });
+  if (w.season.config.recycling) initializeScrapCollection(w);
   if (!w.establishments.some((e) => e.id === 'e-public-works'))
     w.establishments.push({
       id: 'e-public-works',
@@ -215,6 +216,52 @@ export function initializeOperations(w: World) {
       revenue: 0,
       expenses: 0,
       enabled: true,
+    });
+}
+// Coleta municipal: vende a sucata urbana dos utensílios descartados a preço fixo (versão 2).
+export const SCRAP_COLLECTION = 'e-scrap-collection';
+function initializeScrapCollection(w: World) {
+  if (!w.properties.some((p) => p.id === 'scrap-collection'))
+    w.properties.push({
+      id: 'scrap-collection',
+      name: 'Coleta municipal de recicláveis',
+      city: 'Campinas',
+      state: 'SP',
+      category: 'warehouse',
+      coordinates: [-47.08, -22.93],
+      area: 20000,
+      price: 0,
+      ownerId: 'treasury',
+      road: 'SP-330',
+      roadDistance: 1,
+      water: true,
+      energyConnected: true,
+    });
+  if (!w.establishments.some((e) => e.id === SCRAP_COLLECTION))
+    w.establishments.push({
+      id: SCRAP_COLLECTION,
+      name: 'Coleta municipal de recicláveis',
+      companyId: 'treasury',
+      propertyId: 'scrap-collection',
+      category: 'warehouse',
+      inventory: { scrap: 0 },
+      unitCosts: { scrap: 0 },
+      prices: {},
+      quality: { scrap: 60 },
+      capacityT: 100000,
+      capacityM3: 300000,
+      employees: 0,
+      dailyCost: 0,
+      revenue: 0,
+      expenses: 0,
+      enabled: true,
+    });
+  if (!w.offers.some((o) => o.establishmentId === SCRAP_COLLECTION))
+    w.offers.push({
+      id: 'offer-scrap-collection',
+      establishmentId: SCRAP_COLLECTION,
+      product: 'scrap',
+      price: w.season.config.recycling!.scrapPrice,
     });
 }
 // Cadeias agregadas do laboratório: cultivo e processamento local no mesmo estabelecimento.

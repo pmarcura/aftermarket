@@ -94,6 +94,9 @@ export interface Vehicle {
   propertyId: string;
   status: 'available' | 'route' | 'maintenance';
   purchasePrice?: number;
+  // Versão 2: modelo fabricado e quilômetros rodados, que encarecem a manutenção.
+  model?: 'truckHeavy' | 'truckLight';
+  odometerKm?: number;
 }
 export interface Shipment {
   id: string;
@@ -391,7 +394,13 @@ export type Command =
       unitPrice: number;
     }
   | { type: 'trainWorkforce'; establishmentId: string }
-  | { type: 'buyVehicle' };
+  | {
+      type: 'buyVehicle';
+      // Versão 2: modelo e, opcionalmente, a montadora vendedora; sem ela, concessionária.
+      model?: 'truckHeavy' | 'truckLight';
+      sellerEstablishmentId?: string;
+    }
+  | { type: 'scrapVehicle'; vehicleId: string };
 export interface Recipe {
   id: string;
   name: string;
@@ -408,6 +417,8 @@ export interface Recipe {
   lossKg?: number;
   // Rebanho: nascimentos e aposentadorias por ciclo de uma linha, aplicados em unidades inteiras.
   herd?: { product: ProductId; births: number; retirements: number };
+  // Receita que a mesma instalação pode usar no lugar desta, lote a lote (reciclagem).
+  alternativeOf?: string;
 }
 export const TIME_SCALE = 120;
 export const ECONOMIC_INTERVAL = 60_000; // duas horas virtuais por minuto real

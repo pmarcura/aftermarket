@@ -203,6 +203,8 @@ export const economicSources = [
 export interface SeasonConfig {
   // Ausente nos mundos da versão 1; 2 = economia alvo da etapa B.
   economyVersion?: number;
+  // Versão 2: sucata urbana devolvida pelos utensílios vendidos e preço da coleta municipal.
+  recycling?: { urbanScrapShare: number; scrapPrice: number };
   design: typeof designRules & { equipmentByRecipe?: Record<string, number> };
   competition: typeof competitionRules;
   operations: typeof operationRules;

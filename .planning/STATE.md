@@ -29,7 +29,7 @@ O jogo roda localmente: mapa real de SP–MG, compra de imóveis, produção, es
 
 ## Próximo passo
 
-Etapa **B**, passo 4: levar a economia alvo ao motor num mundo novo. Fatias 1 a 5 entregues (catálogo, configuração do mundo versão 2, sementes, rebanho e ração); próxima: aço para bens e caminhão como mercadoria ([B-PLAN](phases/B-economia/B-PLAN.md)). As fórmulas M02–M05 e M07 que enganavam os bots foram corrigidas em 27/10 e têm provas de regressão no auditor e em `tests/formula-fixes.test.ts`.
+Etapa **B**, passo 4: levar a economia alvo ao motor num mundo novo. Fatias 1 a 7 entregues (catálogo, configuração do mundo versão 2, sementes, rebanho, ração, utensílios com sucata e caminhões fabricados com concessionária); próxima: bots para as atividades novas ([B-PLAN](phases/B-economia/B-PLAN.md)). As fórmulas M02–M05 e M07 que enganavam os bots foram corrigidas em 27/10 e têm provas de regressão no auditor e em `tests/formula-fixes.test.ts`.
 
 Decisões do Pedro em 27/10 (D-028, D-029): mundo semanal livre; realismo enxuto com cadeias completas; fechar metal e alimentos antes de crescer; aço vira caminhões e utensílios; sucata já; carne depois do playtest; relógio 1 h real = 6 h de jogo.
 

@@ -47,8 +47,10 @@ import {
   productionCapacity,
   productionQuality,
   retailCapacity,
+  SCRAP_COLLECTION,
   treasuryAvailable,
 } from './operations';
+import { dealershipMarkup, scrapRecovery, vehicleModels } from './catalog';
 import {
   householdDemand,
   marketView,
@@ -190,7 +192,12 @@ export function quote(
     const roadMs =
       ((route?.durationSeconds ?? (km / cfg.averageSpeedKmH) * 3600) * 1000) / TIME_SCALE;
     const fuel = Math.round((totalKm / cfg.kmPerLiter) * cfg.dieselPerLiter);
-    const maintenance = Math.round(totalKm * cfg.maintenancePerKm);
+    // Versão 2: a manutenção por km cresce com os quilômetros já rodados pelo caminhão.
+    const wear =
+      vehicle.model && w.season.config.economyVersion
+        ? 1 + (vehicle.odometerKm ?? 0) / vehicleModels[vehicle.model].lifeKm
+        : 1;
+    const maintenance = Math.round(totalKm * cfg.maintenancePerKm * wear);
     const driver = Math.round(
       (totalKm / cfg.averageSpeedKmH + cfg.loadingMinutes / 60) * cfg.driverPerHour,
     );
@@ -202,6 +209,7 @@ export function quote(
     parts.push({
       vehicleId: vehicle.id,
       quantity: units,
+      km: totalKm,
       price,
       relocationMs,
       loadingMs,
@@ -378,7 +386,9 @@ function dispatch(
         ? cost - allocated
         : Math.round((cost * part.quantity) / quantity);
     allocated += partCost;
-    w.vehicles.find((v) => v.id === part.vehicleId)!.status = 'route';
+    const vehicle = w.vehicles.find((v) => v.id === part.vehicleId)!;
+    vehicle.status = 'route';
+    vehicle.odometerKm = (vehicle.odometerKm ?? 0) + part.km;
     w.shipments.push({
       id: randomUUID(),
       batchId,
@@ -1306,24 +1316,112 @@ function executeCommand(w: World, actor: string, command: Command, now: number):
         (x) => x.companyId === actor && (x.category === 'logistics' || x.category === 'warehouse'),
       );
       ensure(depot, 'Adquira uma propriedade logística ou um armazém para receber o veículo.');
-      transfer(
-        w,
-        actor,
-        'treasury',
-        28000000,
-        'Aquisição de caminhão pesado · 30 t',
-        'vehicle',
-        now,
-      );
+      if (!w.season.config.economyVersion) {
+        ensure(
+          !command.model && !command.sellerEstablishmentId,
+          'Esta temporada só oferece o caminhão pesado da concessionária.',
+        );
+        transfer(
+          w,
+          actor,
+          'treasury',
+          28000000,
+          'Aquisição de caminhão pesado · 30 t',
+          'vehicle',
+          now,
+        );
+        w.vehicles.push({
+          id: randomUUID(),
+          companyId: actor,
+          name: `TRK-${String(w.vehicles.length + 100)}`,
+          capacityT: 30,
+          capacityM3: 85,
+          propertyId: depot.propertyId,
+          status: 'available',
+        });
+        break;
+      }
+      const model = command.model ?? 'truckHeavy';
+      ensure(model in vehicleModels, 'Modelo de caminhão desconhecido.');
+      const spec = vehicleModels[model];
+      let price: number;
+      if (command.sellerEstablishmentId) {
+        // Caminhão montado: sai do estoque da montadora pelo preço anunciado; dirige até o pátio.
+        const seller = establishment(w, command.sellerEstablishmentId);
+        const offer = w.offers.find((o) => o.establishmentId === seller.id && o.product === model);
+        ensure(
+          (seller.inventory[model] ?? 0) >= 1 && (offer || seller.companyId === actor),
+          'A montadora não tem este caminhão anunciado em estoque.',
+        );
+        const unitCost = Math.round(seller.unitCosts[model] ?? 0);
+        price = seller.companyId === actor ? unitCost : offer!.price;
+        if (seller.companyId !== actor) {
+          transfer(
+            w,
+            actor,
+            seller.companyId,
+            price,
+            `Compra de ${spec.label} · ${seller.name}`,
+            'trade',
+            now,
+            seller.id,
+            { product: model, quantity: 1, unitPrice: price, channel: 'wholesale' },
+          );
+          seller.revenue += price;
+          seller.expenses += unitCost;
+        }
+        seller.inventory[model] = seller.inventory[model]! - 1;
+      } else {
+        price = Math.round(products[model].basePrice * dealershipMarkup);
+        transfer(
+          w,
+          actor,
+          'treasury',
+          price,
+          `${spec.label} importado · concessionária`,
+          'vehicle',
+          now,
+        );
+      }
       w.vehicles.push({
         id: randomUUID(),
         companyId: actor,
-        name: `TRK-${String(w.vehicles.length + 100)}`,
-        capacityT: 30,
-        capacityM3: 85,
+        name: `${model === 'truckHeavy' ? 'TRK' : 'LEV'}-${String(w.vehicles.length + 100)}`,
+        capacityT: spec.capacityT,
+        capacityM3: spec.capacityM3,
         propertyId: depot.propertyId,
         status: 'available',
+        purchasePrice: price,
+        model,
+        odometerKm: 0,
       });
+      break;
+    }
+    case 'scrapVehicle': {
+      ensure(w.season.config.economyVersion, 'Esta temporada não tem reciclagem de caminhões.');
+      const v = w.vehicles.find((v) => v.id === command.vehicleId && v.companyId === actor);
+      ensure(
+        v && v.status === 'available',
+        'Somente caminhão próprio e livre pode ser desmontado.',
+      );
+      const yard = w.establishments.find(
+        (x) => x.propertyId === v.propertyId && x.companyId === actor,
+      );
+      ensure(yard, 'Leve o caminhão a um pátio próprio para desmontar.');
+      ensure(
+        outstandingLoans(w, actor) <=
+          collateral(w, actor) -
+            Math.ceil((v.purchasePrice ?? 28000000) * w.season.config.design.collateralRatio),
+        'O veículo garante crédito ativo; amortize antes de desmontar.',
+      );
+      const scrap = (products[v.model ?? 'truckHeavy'].massT ?? 9) * scrapRecovery;
+      capacity(w, yard, { scrap });
+      const before = yard.inventory.scrap ?? 0;
+      yard.unitCosts.scrap = ((yard.unitCosts.scrap ?? 0) * before) / (before + scrap);
+      yard.inventory.scrap = before + scrap;
+      company(w, actor).financingExpense =
+        (company(w, actor).financingExpense ?? 0) + (v.purchasePrice ?? 28000000);
+      w.vehicles = w.vehicles.filter((x) => x.id !== v.id);
       break;
     }
     default:
@@ -1427,6 +1525,16 @@ function economicTick(w: World, at: number) {
     e.inventory[product]! -= quantity;
     e.revenue += amount;
     e.expenses += Math.round((e.unitCosts[product] ?? 0) * quantity);
+    const recycling = w.season.config.recycling;
+    const collection =
+      recycling && product === 'utensils'
+        ? w.establishments.find((x) => x.id === SCRAP_COLLECTION)
+        : undefined;
+    // Utensílios velhos descartados pelas famílias voltam como sucata urbana.
+    if (collection)
+      collection.inventory.scrap =
+        (collection.inventory.scrap ?? 0) +
+        quantity * products.utensils.massT * recycling!.urbanScrapShare;
   }
   // Pausar a produção não encerra contratos de trabalho nem manutenção.
   for (const e of w.establishments) {
@@ -1925,8 +2033,18 @@ function runAutomations(w: World, at: number) {
           trace(e, 'production-daily-budget', e.automationStatus);
           continue;
         }
+        // Receita alternativa da mesma instalação (ex.: aço de sucata) quando há insumos para o lote.
+        const run =
+          w.season.config.recipes.find(
+            (x) =>
+              x.alternativeOf === r.id &&
+              x.category === e.category &&
+              Object.entries(x.input).every(
+                ([id, q]) => (e.inventory[id as ProductId] ?? 0) >= q! * cycles,
+              ),
+          ) ?? r;
         let ready = true;
-        for (const [id, q] of Object.entries(r.input))
+        for (const [id, q] of Object.entries(run.input))
           if ((e.inventory[id as ProductId] ?? 0) < q! * cycles) {
             // Automação humana produz estoque existente; reposição industrial automática é uma escolha dos bots.
             if (bot && !e.supplyPolicy?.enabled) restock(e, id as ProductId, q! * cycles * 4);
@@ -1944,7 +2062,7 @@ function runAutomations(w: World, at: number) {
           const result = attempt(e.companyId, {
             type: 'produce',
             establishmentId: e.id,
-            recipeId: r.id,
+            recipeId: run.id,
             cycles,
           });
           e.automationStatus = result === true ? 'Lote iniciado' : result;

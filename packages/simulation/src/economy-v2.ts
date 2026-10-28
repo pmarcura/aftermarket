@@ -33,6 +33,7 @@ export function v2Recipes(): Recipe[] {
       energyKwh: r.energyKwh,
       waterM3: r.waterM3,
       lossKg: r.lossKg,
+      ...(r.alternativeOf ? { alternativeOf: r.alternativeOf } : {}),
     };
   });
 }
@@ -47,6 +48,10 @@ export function v2SeasonConfig(): SeasonConfig {
     v2Recipes(),
   );
   config.economyVersion = ECONOMY_V2;
+  config.recycling = {
+    urbanScrapShare: designWorld.urbanScrapShare,
+    scrapPrice: referencePrice('scrap'),
+  };
   config.parameters.playableConsumerShare = designWorld.consumerShare;
   config.consumption = Object.fromEntries(
     (Object.entries(designItems) as [DesignItemId, (typeof designItems)[DesignItemId]][])

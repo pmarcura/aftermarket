@@ -52,6 +52,7 @@ export interface DesignRecipe {
   output: Partial<Record<DesignItemId, number>>;
   requires?: Partial<Record<DesignItemId, number>>; // presentes na linha, não consumidos
   priced?: DesignItemId; // saída cujo preço é derivado desta receita
+  alternativeOf?: string; // receita que a mesma instalação pode trocar lote a lote
   hours: number;
   workers: number;
   areaM2: number;
@@ -322,6 +323,7 @@ export const designRecipes: DesignRecipe[] = [
   },
   {
     id: 'steel-recycling',
+    alternativeOf: 'steel-bars',
     name: 'Aço reciclado',
     category: 'industry',
     input: { scrap: 1.1, coal: 0.05 },
@@ -531,3 +533,13 @@ export function referencePrice(id: DesignItemId): number {
     return Math.round(item.band[0] + (item.band[1] - item.band[0]) * rule.position);
   return Math.round(referencePrice(rule.of) * rule.factor * rule.unitRatio);
 }
+
+// Caminhões fabricados (D-028): capacidade, vida útil para o desgaste e sucata ao desmontar.
+export const vehicleModels = {
+  truckHeavy: { label: 'Caminhão pesado', capacityT: 30, capacityM3: 85, lifeKm: 150000 },
+  truckLight: { label: 'Caminhão leve', capacityT: 8, capacityM3: 25, lifeKm: 100000 },
+} as const;
+export type VehicleModel = keyof typeof vehicleModels;
+// Concessionária institucional (D-030): importado 30% acima do preço de referência.
+export const dealershipMarkup = 1.3;
+export const scrapRecovery = 0.9; // fração da massa do caminhão que vira sucata

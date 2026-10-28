@@ -1,0 +1,1281 @@
+<title>UX do Aftermarket</title>
+<meta name="claude:viewport-fit-sides" content="cover" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..800&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap"
+/>
+<style>
+  /* Layout: documento de proposta em coluna estreita; esboços em "folhas" largas com notas numeradas em azul de revisão. */
+  :root {
+    --paper: #f3f4f1;
+    --sheet: #ffffff;
+    --ink: #1d2427;
+    --muted: #5d6a70;
+    --line: #d3d8d6;
+    --box: #e7eae8;
+    --box-strong: #c9cfcc;
+    --accent: #9a6b1e;
+    --redline: #2f63d8;
+    --good: #2e7d5b;
+    --warn: #a8641a;
+    --bad: #b23b32;
+    --display: 'Archivo', 'Arial Narrow', system-ui, sans-serif;
+    --body: 'Public Sans', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --paper: #121719;
+      --sheet: #192023;
+      --ink: #e6ecee;
+      --muted: #9aa9af;
+      --line: #2e3a3f;
+      --box: #232c30;
+      --box-strong: #36444a;
+      --accent: #d9b16b;
+      --redline: #7aa2ff;
+      --good: #6cc9a0;
+      --warn: #e3a35c;
+      --bad: #ef867a;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme='dark'] {
+    --paper: #121719;
+    --sheet: #192023;
+    --ink: #e6ecee;
+    --muted: #9aa9af;
+    --line: #2e3a3f;
+    --box: #232c30;
+    --box-strong: #36444a;
+    --accent: #d9b16b;
+    --redline: #7aa2ff;
+    --good: #6cc9a0;
+    --warn: #e3a35c;
+    --bad: #ef867a;
+    color-scheme: dark;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font: 15px/1.6 var(--body);
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 40px 80px;
+  }
+  main {
+    max-width: 1040px;
+    margin: 0 auto;
+    display: grid;
+    gap: 56px;
+  }
+  .prose {
+    max-width: 68ch;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--display);
+    font-stretch: 85%;
+    text-wrap: balance;
+    margin: 0;
+    line-height: 1.1;
+  }
+  h1 {
+    font-size: clamp(34px, 6vw, 56px);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+  h2 {
+    font-size: 30px;
+    font-weight: 750;
+  }
+  h3 {
+    font-size: 19px;
+    font-weight: 700;
+    font-stretch: 90%;
+  }
+  p {
+    margin: 0;
+  }
+  .eyebrow {
+    font: 600 12px var(--mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .lead {
+    font-size: 18px;
+    color: var(--muted);
+    max-width: 62ch;
+  }
+  section {
+    display: grid;
+    gap: 22px;
+  }
+  header.top {
+    display: grid;
+    gap: 16px;
+  }
+  .ask {
+    border-left: 3px solid var(--accent);
+    padding: 4px 0 4px 16px;
+    display: grid;
+    gap: 6px;
+    max-width: 70ch;
+  }
+  .ask strong {
+    font-family: var(--display);
+    font-stretch: 90%;
+    font-size: 17px;
+  }
+  /* Momentos de jogo */
+  .moments {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .moment {
+    background: var(--sheet);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 18px;
+    display: grid;
+    gap: 8px;
+    align-content: start;
+  }
+  .moment .when {
+    font: 600 12px var(--mono);
+    color: var(--muted);
+  }
+  .moment ul {
+    margin: 0;
+    padding-left: 18px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  /* Diagnóstico */
+  .issues {
+    display: grid;
+    gap: 0;
+    border-top: 1px solid var(--line);
+  }
+  .issue {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr) 150px;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+    align-items: baseline;
+  }
+  .sev {
+    font: 600 11px var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .sev.high {
+    color: var(--bad);
+  }
+  .sev.mid {
+    color: var(--warn);
+  }
+  .sev.low {
+    color: var(--muted);
+  }
+  .issue small {
+    color: var(--muted);
+    font-size: 13px;
+    display: block;
+  }
+  .issue .count {
+    font: 600 14px var(--mono);
+    text-align: right;
+    color: var(--ink);
+  }
+  /* Antes e depois */
+  .compare {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .col {
+    background: var(--sheet);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 18px;
+    display: grid;
+    gap: 10px;
+    align-content: start;
+  }
+  .col h3 {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .col h3 span {
+    font: 600 12px var(--mono);
+    color: var(--muted);
+    font-stretch: 100%;
+  }
+  .navlist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 6px;
+    font-size: 14px;
+  }
+  .navlist li {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    border-bottom: 1px dashed var(--line);
+    padding-bottom: 6px;
+  }
+  .navlist li em {
+    font-style: normal;
+    color: var(--muted);
+    font-size: 13px;
+    text-align: right;
+  }
+  /* Fluxos */
+  .flows {
+    display: grid;
+    gap: 14px;
+  }
+  .flow {
+    background: var(--sheet);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 18px;
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr) minmax(0, 1fr);
+    gap: 18px;
+  }
+  .flow h3 {
+    font-size: 17px;
+  }
+  .flow .steps {
+    font-size: 14px;
+    color: var(--muted);
+    display: grid;
+    gap: 4px;
+  }
+  .flow .steps b {
+    font: 600 13px var(--mono);
+    color: var(--ink);
+    display: block;
+    margin-bottom: 4px;
+  }
+  .flow .after b {
+    color: var(--good);
+  }
+  /* Esboços */
+  .sheet-wrap {
+    overflow-x: auto;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--sheet);
+  }
+  .wf {
+    min-width: 900px;
+    padding: 18px;
+    font: 13px/1.45 var(--body);
+    color: var(--ink);
+    position: relative;
+  }
+  .wf-caption {
+    display: grid;
+    gap: 6px;
+  }
+  .notes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 24px;
+    font-size: 14px;
+    color: var(--muted);
+    counter-reset: n;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+  .notes li {
+    display: flex;
+    gap: 10px;
+  }
+  .pin {
+    flex: none;
+    display: inline-grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--redline);
+    color: #fff;
+    font: 600 11px var(--mono);
+  }
+  .wf .pin {
+    position: absolute;
+    box-shadow: 0 0 0 3px var(--sheet);
+  }
+  .app {
+    display: grid;
+    grid-template-columns: 150px minmax(0, 1fr);
+    border: 1px solid var(--box-strong);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .bar {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--box-strong);
+    background: var(--box);
+    font-size: 12px;
+  }
+  .bar .brand {
+    font: 800 13px var(--display);
+    font-stretch: 85%;
+    letter-spacing: 0.04em;
+  }
+  .bar .grow {
+    flex: 1;
+  }
+  .bar .kv {
+    display: grid;
+    line-height: 1.2;
+  }
+  .bar .kv b {
+    font: 600 13px var(--mono);
+  }
+  .bar .kv span {
+    color: var(--muted);
+    font-size: 11px;
+  }
+  .side {
+    border-right: 1px solid var(--box-strong);
+    padding: 12px 8px;
+    display: grid;
+    gap: 4px;
+    align-content: start;
+    font-size: 13px;
+  }
+  .side span {
+    padding: 7px 10px;
+    border-radius: 4px;
+  }
+  .side .on {
+    background: var(--box);
+    font-weight: 600;
+  }
+  .content {
+    padding: 16px;
+    display: grid;
+    gap: 14px;
+    min-width: 0;
+  }
+  .row {
+    display: grid;
+    gap: 12px;
+  }
+  .r4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .r3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .r21 {
+    grid-template-columns: 2fr 1fr;
+  }
+  .box {
+    border: 1px solid var(--box-strong);
+    border-radius: 5px;
+    padding: 10px 12px;
+    background: var(--sheet);
+    display: grid;
+    gap: 6px;
+    align-content: start;
+    min-width: 0;
+  }
+  .box.fill {
+    background: var(--box);
+  }
+  .box h4 {
+    margin: 0;
+    font: 700 13px var(--display);
+    font-stretch: 92%;
+  }
+  .big {
+    font: 600 18px var(--mono);
+  }
+  .dim {
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    border-top: 1px solid var(--box);
+    padding-top: 7px;
+  }
+  .line:first-of-type {
+    border-top: 0;
+    padding-top: 0;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--box-strong);
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .btn.main {
+    background: var(--ink);
+    color: var(--sheet);
+    border-color: var(--ink);
+  }
+  .chip {
+    font: 600 11px var(--mono);
+    padding: 2px 7px;
+    border-radius: 99px;
+    border: 1px solid currentColor;
+    white-space: nowrap;
+  }
+  .chip.good {
+    color: var(--good);
+  }
+  .chip.warn {
+    color: var(--warn);
+  }
+  .chip.bad {
+    color: var(--bad);
+  }
+  .meter {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--box);
+    overflow: hidden;
+  }
+  .meter i {
+    display: block;
+    height: 100%;
+    background: var(--box-strong);
+  }
+  .tabs {
+    display: flex;
+    gap: 18px;
+    border-bottom: 1px solid var(--box-strong);
+    font-size: 13px;
+  }
+  .tabs span {
+    padding: 6px 0;
+  }
+  .tabs .on {
+    border-bottom: 2px solid var(--ink);
+    font-weight: 600;
+  }
+  .drawer-stage {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    border: 1px solid var(--box-strong);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .dimmed {
+    background: repeating-linear-gradient(135deg, var(--box) 0 8px, var(--sheet) 8px 16px);
+    opacity: 0.6;
+  }
+  .drawer {
+    border-left: 1px solid var(--box-strong);
+    padding: 16px;
+    display: grid;
+    gap: 12px;
+    align-content: start;
+  }
+  .offer {
+    border: 1px solid var(--box-strong);
+    border-radius: 5px;
+    padding: 9px 10px;
+    display: grid;
+    gap: 3px;
+  }
+  .offer.pick {
+    border: 2px solid var(--ink);
+  }
+  .stepper {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .stepper b {
+    font: 600 15px var(--mono);
+    border: 1px solid var(--box-strong);
+    padding: 3px 12px;
+    border-radius: 4px;
+  }
+  .wizard-steps {
+    display: flex;
+    gap: 8px;
+    font: 600 12px var(--mono);
+  }
+  .wizard-steps span {
+    padding: 4px 10px;
+    border-radius: 99px;
+    border: 1px solid var(--box-strong);
+    color: var(--muted);
+  }
+  .wizard-steps .on {
+    border-color: var(--ink);
+    color: var(--ink);
+  }
+  .wizard-steps .done {
+    color: var(--good);
+    border-color: var(--good);
+  }
+  .principles {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 28px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .principles li {
+    display: grid;
+    gap: 2px;
+  }
+  .principles strong {
+    font-family: var(--display);
+    font-stretch: 90%;
+    font-size: 16px;
+  }
+  .principles span {
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .phases {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .phase {
+    background: var(--sheet);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 18px;
+    display: grid;
+    gap: 8px;
+    align-content: start;
+  }
+  .phase ul {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .decide {
+    display: grid;
+    gap: 10px;
+    counter-reset: q;
+  }
+  .decide p {
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+  }
+  .decide p::before {
+    counter-increment: q;
+    content: counter(q);
+    font: 700 14px var(--mono);
+    color: var(--accent);
+  }
+  @media (max-width: 760px) {
+    .moments,
+    .compare,
+    .phases,
+    .principles,
+    .notes {
+      grid-template-columns: 1fr;
+    }
+    .flow {
+      grid-template-columns: 1fr;
+    }
+    .issue {
+      grid-template-columns: 70px minmax(0, 1fr);
+    }
+    .issue .count {
+      grid-column: 2;
+      text-align: left;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      transition: none !important;
+      animation: none !important;
+    }
+  }
+</style>
+
+<main>
+  <header class="top">
+    <span class="eyebrow">Proposta para aprovação · 30/10/2026</span>
+    <h1>UX do Aftermarket</h1>
+    <p class="lead">
+      O jogo funciona, mas se usa como um painel administrativo: tudo é tabela, cada tarefa passa
+      por várias telas e nada avisa o que mudou. Esta proposta reorganiza o jogo em volta do que o
+      jogador faz num mundo semanal. Nada aqui é cor ou estilo; a identidade visual vem depois,
+      sobre esta estrutura.
+    </p>
+    <div class="ask">
+      <strong>O que preciso de você</strong>
+      <p>
+        Aprovar a estrutura (menu de 5 itens e negócio com 4 abas), os quatro fluxos e a ordem de
+        execução no fim da página. Ajustes de texto e detalhes eu resolvo durante a construção.
+      </p>
+    </div>
+  </header>
+
+  <section>
+    <span class="eyebrow">Para quem desenhamos</span>
+    <h2>Três momentos de jogo no mundo semanal</h2>
+    <p class="prose">
+      Com o relógio lento (1 hora real = 6 horas de jogo), ninguém fica horas grudado. O jogador
+      entra, entende o que aconteceu, decide e sai; a automação trabalha enquanto ele está fora. A
+      interface tem de servir bem cada momento.
+    </p>
+    <div class="moments">
+      <div class="moment">
+        <span class="when">1ª hora · uma vez</span>
+        <h3>Começar</h3>
+        <ul>
+          <li>Entender o objetivo e a loja que recebeu</li>
+          <li>Fazer a primeira compra e a primeira venda</li>
+          <li>Deixar a loja repondo sozinha</li>
+        </ul>
+      </div>
+      <div class="moment">
+        <span class="when">5 a 10 min · 2 ou 3 vezes ao dia</span>
+        <h3>Visita curta</h3>
+        <ul>
+          <li>O que aconteceu desde a última visita</li>
+          <li>O que está parado e por quê</li>
+          <li>Resolver com um clique e sair</li>
+        </ul>
+      </div>
+      <div class="moment">
+        <span class="when">30 a 60 min · algumas vezes na semana</span>
+        <h3>Crescer</h3>
+        <ul>
+          <li>Escolher o próximo negócio pelo retorno</li>
+          <li>Abrir, equipar e ligar a produção</li>
+          <li>Ligar fornecedor, fábrica e loja</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow">Diagnóstico</span>
+    <h2>O que atrapalha hoje</h2>
+    <div class="issues">
+      <div class="issue">
+        <span class="sev high">Alto</span>
+        <div>
+          Nenhuma tela responde "o que aconteceu enquanto eu estava fora"<small
+            >Num mundo semanal é a primeira pergunta de toda visita. Hoje o jogador abre o mapa e
+            precisa caçar a informação em 6 páginas.</small
+          >
+        </div>
+        <span class="count">0 telas</span>
+      </div>
+      <div class="issue">
+        <span class="sev high">Alto</span>
+        <div>
+          Comprar mercadoria atravessa duas páginas<small
+            >Mercado: escolher oferta, digitar quantidade, continuar. Logística: escolher
+            transportadora entre 23, contratar, confirmar, pagar.</small
+          >
+        </div>
+        <span class="count">7 cliques · 2 páginas</span>
+      </div>
+      <div class="issue">
+        <span class="sev high">Alto</span>
+        <div>
+          Abrir um negócio são quatro tarefas soltas<small
+            >Comprar o terreno no mapa, instalar equipamento, contratar na aba Funcionários e ainda
+            "Retomar operação". Quem esquece uma etapa fica com a unidade parada sem
+            entender.</small
+          >
+        </div>
+        <span class="count">4 etapas · 3 telas</span>
+      </div>
+      <div class="issue">
+        <span class="sev high">Alto</span>
+        <div>
+          "Parado" sem dizer como resolver<small
+            >A fazenda aparece como Pausada ou "Aguardando insumos"; a correção (comprar semente,
+            ligar operação) fica em outra aba.</small
+          >
+        </div>
+        <span class="count">status sem ação</span>
+      </div>
+      <div class="issue">
+        <span class="sev mid">Médio</span>
+        <div>
+          Abas demais dentro de cada negócio<small
+            >Loja com 9 abas, produção com 8, transportadora com 7. Abastecimento, Pedidos e Consumo
+            são assuntos de jogador avançado.</small
+          >
+        </div>
+        <span class="count">9 · 8 · 7 abas</span>
+      </div>
+      <div class="issue">
+        <span class="sev mid">Médio</span>
+        <div>
+          Menu espalha o mesmo assunto<small
+            >Oportunidades e Mercado mostram preços; Logística e Minha frota mostram caminhões; Meus
+            Negócios e Empresa mostram resultado.</small
+          >
+        </div>
+        <span class="count">6 itens, 3 sobrepostos</span>
+      </div>
+      <div class="issue">
+        <span class="sev mid">Médio</span>
+        <div>
+          Linguagem de sistema<small
+            >"Contexto da compra", "Custo posto", "Titularidade (opcional)", "Mercadoria
+            (opcional)", "Resultado operacional" no topo.</small
+          >
+        </div>
+        <span class="count">dezenas de rótulos</span>
+      </div>
+      <div class="issue">
+        <span class="sev low">Baixo</span>
+        <div>
+          Nada reage quando algo acontece<small
+            >Venda, entrega e colheita mudam números em silêncio. O mundo está vivo, mas parece
+            parado.</small
+          >
+        </div>
+        <span class="count">sem retorno</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow">Estrutura</span>
+    <h2>Menu de 6 para 5, e negócio com 4 abas</h2>
+    <div class="compare">
+      <div class="col">
+        <h3>Hoje <span>6 itens + até 9 abas</span></h3>
+        <ul class="navlist">
+          <li>Mapa <em>abre direto no mapa</em></li>
+          <li>Oportunidades <em>preços e análise</em></li>
+          <li>Meus Negócios <em>lista + página com 7 a 9 abas</em></li>
+          <li>Mercado <em>ofertas, pedidos, editais</em></li>
+          <li>Logística <em>entregas + frete + frota</em></li>
+          <li>Empresa <em>finanças e crédito</em></li>
+        </ul>
+      </div>
+      <div class="col">
+        <h3>Proposta <span>5 itens + 4 abas</span></h3>
+        <ul class="navlist">
+          <li>
+            <b>Início</b> <em>novo: o que aconteceu, o que precisa de você, entregas a caminho</em>
+          </li>
+          <li>Mapa <em>explorar e abrir negócio no terreno</em></li>
+          <li>Negócios <em>cartões com estado; frota entra aqui</em></li>
+          <li>Mercado <em>comprar, vender, editais; oportunidades viram a aba Preços</em></li>
+          <li>Empresa <em>finanças, crédito e, depois, ranking</em></li>
+        </ul>
+        <p class="dim">
+          Página do negócio: Visão geral · Estoque e compras · Vendas e preços · Equipe e
+          equipamento. Abastecimento automático, pedidos e consumo detalhado ficam em "Avançado".
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow">Fluxos</span>
+    <h2>Quatro tarefas, antes e depois</h2>
+    <div class="flows">
+      <div class="flow">
+        <h3>Repor um produto na loja</h3>
+        <div class="steps">
+          <b>Hoje · 7 cliques</b>Mercado → oferta → quantidade → Continuar para frete → escolher
+          transportadora → Contratar e comprar → Pagar
+        </div>
+        <div class="steps after">
+          <b>Proposta · 2 cliques</b>"Repor" no produto abre um painel com a melhor oferta já
+          escolhida pelo custo na sua porta (preço + frete), quantidade para 7 dias e transportadora
+          mais barata. Confirmar.
+        </div>
+      </div>
+      <div class="flow">
+        <h3>Abrir um negócio</h3>
+        <div class="steps">
+          <b>Hoje · 4 etapas em 3 telas</b>Comprar terreno no mapa → instalar equipamento →
+          contratar na aba Funcionários → Retomar operação → comprar insumo
+        </div>
+        <div class="steps after">
+          <b>Proposta · assistente de 3 passos</b>Atividade (custo, lucro, retorno) → terreno (só os
+          que comportam) → resumo com tudo incluído: terreno, equipamento, equipe, primeiro insumo e
+          produção ligada. Uma confirmação.
+        </div>
+      </div>
+      <div class="flow">
+        <h3>Voltar ao jogo</h3>
+        <div class="steps">
+          <b>Hoje · sem tela</b>Abre no mapa; vendas, entregas e alertas espalhados entre Meus
+          Negócios, Logística e o sino.
+        </div>
+        <div class="steps after">
+          <b>Proposta · tela Início</b>"Desde sua última visita (há 7 h)" com vendas, colheitas e
+          entregas; lista "Precisa de você" com o botão da correção em cada linha.
+        </div>
+      </div>
+      <div class="flow">
+        <h3>Resolver algo parado</h3>
+        <div class="steps">
+          <b>Hoje · descobrir sozinho</b>Ler o gargalo na aba Produção, ir à aba Insumos, comprar,
+          voltar e retomar.
+        </div>
+        <div class="steps after">
+          <b>Proposta · status com ação</b>Todo "parado" diz o motivo em uma frase e traz o botão
+          certo: "Falta semente · Comprar 300 kg", "Sem equipe · Contratar 5".
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow">Esboço 1</span>
+    <h2>Início: a visita curta inteira numa tela</h2>
+    <div class="sheet-wrap">
+      <div class="wf">
+        <div class="app">
+          <div class="bar">
+            <span class="brand">AFTERMARKET</span><span class="grow"></span>
+            <span class="kv"><b>R$ 812.430</b><span>caixa livre</span></span>
+            <span class="kv"><b>+R$ 2.140</b><span>lucro hoje</span></span>
+            <span class="kv"><b>Dia 6 · 14h</b><span>1 h real = 6 h de jogo</span></span>
+            <span class="btn">Silva Participações</span>
+          </div>
+          <nav class="side">
+            <span class="on">Início</span><span>Mapa</span><span>Negócios</span><span>Mercado</span
+            ><span>Empresa</span>
+          </nav>
+          <div class="content">
+            <div class="box fill">
+              <h4>Desde sua última visita · há 7 horas</h4>
+              <div class="row r4">
+                <div>
+                  <div class="big">R$ 18.240</div>
+                  <div class="dim">vendas nas lojas</div>
+                </div>
+                <div>
+                  <div class="big">1.200 un</div>
+                  <div class="dim">arroz colhido em Sorocaba</div>
+                </div>
+                <div>
+                  <div class="big">3</div>
+                  <div class="dim">entregas recebidas</div>
+                </div>
+                <div>
+                  <div class="big">+R$ 9.870</div>
+                  <div class="dim">no caixa, já pagos os custos</div>
+                </div>
+              </div>
+            </div>
+            <div class="row r21">
+              <div class="box">
+                <h4>Precisa de você · 3</h4>
+                <div class="line">
+                  <span
+                    ><span class="chip bad">Parado</span> Fazenda Sorocaba: falta semente de
+                    arroz</span
+                  ><span class="btn main">Comprar 300 kg</span>
+                </div>
+                <div class="line">
+                  <span
+                    ><span class="chip warn">Sem estoque</span> Loja Campinas sem leite há 2 h · ~R$
+                    640 em vendas perdidas</span
+                  ><span class="btn main">Repor leite</span>
+                </div>
+                <div class="line">
+                  <span
+                    ><span class="chip warn">Proposta</span> Primavera Agro quer 21.854 kg de
+                    ração</span
+                  ><span class="btn">Ver proposta</span>
+                </div>
+              </div>
+              <div class="box">
+                <h4>A caminho</h4>
+                <div class="line">
+                  <span>Arroz 5 kg · 532 un</span><span class="dim">chega em 40 min</span>
+                </div>
+                <div class="meter"><i style="width: 70%"></i></div>
+                <div class="line">
+                  <span>Semente de arroz · 300 kg</span><span class="dim">chega em 2 h</span>
+                </div>
+                <div class="meter"><i style="width: 25%"></i></div>
+              </div>
+            </div>
+            <div class="row r3">
+              <div class="box">
+                <h4>Loja Campinas</h4>
+                <span class="chip good">Vendendo</span
+                ><span class="dim">R$ 2,4 mil/dia · estoque para 3 dias</span>
+              </div>
+              <div class="box">
+                <h4>Fazenda Sorocaba</h4>
+                <span class="chip bad">Parada · falta semente</span
+                ><span class="dim">1 de 4 linhas · próxima colheita em —</span>
+              </div>
+              <div class="box fill">
+                <h4>+ Abrir negócio</h4>
+                <span class="dim">Ordenha se paga em 37 dias com o seu caixa</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <span class="pin" style="left: 212px; top: 66px">1</span>
+        <span class="pin" style="left: 212px; top: 178px">2</span>
+        <span class="pin" style="left: 690px; top: 178px">3</span>
+        <span class="pin" style="left: 212px; top: 320px">4</span>
+      </div>
+    </div>
+    <ol class="notes">
+      <li>
+        <span class="pin">1</span>Resumo desde a última visita, calculado pelo extrato e pelas
+        colheitas; o jogador lê em 3 segundos.
+      </li>
+      <li>
+        <span class="pin">2</span>Cada alerta diz o motivo, o custo de não agir e traz o botão da
+        correção. Sem botão, não vira alerta.
+      </li>
+      <li>
+        <span class="pin">3</span>Entregas a caminho saem da página Logística e ficam onde o jogador
+        olha primeiro.
+      </li>
+      <li>
+        <span class="pin">4</span>Negócios como cartões com estado e um número que importa; o último
+        cartão sugere o próximo passo pelo retorno.
+      </li>
+    </ol>
+  </section>
+
+  <section>
+    <span class="eyebrow">Esboço 2</span>
+    <h2>Repor: painel lateral em vez de duas páginas</h2>
+    <div class="sheet-wrap">
+      <div class="wf">
+        <div class="drawer-stage">
+          <div class="dimmed"></div>
+          <div class="drawer">
+            <h3>Repor leite 1 L · Loja Campinas</h3>
+            <div class="line">
+              <span>Quantidade</span
+              ><span class="stepper"
+                ><span class="btn">−</span><b>1.540 un</b><span class="btn">+</span></span
+              >
+            </div>
+            <span class="dim">7 dias de venda na sua loja · cabe no estoque</span>
+            <div class="offer pick">
+              <div class="line">
+                <b>AgroVale Alimentos · Sorocaba</b><span class="chip good">melhor</span>
+              </div>
+              <span class="dim"
+                >R$ 5,41 + frete R$ 0,22 = <b>R$ 5,63 na sua porta</b> · chega em 3 h</span
+              >
+            </div>
+            <div class="offer">
+              <div class="line">
+                <b>Laticínios Serra · Piracicaba</b><span class="dim">R$ 5,81</span>
+              </div>
+              <span class="dim">chega em 5 h</span>
+            </div>
+            <div class="offer">
+              <div class="line">
+                <b>Distribuidora Aurora · Americana</b><span class="dim">R$ 6,02</span>
+              </div>
+              <span class="dim">chega em 2 h</span>
+            </div>
+            <div class="line">
+              <span>Transportadora</span><span>TransBrasil, a mais barata · <u>trocar</u></span>
+            </div>
+            <div class="line">
+              <span>Vendendo a R$ 6,10 na prateleira</span><span class="chip good">margem 8%</span>
+            </div>
+            <div class="line">
+              <span><b>Total R$ 8.670</b></span
+              ><span class="dim">caixa depois R$ 803.760</span>
+            </div>
+            <span class="btn main">Comprar por R$ 8.670</span>
+            <span class="dim">Ligar "repor sozinho quando baixar de 2 dias" →</span>
+          </div>
+        </div>
+        <span class="pin" style="left: 520px; top: 78px">1</span>
+        <span class="pin" style="left: 520px; top: 142px">2</span>
+        <span class="pin" style="left: 520px; top: 300px">3</span>
+        <span class="pin" style="left: 520px; top: 420px">4</span>
+      </div>
+    </div>
+    <ol class="notes">
+      <li>
+        <span class="pin">1</span>Abre a partir do produto, da loja ou de um alerta, sem sair da
+        tela atual.
+      </li>
+      <li>
+        <span class="pin">2</span>Ofertas ordenadas pelo custo na porta do jogador; a melhor já vem
+        escolhida. Comparar continua possível.
+      </li>
+      <li>
+        <span class="pin">3</span>A transportadora mais barata é escolhida sozinha; trocar é
+        opcional. Hoje são 23 opções sempre abertas.
+      </li>
+      <li>
+        <span class="pin">4</span>Margem e caixa depois da compra antes de confirmar; um atalho liga
+        a reposição automática.
+      </li>
+    </ol>
+  </section>
+
+  <section>
+    <span class="eyebrow">Esboço 3</span>
+    <h2>Abrir negócio: um assistente, uma confirmação</h2>
+    <div class="sheet-wrap">
+      <div class="wf">
+        <div class="box" style="padding: 16px; gap: 12px">
+          <div class="wizard-steps">
+            <span class="done">1 Atividade ✓</span><span class="done">2 Terreno ✓</span
+            ><span class="on">3 Confirmar</span>
+          </div>
+          <h3>Colheita de arroz em Sorocaba</h3>
+          <div class="row r21">
+            <div class="box">
+              <div class="line"><span>Terreno · 80 ha, cabem 4 linhas</span><b>R$ 120.000</b></div>
+              <div class="line">
+                <span>Linhas de produção</span
+                ><span class="stepper"
+                  ><span class="btn">−</span><b>1</b><span class="btn">+</span></span
+                >
+              </div>
+              <div class="line"><span>Equipamento · 1 linha</span><b>R$ 54.000</b></div>
+              <div class="line">
+                <span>Equipe · 5 pessoas contratadas agora</span><span>R$ 1.036/dia</span>
+              </div>
+              <div class="line">
+                <span>☑ Semente para 2 colheitas · 200 kg</span><b>R$ 2.900</b>
+              </div>
+              <div class="line">
+                <span>☑ Ligar produção automática</span><span class="dim">orçamento sugerido</span>
+              </div>
+              <div class="line">
+                <span><b>Total agora</b></span
+                ><b>R$ 176.900</b>
+              </div>
+            </div>
+            <div class="box fill">
+              <h4>Estimativa a preços de referência</h4>
+              <div class="big">R$ 2.800/dia</div>
+              <span class="dim">lucro com a linha sempre ocupada</span>
+              <div class="big">~62 dias</div>
+              <span class="dim">para se pagar</span>
+              <span class="dim">Caixa depois: R$ 635.530</span>
+            </div>
+          </div>
+          <div class="line">
+            <span class="btn">Voltar</span
+            ><span class="btn main">Abrir negócio por R$ 176.900</span>
+          </div>
+        </div>
+        <span class="pin" style="left: 20px; top: 22px">1</span>
+        <span class="pin" style="left: 20px; top: 140px">2</span>
+        <span class="pin" style="left: 560px; top: 110px">3</span>
+      </div>
+    </div>
+    <ol class="notes">
+      <li>
+        <span class="pin">1</span>Passo 1 é a lista "Negócios para abrir" que já existe; passo 2
+        mostra no mapa só terrenos que comportam a atividade.
+      </li>
+      <li>
+        <span class="pin">2</span>O resumo inclui tudo que hoje são etapas soltas. O jogo executa os
+        mesmos comandos de antes, em sequência.
+      </li>
+      <li>
+        <span class="pin">3</span>Lucro e retorno ao lado do custo, marcados como estimativa, para a
+        decisão ser sobre o negócio e não sobre telas.
+      </li>
+    </ol>
+  </section>
+
+  <section>
+    <span class="eyebrow">Esboço 4</span>
+    <h2>Página do negócio: estado primeiro, detalhe depois</h2>
+    <div class="sheet-wrap">
+      <div class="wf">
+        <div class="box" style="padding: 16px; gap: 12px">
+          <div class="line">
+            <h3>Loja Campinas</h3>
+            <span class="chip good">Vendendo · 8 de 8 funcionários</span>
+          </div>
+          <div class="row r3">
+            <div>
+              <div class="big">R$ 2.410</div>
+              <div class="dim">vendas hoje</div>
+            </div>
+            <div>
+              <div class="big">14%</div>
+              <div class="dim">margem depois do frete</div>
+            </div>
+            <div>
+              <div class="big">3 dias</div>
+              <div class="dim">até o estoque acabar</div>
+            </div>
+          </div>
+          <div class="tabs">
+            <span class="on">Visão geral</span><span>Estoque e compras</span
+            ><span>Vendas e preços</span><span>Equipe e equipamento</span
+            ><span class="dim">Avançado ▾</span>
+          </div>
+          <div class="line">
+            <span><b>Arroz 5 kg</b> · 522 un · R$ 24,50</span
+            ><span style="flex: 1; max-width: 260px"
+              ><span class="meter" style="display: block"><i style="width: 60%"></i></span></span
+            ><span class="dim">5 dias</span><span class="btn">Repor</span>
+          </div>
+          <div class="line">
+            <span><b>Leite 1 L</b> · 0 un · R$ 6,10</span
+            ><span style="flex: 1; max-width: 260px"
+              ><span class="meter" style="display: block"><i style="width: 0%"></i></span></span
+            ><span class="chip bad">acabou</span><span class="btn main">Repor</span>
+          </div>
+          <div class="line">
+            <span><b>Óleo de soja 1 L</b> · 900 un · R$ 8,90</span
+            ><span style="flex: 1; max-width: 260px"
+              ><span class="meter" style="display: block"><i style="width: 80%"></i></span></span
+            ><span class="dim">6 dias</span><span class="btn">Repor</span>
+          </div>
+          <div class="line">
+            <span>Repor sozinho quando baixar de 2 dias</span><span class="btn">Ligar</span>
+          </div>
+        </div>
+        <span class="pin" style="left: 20px; top: 22px">1</span>
+        <span class="pin" style="left: 20px; top: 130px">2</span>
+        <span class="pin" style="left: 700px; top: 190px">3</span>
+      </div>
+    </div>
+    <ol class="notes">
+      <li>
+        <span class="pin">1</span>Três números que respondem "está indo bem?" antes de qualquer
+        tabela.
+      </li>
+      <li>
+        <span class="pin">2</span>Quatro abas com nomes do dia a dia; o que é raro vai para
+        "Avançado".
+      </li>
+      <li>
+        <span class="pin">3</span>Cada linha mostra quanto tempo o estoque dura e o botão Repor abre
+        o painel do esboço 2.
+      </li>
+    </ol>
+  </section>
+
+  <section>
+    <span class="eyebrow">Regras para todas as telas</span>
+    <h2>Princípios</h2>
+    <ul class="principles">
+      <li>
+        <strong>Uma ação principal por tela</strong
+        ><span>O botão mais forte é sempre o próximo passo mais provável.</span>
+      </li>
+      <li>
+        <strong>Todo problema traz a correção</strong
+        ><span>Status parado ou alerta sem botão de solução não entra no jogo.</span>
+      </li>
+      <li>
+        <strong>Resumo antes do detalhe</strong
+        ><span>Três números e o estado em cima; tabelas embaixo ou em outra aba.</span>
+      </li>
+      <li>
+        <strong>Escolha boa já feita</strong
+        ><span>Quantidade, fornecedor e transportadora vêm sugeridos; trocar é opcional.</span>
+      </li>
+      <li>
+        <strong>Palavras de quem joga</strong
+        ><span>"Custo na sua porta", não "custo posto"; sem "(opcional)" em todo campo.</span>
+      </li>
+      <li>
+        <strong>O mundo responde</strong
+        ><span
+          >Venda, entrega e colheita aparecem na hora, com um aviso curto e o número mudando.</span
+        >
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <span class="eyebrow">Ordem de execução</span>
+    <h2>Três entregas, do maior ganho para o menor</h2>
+    <div class="phases">
+      <div class="phase">
+        <span class="eyebrow">Entrega 1</span>
+        <h3>Visita curta</h3>
+        <ul>
+          <li>Tela Início com resumo e "Precisa de você"</li>
+          <li>Status com motivo e botão de correção</li>
+          <li>Painel de reposição em 2 cliques</li>
+        </ul>
+      </div>
+      <div class="phase">
+        <span class="eyebrow">Entrega 2</span>
+        <h3>Crescer</h3>
+        <ul>
+          <li>Assistente Abrir negócio</li>
+          <li>Página do negócio com 4 abas</li>
+          <li>Menu de 5 itens; frota dentro de Negócios</li>
+        </ul>
+      </div>
+      <div class="phase">
+        <span class="eyebrow">Entrega 3</span>
+        <h3>Clareza e retorno</h3>
+        <ul>
+          <li>Revisão de todos os rótulos</li>
+          <li>Avisos de venda, entrega e colheita</li>
+          <li>Depois disso: identidade visual, animações e imagens</li>
+        </ul>
+      </div>
+    </div>
+    <p class="prose dim">
+      Regra que não muda: a interface só dispara os mesmos comandos que bots e jogadores já usam. O
+      assistente e o painel de reposição executam esses comandos em sequência, sem atalhos que mexam
+      em saldo ou estoque.
+    </p>
+  </section>
+
+  <section>
+    <span class="eyebrow">Decisões</span>
+    <h2>Para aprovar</h2>
+    <div class="decide">
+      <p>Menu de 5 itens com a nova tela Início, absorvendo Oportunidades e Logística.</p>
+      <p>Negócio com 4 abas e o resto em "Avançado".</p>
+      <p>Painel de reposição e assistente Abrir negócio como nos esboços 2 e 3.</p>
+      <p>Começar pela Entrega 1.</p>
+    </div>
+  </section>
+</main>

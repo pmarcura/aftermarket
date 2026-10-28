@@ -127,7 +127,7 @@ function run(seed: number): SeedResult {
       .filter((j) => j.recipeId === r.id && j.completed && j.finishesAt > from)
       .reduce((n, j) => n + j.cycles, 0);
     lines[r.id] = {
-      reference: flows.lines[r.id] ?? 0,
+      reference: (flows.lines[r.id] ?? 0) * scale,
       observed: cycles / window / cyclesPerDay(r),
     };
   }
@@ -236,7 +236,7 @@ function writeDoc() {
   const fmt = (n: number, d = 1) => n.toLocaleString('pt-BR', { maximumFractionDigits: d });
   const rows = designRecipes.map((r) => {
     const observed = avg((x) => x.lines[r.id].observed),
-      reference = flows.lines[r.id] ?? 0;
+      reference = (flows.lines[r.id] ?? 0) * scale;
     return `| ${r.name} | ${fmt(reference)} | ${fmt(observed)} | ${reference ? pct(observed / reference) : '—'} | ${fmt(
       avg((x) => (x.margins[r.id] ?? 0) / 100),
       0,
@@ -264,8 +264,8 @@ Gerado por \`npm run economy:proof -- --days=${days} --window=${window} --scale=
 | Dinheiro conservado | diferença 0 | ${results.every((r) => r.moneyDrift === 0) ? 'sim, em todas as sementes' : 'NÃO'} |
 | Empresas quebradas ou suspensas | nenhuma | ${results.map((r) => r.broke.length).join(' / ')} |
 | Procura atendida pelas lojas | 70% | ${pct(avg((r) => r.coverageAll))} |
-| Aço ao governo | 16 t/dia | ${fmt(avg((r) => r.governmentSteelPerDay))} t/dia |
-| Caminhões comprados | 0,8 pesado + 0,8 leve/dia | ${fmt(
+| Aço ao governo | ${fmt(16 * scale, 0)} t/dia | ${fmt(avg((r) => r.governmentSteelPerDay))} t/dia |
+| Caminhões comprados | ${fmt(0.8 * scale)} pesado + ${fmt(0.8 * scale)} leve/dia | ${fmt(
     avg((r) => r.trucksBoughtPerDay.heavy),
     2,
   )} + ${fmt(

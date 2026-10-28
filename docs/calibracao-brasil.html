@@ -1,0 +1,167 @@
+<title>Brasil com 500 bots</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..800&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: uma coluna de leitura com faixas de comparação antes/depois; cores de categoria iguais às do jogo (Raio-X) */
+:root {
+  --bg: #f2f4f3; --surface: #ffffff; --ink: #13232c; --muted: #56676e; --line: #d6dddf;
+  --gold: #9a6a1c; --gold-soft: #f3e7d1;
+  --ok: #2d7a4d; --ok-soft: #dcefe3; --warn: #9a640f; --warn-soft: #f7ead2; --bad: #ad3a31; --bad-soft: #f6dedb;
+  --mine: #a97c45; --farm: #4f8f5c; --industry: #6c7c85; --retail: #c95c50; --gov: #3f7fae;
+  --display: "Archivo", "Arial Narrow", system-ui, sans-serif;
+  --body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f1d24; --surface: #142730; --ink: #e5ecec; --muted: #94a6ab; --line: #24404b;
+  --gold: #e0b066; --gold-soft: #3a3020;
+  --ok: #6cc58f; --ok-soft: #173827; --warn: #e8b04d; --warn-soft: #3b2e14; --bad: #ef7d72; --bad-soft: #42211e;
+  --mine: #cfa06a; --farm: #78b884; --industry: #9eadb5; --retail: #e8857a; --gov: #7db6db;
+  color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0f1d24; --surface: #142730; --ink: #e5ecec; --muted: #94a6ab; --line: #24404b;
+  --gold: #e0b066; --gold-soft: #3a3020;
+  --ok: #6cc58f; --ok-soft: #173827; --warn: #e8b04d; --warn-soft: #3b2e14; --bad: #ef7d72; --bad-soft: #42211e;
+  --mine: #cfa06a; --farm: #78b884; --industry: #9eadb5; --retail: #e8857a; --gov: #7db6db;
+  color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 400 16px/1.6 var(--body); }
+.wrap { max-width: 980px; margin: 0 auto; padding-block: 48px 80px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 56px; }
+.read { max-width: 70ch; }
+h1, h2, h3 { font-family: var(--display); font-stretch: 85%; line-height: 1.1; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2.2rem, 6vw, 3.4rem); font-weight: 800; }
+h2 { font-size: 1.6rem; font-weight: 700; }
+p { margin: 0; }
+.eyebrow { font: 500 0.75rem/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); }
+.lead { font-size: 1.15rem; line-height: 1.55; }
+.muted { color: var(--muted); }
+section, header { display: grid; gap: 18px; }
+
+/* números grandes do topo */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 1px; background: var(--line);
+  border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.stat { background: var(--surface); padding: 16px 18px; display: grid; gap: 6px; align-content: start; }
+.stat .k { font: 500 0.7rem/1 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.stat .v { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; font-variant-numeric: tabular-nums; }
+.stat .from { font: 600 1rem/1 var(--display); color: var(--muted); text-decoration: line-through; text-decoration-thickness: 1px; }
+.stat .to { font: 700 1.9rem/1 var(--display); font-stretch: 80%; }
+.stat .to.good { color: var(--ok); } .stat .to.bad { color: var(--bad); } .stat .to.mid { color: var(--warn); }
+.stat span.note { font-size: 0.84rem; color: var(--muted); line-height: 1.35; }
+
+/* mapa de distâncias */
+.haul { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; display: grid; gap: 12px; }
+.bar { display: grid; grid-template-columns: 9.5rem 1fr 4.5rem; gap: 10px; align-items: center; font-size: 0.92rem; }
+.bar .track { height: 14px; border-radius: 3px; background: var(--bg); border: 1px solid var(--line); position: relative; overflow: hidden; }
+.bar .fill { position: absolute; inset: 0 auto 0 0; background: var(--c); }
+.bar .ref { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--ink); }
+.bar b { font: 600 0.88rem/1 var(--mono); text-align: right; font-variant-numeric: tabular-nums; }
+.c-mine { --c: var(--mine); } .c-farm { --c: var(--farm); } .c-ind { --c: var(--industry); } .c-retail { --c: var(--retail); }
+
+/* tabela de resultado por negócio */
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 560px; font-variant-numeric: tabular-nums; }
+th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); font-size: 0.92rem; }
+th { font: 500 0.7rem/1.2 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+td.n { text-align: right; font-family: var(--mono); font-size: 0.86rem; }
+tr:last-child td { border-bottom: 0; }
+.pill { display: inline-block; font: 600 0.7rem/1 var(--mono); padding: 4px 7px; border-radius: 999px; }
+.pill.ok { background: var(--ok-soft); color: var(--ok); } .pill.bad { background: var(--bad-soft); color: var(--bad); }
+.pill.mid { background: var(--warn-soft); color: var(--warn); }
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 2px; background: var(--c); margin-right: 8px; }
+
+/* correções */
+.fixes { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 12px; }
+.fix { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: grid; gap: 6px; align-content: start; }
+.fix h3 { font-size: 1.05rem; font-stretch: 90%; }
+.fix p { font-size: 0.92rem; line-height: 1.5; color: var(--muted); }
+.fix .tag { font: 500 0.66rem/1 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold); }
+.next { border-left: 4px solid var(--gold); padding: 6px 0 6px 16px; display: grid; gap: 8px; }
+.next li { margin-bottom: 4px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Etapa B · calibração · 30/10/2026</p>
+    <h1>Brasil com 500 bots</h1>
+    <p class="lead read">A economia versão 2 rodou no mapa real do Centro-Sul com cerca de 560 empresas-bot (escala 20). Antes desta rodada, metade das cadeias dava prejuízo e o arroz quase não chegava às lojas. A causa principal era o frete: os preços tinham sido feitos para cargas de 110 km, e no mapa real uma carga viaja em média 730 km.</p>
+    <div class="stats" id="stats">
+      <div class="stat"><span class="k">Procura atendida</span><div class="v"><span class="from">34%</span><span class="to mid" data-k="cov">…</span></div><span class="note">Lojas-bot têm equipe para 60% da cidade; o resto é espaço para jogadores.</span></div>
+      <div class="stat"><span class="k">Arroz nas lojas</span><div class="v"><span class="from">12%</span><span class="to mid" data-k="rice">…</span></div><span class="note">Uruguaiana fica a ~1.600 km de São Paulo.</span></div>
+      <div class="stat"><span class="k">Lucro das lojas por dia</span><div class="v"><span class="from">−R$ 520 mil</span><span class="to good" data-k="retail">…</span></div><span class="note">Antes o frete levava 13% do faturamento.</span></div>
+      <div class="stat"><span class="k">Aço entregue ao governo</span><div class="v"><span class="from">0 t/dia</span><span class="to mid" data-k="gov">…</span></div><span class="note">Meta: 320 t/dia. Os editais não cresciam com o tamanho do mundo.</span></div>
+      <div class="stat"><span class="k">Empresas quebradas</span><div class="v"><span class="from">6</span><span class="to good">0</span></div><span class="note">Bots com caixa negativo ou unidade suspensa.</span></div>
+    </div>
+    <p class="muted read">Antes e depois medidos do mesmo jeito: 20 dias de jogo, últimos 10 contados, mesma semente. "Antes" é o código anterior a esta rodada de correções.</p>
+  </header>
+
+  <section>
+    <div class="read"><p class="eyebrow">A causa</p><h2>Quanto cada produto viaja no mapa real</h2></div>
+    <p class="read muted">Distância média entre quem produz e quem compra, pelos polos reais. A linha escura marca os 110 km que a calculadora supunha para tudo.</p>
+    <div class="haul" id="haul"></div>
+  </section>
+
+  <section>
+    <div class="read"><p class="eyebrow">O que mudou</p><h2>O que corrigimos</h2></div>
+    <div class="fixes">
+      <div class="fix"><span class="tag">Preço</span><h3>Fazenda longe vende mais barato</h3><p>O preço de fábrica desconta o frete até o mercado, como no mundo real. Arroz na fazenda: R$ 17,37 (era R$ 20,39). Na prateleira continua R$ 24,50.</p></div>
+      <div class="fix"><span class="tag">Preço</span><h3>Soja, ração e leite ajustados</h3><p>Soja um pouco mais barata no Centro-Oeste, ração e leite um pouco mais caros. Toda cadeia volta a ter pelo menos 8% de margem.</p></div>
+      <div class="fix"><span class="tag">Distribuidor</span><h3>Atacadista com margem própria</h3><p>Vende pelo custo com frete mais 4%. Antes vendia arroz a R$ 24,72, acima do preço da prateleira.</p></div>
+      <div class="fix"><span class="tag">Distribuidor</span><h3>Compra em caminhão cheio</h3><p>Pede quando falta uma carga inteira. Antes pedia 4 t para viajar 1.300 km.</p></div>
+      <div class="fix"><span class="tag">Defeito</span><h3>Todo bot se achava em falta</h3><p>Cada vendedor comparava o próprio estoque com a procura do país inteiro e cobrava 8% a mais. Agora olha o mercado todo.</p></div>
+      <div class="fix"><span class="tag">Defeito</span><h3>Governo pequeno num mundo grande</h3><p>Editais de aço e reserva de obras não cresciam com a escala: o governo pedia 1/20 do aço previsto.</p></div>
+      <div class="fix"><span class="tag">Defeito</span><h3>Pedido gigante travava compras</h3><p>Pedido aberto de 400 t de arroz não achava vendedor e bloqueava a reposição por dias. Agora pede até duas cargas.</p></div>
+      <div class="fix"><span class="tag">Defeito</span><h3>Loja não enxergava o atacadista</h3><p>A busca supunha caminhão cheio e só cotava fazendas a 1.300 km. Agora conta o tamanho da carga, e o carvão distante cabe no teto de frete.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="read"><p class="eyebrow">Resultado</p><h2>Lucro por dia de cada negócio-bot</h2></div>
+    <p class="read muted">Soma dos bots de cada especialidade nos últimos 10 dias de 20, com o estoque formado contado a preço de referência. Compra de caminhão e treinamento ficam de fora, porque são investimento.</p>
+    <div class="table-wrap"><table id="result"><thead><tr><th>Negócio</th><th>Antes</th><th>Depois</th><th>Situação</th></tr></thead><tbody></tbody></table></div>
+  </section>
+
+  <section>
+    <div class="read"><p class="eyebrow">Próximo passo</p><h2>O que ainda falta</h2></div>
+    <div class="next read" id="next"><ul><li>Preenchido ao fim da prova.</li></ul></div>
+  </section>
+</div>
+
+<script>
+// Números da prova (economy:proof, escala 20, semente 0) e da calculadora (haulKm). Preenchidos a partir dos relatórios.
+const DATA = {"after":{"cov":0.385,"rice":0.493,"gov":11.7,"margins":{"iron-extraction":-16055,"coal-extraction":-30315,"steel-bars":-35311,"utensils":21211,"truck-heavy":52615,"truck-light":-13093,"soy-harvest":319639,"soy-oil":145928,"feed-mill":-181386,"milk-production":1968643,"rice-harvest":-198304,"beans-harvest":-69405,"sugar-harvest":35629,"retail":366856,"warehouse":468806}},"before":{"cov":0.339,"rice":0.118,"gov":0,"broke":6,"margins":{"iron-extraction":-33926,"coal-extraction":-72674,"steel-bars":-107700,"utensils":116378,"truck-heavy":-112553,"truck-light":-30136,"soy-harvest":443763,"soy-oil":-146029,"feed-mill":-116453,"milk-production":1983480,"rice-harvest":347981,"beans-harvest":137576,"sugar-harvest":158422,"retail":-520270,"warehouse":-26047}},"haul":[["Arroz","farm",1533],["Carvão","mine",1404],["Farelo de soja","ind",576],["Feijão","farm",572],["Açúcar","farm",468],["Leite","farm",426],["Utensílios","ind",278],["Soja","farm",225],["Aço","ind",208],["Óleo","ind",170],["Minério de ferro","mine",62]],"next":["<b>Cadeia do metal parada em ~15%:</b> minas, usinas e montadoras produzem pouco e o governo recebe 12 de 320 t/dia de aço. Próxima investigação.","<b>Ração e fazendas de arroz e feijão ainda no vermelho:</b> ração compra farelo a ~1.170 km; arroz e feijão formam estoque e vendem abaixo da referência.","<b>Leite atendido em 35%:</b> falta ração; depende do item anterior.","Depois disso, o modelo de grupo (D-035), como combinado."]};
+const NAMES = [
+  ['iron-extraction', 'Mina de ferro', 'mine'], ['coal-extraction', 'Mina de carvão', 'mine'],
+  ['steel-bars', 'Siderúrgica', 'ind'], ['utensils', 'Utensílios', 'ind'],
+  ['truck-heavy', 'Montadora pesada', 'ind'], ['truck-light', 'Montadora leve', 'ind'],
+  ['soy-harvest', 'Soja', 'farm'], ['soy-oil', 'Esmagamento (óleo)', 'ind'], ['feed-mill', 'Ração', 'ind'],
+  ['milk-production', 'Leite', 'farm'], ['rice-harvest', 'Arroz', 'farm'], ['beans-harvest', 'Feijão', 'farm'],
+  ['sugar-harvest', 'Açúcar', 'farm'], ['retail', 'Lojas', 'retail'], ['warehouse', 'Distribuidores', 'retail'],
+];
+const reais = (n) => {
+  const abs = Math.abs(n), sign = n < 0 ? '−' : '+';
+  return abs >= 1e6 ? `${sign}R$ ${(abs / 1e6).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} mi`
+    : `${sign}R$ ${Math.round(abs / 1000).toLocaleString('pt-BR')} mil`;
+};
+function render() {
+  const haul = document.getElementById('haul');
+  const max = Math.max(...DATA.haul.map((h) => h[2]));
+  haul.innerHTML = DATA.haul.map(([name, c, km]) =>
+    `<div class="bar c-${c}"><span>${name}</span><div class="track"><div class="fill" style="width:${(km / max) * 100}%"></div><div class="ref" style="left:${(110 / max) * 100}%"></div></div><b>${km.toLocaleString('pt-BR')} km</b></div>`).join('');
+  const a = DATA.after;
+  document.querySelector('[data-k="cov"]').textContent = `${Math.round(a.cov * 100)}%`;
+  document.querySelector('[data-k="rice"]').textContent = `${Math.round(a.rice * 100)}%`;
+  document.querySelector('[data-k="retail"]').textContent = reais(a.margins.retail);
+  document.querySelector('[data-k="gov"]').textContent = `${a.gov.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} t/dia`;
+  const rows = NAMES.map(([id, name, c]) => {
+    const before = DATA.before.margins[id] ?? 0, after = a.margins[id] ?? 0;
+    const state = after > 20000 ? ['ok', 'lucro'] : after > -20000 ? ['mid', 'empata'] : ['bad', 'prejuízo'];
+    return `<tr class="c-${c}"><td><span class="dot"></span>${name}</td><td class="n">${reais(before)}</td><td class="n">${reais(after)}</td><td><span class="pill ${state[0]}">${state[1]}</span></td></tr>`;
+  });
+  document.querySelector('#result tbody').innerHTML = rows.join('');
+  document.getElementById('next').innerHTML = `<ul>${DATA.next.map((t) => `<li>${t}</li>`).join('')}</ul>`;
+}
+if (DATA.after) render();
+</script>

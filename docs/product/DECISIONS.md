@@ -203,7 +203,17 @@ Calibração dos utensílios com ~500 bots. Decisões de rotina:
 - **Custo aceito:** o kit fica mais caro para o jogador. A demanda das famílias no motor não depende do preço, então a receita sobe; os distribuidores pagam mais e perdem cerca de 11%.
 - **Resultado (escala 20, 2 sementes, últimos 10 de 20 dias):** fábricas de utensílios de −R$ 164 mil para +R$ 84 mil por dia (sementes: +49 mil e +118 mil); lojas de +R$ 324 mil para +R$ 478 mil; distribuidores de +R$ 1,66 mi para +R$ 1,48 mi; procura atendida 51%; nenhuma quebra.
 - **Alternativa não feita:** atacar o aço caro, aumentando a produção das usinas. Fica para quando a cadeia do metal estiver mais perto da referência.
-- **Pendência:** o equipamento de cada fábrica é calculado a partir do lucro, então um preço maior encarece a fábrica (de R$ 5,7 mi para R$ 11 mi por linha na conta de projeto). Revisar a regra do equipamento antes de fechar a calibração.
+- **Equipamento:** a calculadora fixa o payback em 35 dias para toda linha; o equipamento sobe com o lucro, então o preço maior não encarece o retorno. Verificado em 28/10 (a suspeita inicial estava errada).
+
+### D-041 · Caminhão leve: demanda limitada pela regra de compra (28/10/2026)
+
+Fechamento da calibração. Caminhão leve segue no prejuízo (−R$ 16 mil por dia, média de duas sementes) e não se resolve com preço.
+
+- **Diagnóstico:** a regra de compra de frota só escolhe caminhão leve para empresa que só tem lojas, ou para transportadora com pelo menos duas pesadas para cada leve. Na prática, o mundo pede ~4 caminhões leves por dia contra 8 linhas de projeto. As 6 unidades têm 20 operários e 12 mil m² cada e trabalham a ~22% da capacidade.
+- **Testado e descartado: preço do leve de 0,5 para 0,6 da faixa.** O resultado piorou (−R$ 16 mil para −R$ 66 mil por dia), porque a compra de leves caiu. Revertido; nada foi commitado.
+- **Não é defeito de equipamento:** toda linha da calculadora tem payback de 35 dias. O equipamento sobe junto com o lucro por design, então um preço maior não encarece o retorno.
+- **Decisão pendente do Pedro:** ou o leve é menos demandado de propósito (então a referência de 8 linhas deve cair e a unidade ser dimensionada para ~4), ou a regra de compra precisa permitir que mais bots comprem leve. A primeira é mais simples e não mexe no comportamento da frota.
+- **Efeito no resto:** nenhum relevante; cobertura da procura e aço ao governo ficam iguais.
 
 ### Ideia em avaliação · Genética de cultivares (Pedro, 28/10/2026)
 

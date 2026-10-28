@@ -1,12 +1,12 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Search,
   Truck,
   Info,
-  ArrowRight,
   SlidersHorizontal,
   X,
   ChartNoAxesCombined,
+  ShoppingCart,
 } from 'lucide-react';
 import { useGame, cr, num, ProductIcon } from '../../lib/game';
 import { PageHeading, Panel, Select, Badge, Rows, Empty, Modal, Tabs } from '../../components/ui';
@@ -29,13 +29,18 @@ import {
   regionFor,
   seasonPrice,
 } from '../../../../../packages/simulation/src/metrics';
+import { freeCash } from '../../../../../packages/simulation/src/design';
+import { avaliar, procuraDiaria, quantidadeSugerida, type Avaliacao } from './compra';
 
 export function MarketPage() {
-  const { world, actor, intent, navigate, openMarket, refresh } = useGame();
+  const { world, actor, intent, navigate, openMarket, refresh, run, pending } = useGame();
+  const meus = world.establishments.filter((e) => e.companyId === actor);
   const [product, setProduct] = useState(intent.product ?? ''),
     [supplierId, setSupplier] = useState(intent.supplierId ?? ''),
     [quantity, setQuantity] = useState(String(intent.quantity ?? '')),
-    [destinationId, setDestination] = useState(intent.destinationId ?? ''),
+    [destinationId, setDestination] = useState(
+      intent.destinationId ?? (meus.length === 1 ? meus[0].id : ''),
+    ),
     [offerId, setOffer] = useState(intent.offerId ?? ''),
     [sort, setSort] = useState('');
   const [advanced, setAdvanced] = useState(false),
@@ -83,11 +88,7 @@ export function MarketPage() {
   const order = seasonProducts(world);
   const sp = world.properties.find((p) => p.id === seller?.propertyId),
     dp = world.properties.find((p) => p.id === destination?.propertyId);
-  const loading = useRoute(sp?.id, dp?.id),
-    freight =
-      selected && seller && destination && validAmount
-        ? quote(world, seller.id, destination.id, selected.product, amount, 'transbrasil')
-        : undefined;
+  const loading = useRoute(sp?.id, dp?.id);
   const offers = world.offers
     .filter((o) => {
       const e = world.establishments.find((e) => e.id === o.establishmentId)!,
@@ -124,6 +125,61 @@ export function MarketPage() {
         ? qa.distanceKm - qb.distanceKm
         : a.price * amount + qa.price - b.price * amount - qb.price;
     });
+  const estoqueDe = (o: (typeof offers)[number]) =>
+    world.establishments.find((e) => e.id === o.establishmentId)!.inventory[o.product] ?? 0;
+  // Cada oferta com a própria quantidade sugerida e o frete mais barato até o destino.
+  const chave = `${world.revision}|${destinationId}|${offerId}|${quantity}|${offers.map((o) => o.id).join()}`;
+  const avaliacoes = useMemo(() => {
+    const m = new Map<string, Avaliacao>();
+    if (!destination) return m;
+    for (const o of offers) {
+      const estoque = estoqueDe(o);
+      if (estoque <= 0) continue;
+      const q =
+        o.id === offerId && validAmount
+          ? amount
+          : quantidadeSugerida(world, destination, o.product, estoque);
+      const a = avaliar(world, actor, o, destination, q);
+      if (a) m.set(o.id, a);
+    }
+    return m;
+    // A chave resume tudo o que muda a conta.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chave]);
+  const semEstoque = destination ? offers.filter((o) => estoqueDe(o) <= 0).length : 0;
+  const lista = destination ? offers.filter((o) => estoqueDe(o) > 0) : offers;
+  if (destination && !sort)
+    lista.sort((a, b) => {
+      const x = avaliacoes.get(a.id),
+        y = avaliacoes.get(b.id);
+      if (!x || !y) return Number(Boolean(y)) - Number(Boolean(x));
+      return retailDestination
+        ? (y.margem ?? 0) - (x.margem ?? 0)
+        : order.indexOf(a.product) - order.indexOf(b.product) || x.naPorta - y.naPorta;
+    });
+  const compra =
+    selected && destination && validAmount
+      ? avaliar(world, actor, selected, destination, amount)
+      : undefined;
+  const caixa = freeCash(world, actor);
+  const comprar = async () => {
+    if (!selected || !destination || !compra?.frete) return;
+    const minutos = Math.max(1, Math.round(compra.frete.durationMs / 60000));
+    if (
+      await run(
+        {
+          type: 'trade',
+          offerId: selected.id,
+          quantity: amount,
+          destinationId: destination.id,
+          carrierId: compra.frete.carrierId,
+          expectedTotal: compra.total,
+        },
+        `Comprado: ${num(amount)} ${products[selected.product].name}. A carga chega em cerca de ${minutos} min.`,
+      )
+    )
+      setOffer('');
+  };
   const cost =
     selected && seller?.companyId !== actor ? selected.price * (validAmount ? amount : 0) : 0;
   const clear = () => {
@@ -148,29 +204,6 @@ export function MarketPage() {
         action={<Tabs values={['Simplificada', 'Avançada']} value={mode} onChange={setMode} />}
       />
       <div className="page-body">
-        <details className="infrastructure-market">
-          <summary>
-            Pedidos e negociações{' '}
-            <Badge tone="blue">
-              {world.orders.filter((o) => o.status === 'pending').length} em aberto
-            </Badge>
-          </summary>
-          <Orders />
-        </details>
-        <details className="infrastructure-market">
-          <summary>Concorrentes e movimento do mundo</summary>
-          <BotActivity />
-        </details>
-        <details className="infrastructure-market">
-          <summary>
-            Contratos de infraestrutura{' '}
-            <Badge tone="gold">
-              {world.infrastructure.filter((c) => c.status === 'open').length} abertos
-            </Badge>
-            <span>Disputar projetos estaduais e entregas municipais</span>
-          </summary>
-          <InfrastructureContracts />
-        </details>
         {supplierId && (
           <div className="supplier-context">
             <span>
@@ -288,9 +321,9 @@ export function MarketPage() {
               <Panel
                 title="Ofertas de fornecedores"
                 subtitle={
-                  relevant && !product && !allProducts
-                    ? `${offers.length} ofertas do que ${destination!.name} usa · mais baratas primeiro`
-                    : `${offers.length} ofertas · valores na unidade de cada mercadoria`
+                  destination && !sort
+                    ? `${lista.length} ofertas com estoque · ${retailDestination ? 'mais lucrativas primeiro' : 'menor custo na porta primeiro'}, já com frete${semEstoque ? ` · ${semEstoque} sem estoque escondidas` : ''}`
+                    : `${lista.length} ofertas · valores na unidade de cada mercadoria`
                 }
                 action={
                   relevant && !product ? (
@@ -302,7 +335,7 @@ export function MarketPage() {
                   )
                 }
               >
-                {offers.length ? (
+                {lista.length ? (
                   <div className="table-scroll">
                     <table className="market-table">
                       <thead>
@@ -311,7 +344,7 @@ export function MarketPage() {
                           <th>Origem</th>
                           <th className="numeric">Disponível</th>
                           <th className="numeric">Preço / unidade</th>
-                          {retailDestination && <th className="numeric">Na prateleira</th>}
+                          {destination && <th className="numeric">Na sua porta</th>}
                           {mode === 'Avançada' && (
                             <>
                               <th className="numeric">Distância</th>
@@ -323,10 +356,11 @@ export function MarketPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {offers.map((o) => {
+                        {lista.map((o) => {
                           const e = world.establishments.find((e) => e.id === o.establishmentId)!,
                             p = world.properties.find((p) => p.id === e.propertyId)!,
                             stock = e.inventory[o.product] ?? 0,
+                            aval = avaliacoes.get(o.id),
                             q =
                               destination && validAmount
                                 ? quote(
@@ -361,20 +395,26 @@ export function MarketPage() {
                               <td className="numeric">
                                 {cr(o.price)} / {products[o.product].unit}
                               </td>
-                              {retailDestination && (
+                              {destination && (
                                 <td className="numeric">
-                                  {cr(seasonPrice(world, o.product))}
-                                  <small>
-                                    {seasonPrice(world, o.product) > o.price ? (
-                                      <Badge tone="green">
-                                        margem{' '}
-                                        {num((1 - o.price / seasonPrice(world, o.product)) * 100)}%
-                                        antes do frete
-                                      </Badge>
-                                    ) : (
-                                      <Badge tone="red">acima da prateleira</Badge>
-                                    )}
-                                  </small>
+                                  {aval ? (
+                                    <>
+                                      {cr(aval.naPorta)} / {products[o.product].unit}
+                                      <small>
+                                        {aval.margem !== undefined ? (
+                                          <Badge tone={aval.margem >= 0 ? 'green' : 'red'}>
+                                            margem {aval.margem >= 0 ? '+' : '−'}
+                                            {num(Math.abs(aval.margem) * 100)}% ·{' '}
+                                            {num(aval.quantidade)} {products[o.product].unit}
+                                          </Badge>
+                                        ) : (
+                                          `com frete, ${num(aval.quantidade)} ${products[o.product].unit}`
+                                        )}
+                                      </small>
+                                    </>
+                                  ) : (
+                                    '—'
+                                  )}
                                 </td>
                               )}
                               {mode === 'Avançada' && (
@@ -397,8 +437,8 @@ export function MarketPage() {
                                   disabled={stock <= 0}
                                   onClick={() => {
                                     setOffer(o.id);
-                                    const next = suggest(o.product, stock);
-                                    if (!validAmount && next > 0) setQuantity(String(next));
+                                    const next = aval?.quantidade || suggest(o.product, stock);
+                                    if (next > 0) setQuantity(String(next));
                                   }}
                                 >
                                   {offerId === o.id
@@ -460,47 +500,104 @@ export function MarketPage() {
                         },
                         { label: 'Subtotal', value: validAmount ? cr(cost) : '—' },
                         {
-                          label: 'Frete estimado',
+                          label: 'Frete',
                           value: loading
                             ? 'Calculando rota…'
-                            : freight
-                              ? freight.routeRequired
-                                ? 'Aguardando rota confirmada'
-                                : cr(freight.price)
-                              : 'Preencha o contexto',
+                            : compra?.frete
+                              ? `${cr(compra.frete.price)} · ${world.companies.find((c) => c.id === compra.frete!.carrierId)?.name ?? 'frota'}`
+                              : 'Escolha destino e quantidade',
                         },
                       ]}
                     />
-                    {freight && (
-                      <div className="total-row">
-                        <strong>Total estimado</strong>
-                        <strong>{cr(cost + freight.price)}</strong>
+                    {retailDestination && destination && (
+                      <div className="compra-dias" role="group" aria-label="Dias de estoque">
+                        {[7, 15, 30].map((d, i, todos) => {
+                          const estoque = seller.inventory[selected.product] ?? 0;
+                          const anterior =
+                            i > 0
+                              ? quantidadeSugerida(world, destination, selected.product, estoque, todos[i - 1])
+                              : -1;
+                          const q = quantidadeSugerida(
+                            world,
+                            destination,
+                            selected.product,
+                            seller.inventory[selected.product] ?? 0,
+                            d,
+                          );
+                          const repetido = q === anterior;
+                          const a =
+                            q && !repetido ? avaliar(world, actor, selected, destination, q) : undefined;
+                          return (
+                            <button
+                              key={d}
+                              className={q > 0 && !repetido && amount === q ? 'on' : ''}
+                              aria-pressed={q > 0 && !repetido && amount === q}
+                              disabled={!q || repetido}
+                              onClick={() => setQuantity(String(q))}
+                            >
+                              <b>{d} dias</b>
+                              <small>
+                                {repetido
+                                  ? 'acabou o estoque'
+                                  : `${num(q)} ${products[selected.product].unit}`}
+                              </small>
+                              {a?.margem !== undefined && (
+                                <small className={a.margem >= 0 ? 'positive' : 'negative'}>
+                                  {a.margem >= 0 ? '+' : '−'}
+                                  {num(Math.abs(a.margem) * 100)}%
+                                </small>
+                              )}
+                            </button>
+                          );
+                        })}
                       </div>
                     )}
-                    {freight && retailDestination && validAmount && (
-                      <p
-                        className={`small ${seasonPrice(world, selected.product) * amount > cost + freight.price ? 'positive' : 'warning-text'}`}
-                      >
-                        Vendendo tudo a {cr(seasonPrice(world, selected.product))} na prateleira, a
-                        loja recebe {cr(seasonPrice(world, selected.product) * amount)}: margem de{' '}
-                        {num(
-                          (1 -
-                            (cost + freight.price) /
-                              (seasonPrice(world, selected.product) * amount)) *
-                            100,
+                    {compra && (
+                      <>
+                        <div className="total-row">
+                          <strong>Total na sua porta</strong>
+                          <strong>{cr(compra.total)}</strong>
+                        </div>
+                        {compra.margem !== undefined && (
+                          <p className={`small ${compra.margem >= 0 ? 'positive' : 'warning-text'}`}>
+                            {compra.margem >= 0
+                              ? `Vendendo tudo a ${cr(seasonPrice(world, selected.product))}, sobram ${num(compra.margem * 100)}% depois do frete.`
+                              : `Prejuízo de ${num(-compra.margem * 100)}%: o frete pesa demais nesta quantidade. Compre para mais dias ou escolha um fornecedor mais perto.`}{' '}
+                            Dura cerca de{' '}
+                            {num(amount / Math.max(1e-9, procuraDiaria(world, destination!, selected.product)))}{' '}
+                            dias na loja.
+                          </p>
                         )}
-                        % depois do frete, antes da equipe da loja.
-                      </p>
+                        <Rows rows={[{ label: 'Caixa depois da compra', value: cr(caixa - compra.total) }]} />
+                      </>
                     )}
                     <button
                       className="primary full"
                       disabled={
-                        !destination ||
-                        !validAmount ||
+                        pending ||
                         loading ||
-                        !freight?.compatible ||
-                        (seller.inventory[selected.product] ?? 0) < amount
+                        !compra?.frete?.compatible ||
+                        (seller.inventory[selected.product] ?? 0) < amount ||
+                        caixa < (compra?.total ?? 0)
                       }
+                      onClick={() => void comprar()}
+                    >
+                      <ShoppingCart size={16} />{' '}
+                      {pending ? 'Comprando…' : compra ? `Comprar por ${cr(compra.total)}` : 'Comprar'}
+                    </button>
+                    {validAmount && !loading && compra && !compra.frete?.compatible && (
+                      <p className="warning-text small">
+                        {compra.frete?.routeRequired
+                          ? 'A rota entre origem e destino ainda está sendo confirmada. Tente de novo em um minuto.'
+                          : 'Nenhuma frota livre leva esta quantidade agora. Reduza a quantidade ou tente na próxima rodada.'}
+                      </p>
+                    )}
+                    {compra && caixa < compra.total && (
+                      <p className="warning-text small">O caixa não cobre esta compra. Reduza a quantidade.</p>
+                    )}
+                    <button
+                      className="text-button"
+                      disabled={!destination || !validAmount}
                       onClick={() => {
                         openMarket({
                           product: selected.product,
@@ -511,30 +608,42 @@ export function MarketPage() {
                         navigate('logistics', true);
                       }}
                     >
-                      <Truck size={16} /> Continuar para frete <ArrowRight size={14} />
+                      <Truck size={15} /> Escolher outra transportadora ou pedir com prazo
                     </button>
-                    {validAmount && !loading && freight && !freight.compatible && (
-                      <p className="warning-text small">
-                        {freight.routeRequired
-                          ? 'O transporte aguarda uma rota confirmada entre a origem e o destino. Tente novamente em um minuto ou escolha outro destino.'
-                          : 'A frota disponível não comporta esta massa e volume. Compare outra transportadora ou reduza a quantidade.'}
-                      </p>
-                    )}
-                    <p className="muted small">
-                      O pagamento só ocorre após escolher a transportadora e confirmar o valor
-                      total.
-                    </p>
                   </div>
                 ) : (
                   <Empty
                     title="Compare antes de escolher"
-                    description="Selecione uma oferta para montar a compra. Nenhum fornecedor é escolhido automaticamente."
+                    description="Escolha uma oferta. A quantidade e o frete mais barato já vêm sugeridos; você só confirma."
                   />
                 )}
               </Panel>
             </div>
           </>
         )}
+        <details className="infrastructure-market">
+          <summary>
+            Pedidos e negociações{' '}
+            <Badge tone="blue">
+              {world.orders.filter((o) => o.status === 'pending').length} em aberto
+            </Badge>
+          </summary>
+          <Orders />
+        </details>
+        <details className="infrastructure-market">
+          <summary>Concorrentes e movimento do mundo</summary>
+          <BotActivity />
+        </details>
+        <details className="infrastructure-market">
+          <summary>
+            Contratos de infraestrutura{' '}
+            <Badge tone="gold">
+              {world.infrastructure.filter((c) => c.status === 'open').length} abertos
+            </Badge>
+            <span>Disputar projetos estaduais e entregas municipais</span>
+          </summary>
+          <InfrastructureContracts />
+        </details>
       </div>
       {advanced && (
         <Modal title="Filtros avançados de fornecedores" onClose={() => setAdvanced(false)}>

@@ -9,7 +9,7 @@
       "source": "pages/MapPage.tsx",
       "purpose": "Encontrar e inspecionar propriedades.",
       "task": "Localizar uma propriedade e entender titularidade e acesso.",
-      "fingerprint": "9b6e008e7cb636ad2c3abc3f5fb6d13c409a951d53524a73c325158a02158841",
+      "fingerprint": "5adc950804af68035e3e9b8a17e21850453073c5c3347bb658d06379c7209f47",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -26,6 +26,7 @@
         "apps/web/src/lib/game.tsx",
         "apps/web/src/lib/map-style.ts",
         "apps/web/src/main.tsx",
+        "apps/web/src/negocios.css",
         "apps/web/src/pages/MapPage.tsx",
         "apps/web/src/styles.css"
       ]
@@ -36,7 +37,7 @@
       "source": "pages/MapPage.tsx",
       "purpose": "Revisar imóvel, instalação e capital necessário.",
       "task": "Entender o custo antes de confirmar a aquisição.",
-      "fingerprint": "9b6e008e7cb636ad2c3abc3f5fb6d13c409a951d53524a73c325158a02158841",
+      "fingerprint": "5adc950804af68035e3e9b8a17e21850453073c5c3347bb658d06379c7209f47",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -53,6 +54,7 @@
         "apps/web/src/lib/game.tsx",
         "apps/web/src/lib/map-style.ts",
         "apps/web/src/main.tsx",
+        "apps/web/src/negocios.css",
         "apps/web/src/pages/MapPage.tsx",
         "apps/web/src/styles.css"
       ]
@@ -63,7 +65,7 @@
       "source": "pages/OpportunitiesPage.tsx",
       "purpose": "Comparar mercados e oportunidades por item e região.",
       "task": "Filtrar um produto e explicar demanda, preço e oferta.",
-      "fingerprint": "59a4b3444309f4082d204b5357b43bf8057dcd6a689f30626c343befc20d1e03",
+      "fingerprint": "0568d0afa2f76828ea17366cf03dd0d72f4992b6eb0a6874b7f975d730744308",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -83,6 +85,7 @@
         "apps/web/src/lib/game.tsx",
         "apps/web/src/lib/map-style.ts",
         "apps/web/src/main.tsx",
+        "apps/web/src/negocios.css",
         "apps/web/src/pages/OpportunitiesPage.tsx",
         "apps/web/src/styles.css"
       ]
@@ -93,7 +96,7 @@
       "source": "pages/BusinessesPage.tsx",
       "purpose": "Gerenciar estruturas e conexões de abastecimento.",
       "task": "Identificar uma estrutura parada e abrir sua operação.",
-      "fingerprint": "47ab6be48135987bb63be74d67dac1b64ca7c507c27ed72d484d4a981119a7f0",
+      "fingerprint": "3d596b97199a886542296628a0ea2b5c10dfc34ede3a860f6df36b9f4f094fa9",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -104,10 +107,13 @@
         "apps/web/src/components/Notice.tsx",
         "apps/web/src/components/NotificationCenter.tsx",
         "apps/web/src/components/Pagination.tsx",
+        "apps/web/src/components/PixelArt.tsx",
         "apps/web/src/components/WorldMap.tsx",
         "apps/web/src/components/ui.tsx",
+        "apps/web/src/design/arte.ts",
         "apps/web/src/devlab/screens.ts",
         "apps/web/src/economy.css",
+        "apps/web/src/features/business/BusinessCards.tsx",
         "apps/web/src/features/business/Orders.tsx",
         "apps/web/src/features/business/SupplyConnection.tsx",
         "apps/web/src/features/business/SupplyNetwork.tsx",
@@ -116,6 +122,7 @@
         "apps/web/src/lib/map-style.ts",
         "apps/web/src/lib/routing.ts",
         "apps/web/src/main.tsx",
+        "apps/web/src/negocios.css",
         "apps/web/src/pages/BusinessesPage.tsx",
         "apps/web/src/styles.css"
       ]
@@ -127,7 +134,7 @@
       "business": "e-industry",
       "purpose": "Produzir, abastecer, contratar e vender.",
       "task": "Revisar insumos, capacidade e custo antes de iniciar produção.",
-      "fingerprint": "a1a6001feee10bc755f4225b0c50e44682f59798eb02b6eb3c2acd3fd241731f",
+      "fingerprint": "75fe68fdf56af6c2bc5f06f825bd87b2c248f283482d69060a8f56cab09413e7",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -157,6 +164,7 @@
         "apps/web/src/lib/game.tsx",
         "apps/web/src/lib/routing.ts",
         "apps/web/src/main.tsx",
+        "apps/web/src/negocios.css",
         "apps/web/src/pages/OperationPage.tsx",
         "apps/web/src/styles.css"
       ]
@@ -168,7 +176,7 @@
       "business": "e-retail",
       "purpose": "Acompanhar estoque, preços e reposição da loja.",
       "task": "Reconhecer ruptura e configurar uma reposição viável.",
-      "fingerprint": "73884222cf46cd068a96fc21c4db3221bbce2aa06027c8d682916aebab0576e4",
+      "fingerprint": "0ac95b56ddd618ad066fbe0ecdecb145f4a12a93a7cc44ec9a421b49b52337b7",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -185,6 +193,7 @@
         "apps/web/src/devlab/screens.ts",
         "apps/web/src/economy.css",
         "apps/web/src/features/business/Analytics.tsx",
+        "apps/web/src/features/business/Empate.tsx",
         "apps/web/src/features/business/Installation.tsx",
         "apps/web/src/features/business/Orders.tsx",
         "apps/web/src/features/business/SalesCatalog.tsx",
@@ -193,10 +202,12 @@
         "apps/web/src/features/business/SupplyPlanner.tsx",
         "apps/web/src/features/business/TransferStock.tsx",
         "apps/web/src/features/business/Workforce.tsx",
+        "apps/web/src/features/economy/compra.ts",
         "apps/web/src/lib/clock.ts",
         "apps/web/src/lib/game.tsx",
         "apps/web/src/lib/routing.ts",
         "apps/web/src/main.tsx",
+        "apps/web/src/negocios.css",
         "apps/web/src/pages/RetailPage.tsx",
         "apps/web/src/styles.css"
       ]
@@ -207,7 +218,7 @@
       "source": "pages/MarketPage.tsx",
       "purpose": "Comprar, negociar e observar concorrentes e editais.",
       "task": "Comparar custo posto e escolher uma compra compatível.",
-      "fingerprint": "454d6ddeb148c7780d1b9acb2064faab375b3a45d063621f6180babb4caff74c",
+      "fingerprint": "f3f1e19c89e6be13821121d0b68bb4f1490dde075b1960811daee64776a3459a",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -227,10 +238,12 @@
         "apps/web/src/features/business/InfrastructureContracts.tsx",
         "apps/web/src/features/business/Orders.tsx",
         "apps/web/src/features/economy/Market.tsx",
+        "apps/web/src/features/economy/compra.ts",
         "apps/web/src/lib/clock.ts",
         "apps/web/src/lib/game.tsx",
         "apps/web/src/lib/routing.ts",
         "apps/web/src/main.tsx",
+        "apps/web/src/negocios.css",
         "apps/web/src/pages/MarketPage.tsx",
         "apps/web/src/styles.css"
       ]
@@ -241,7 +254,7 @@
       "source": "pages/LogisticsPage.tsx",
       "purpose": "Contratar e acompanhar transporte.",
       "task": "Entender disponibilidade, limite, custo e prazo de uma carga.",
-      "fingerprint": "65e6f706c5d2dae0d13045be673227ab3c158a4960a8e08f73b48cdd30c3a8e5",
+      "fingerprint": "d77f18fbd936daf336c3d7659aaa959992c3160750929775c289cd99772af246",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -263,6 +276,7 @@
         "apps/web/src/lib/map-style.ts",
         "apps/web/src/lib/routing.ts",
         "apps/web/src/main.tsx",
+        "apps/web/src/negocios.css",
         "apps/web/src/pages/LogisticsPage.tsx",
         "apps/web/src/styles.css"
       ]
@@ -274,7 +288,7 @@
       "business": "e-logistics",
       "purpose": "Gerenciar veículos, disponibilidade e capacidade.",
       "task": "Encontrar um veículo livre e comparar sua capacidade.",
-      "fingerprint": "f256060704b6bf869cc068f91ab3b5a7accc82bc8b2ff57902d2ed2c243ec3f1",
+      "fingerprint": "0accdcd946fa33398407226457f849575723962ef4dbd9b218c6459e3da846a4",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -297,6 +311,7 @@
         "apps/web/src/lib/game.tsx",
         "apps/web/src/lib/routing.ts",
         "apps/web/src/main.tsx",
+        "apps/web/src/negocios.css",
         "apps/web/src/pages/CarrierPage.tsx",
         "apps/web/src/styles.css"
       ]
@@ -307,7 +322,7 @@
       "source": "pages/CompanyPage.tsx",
       "purpose": "Explicar caixa, resultado, compromissos e recuperação.",
       "task": "Distinguir saldo, caixa livre, dívida e resultado operacional.",
-      "fingerprint": "2c3820444348f34a2b7ffe97a1193392b33c39b564d79c114fb1e731f853d929",
+      "fingerprint": "1ffad6e9f8c229b6cecb88acd021aa2e45b0bb52e6df6f3e1f4ac65647e07a13",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -323,6 +338,7 @@
         "apps/web/src/features/business/Recovery.tsx",
         "apps/web/src/lib/game.tsx",
         "apps/web/src/main.tsx",
+        "apps/web/src/negocios.css",
         "apps/web/src/pages/CompanyPage.tsx",
         "apps/web/src/styles.css"
       ]
@@ -434,7 +450,7 @@
     },
     {
       "path": "apps/web/src/business.css",
-      "hash": "1e9fe0d62fb451c52beb95cab8bf05f240deb64854b2d00e574241ad4f1fefea",
+      "hash": "9d53b324c5c4bc0ffffc0d890ba26c19bf32b8a3bcfbfb916793fd3767fcd31c",
       "components": [],
       "literals": [],
       "commands": []
@@ -693,6 +709,13 @@
           "line": 62
         }
       ],
+      "commands": []
+    },
+    {
+      "path": "apps/web/src/components/PixelArt.tsx",
+      "hash": "1175481df40c66ca81d2194c9079ffcb7cdf0aaea819c9d759c876f0ff27b360",
+      "components": [],
+      "literals": [],
       "commands": []
     },
     {
@@ -1027,6 +1050,13 @@
       "commands": []
     },
     {
+      "path": "apps/web/src/design/arte.ts",
+      "hash": "aeafa4bcb2fdd31addf08b40fab95cb97eb4887c915c5e9e002716313ebd46dd",
+      "components": [],
+      "literals": [],
+      "commands": []
+    },
+    {
       "path": "apps/web/src/devlab/screens.ts",
       "hash": "96a16a8694972acff0f08b51175975eb693d4cb5f8b0095c132795add14f9a8a",
       "components": [],
@@ -1035,7 +1065,7 @@
     },
     {
       "path": "apps/web/src/economy.css",
-      "hash": "33720aa8c7a2fa6aa4db3ccb43e432df0c80585348b60e4d6f4d964d6d988b7a",
+      "hash": "d5ed038527f0bb8941caae1a28ae927c67181577e39d921720d83983ccd4dce8",
       "components": [],
       "literals": [],
       "commands": []
@@ -1188,6 +1218,83 @@
           "kind": "th",
           "text": "Operação",
           "line": 153
+        }
+      ],
+      "commands": []
+    },
+    {
+      "path": "apps/web/src/features/business/BusinessCards.tsx",
+      "hash": "a096e1ee837bab5c59b8686720ee14079cbc61215f803c1633b46ca6ca267cea",
+      "components": [
+        "Anel",
+        "Badge",
+        "Fumaca",
+        "MapPin",
+        "PixelArt",
+        "Users"
+      ],
+      "literals": [
+        {
+          "kind": "role",
+          "text": "img",
+          "line": 40
+        },
+        {
+          "kind": "h3",
+          "text": "{dinâmico}",
+          "line": 81
+        },
+        {
+          "kind": "role",
+          "text": "img",
+          "line": 113
+        },
+        {
+          "kind": "button",
+          "text": "Gerenciar",
+          "line": 125
+        },
+        {
+          "kind": "aria-label",
+          "text": "Resultado por unidade",
+          "line": 147
+        }
+      ],
+      "commands": []
+    },
+    {
+      "path": "apps/web/src/features/business/Empate.tsx",
+      "hash": "52e85750ebfd6a2484270bc26af6973ef6fd13161fbeedd4f679931253797f07",
+      "components": [
+        "ProductIcon",
+        "ShoppingCart",
+        "Truck"
+      ],
+      "literals": [
+        {
+          "kind": "aria-label",
+          "text": "Quanto falta para a loja empatar",
+          "line": 56
+        },
+        {
+          "kind": "h2",
+          "text": "{dinâmico}",
+          "line": 58
+        },
+        {
+          "kind": "role",
+          "text": "meter",
+          "line": 77
+        },
+        {
+          "kind": "aria-label",
+          "text": "Margem por dia comparada ao custo fixo",
+          "line": 81
+        },
+        {
+          "kind": "button",
+          "text": "{dinâmico}",
+          "line": 95
         }
       ],
       "commands": []
@@ -2720,6 +2827,13 @@
       "commands": []
     },
     {
+      "path": "apps/web/src/features/economy/compra.ts",
+      "hash": "935506b30b6e8ebb63574a2552494088c280588988962754a2847ed7ecb32466",
+      "components": [],
+      "literals": [],
+      "commands": []
+    },
+    {
       "path": "apps/web/src/features/economy/Logistics.tsx",
       "hash": "8366df7f3bb03b7658805255f1f3f112e55b2163cc1533ad88209f16897f1696",
       "components": [
@@ -2838,9 +2952,8 @@
     },
     {
       "path": "apps/web/src/features/economy/Market.tsx",
-      "hash": "64e05b8d0c74df01b4ca32d48476e88e897715be1ac70ed67a6269fd1af0bcfe",
+      "hash": "209fac2613bdcbd3448b0d4288beaba1a7a973741df55fde5a876b7fedf93da0",
       "components": [
-        "ArrowRight",
         "Badge",
         "BotActivity",
         "ChartNoAxesCombined",
@@ -2856,6 +2969,7 @@
         "Rows",
         "Search",
         "Select",
+        "ShoppingCart",
         "SlidersHorizontal",
         "Tabs",
         "Truck",
@@ -2865,280 +2979,305 @@
         {
           "kind": "title",
           "text": "Mercado de mercadorias",
-          "line": 146
-        },
-        {
-          "kind": "summary",
-          "text": "Pedidos e negociações {dinâmico}",
-          "line": 152
-        },
-        {
-          "kind": "summary",
-          "text": "Concorrentes e movimento do mundo",
-          "line": 161
-        },
-        {
-          "kind": "summary",
-          "text": "Contratos de infraestrutura {dinâmico}",
-          "line": 165
+          "line": 202
         },
         {
           "kind": "button",
           "text": "Ver todos os fornecedores",
-          "line": 180
+          "line": 213
         },
         {
           "kind": "aria-label",
           "text": "Buscar oferta",
-          "line": 189
+          "line": 222
         },
         {
           "kind": "placeholder",
           "text": "Fornecedor, item ou cidade…",
-          "line": 190
+          "line": 223
         },
         {
           "kind": "option",
           "text": "Mercadoria (opcional)",
-          "line": 204
+          "line": 237
         },
         {
           "kind": "option",
           "text": "{dinâmico}",
-          "line": 208
+          "line": 241
         },
         {
           "kind": "option",
           "text": "Ordenação (opcional)",
-          "line": 214
+          "line": 247
         },
         {
           "kind": "option",
           "text": "Menor preço da mercadoria",
-          "line": 215
+          "line": 248
         },
         {
           "kind": "option",
           "text": "Menor custo por carga",
-          "line": 218
+          "line": 251
         },
         {
           "kind": "option",
           "text": "Menor distância ao destino",
-          "line": 221
+          "line": 254
         },
         {
           "kind": "button",
           "text": "Filtros avançados",
-          "line": 225
+          "line": 258
         },
         {
           "kind": "button",
           "text": "Atualizar ofertas",
-          "line": 228
+          "line": 261
         },
         {
           "kind": "button",
           "text": "Limpar",
-          "line": 231
+          "line": 264
         },
         {
           "kind": "title",
           "text": "Escolha um imóvel para receber mercadorias",
-          "line": 237
+          "line": 270
         },
         {
           "kind": "button",
           "text": "Explorar propriedades",
-          "line": 240
+          "line": 273
         },
         {
           "kind": "option",
           "text": "Selecione o destino",
-          "line": 256
+          "line": 289
         },
         {
           "kind": "option",
           "text": "{dinâmico}",
-          "line": 258
+          "line": 291
         },
         {
           "kind": "label",
           "text": "Quantidade",
-          "line": 263
+          "line": 296
         },
         {
           "kind": "aria-label",
           "text": "Quantidade de mercadoria",
-          "line": 266
+          "line": 299
         },
         {
           "kind": "placeholder",
           "text": "Informe",
-          "line": 267
+          "line": 300
         },
         {
           "kind": "title",
           "text": "Ofertas de fornecedores",
-          "line": 289
-        },
-        {
-          "kind": "button",
-          "text": "{dinâmico}",
-          "line": 297
-        },
-        {
-          "kind": "th",
-          "text": "Fornecedor / mercadoria",
-          "line": 310
-        },
-        {
-          "kind": "th",
-          "text": "Origem",
-          "line": 311
-        },
-        {
-          "kind": "th",
-          "text": "Disponível",
-          "line": 312
-        },
-        {
-          "kind": "th",
-          "text": "Preço / unidade",
-          "line": 313
-        },
-        {
-          "kind": "th",
-          "text": "Na prateleira",
-          "line": 314
-        },
-        {
-          "kind": "th",
-          "text": "Distância",
-          "line": 317
-        },
-        {
-          "kind": "th",
-          "text": "Frete / carga",
-          "line": 318
-        },
-        {
-          "kind": "th",
-          "text": "Total / unidade",
-          "line": 319
-        },
-        {
-          "kind": "aria-label",
-          "text": "Selecionar",
           "line": 322
         },
         {
           "kind": "button",
           "text": "{dinâmico}",
-          "line": 395
+          "line": 330
+        },
+        {
+          "kind": "th",
+          "text": "Fornecedor / mercadoria",
+          "line": 343
+        },
+        {
+          "kind": "th",
+          "text": "Origem",
+          "line": 344
+        },
+        {
+          "kind": "th",
+          "text": "Disponível",
+          "line": 345
+        },
+        {
+          "kind": "th",
+          "text": "Preço / unidade",
+          "line": 346
+        },
+        {
+          "kind": "th",
+          "text": "Na sua porta",
+          "line": 347
+        },
+        {
+          "kind": "th",
+          "text": "Distância",
+          "line": 350
+        },
+        {
+          "kind": "th",
+          "text": "Frete / carga",
+          "line": 351
+        },
+        {
+          "kind": "th",
+          "text": "Total / unidade",
+          "line": 352
+        },
+        {
+          "kind": "aria-label",
+          "text": "Selecionar",
+          "line": 355
+        },
+        {
+          "kind": "button",
+          "text": "{dinâmico}",
+          "line": 435
         },
         {
           "kind": "title",
           "text": "Nenhuma oferta atende à busca",
-          "line": 419
+          "line": 459
         },
         {
           "kind": "button",
           "text": "Limpar filtros",
-          "line": 422
+          "line": 462
         },
         {
           "kind": "title",
           "text": "Sua compra",
-          "line": 436
+          "line": 476
         },
         {
           "kind": "h2",
           "text": "{dinâmico}",
-          "line": 440
+          "line": 480
         },
         {
           "kind": "button",
           "text": "Ver análise da mercadoria",
-          "line": 441
+          "line": 481
+        },
+        {
+          "kind": "role",
+          "text": "group",
+          "line": 513
+        },
+        {
+          "kind": "aria-label",
+          "text": "Dias de estoque",
+          "line": 513
         },
         {
           "kind": "button",
-          "text": "Continuar para frete",
-          "line": 495
+          "text": "{dinâmico}",
+          "line": 531
+        },
+        {
+          "kind": "button",
+          "text": "{dinâmico} {dinâmico}",
+          "line": 574
+        },
+        {
+          "kind": "button",
+          "text": "Escolher outra transportadora ou pedir com prazo",
+          "line": 598
         },
         {
           "kind": "title",
           "text": "Compare antes de escolher",
-          "line": 530
+          "line": 616
+        },
+        {
+          "kind": "summary",
+          "text": "Pedidos e negociações {dinâmico}",
+          "line": 625
+        },
+        {
+          "kind": "summary",
+          "text": "Concorrentes e movimento do mundo",
+          "line": 634
+        },
+        {
+          "kind": "summary",
+          "text": "Contratos de infraestrutura {dinâmico}",
+          "line": 638
         },
         {
           "kind": "title",
           "text": "Filtros avançados de fornecedores",
-          "line": 540
+          "line": 649
         },
         {
           "kind": "label",
           "text": "Estado de origem",
-          "line": 541
+          "line": 650
         },
         {
           "kind": "option",
           "text": "Qualquer estado",
-          "line": 548
+          "line": 657
         },
         {
           "kind": "option",
           "text": "{dinâmico}",
-          "line": 550
+          "line": 659
         },
         {
           "kind": "label",
           "text": "Tipo de fornecedor",
-          "line": 554
+          "line": 663
         },
         {
           "kind": "option",
           "text": "Sem preferência",
-          "line": 561
+          "line": 670
         },
         {
           "kind": "option",
           "text": "Empresa automatizada",
-          "line": 562
+          "line": 671
         },
         {
           "kind": "option",
           "text": "Empresa de jogador",
-          "line": 563
+          "line": 672
         },
         {
           "kind": "label",
           "text": "Distância máxima ao destino (km)",
-          "line": 566
+          "line": 675
         },
         {
           "kind": "placeholder",
           "text": "Sem limite",
-          "line": 571
+          "line": 680
         },
         {
           "kind": "label",
           "text": "Preço máximo por unidade (R$)",
-          "line": 577
+          "line": 686
         },
         {
           "kind": "placeholder",
           "text": "Sem limite",
-          "line": 583
+          "line": 692
         },
         {
           "kind": "button",
           "text": "Aplicar filtros",
-          "line": 588
+          "line": 697
         }
       ],
-      "commands": []
+      "commands": [
+        {
+          "type": "trade",
+          "line": 171
+        }
+      ]
     },
     {
       "path": "apps/web/src/features/economy/Opportunities.tsx",
@@ -3467,23 +3606,34 @@
       "commands": []
     },
     {
+      "path": "apps/web/src/negocios.css",
+      "hash": "49dc93d99b3ef19ae1b1f41d59e93207325da32bf161acbbd59bf5370f6da0d7",
+      "components": [],
+      "literals": [],
+      "commands": []
+    },
+    {
       "path": "apps/web/src/pages/BusinessesPage.tsx",
-      "hash": "e297fcc4ea60221f79907c7a557a2e7f934376f1c16c020b27cbc5f1f7302b90",
+      "hash": "0f2d3daef4ad78f2291480b68f519e737dd5901844553bebd0d8d7be16f90d56",
       "components": [
         "Badge",
+        "BusinessCard",
         "CategoryIcon",
         "ChevronRight",
         "Empty",
+        "LayoutGrid",
+        "List",
         "Map",
         "Orders",
         "PageHeading",
         "Panel",
+        "PixelArt",
         "Plus",
+        "ResultadoPorUnidade",
         "Rows",
         "Search",
         "Select",
         "SlidersHorizontal",
-        "Stat",
         "SupplyNetwork",
         "TriangleAlert",
         "WorldMap"
@@ -3492,112 +3642,137 @@
         {
           "kind": "title",
           "text": "Meus Negócios",
-          "line": 30
+          "line": 56
+        },
+        {
+          "kind": "aria-label",
+          "text": "Resumo dos negócios",
+          "line": 61
         },
         {
           "kind": "title",
           "text": "Meus estabelecimentos",
-          "line": 60
+          "line": 92
         },
         {
           "kind": "aria-label",
           "text": "Buscar estabelecimento",
-          "line": 66
+          "line": 98
         },
         {
           "kind": "placeholder",
           "text": "Buscar estabelecimento…",
-          "line": 67
+          "line": 99
+        },
+        {
+          "kind": "role",
+          "text": "group",
+          "line": 104
+        },
+        {
+          "kind": "aria-label",
+          "text": "Forma de exibição",
+          "line": 104
+        },
+        {
+          "kind": "button",
+          "text": "Cartões",
+          "line": 105
+        },
+        {
+          "kind": "button",
+          "text": "Lista",
+          "line": 112
         },
         {
           "kind": "button",
           "text": "Filtros",
-          "line": 72
+          "line": 120
         },
         {
           "kind": "button",
           "text": "Novo estabelecimento",
-          "line": 75
+          "line": 123
         },
         {
           "kind": "option",
           "text": "Todas as categorias",
-          "line": 88
+          "line": 136
         },
         {
           "kind": "option",
           "text": "{dinâmico}",
-          "line": 90
+          "line": 138
         },
         {
           "kind": "th",
           "text": "Estabelecimento",
-          "line": 102
+          "line": 156
         },
         {
           "kind": "th",
           "text": "Categoria",
-          "line": 103
+          "line": 157
         },
         {
           "kind": "th",
           "text": "Localização",
-          "line": 104
+          "line": 158
         },
         {
           "kind": "th",
           "text": "Resultado / período",
-          "line": 105
+          "line": 159
         },
         {
           "kind": "th",
           "text": "Estado",
-          "line": 106
+          "line": 160
         },
         {
           "kind": "aria-label",
           "text": "Ações",
-          "line": 107
+          "line": 161
         },
         {
           "kind": "button",
           "text": "Gerenciar",
-          "line": 147
+          "line": 194
         },
         {
           "kind": "button",
           "text": "Explorar propriedades",
-          "line": 167
+          "line": 216
         },
         {
           "kind": "title",
           "text": "Resumo da operação",
-          "line": 179
+          "line": 229
         },
         {
           "kind": "h3",
           "text": "Distribuição territorial",
-          "line": 184
+          "line": 234
         },
         {
           "kind": "h3",
           "text": "Ação necessária",
-          "line": 191
+          "line": 241
         },
         {
           "kind": "button",
           "text": "{dinâmico} está com a operação pausada.",
-          "line": 198
+          "line": 248
         },
         {
           "kind": "button",
           "text": "Ver unidades no mapa",
-          "line": 206
+          "line": 256
         },
         {
           "kind": "title",
           "text": "Central de pedidos",
-          "line": 213
+          "line": 263
         }
       ],
       "commands": []
@@ -4276,13 +4451,14 @@
     },
     {
       "path": "apps/web/src/pages/RetailPage.tsx",
-      "hash": "7c5aff8fecc9154040537ad89e5f3cd7b32080b8454b81e3fe45eb03f9e4a3e7",
+      "hash": "b3ff7bf30abfa504033fedb80b00187949bfdc973390f0271b0c1884abe42f5f",
       "components": [
         "Badge",
         "Box",
         "BusinessFinance",
         "ChartNoAxesCombined",
         "Consumption",
+        "Empate",
         "Empty",
         "Installation",
         "Modal",
@@ -4307,163 +4483,163 @@
         {
           "kind": "title",
           "text": "Você ainda não possui uma loja",
-          "line": 44
+          "line": 45
         },
         {
           "kind": "button",
           "text": "Explorar propriedades",
-          "line": 47
+          "line": 48
         },
         {
           "kind": "option",
           "text": "{dinâmico}",
-          "line": 105
+          "line": 106
         },
         {
           "kind": "button",
           "text": "Consultar fornecedores",
-          "line": 145
+          "line": 147
         },
         {
           "kind": "button",
           "text": "Adicionar produto",
-          "line": 148
+          "line": 150
         },
         {
           "kind": "h3",
           "text": "Catálogo e cobertura de vendas",
-          "line": 174
+          "line": 176
         },
         {
           "kind": "th",
           "text": "Produto",
-          "line": 188
-        },
-        {
-          "kind": "th",
-          "text": "Disponível",
-          "line": 189
-        },
-        {
-          "kind": "th",
-          "text": "Preço",
           "line": 190
         },
         {
           "kind": "th",
-          "text": "Qualidade",
+          "text": "Disponível",
           "line": 191
         },
         {
           "kind": "th",
-          "text": "Cobertura estimada",
+          "text": "Preço",
           "line": 192
         },
         {
           "kind": "th",
-          "text": "Ação",
+          "text": "Qualidade",
           "line": 193
+        },
+        {
+          "kind": "th",
+          "text": "Cobertura estimada",
+          "line": 194
+        },
+        {
+          "kind": "th",
+          "text": "Ação",
+          "line": 195
         },
         {
           "kind": "button",
           "text": "{dinâmico}",
-          "line": 207
+          "line": 209
         },
         {
           "kind": "button",
           "text": "Repor produto",
-          "line": 236
+          "line": 238
         },
         {
           "kind": "title",
           "text": "Monte o catálogo da sua loja",
-          "line": 257
+          "line": 259
         },
         {
           "kind": "button",
           "text": "Escolher produtos",
-          "line": 260
+          "line": 262
         },
         {
           "kind": "h3",
           "text": "Vendas realizadas aos consumidores",
-          "line": 277
+          "line": 279
         },
         {
           "kind": "th",
           "text": "Quando no jogo",
-          "line": 288
-        },
-        {
-          "kind": "th",
-          "text": "Produto",
-          "line": 289
-        },
-        {
-          "kind": "th",
-          "text": "Quantidade",
           "line": 290
         },
         {
           "kind": "th",
-          "text": "Preço / un.",
+          "text": "Produto",
           "line": 291
         },
         {
           "kind": "th",
-          "text": "Receita",
+          "text": "Quantidade",
           "line": 292
+        },
+        {
+          "kind": "th",
+          "text": "Preço / un.",
+          "line": 293
+        },
+        {
+          "kind": "th",
+          "text": "Receita",
+          "line": 294
         },
         {
           "kind": "title",
           "text": "Aguardando a próxima rodada de vendas",
-          "line": 317
+          "line": 319
         },
         {
           "kind": "title",
           "text": "Reposição e cobertura",
-          "line": 329
+          "line": 331
         },
         {
           "kind": "button",
           "text": "Configurar abastecimento automático",
-          "line": 346
+          "line": 348
         },
         {
           "kind": "title",
           "text": "Atenção na operação",
-          "line": 356
+          "line": 358
         },
         {
           "kind": "button",
           "text": "Reabastecer estoque",
-          "line": 371
+          "line": 373
         },
         {
           "kind": "button",
           "text": "Ver consumo e gargalos",
-          "line": 379
+          "line": 381
         },
         {
           "kind": "label",
           "text": "Preço de venda por unidade (R$)",
-          "line": 389
+          "line": 391
         },
         {
           "kind": "aria-label",
           "text": "Preço de venda",
-          "line": 393
+          "line": 395
         },
         {
           "kind": "button",
           "text": "Salvar preço",
-          "line": 406
+          "line": 408
         }
       ],
       "commands": [
         {
           "type": "setPrice",
-          "line": 412
+          "line": 414
         }
       ]
     },

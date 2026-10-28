@@ -27,6 +27,7 @@ import { Workforce } from '../features/business/Workforce';
 import { Installation } from '../features/business/Installation';
 import { Orders } from '../features/business/Orders';
 import { BusinessFinance, Consumption } from '../features/business/Analytics';
+import { Empate } from '../features/business/Empate';
 
 export function RetailPage() {
   const { world, actor, businessId, openMarket, openBusiness, run, pending, navigate } = useGame();
@@ -136,6 +137,7 @@ export function RetailPage() {
             note={`${calendar.label} no calendário do jogo`}
           />
         </div>
+        <Empate loja={e} />
         <div className="retail-grid">
           <Panel
             title={e.name}

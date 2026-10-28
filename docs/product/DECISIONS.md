@@ -114,6 +114,20 @@ Decisões de rotina da fatia 9, reversíveis:
 - **Pátio da transportadora tem estoque e vendas:** a sucata de um caminhão desmontado fica no pátio e pode ser anunciada ou enviada a outra unidade.
 - **Mundo de teste da versão 2:** `npm run dev:v2` abre um mundo separado (`.runtime/economy-2.sqlite`, porta 5186) sem tocar no mundo principal. O laboratório também aceita o cenário `economy-2`.
 
+### D-033 · Balanceamento da versão 2 e começo do jogo (28/10/2026)
+
+Pedido do Pedro: "faça todos os balanceamentos necessários e deixe a interface mais intuitiva e boa para começar o jogo". Decisões de rotina da fatia 10, reversíveis e válidas só no mundo versão 2, medidas por `npm run economy:proof` (resultado em [PROVA-V2](PROVA-V2.md)):
+
+- **Preço dos bots mira a referência de fábrica.** O bot vende 8% abaixo do preço de referência quando tem estoque sobrando e até 8% acima quando falta, nunca abaixo do próprio custo. Antes cobrava custo mais margem: o arroz no atacado passava do preço de prateleira (R$ 31,92 contra R$ 24,50) e o leite despencava para R$ 2,16 (referência R$ 5,08). A loja-bot mira o preço de prateleira da referência. O estoque inicial dos produtores passou a ser custeado pelo preço de fábrica.
+- **Empresas antigas alinhadas.** As minas, a fazenda e a fábrica de óleo das empresas da versão 1 passam a ter uma linha de equipamento e a equipe do perfil, como os rivais. Produziam sem limite e abriam com semanas de estoque, derrubando o preço do ferro e da soja.
+- **Bots não compram imóveis.** A abertura já cobre a parte deles; os lotes livres ficam para os jogadores. Antes os bots levavam todos os lotes baratos nas duas primeiras horas.
+- **Lotes livres do tamanho de poucas linhas.** Fazenda de 80 ha, mina para 2 linhas, indústria de 12 mil m², loja de 600 m², armazém e pátio de 15 mil m², ao preço de terra da calculadora (R$ 45 mil a R$ 132 mil). Antes uma fazenda custava R$ 22 milhões.
+- **Editais públicos menores.** Lotes a 1/4 do tamanho (média de 14 t de aço) e oferta de 2,2× as 16 t/dia de aço público, porque metade expira sem proposta válida. Antes os editais pediam 56 t de uma vez e só 10% eram atendidos.
+- **Caminhão com vida útil comprimida.** Pesado 25 mil km e leve 15 mil km (parâmetro simulado), e a frota inicial espalhada até 95% da vida. No jogo um caminhão roda cerca de 190 km por dia; com a vida real nenhum chegaria ao fim numa temporada e as montadoras ficavam sem clientes.
+- **Sucata da coleta municipal** volta a custar R$ 1.200/t; um defeito a anunciava a R$ 0,01.
+- **Começo enxuto no mundo jogável.** Cada jogador começa com uma loja vazia, 8 funcionários e R$ 1 milhão livre. Os outros negócios voltam ao mapa como lotes à venda. Só no cenário jogável (`npm run dev:v2`); o mundo dos testes automáticos segue igual.
+- **Primeiros passos na interface.** Guia de 5 etapas conferidas pelo estado do jogo (comprar, receber, vender, abrir produção, produzir), aberto na primeira visita e no menu lateral. Mercado mostra primeiro o que o destino usa, com margem sobre a prateleira e quantidade sugerida; Oportunidades mostra quanto custa e quanto rende abrir cada negócio.
+
 ### Ideia em avaliação · Genética de cultivares (Pedro, 28/10/2026)
 
 O Pedro propôs um sistema de genética a partir de uma pesquisa sobre a cana. O produtor compra uma pequena quantidade de mudas de alta tecnologia no viveiro e as multiplica numa área própria. Depois replanta com a própria cana por anos e só volta a comprar para trocar de variedade, para limpar o canavial de doenças ou para expandir a área de uma vez.

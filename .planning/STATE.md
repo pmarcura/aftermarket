@@ -4,9 +4,9 @@ Atualizado em **28/10/2026**. Versão **0.4.0**. Uma página: o que é verdade a
 
 ## Onde estamos
 
-Etapa **A · Arrumar a casa** concluída; próxima é a **B · Redesenhar a economia** do [roteiro](ROADMAP.md). O panorama visual completo está em [`docs/raio-x.html`](../docs/raio-x.html).
+Etapas **A · Arrumar a casa** e **B · Redesenhar a economia** concluídas; parte da **E** (primeira hora) adiantada a pedido do Pedro. Próximas: **C · Motor que aguenta** e **D · Jogar junto** do [roteiro](ROADMAP.md), que faltam para o playtest com amigos. O panorama visual completo está em [`docs/raio-x.html`](../docs/raio-x.html).
 
-O jogo roda localmente: mapa real de SP–MG, compra de imóveis, produção, estoque físico, mercado com negociação, frota com rotas rodoviárias reais, finanças com crédito e 38 empresas-bot usando os mesmos comandos dos jogadores. Build e 197 testes passam.
+O jogo roda localmente: mapa real de SP–MG, compra de imóveis, produção, estoque físico, mercado com negociação, frota com rotas rodoviárias reais, finanças com crédito e empresas-bot usando os mesmos comandos dos jogadores. O mundo jogável da economia versão 2 (`npm run dev:v2`) tem 30 rivais em todas as especialidades, começo enxuto (loja vazia e R$ 1 milhão) e guia de primeiros passos. Build e 203 testes passam.
 
 ## O que funciona
 
@@ -18,22 +18,24 @@ O jogo roda localmente: mapa real de SP–MG, compra de imóveis, produção, es
 
 ## Furos conhecidos
 
-| Área        | Problema                                                                                      | Onde está o detalhe                               |
-| ----------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| Economia    | Aço só tem o governo como comprador                                                           | [ECONOMIA-HOJE](../docs/product/ECONOMIA-HOJE.md) |
-| Economia    | Farelo sobra; quatro fazendas não pagam nem a folha                                           | idem                                              |
-| Economia    | Semente não existe (planta-se o pacote de mercado); leite sem rebanho                         | idem                                              |
-| Desempenho  | Mundo salvo como um JSON único (63 MB), regravado a cada 2 s; navegador baixa tudo a cada 3 s | etapa C do roteiro                                |
-| Multiplayer | Servidor só escuta `127.0.0.1`; perfis sem senha                                              | etapa D do roteiro                                |
-| Interface   | Sem tutorial; loja com 10 abas                                                                | etapa E do roteiro                                |
+| Área        | Problema                                                                                                                                 | Onde está o detalhe                               |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| Economia v2 | Montadoras de caminhão com pouca procura; aço ao governo abaixo das 16 t/dia                                                             | [PROVA-V2](../docs/product/PROVA-V2.md), D-033    |
+| Mundo v2    | Só 12 lotes livres e os dois jogadores de teste começam em Campinas                                                                      | etapa D (uma cidade e lotes por amigo)            |
+| Economia v1 | O mundo principal salvo segue a economia antiga (aço só para o governo, farelo sobrando)                                                 | [ECONOMIA-HOJE](../docs/product/ECONOMIA-HOJE.md) |
+| Desempenho  | Mundo salvo como um JSON único, regravado a cada 2 s; navegador baixa tudo a cada 3 s; ~2 s de cálculo por dia de jogo no fim de 90 dias | etapa C do roteiro                                |
+| Multiplayer | Servidor só escuta `127.0.0.1`; perfis sem senha                                                                                         | etapa D do roteiro                                |
+| Interface   | Loja com 9 abas; sem mural de notícias nem ranking                                                                                       | etapa E do roteiro                                |
 
 ## Próximo passo
 
-Etapa **B**, passo 4: levar a economia alvo ao motor num mundo novo. Fatias 1 a 9 entregues (catálogo, configuração do mundo versão 2, sementes, rebanho, ração, utensílios com sucata, caminhões fabricados com concessionária, 30 bots em todas as especialidades com gasto público fechando o ciclo do dinheiro, e telas de frota, rebanho e itens novos); próxima: prova de 90 dias em várias sementes e calibração (fatia 10) ([B-PLAN](phases/B-economia/B-PLAN.md)). As fórmulas M02–M05 e M07 que enganavam os bots foram corrigidas em 27/10 e têm provas de regressão no auditor e em `tests/formula-fixes.test.ts`.
+Etapa **B** concluída em 28/10: as dez fatias do [B-PLAN](phases/B-economia/B-PLAN.md) e a prova de 90 dias em 3 sementes ([PROVA-V2](../docs/product/PROVA-V2.md), `npm run economy:proof`). O balanceamento da fatia 10 está em D-033: bots miram o preço de referência, empresas antigas alinhadas, bots sem compra de imóveis, lotes livres baratos, editais menores e caminhões com vida útil comprimida.
+
+Para o playtest com amigos faltam: **C** (desempenho do motor e do salvamento) e **D** (login simples, uma empresa e uma cidade por amigo, servidor acessível de fora). Recomendação: fazer C e D juntas no mínimo necessário para 5 pessoas, antes de mais interface.
 
 Decisões do Pedro em 27/10 (D-028, D-029): mundo semanal livre; realismo enxuto com cadeias completas; fechar metal e alimentos antes de crescer; aço vira caminhões e utensílios; sucata já; carne depois do playtest; relógio 1 h real = 6 h de jogo.
 
-Números da economia alvo em [ECONOMIA-ALVO](../docs/product/ECONOMIA-ALVO.md), calculados por `npm run economy:design` e protegidos por `tests/economy-design.test.ts`. Ainda não estão no motor.
+Números da economia alvo em [ECONOMIA-ALVO](../docs/product/ECONOMIA-ALVO.md), calculados por `npm run economy:design` e protegidos por `tests/economy-design.test.ts`; valem no motor para mundos novos (versão 2). O mundo principal salvo continua na versão 1.
 
 ## Como rodar
 

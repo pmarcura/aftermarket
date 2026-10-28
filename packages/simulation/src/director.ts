@@ -151,18 +151,26 @@ export function runBotDirector(w: World, at: number) {
     const busy = c.fleetBusyRounds ?? 0;
     c.lastFleetAt = at;
     c.fleetBusyRounds = 0;
+    // Caminhão livre no fim da vida útil: desmonta no pátio próprio; longe dele, vende ao fundo
+    // estadual (caminhão de transportadora quase nunca para no próprio pátio e rodaria para sempre).
     for (const v of fleet)
       if (
         v.status === 'available' &&
         v.model &&
-        (v.odometerKm ?? 0) >= vehicleModels[v.model].lifeKm &&
-        w.establishments.some((e) => e.companyId === c.id && e.propertyId === v.propertyId)
+        (v.odometerKm ?? 0) >= vehicleModels[v.model].lifeKm
       )
-        act(
-          c.id,
-          { type: 'scrapVehicle', vehicleId: v.id },
-          `Desmontou ${v.name} no fim da vida útil`,
-        );
+        if (w.establishments.some((e) => e.companyId === c.id && e.propertyId === v.propertyId))
+          act(
+            c.id,
+            { type: 'scrapVehicle', vehicleId: v.id },
+            `Desmontou ${v.name} no fim da vida útil`,
+          );
+        else
+          act(
+            c.id,
+            { type: 'sellVehicle', vehicleId: v.id },
+            `Vendeu ${v.name} no fim da vida útil`,
+          );
     const units = w.establishments.filter((e) => e.companyId === c.id);
     const cap = units.reduce((n, e) => n + (e.category === 'logistics' ? 10 : 2), 0);
     const rounds = GAME_DAY / ECONOMIC_INTERVAL;
@@ -653,14 +661,19 @@ export function runBotDirector(w: World, at: number) {
             .reduce((n, h) => n + h.desired, 0) || 100,
         );
         const previousPrice = tracing ? e.prices[id] : undefined;
-        e.prices[id] = Math.max(
-          1,
-          Math.round(
-            ((e.unitCosts[id] ?? w.season.config.basePrices[id]) +
-              fixed / Math.max(100, demand * 5)) *
-              (c.strategy === 'quality' ? 1.25 : 1.14),
-          ),
-        );
+        const cost =
+          (e.unitCosts[id] ?? w.season.config.basePrices[id]) + fixed / Math.max(100, demand * 5);
+        // Versão 2 (D-033): a loja mira o preço de prateleira de referência conforme a estratégia e
+        // só sobe acima dele para não vender abaixo do custo.
+        e.prices[id] = w.season.config.wholesalePrices
+          ? Math.max(
+              Math.round(cost * 1.02),
+              Math.round(
+                w.season.config.basePrices[id] *
+                  (c.strategy === 'quality' ? 1.06 : c.strategy === 'value' ? 0.95 : 1),
+              ),
+            )
+          : Math.max(1, Math.round(cost * (c.strategy === 'quality' ? 1.25 : 1.14)));
         if (tracing && previousPrice !== e.prices[id]) {
           pricing!.add(c.id);
           emitDecisionTrace(w, {
@@ -690,12 +703,20 @@ export function runBotDirector(w: World, at: number) {
           0,
         ) * Math.min(12 * (e.automationCycles ?? 1), (lines * GAME_DAY) / r.duration)
       : 0;
+    const v2 = !!w.season.config.wholesalePrices;
     for (const o of w.offers.filter((o) => o.establishmentId === e.id)) {
+      // Versão 2: distribuidor sem receita não rateia custo fixo por um estoque pequeno (gerava
+      // preços absurdos); o piso do produtor é o custo pleno, sem margem, pois o preço já mira a referência.
       const overhead = dailyOutputValue
         ? (operatingCosts(w, e).total * w.season.config.basePrices[o.product]) / dailyOutputValue
-        : operatingCosts(w, e).total / Math.max(1, (e.inventory[o.product] ?? 0) / 3);
-      const margin =
-        w.companies.find((c) => c.id === e.companyId)!.strategy === 'value' ? 1.1 : 1.18;
+        : v2
+          ? 0
+          : operatingCosts(w, e).total / Math.max(1, (e.inventory[o.product] ?? 0) / 3);
+      const margin = v2
+        ? 1
+        : w.companies.find((c) => c.id === e.companyId)!.strategy === 'value'
+          ? 1.1
+          : 1.18;
       const previousPrice = tracing ? o.price : undefined;
       o.price = Math.max(
         o.price,

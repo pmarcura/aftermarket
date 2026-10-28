@@ -1,7 +1,9 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { createWorld } from '../packages/simulation/src/seed';
 import { advance } from '../packages/simulation/src/engine';
-import { GAME_DAY } from '../packages/simulation/src/operations';
+import { GAME_DAY, SCRAP_COLLECTION } from '../packages/simulation/src/operations';
+import { seasonPrice, wholesaleReference } from '../packages/simulation/src/metrics';
+import { householdItems } from '../packages/simulation/src/channels';
 import { v2Portfolio } from '../packages/simulation/src/opening-v2';
 import type { World } from '../packages/simulation/src/model';
 
@@ -78,6 +80,32 @@ describe('mundo versão 2 · vinte dias de bots', () => {
     const sold = late.reduce((n, h) => n + h.sold, 0),
       desired = late.reduce((n, h) => n + h.desired, 0);
     expect(sold / desired).toBeGreaterThan(0.3);
+  });
+
+  it('editais públicos menores e espaçados, no ritmo do aço público alvo', () => {
+    const { lotScale, contractIntervalMs } = w.season.config.government!;
+    expect(lotScale).toBe(0.25);
+    for (const c of w.infrastructure.filter((c) => c.product === 'steel'))
+      expect(c.quantity).toBeLessThanOrEqual(24);
+    for (const state of new Set(w.infrastructure.map((c) => c.state))) {
+      const opened = w.infrastructure.filter((c) => c.state === state).map((c) => c.createdAt);
+      for (let i = 1; i < opened.length; i++)
+        expect(opened[i] - opened[i - 1]).toBeGreaterThanOrEqual(contractIntervalMs);
+    }
+  });
+
+  it('atacado dos bots fica abaixo da prateleira e a sucata mantém o preço da coleta', () => {
+    for (const id of householdItems(w)) {
+      const cheapest = Math.min(
+        ...w.offers
+          .filter((o) => o.product === id && o.establishmentId.startsWith('e-rival-'))
+          .map((o) => o.price),
+      );
+      expect(cheapest, id).toBeLessThan(seasonPrice(w, id));
+      expect(cheapest, id).toBeGreaterThan(wholesaleReference(w, id) * 0.9);
+    }
+    const collection = w.offers.find((o) => o.establishmentId === SCRAP_COLLECTION)!;
+    expect(collection.price).toBe(w.season.config.recycling!.scrapPrice);
   });
 
   it('insumo comprado para a própria receita não volta à venda', () => {

@@ -6,7 +6,7 @@ import { operatingCosts, recordMarket } from './metrics';
 import { initializeOperations } from './operations';
 import { initializeCompetition } from './competition';
 import { initializeDesign } from './design';
-import { openV2Rivals, prepareV2Fleet } from './opening-v2';
+import { alignLegacyProducers, normalizeV2Lot, openV2Rivals, prepareV2Fleet } from './opening-v2';
 
 // Mundo versão 1 por padrão; `economy: 2` abre a economia alvo da etapa B (D-028 a D-030).
 export function createWorld(now = Date.now(), options: { economy?: 1 | 2 } = {}): World {
@@ -336,6 +336,8 @@ export function createWorld(now = Date.now(), options: { economy?: 1 | 2 } = {})
   }
   initializeCompetition(world, now);
   openV2Rivals(world, now);
+  alignLegacyProducers(world);
+  for (const p of world.properties) normalizeV2Lot(world, p);
   initializeDesign(world, now);
   recordMarket(world, now);
   return world;

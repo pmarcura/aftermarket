@@ -3,6 +3,7 @@ import {
   type Category,
   type Establishment,
   type ProductId,
+  type Property,
   type Recipe,
   type SupplyPolicy,
   type World,
@@ -255,14 +256,20 @@ export function openV2Rivals(w: World, at: number) {
           householdDemand(w, region.id, id) * RETAIL_COVERAGE * RETAIL_STOCK_DAYS,
         );
     e.inventory = {};
+    // Produtor custeia o estoque inicial na porta da fábrica; a loja, no preço de loja sem a margem.
     const unitCost = (id: ProductId) =>
-      Math.round(config.basePrices[id] * (category === 'retail' ? wholesaleShare : 1));
+      Math.round(
+        category === 'retail'
+          ? config.basePrices[id] * wholesaleShare
+          : (config.wholesalePrices?.[id] ?? config.basePrices[id]),
+      );
     const stockCost = (Object.entries(stock) as [ProductId, number][]).reduce(
       (n, [id, q]) => n + Math.round(unitCost(id) * q),
       0,
     );
     const model: VehicleModel = category === 'retail' ? 'truckLight' : 'truckHeavy',
-      odometerKm = 20000 + ((i * 9973) % 60000),
+      // Usado entre 5% e 95% da vida útil, variando por rival: as trocas começam já na abertura.
+      odometerKm = Math.round(vehicleModels[model].lifeKm * (0.05 + ((i * 9973) % 900) / 1000)),
       vehiclePrice = Math.round(
         config.basePrices[model] * (1 - (0.5 * odometerKm) / vehicleModels[model].lifeKm),
       );
@@ -367,9 +374,57 @@ export function prepareV2Fleet(w: World) {
     v.model = model;
     v.capacityT = spec.capacityT;
     v.capacityM3 = spec.capacityM3;
-    v.odometerKm = (i * 23003) % Math.round(spec.lifeKm * 0.8);
+    // Frota espalhada até 95% da vida útil, para a reposição não começar só depois de meses.
+    v.odometerKm = (i * 23003) % Math.round(spec.lifeKm * 0.95);
     v.purchasePrice = Math.round(
       w.season.config.basePrices[model] * (1 - (0.5 * v.odometerKm) / spec.lifeKm),
     );
   });
+}
+
+// Unidades produtivas das empresas antigas (minas, fazenda e fábrica de óleo da versão 1) entram no
+// mundo versão 2 com as mesmas regras dos rivais: uma linha de equipamento, a equipe do perfil e
+// estoque inicial de um ciclo. Sem isso produziam sem limite de linhas e abriam com estoques de
+// semanas, derrubando o preço de ferro, soja e óleo (prova da fatia 10).
+export function alignLegacyProducers(w: World) {
+  if (!w.season.config.economyVersion) return;
+  for (const e of w.establishments) {
+    const c = w.companies.find((x) => x.id === e.companyId)!;
+    if (!c.bot || c.id.startsWith('rival-') || c.id.startsWith('treasury')) continue;
+    const recipe = w.season.config.recipes.find((r) => r.id === e.specialization);
+    const profile = recipe && w.season.config.operations.profiles[recipe.id];
+    if (!recipe || !profile) continue;
+    Object.assign(e, {
+      installed: true,
+      equipmentLines: 1,
+      employees: profile.workers,
+      automationCycles: 1,
+    });
+    const perDay = automationCyclesPerDay(w, e, recipe, 1);
+    for (const [id, q] of Object.entries(recipe.output) as [ProductId, number][])
+      e.inventory[id] = Math.min(
+        e.inventory[id] ?? 0,
+        roundFor(id, q * perDay * (1 + recipe.duration / GAME_DAY)),
+      );
+    for (const [id, q] of Object.entries(recipe.input) as [ProductId, number][])
+      if (!recipe.output[id]) e.inventory[id] = Math.min(e.inventory[id] ?? 0, roundFor(id, q * 3));
+    e.dailyCost = operatingCosts(w, e).total;
+  }
+}
+
+// Lotes livres do mundo versão 2 (D-033): tamanho para poucas linhas e preço da terra da
+// calculadora. Os imóveis herdados da versão 1 tinham áreas de centenas de hectares e preços sem
+// relação com a economia alvo; um jogador com o capital inicial não abria nenhuma produção.
+export const v2LotArea: Record<Property['category'], number> = {
+  farm: 800000,
+  mine: 180000,
+  industry: 12000,
+  retail: 600,
+  warehouse: 15000,
+  logistics: 15000,
+};
+export function normalizeV2Lot(w: World, p: Property) {
+  if (!w.season.config.economyVersion || p.ownerId !== null) return;
+  p.area = v2LotArea[p.category];
+  p.price = Math.round(p.area * designWorld.landPerM2[p.category]);
 }

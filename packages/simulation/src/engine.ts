@@ -62,6 +62,7 @@ import {
   recordMarket,
   regionFor,
   seasonPrice,
+  wholesaleReference,
 } from './metrics';
 export { distanceKm } from './geometry';
 const randomUUID = () => globalThis.crypto.randomUUID();
@@ -1784,7 +1785,8 @@ function openInfrastructure(w: World, at: number) {
           w.season.config.competition.maxOpenContracts,
           Math.floor(available / 20000000) + 1,
         ) ||
-      (last && at - last.createdAt < GAME_DAY / 2)
+      (last &&
+        at - last.createdAt < (w.season.config.government?.contractIntervalMs ?? GAME_DAY / 2))
     )
       continue;
     const cities = w.establishments.filter(
@@ -1797,7 +1799,10 @@ function openInfrastructure(w: World, at: number) {
       place = dpOf(w, destination);
     const referencePrice = publicReference(w, program.product),
       unitPrice = Math.round(referencePrice * w.season.config.competition.governmentBonus);
-    const quantity = program.quantity,
+    const quantity = Math.max(
+        1,
+        Math.round(program.quantity * (w.season.config.government?.lotScale ?? 1)),
+      ),
       maxFreight = Math.max(250000, Math.round(unitPrice * quantity * 0.2)),
       reserved = unitPrice * quantity + maxFreight;
     if (available < reserved) continue;
@@ -2144,16 +2149,25 @@ function runAutomations(w: World, at: number) {
       if (
         quantity <= 0 ||
         keep.has(id) ||
+        // A coleta municipal mantém o preço de sucata da temporada; o estoque dela não tem custo.
+        e.id === SCRAP_COLLECTION ||
         (e.category === 'retail' && !(w.season.config.economyVersion && id === 'scrap')) ||
         (e.category === 'industry' && ['soy', 'iron', 'coal'].includes(id))
       )
         continue;
       const daily = marketView(w, id).demand;
       const scarce = daily > 0 ? Math.max(0, 1 - quantity / Math.max(daily * 3, 1)) : 0;
-      const price = Math.max(
-        1,
-        Math.round((e.unitCosts[id] ?? seasonPrice(w, id) * 0.75) * (1.12 + scarce * 0.18)),
-      );
+      // Versão 2 (D-033): mira a referência de fábrica, 8% abaixo com estoque sobrando e 8% acima
+      // quando falta, nunca abaixo do custo. A versão 1 segue custo mais margem.
+      const price = w.season.config.wholesalePrices
+        ? Math.max(
+            Math.round((e.unitCosts[id] ?? 0) * 1.02),
+            Math.round(wholesaleReference(w, id) * (0.92 + scarce * 0.16)),
+          )
+        : Math.max(
+            1,
+            Math.round((e.unitCosts[id] ?? seasonPrice(w, id) * 0.75) * (1.12 + scarce * 0.18)),
+          );
       const offer = w.offers.find((o) => o.establishmentId === e.id && o.product === id);
       if (offer) offer.price = price;
       else w.offers.push({ id: randomUUID(), establishmentId: e.id, product: id, price });
@@ -2188,8 +2202,12 @@ function runAutomations(w: World, at: number) {
       )
         break;
   }
+  // Versão 2 (D-033): bots não compram imóveis. A abertura já cobre a parte deles da economia e
+  // os lotes livres ficam para os jogadores (antes os bots levavam todos nas primeiras horas).
+  const botsExpand = !w.season.config.economyVersion;
   // Demanda pública pode justificar uma fábrica, sem ofertar estoque inicial gratuito.
   if (
+    botsExpand &&
     w.infrastructure.some((c) => c.status === 'open') &&
     !w.establishments.some((e) => company(w, e.companyId).bot && e.specialization === 'steel-bars')
   ) {
@@ -2243,7 +2261,11 @@ function runAutomations(w: World, at: number) {
   }
   for (const c of w.companies.filter((c) => c.bot && !['treasury', 'consumers'].includes(c.id))) {
     const units = w.establishments.filter((e) => e.companyId === c.id);
-    if (units.length >= 5 || (c.lastExpansionAt !== undefined && at - c.lastExpansionAt < GAME_DAY))
+    if (
+      !botsExpand ||
+      units.length >= 5 ||
+      (c.lastExpansionAt !== undefined && at - c.lastExpansionAt < GAME_DAY)
+    )
       continue;
     const template = units.find(
       (e) =>

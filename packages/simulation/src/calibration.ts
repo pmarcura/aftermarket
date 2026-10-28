@@ -205,6 +205,10 @@ export interface SeasonConfig {
   economyVersion?: number;
   // Versão 2: sucata urbana devolvida pelos utensílios vendidos e preço da coleta municipal.
   recycling?: { urbanScrapShare: number; scrapPrice: number };
+  // Versão 2: editais menores e espaçados, dimensionados pelo aço público da economia alvo.
+  government?: { lotScale: number; contractIntervalMs: number };
+  // Versão 2: preço de referência na porta da fábrica; basePrices dos itens de consumo é o de loja.
+  wholesalePrices?: Record<string, number>;
   design: typeof designRules & { equipmentByRecipe?: Record<string, number> };
   competition: typeof competitionRules;
   operations: typeof operationRules;

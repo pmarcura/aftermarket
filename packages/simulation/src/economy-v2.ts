@@ -1,7 +1,10 @@
 import { TIME_SCALE, products, type ProductId, type Recipe } from './model';
 import { createSeasonConfig, type SeasonConfig } from './calibration';
 import { designItems, designRecipes, referencePrice, type DesignItemId } from './catalog';
-import { analyzeDesign, designWorld } from './economy-design';
+import { analyzeDesign, designWorld, priceList } from './economy-design';
+import { infrastructurePrograms } from './channels';
+import { GAME_DAY } from './operations';
+import { regions } from '../../world/src/regions';
 
 // Mundo versão 2 (etapa B): configuração congelada a partir do catálogo da economia alvo.
 export const ECONOMY_V2 = 2;
@@ -48,9 +51,27 @@ export function v2SeasonConfig(): SeasonConfig {
     v2Recipes(),
   );
   config.economyVersion = ECONOMY_V2;
+  config.wholesalePrices = Object.fromEntries(
+    Object.entries(priceList()).map(([id, price]) => [id, Math.round(price)]),
+  );
   config.recycling = {
     urbanScrapShare: designWorld.urbanScrapShare,
     scrapPrice: referencePrice('scrap'),
+  };
+  // Editais a 1/4 do tamanho original, para caber no estoque de uma siderúrgica, e oferta de
+  // 2,2× o aço público alvo: na prova de 90 dias cerca de metade expira sem proposta válida.
+  const lotScale = 0.25,
+    states = new Set(regions.map((r) => r.state)).size;
+  const steelPerContract =
+    (infrastructurePrograms
+      .filter((p) => p.product === 'steel')
+      .reduce((n, p) => n + p.quantity, 0) /
+      infrastructurePrograms.length) *
+    lotScale;
+  const contractsPerDay = (designWorld.government.steelTonnesPerDay * 2.2) / steelPerContract;
+  config.government = {
+    lotScale,
+    contractIntervalMs: Math.round((GAME_DAY * states) / contractsPerDay),
   };
   config.parameters.playableConsumerShare = designWorld.consumerShare;
   config.consumption = Object.fromEntries(

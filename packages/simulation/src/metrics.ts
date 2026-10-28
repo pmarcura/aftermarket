@@ -30,6 +30,10 @@ export function regionFor(position: Position, city?: string) {
 export function seasonPrice(w: World, product: ProductId) {
   return w.season.config.basePrices[product];
 }
+// Preço de referência entre empresas: porta da fábrica na versão 2; na versão 1, o da temporada.
+export function wholesaleReference(w: World, product: ProductId) {
+  return w.season.config.wholesalePrices?.[product] ?? w.season.config.basePrices[product];
+}
 export function utilityTariff(w: World, p: Property) {
   return w.season.config.utilities[p.state] ?? w.season.config.utilities.SP;
 }

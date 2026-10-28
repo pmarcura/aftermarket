@@ -535,9 +535,11 @@ export function referencePrice(id: DesignItemId): number {
 }
 
 // Caminhões fabricados (D-028): capacidade, vida útil para o desgaste e sucata ao desmontar.
+// Vida útil comprimida (parâmetro simulado, D-033): no jogo um caminhão roda ~190 km/dia, e a
+// vida real (~1 milhão de km) nunca chegaria ao fim numa temporada; assim dura ~130 dias de uso.
 export const vehicleModels = {
-  truckHeavy: { label: 'Caminhão pesado', capacityT: 30, capacityM3: 85, lifeKm: 150000 },
-  truckLight: { label: 'Caminhão leve', capacityT: 8, capacityM3: 25, lifeKm: 100000 },
+  truckHeavy: { label: 'Caminhão pesado', capacityT: 30, capacityM3: 85, lifeKm: 25000 },
+  truckLight: { label: 'Caminhão leve', capacityT: 8, capacityM3: 25, lifeKm: 15000 },
 } as const;
 export type VehicleModel = keyof typeof vehicleModels;
 // Concessionária institucional (D-030): importado 30% acima do preço de referência.

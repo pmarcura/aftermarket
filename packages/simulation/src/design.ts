@@ -71,13 +71,17 @@ export function initializeDesign(w: World, at = w.updatedAt) {
         minQuality: 40,
         maxFreightPerUnit: 0,
         carrierId: 'auto',
-        rules: Object.entries(recipe.input).map(([product, q]) => ({
-          product: product as ProductId,
-          minimum: Math.ceil(q! * 2),
-          target: Math.ceil(q! * 4),
-          maxBuy: Math.ceil(q! * 4),
-          maxPrice: Math.round(w.season.config.basePrices[product as ProductId] * 1.5),
-        })),
+        rules: Object.entries(recipe.input)
+          .filter(
+            ([product]) => !(w.season.config.economyVersion && recipe.output[product as ProductId]),
+          )
+          .map(([product, q]) => ({
+            product: product as ProductId,
+            minimum: Math.ceil(q! * 2),
+            target: Math.ceil(q! * 4),
+            maxBuy: Math.ceil(q! * 4),
+            maxPrice: Math.round(w.season.config.basePrices[product as ProductId] * 1.5),
+          })),
       };
   }
   for (const id of seasonProducts(w))

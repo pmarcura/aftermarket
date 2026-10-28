@@ -29,6 +29,9 @@ export interface Company {
   behaviorVersion?: number;
   strategy?: 'regional' | 'quality' | 'value';
   financingExpense?: number;
+  // Versão 2: decisão diária de frota dos bots e rodadas do dia com a frota toda ocupada.
+  lastFleetAt?: number;
+  fleetBusyRounds?: number;
 }
 export interface Property {
   id: string;

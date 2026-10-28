@@ -1,12 +1,12 @@
 # Estado do projeto
 
-Atualizado em **27/10/2026**. Versão **0.4.0**. Uma página: o que é verdade agora e o que vem a seguir. Detalhes e evidências ficam nos documentos de cada fase e no histórico do Git.
+Atualizado em **28/10/2026**. Versão **0.4.0**. Uma página: o que é verdade agora e o que vem a seguir. Detalhes e evidências ficam nos documentos de cada fase e no histórico do Git.
 
 ## Onde estamos
 
 Etapa **A · Arrumar a casa** concluída; próxima é a **B · Redesenhar a economia** do [roteiro](ROADMAP.md). O panorama visual completo está em [`docs/raio-x.html`](../docs/raio-x.html).
 
-O jogo roda localmente: mapa real de SP–MG, compra de imóveis, produção, estoque físico, mercado com negociação, frota com rotas rodoviárias reais, finanças com crédito e 38 empresas-bot usando os mesmos comandos dos jogadores. Build e 160 testes passam.
+O jogo roda localmente: mapa real de SP–MG, compra de imóveis, produção, estoque físico, mercado com negociação, frota com rotas rodoviárias reais, finanças com crédito e 38 empresas-bot usando os mesmos comandos dos jogadores. Build e 194 testes passam.
 
 ## O que funciona
 
@@ -29,7 +29,7 @@ O jogo roda localmente: mapa real de SP–MG, compra de imóveis, produção, es
 
 ## Próximo passo
 
-Etapa **B**, passo 4: levar a economia alvo ao motor num mundo novo. Fatias 1 a 7 entregues (catálogo, configuração do mundo versão 2, sementes, rebanho, ração, utensílios com sucata e caminhões fabricados com concessionária); próxima: bots para as atividades novas ([B-PLAN](phases/B-economia/B-PLAN.md)). As fórmulas M02–M05 e M07 que enganavam os bots foram corrigidas em 27/10 e têm provas de regressão no auditor e em `tests/formula-fixes.test.ts`.
+Etapa **B**, passo 4: levar a economia alvo ao motor num mundo novo. Fatias 1 a 8 entregues (catálogo, configuração do mundo versão 2, sementes, rebanho, ração, utensílios com sucata, caminhões fabricados com concessionária e 30 bots em todas as especialidades, com gasto público fechando o ciclo do dinheiro); próxima: telas de frota, rebanho e itens novos (fatia 9) ([B-PLAN](phases/B-economia/B-PLAN.md)). As fórmulas M02–M05 e M07 que enganavam os bots foram corrigidas em 27/10 e têm provas de regressão no auditor e em `tests/formula-fixes.test.ts`.
 
 Decisões do Pedro em 27/10 (D-028, D-029): mundo semanal livre; realismo enxuto com cadeias completas; fechar metal e alimentos antes de crescer; aço vira caminhões e utensílios; sucata já; carne depois do playtest; relógio 1 h real = 6 h de jogo.
 

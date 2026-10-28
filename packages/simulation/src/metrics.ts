@@ -135,6 +135,16 @@ export function householdDemand(w: World, regionId: string, product: ProductId) 
     30
   );
 }
+// Procura diária do mundo inteiro: famílias mais insumos das linhas ativas (sem ler o razão).
+export function dailyDemand(w: World, product: ProductId) {
+  const household = regions.reduce((n, r) => n + householdDemand(w, r.id, product), 0);
+  return w.establishments.reduce((n, e) => {
+    if (!e.enabled) return n;
+    const r = activeRecipe(w, e);
+    const q = r?.input[product] ?? 0;
+    return q ? n + q * automationCyclesPerDay(w, e, r!) : n;
+  }, household);
+}
 function activeRecipe(w: World, e: Establishment) {
   return w.season.config.recipes.find((r) => r.id === e.specialization);
 }

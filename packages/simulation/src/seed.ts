@@ -6,6 +6,7 @@ import { operatingCosts, recordMarket } from './metrics';
 import { initializeOperations } from './operations';
 import { initializeCompetition } from './competition';
 import { initializeDesign } from './design';
+import { openV2Rivals, prepareV2Fleet } from './opening-v2';
 
 // Mundo versão 1 por padrão; `economy: 2` abre a economia alvo da etapa B (D-028 a D-030).
 export function createWorld(now = Date.now(), options: { economy?: 1 | 2 } = {}): World {
@@ -216,6 +217,19 @@ export function createWorld(now = Date.now(), options: { economy?: 1 | 2 } = {})
   e('botfactory').inventory = { soy: 40, oil: 12000 };
   e('marketbot').inventory = { oil: 400, rice: 300 };
   e('marketbot').prices = { oil: 850, rice: 2390 };
+  if (options.economy === 2) {
+    // Estoques declarados da abertura v2: a distribuidora vende sementes, mudas e matrizes finitas.
+    Object.assign(e('supplier').inventory, {
+      soySeed: 6,
+      riceSeed: 2000,
+      beanSeed: 2000,
+      caneSeedling: 80,
+      cow: 300,
+      utensils: 3000,
+    });
+    e('agro').inventory.soySeed = 1.2;
+    e('farm').inventory.soySeed = 1.2;
+  }
   for (const establishment of establishments)
     for (const id of Object.keys(establishment.inventory) as ProductId[])
       establishment.unitCosts[id] = Math.round(
@@ -305,6 +319,7 @@ export function createWorld(now = Date.now(), options: { economy?: 1 | 2 } = {})
     },
   };
   initializeOperations(world);
+  if (options.economy === 2) prepareV2Fleet(world);
   for (const p of world.properties) {
     p.energyConnected = true;
     if (!p.ownerId) calibrateProperty(p);
@@ -320,6 +335,7 @@ export function createWorld(now = Date.now(), options: { economy?: 1 | 2 } = {})
     establishment.dailyCost = operatingCosts(world, establishment).total;
   }
   initializeCompetition(world, now);
+  openV2Rivals(world, now);
   initializeDesign(world, now);
   recordMarket(world, now);
   return world;

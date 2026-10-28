@@ -64,7 +64,39 @@ export function actorState(w: World, actor: string, establishmentId?: string) {
     'SP'
   );
 }
-function openingTransfer(
+export const rivalNames = [
+  'Horizonte',
+  'Pioneira',
+  'Atlântica',
+  'Caminhos',
+  'Veredas',
+  'Nacional',
+  'Aliança',
+  'Boa Vista',
+  'Integra',
+  'Nova Era',
+  'Raízes',
+  'Planalto',
+  'Impulso',
+  'Bandeirante',
+  'União',
+  'Vitória',
+  'Terra Nova',
+  'Progresso',
+  'Cruzeiro',
+  'Cerrado',
+  'Serrana',
+  'Brasil Sul',
+  'Vale Verde',
+  'Primavera',
+  'Rota Norte',
+  'Pontal',
+  'Sol Nascente',
+  'Ideal',
+  'Fortaleza',
+  'Avenida',
+];
+export function openingTransfer(
   w: World,
   from: string,
   to: string,
@@ -191,45 +223,17 @@ export function initializeCompetition(w: World, at = w.updatedAt) {
   }
   // Capital vem de contas existentes; os estoques inaugurais são finitos e pagos.
   const investors = w.companies.find((c) => c.id === 'consumers')!;
-  const missing = Array.from({ length: competitionRules.botCount }, (_, i) => i).filter(
-    (i) => !w.companies.some((c) => c.id === `rival-${i + 1}`),
-  );
+  // Versão 2: os rivais nascem da carteira da economia alvo (opening-v2.ts), chamada pelo seed.
+  const missing = w.season.config.economyVersion
+    ? []
+    : Array.from({ length: competitionRules.botCount }, (_, i) => i).filter(
+        (i) => !w.companies.some((c) => c.id === `rival-${i + 1}`),
+      );
   const capital = Math.min(
     w.season.config.competition.botCapital,
     Math.floor((investors.balance * 0.6) / Math.max(1, missing.length)),
   );
-  const names = [
-    'Horizonte',
-    'Pioneira',
-    'Atlântica',
-    'Caminhos',
-    'Veredas',
-    'Nacional',
-    'Aliança',
-    'Boa Vista',
-    'Integra',
-    'Nova Era',
-    'Raízes',
-    'Planalto',
-    'Impulso',
-    'Bandeirante',
-    'União',
-    'Vitória',
-    'Terra Nova',
-    'Progresso',
-    'Cruzeiro',
-    'Cerrado',
-    'Serrana',
-    'Brasil Sul',
-    'Vale Verde',
-    'Primavera',
-    'Rota Norte',
-    'Pontal',
-    'Sol Nascente',
-    'Ideal',
-    'Fortaleza',
-    'Avenida',
-  ];
+  const names = rivalNames;
   const portfolio: {
     category: Category;
     recipe?: string;

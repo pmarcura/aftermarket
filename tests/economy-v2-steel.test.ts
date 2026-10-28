@@ -65,9 +65,13 @@ describe('mundo versão 2 · aço para bens e caminhões', () => {
     w.nextEconomicAt = NOW + ECONOMIC_INTERVAL;
     advance(w, NOW + ECONOMIC_INTERVAL * 12);
     const sold = w.consumptionHistory
-      .filter((h) => h.establishmentId === store.id && h.product === 'utensils')
+      .filter((h) => h.product === 'utensils')
       .reduce((n, h) => n + h.sold, 0);
-    expect(sold).toBeGreaterThan(0);
+    expect(
+      w.consumptionHistory.some(
+        (h) => h.establishmentId === store.id && h.product === 'utensils' && h.sold > 0,
+      ),
+    ).toBe(true);
     expect(collection.inventory.scrap).toBeCloseTo(sold * 0.005 * 0.3, 9);
   });
 

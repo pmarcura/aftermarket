@@ -1,5 +1,12 @@
 import { execute, quote, RuleError } from './engine';
-import { products, type Command, type ProductId, type World, type Establishment } from './model';
+import {
+  ECONOMIC_INTERVAL,
+  products,
+  type Command,
+  type ProductId,
+  type World,
+  type Establishment,
+} from './model';
 import { institutional, publicReference, trainingQuote } from './competition';
 import {
   GAME_DAY,
@@ -11,6 +18,7 @@ import {
 import { operatingCosts, productionCharges, marketView } from './metrics';
 import { arrears, freeCash, recoveryQuote, outstandingLoans } from './design';
 import { emitDecisionTrace, hasDecisionTrace, withDecisionSource } from './decision-trace';
+import { dealershipMarkup, vehicleModels, type VehicleModel } from './catalog';
 
 export const botCapabilities = [
   'production',
@@ -24,6 +32,7 @@ export const botCapabilities = [
   'recovery',
   'reserved-orders',
   'installation',
+  'fleet',
 ] as const;
 export function botRecoveryPlan(w: World, e: Establishment, at: number) {
   const r = w.season.config.recipes.find((r) => r.id === e.specialization),
@@ -132,6 +141,70 @@ export function runBotDirector(w: World, at: number) {
     }
   };
   const bots = w.companies.filter((c) => c.bot && !institutional(c.id));
+  // Versão 2: frota como mercadoria. Conta as rodadas com a frota toda ocupada; uma vez por dia
+  // desmonta o que passou da vida útil e compra um caminhão se a frota ficou ocupada a maior parte do dia.
+  const fleetDecision = (c: World['companies'][number]) => {
+    const fleet = w.vehicles.filter((v) => v.companyId === c.id);
+    if (fleet.length && fleet.every((v) => v.status !== 'available'))
+      c.fleetBusyRounds = (c.fleetBusyRounds ?? 0) + 1;
+    if (at - (c.lastFleetAt ?? w.season.startedAt) < GAME_DAY) return;
+    const busy = c.fleetBusyRounds ?? 0;
+    c.lastFleetAt = at;
+    c.fleetBusyRounds = 0;
+    for (const v of fleet)
+      if (
+        v.status === 'available' &&
+        v.model &&
+        (v.odometerKm ?? 0) >= vehicleModels[v.model].lifeKm &&
+        w.establishments.some((e) => e.companyId === c.id && e.propertyId === v.propertyId)
+      )
+        act(
+          c.id,
+          { type: 'scrapVehicle', vehicleId: v.id },
+          `Desmontou ${v.name} no fim da vida útil`,
+        );
+    const units = w.establishments.filter((e) => e.companyId === c.id);
+    const cap = units.reduce((n, e) => n + (e.category === 'logistics' ? 10 : 2), 0);
+    const rounds = GAME_DAY / ECONOMIC_INTERVAL;
+    if (
+      !units.length ||
+      busy < rounds * 0.66 ||
+      w.vehicles.filter((v) => v.companyId === c.id).length >= cap
+    )
+      return;
+    const heavy = fleet.filter((v) => v.model === 'truckHeavy').length,
+      light = fleet.filter((v) => v.model === 'truckLight').length;
+    const model: VehicleModel =
+      units.every((e) => e.category === 'retail') ||
+      (units.some((e) => e.category === 'logistics') && heavy >= 2 * (light + 1))
+        ? 'truckLight'
+        : 'truckHeavy';
+    const dealer = Math.round(w.season.config.basePrices[model] * dealershipMarkup);
+    const offer = w.offers
+      .filter((o) => o.product === model && o.price < dealer)
+      .map((o) => ({ o, seller: w.establishments.find((e) => e.id === o.establishmentId)! }))
+      .filter(
+        ({ seller }) =>
+          seller.enabled && seller.companyId !== c.id && (seller.inventory[model] ?? 0) >= 1,
+      )
+      .sort((a, b) => a.o.price - b.o.price)[0];
+    const price = offer?.o.price ?? dealer;
+    const reserve = units.reduce((n, e) => n + operatingCosts(w, e).total, 0) * 15;
+    if (freeCash(w, c.id) < price + reserve) {
+      trace(
+        c.id,
+        'fleet-cash',
+        'A frota ficou ocupada, mas o caixa não cobre o caminhão e a reserva de 15 dias.',
+        'buyVehicle',
+      );
+      return;
+    }
+    act(
+      c.id,
+      { type: 'buyVehicle', model, ...(offer ? { sellerEstablishmentId: offer.seller.id } : {}) },
+      `Comprou ${vehicleModels[model].label.toLowerCase()} ${offer ? 'de ' + offer.seller.name : 'importado'}`,
+    );
+  };
   for (const o of w.orders.filter((o) => o.status === 'pending' && o.deadline > at)) {
     if (!o.sellerId) {
       const candidates = w.establishments
@@ -280,6 +353,7 @@ export function runBotDirector(w: World, at: number) {
   }
   for (const c of bots) {
     c.behaviorVersion = 2;
+    if (w.season.config.economyVersion) fleetDecision(c);
     for (const e of w.establishments.filter((e) => e.companyId === c.id && e.installed === false)) {
       if (
         act(

@@ -23,6 +23,7 @@ import {
 } from './competition';
 import { runSupplyPolicies, validateSupplyPolicy } from './supply';
 import { runBotDirector } from './director';
+import { purchasedInputs } from './opening-v2';
 import {
   emitDecisionTrace,
   hasDecisionTrace,
@@ -52,6 +53,7 @@ import {
 } from './operations';
 import { dealershipMarkup, scrapRecovery, vehicleModels } from './catalog';
 import {
+  dailyDemand,
   householdDemand,
   marketView,
   operatingCosts,
@@ -1312,9 +1314,15 @@ function executeCommand(w: World, actor: string, command: Command, now: number):
     }
 
     case 'buyVehicle': {
-      const depot = w.establishments.find(
-        (x) => x.companyId === actor && (x.category === 'logistics' || x.category === 'warehouse'),
-      );
+      const depot =
+        w.establishments.find(
+          (x) =>
+            x.companyId === actor && (x.category === 'logistics' || x.category === 'warehouse'),
+        ) ??
+        // Versão 2: fazenda, mina, indústria ou loja também têm pátio para o próprio caminhão.
+        (w.season.config.economyVersion
+          ? w.establishments.find((x) => x.companyId === actor)
+          : undefined);
       ensure(depot, 'Adquira uma propriedade logística ou um armazém para receber o veículo.');
       if (!w.season.config.economyVersion) {
         ensure(
@@ -1631,11 +1639,34 @@ function economicTick(w: World, at: number) {
     loan.nextDueAt = loan.createdAt + (days + 1) * GAME_DAY;
   }
   regionalizeTreasury(w, at);
+  if (w.season.config.economyVersion) publicSpending(w, at);
   openInfrastructure(w, at);
   runSupplyPolicies(w, at);
   runAutomations(w, at);
   runBotDirector(w, at);
   recordMarket(w, at);
+}
+
+// Versão 2: o governo devolve às famílias o que arrecada (servidores, aposentadorias, benefícios),
+// guardando por estado a reserva das compras públicas. Sem isso o dinheiro se acumula nos tesouros
+// e o orçamento das famílias seca em poucas semanas.
+export const publicSpendingRules = { dailyShare: 0.3, reservePerState: 150000000 };
+function publicSpending(w: World, at: number) {
+  const share = 1 - (1 - publicSpendingRules.dailyShare) ** (ECONOMIC_INTERVAL / GAME_DAY);
+  for (const c of w.companies.filter((c) => c.id.startsWith('treasury:'))) {
+    const free = treasuryAvailable(w, c.id.slice(9)) - publicSpendingRules.reservePerState;
+    const amount = Math.floor(free * share);
+    if (amount > 0)
+      transfer(
+        w,
+        c.id,
+        'consumers',
+        amount,
+        'Gasto público com famílias · servidores e benefícios',
+        'budget',
+        at,
+      );
+  }
 }
 
 function fulfillPublicContract(
@@ -1940,6 +1971,7 @@ function runAutomations(w: World, at: number) {
         product,
       );
   };
+  const demandCache: Partial<Record<ProductId, number>> = {};
   if (tracing)
     for (const e of w.establishments) {
       if (e.automation && !e.enabled)
@@ -1994,8 +2026,20 @@ function runAutomations(w: World, at: number) {
       const producers = w.establishments.filter(
         (x) => x.enabled && !x.mothballed && x.specialization === r.id,
       ).length;
-      const target =
-        outputProduct === 'oil'
+      const v2Target = () => {
+        // Versão 2: três dias da procura do mundo por produtor, mais o prazo do próprio lote.
+        const daily = (demandCache[outputProduct] ??= dailyDemand(w, outputProduct));
+        return Math.max(
+          r.output[outputProduct]! * (e.automationCycles ?? 1) * 2,
+          (daily / Math.max(1, producers)) * (3 + r.duration / GAME_DAY),
+          ...w.infrastructure
+            .filter((c) => c.status === 'open' && c.product === outputProduct)
+            .map((c) => c.quantity),
+        );
+      };
+      const target = w.season.config.economyVersion
+        ? v2Target()
+        : outputProduct === 'oil'
           ? Math.max(600, (marketView(w, 'oil').householdDemand * 3) / Math.max(1, producers))
           : e.category === 'industry'
             ? Math.max(
@@ -2078,11 +2122,19 @@ function runAutomations(w: World, at: number) {
         );
     }
   }
-  for (const e of w.establishments.filter((e) => e.enabled && company(w, e.companyId).bot))
+  for (const e of w.establishments.filter((e) => e.enabled && company(w, e.companyId).bot)) {
+    const recipe = w.season.config.recipes.find((r) => r.id === e.specialization);
+    // Versão 2: insumos comprados para a própria receita não voltam à venda.
+    const keep = new Set<string>(
+      w.season.config.economyVersion && recipe
+        ? purchasedInputs(w, recipe).map((x) => x.product)
+        : [],
+    );
     for (const [id, quantity] of Object.entries(e.inventory) as [ProductId, number][]) {
       if (
         quantity <= 0 ||
-        e.category === 'retail' ||
+        keep.has(id) ||
+        (e.category === 'retail' && !(w.season.config.economyVersion && id === 'scrap')) ||
         (e.category === 'industry' && ['soy', 'iron', 'coal'].includes(id))
       )
         continue;
@@ -2096,6 +2148,7 @@ function runAutomations(w: World, at: number) {
       if (offer) offer.price = price;
       else w.offers.push({ id: randomUUID(), establishmentId: e.id, product: id, price });
     }
+  }
   for (const contract of w.infrastructure.filter((c) => c.status === 'open' && !c.biddingEndsAt)) {
     const candidates = w.establishments
       .filter(

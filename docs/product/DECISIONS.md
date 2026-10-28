@@ -94,3 +94,26 @@ O Pedro aprovou a proposta 1 das cadeias, incluindo sucata já, carne depois do 
 ### D-030 · Concessionária de caminhões importados (27/10/2026)
 
 O Pedro aprovou manter uma concessionária institucional que vende caminhões importados 30% acima do preço alvo da montadora. Evita que o mundo trave sem montadora, funciona como teto de preço para quem monta caminhões e o pagamento sai da economia para o tesouro.
+
+### D-031 · Abertura e ciclo do dinheiro no mundo versão 2 (28/10/2026)
+
+Decisões de rotina da fatia 8, reversíveis e válidas só no mundo versão 2:
+
+- **Gasto público com as famílias:** cada tesouro estadual devolve aos consumidores 30% ao dia do saldo livre acima de R$ 1,5 milhão, reservado para obras. Sem isso, as famílias gastavam R$ 654 mil por dia e recebiam R$ 208 mil em salários, e o dinheiro se acumulava nos tesouros até travar o varejo no dia 25. O dinheiro continua se conservando.
+- **Rivais da abertura:** 30 empresas cobrindo as 13 especialidades com linhas, equipamento, rebanho e sementes pagos ao tesouro. O capital sai do orçamento dos consumidores. Os bots cobrem de 60% a 90% das linhas da calculadora; o restante fica para os jogadores.
+- **Lojas-bot por população:** vão às cidades ainda sem loja, da mais populosa para a menor, com equipe para 60% da procura local. São Paulo tem cerca de 60% da procura e estava sem loja.
+- **Caminhão em qualquer unidade própria:** sem transportadora ou armazém, o caminhão comprado fica no pátio de qualquer unidade da empresa. As três transportadoras-bot ganham pátio próprio.
+- **Compra em dias de uso e teto de frete:** os bots repõem insumos para 3 dias de consumo e não aceitam frete acima de 30% do preço do item. Carga pequena espera juntar volume.
+
+### Ideia em avaliação · Genética de cultivares (Pedro, 28/10/2026)
+
+O Pedro propôs um sistema de genética a partir de uma pesquisa sobre a cana. O produtor compra uma pequena quantidade de mudas de alta tecnologia no viveiro e as multiplica numa área própria. Depois replanta com a própria cana por anos e só volta a comprar para trocar de variedade, para limpar o canavial de doenças ou para expandir a área de uma vez.
+
+O motor já cobre a parte de replantar com a própria cana: a colheita devolve 110% da muda. Ainda faltam:
+
+- variedades com atributos (produtividade, resistência, uso de água);
+- viveiro licenciado vendendo genética melhor;
+- perda gradual de produtividade a cada corte (cultura semiperene);
+- doença que obriga a renovar o plantio.
+
+Recomendação: avaliar depois do playtest 1. A ideia cria escolhas reais, mas acrescenta estado por talhão e exige equilíbrio próprio. Antes disso, o playtest precisa provar que as cadeias atuais fecham.

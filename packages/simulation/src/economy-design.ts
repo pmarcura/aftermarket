@@ -48,7 +48,7 @@ export const designWorld = {
   wholesaleMargin: 0.04,
   government: { steelTonnesPerDay: 16 },
   // Compras de caminhão na semana de playtest: frota crescendo; só uma parte repõe caminhões aposentados.
-  fleet: { heavyPerDay: 0.8, lightPerDay: 0.8, replacementShare: 0.25, scrapShare: 0.9 },
+  fleet: { heavyPerDay: 0.8, lightPerDay: 0.2, replacementShare: 0.25, scrapShare: 0.9 }, // leve: 4/dia no mundo de 500 bots (D-041)
   urbanScrapShare: 0.3, // parte da massa de utensílios que volta como sucata pela coleta
   retail: {
     unitsPerWorkerDay: 600,

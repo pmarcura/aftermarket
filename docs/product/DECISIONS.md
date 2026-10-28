@@ -205,15 +205,16 @@ Calibração dos utensílios com ~500 bots. Decisões de rotina:
 - **Alternativa não feita:** atacar o aço caro, aumentando a produção das usinas. Fica para quando a cadeia do metal estiver mais perto da referência.
 - **Equipamento:** a calculadora fixa o payback em 35 dias para toda linha; o equipamento sobe com o lucro, então o preço maior não encarece o retorno. Verificado em 28/10 (a suspeita inicial estava errada).
 
-### D-041 · Caminhão leve: demanda limitada pela regra de compra (28/10/2026)
+### D-041 · Caminhão leve: referência ajustada à procura real (28/10/2026)
 
-Fechamento da calibração. Caminhão leve segue no prejuízo (−R$ 16 mil por dia, média de duas sementes) e não se resolve com preço.
+Fechamento da calibração. Caminhão leve estava no prejuízo (−R$ 16 mil por dia) porque o projeto previa 8 linhas, e o mundo compra ~4 por dia.
 
-- **Diagnóstico:** a regra de compra de frota só escolhe caminhão leve para empresa que só tem lojas, ou para transportadora com pelo menos duas pesadas para cada leve. Na prática, o mundo pede ~4 caminhões leves por dia contra 8 linhas de projeto. As 6 unidades têm 20 operários e 12 mil m² cada e trabalham a ~22% da capacidade.
-- **Testado e descartado: preço do leve de 0,5 para 0,6 da faixa.** O resultado piorou (−R$ 16 mil para −R$ 66 mil por dia), porque a compra de leves caiu. Revertido; nada foi commitado.
-- **Não é defeito de equipamento:** toda linha da calculadora tem payback de 35 dias. O equipamento sobe junto com o lucro por design, então um preço maior não encarece o retorno.
-- **Decisão pendente do Pedro:** ou o leve é menos demandado de propósito (então a referência de 8 linhas deve cair e a unidade ser dimensionada para ~4), ou a regra de compra precisa permitir que mais bots comprem leve. A primeira é mais simples e não mexe no comportamento da frota.
-- **Efeito no resto:** nenhum relevante; cobertura da procura e aço ao governo ficam iguais.
+- **Diagnóstico:** a regra de compra de frota só escolhe caminhão leve para empresa que só tem lojas, ou para transportadora com pelo menos duas pesadas para cada leve. As 6 unidades trabalhavam a ~22% da capacidade, com 20 operários e 12 mil m² cada.
+- **Testado e descartado: preço do leve de 0,5 para 0,6 da faixa.** Piorou (−R$ 66 mil por dia), porque a compra caiu.
+- **Mudança:** a necessidade de caminhão leve da calculadora cai de 0,8 para 0,2 por dia (de 8 para 2 linhas no mundo de 500 bots). A regra de compra não muda.
+- **Resultado (escala 20, 2 sementes, últimos 10 de 20 dias):** caminhão leve de −R$ 16 mil para −R$ 2 mil por dia; linhas observadas de 1,8 para 1,4 contra referência de 2,0; compras de leve de 3,5 para 4,1 por dia. Cobertura e aço ao governo sem mudança relevante.
+- **Ruído:** utensílios e ração variaram entre as duas rodadas (utensílios de +84 mil para +38 mil; ração de +9 mil para −51 mil), no intervalo que já vimos com código idêntico.
+- **Equipamento:** a suspeita inicial estava errada. Toda linha da calculadora tem payback de 35 dias; o equipamento sobe com o lucro por design.
 
 ### Ideia em avaliação · Genética de cultivares (Pedro, 28/10/2026)
 

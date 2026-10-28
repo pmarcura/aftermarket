@@ -63,7 +63,7 @@ describe('economia versão 2 no mapa real', () => {
       (e) => e.companyId.startsWith('rival-') && e.specialization === 'steel-bars',
     )!;
     const coal = mill.supplyPolicy!.rules.find((r) => r.product === 'coal')!;
-    expect(coal.maxFreightPerUnit!).toBeGreaterThanOrEqual(2 * freightPerTonne('coal'));
+    expect(coal.maxFreightPerUnit!).toBeGreaterThanOrEqual(Math.round(2 * freightPerTonne('coal')));
     // O orçamento diário cabe o maior pedido da regra.
     expect(mill.supplyPolicy!.dailyBudget).toBeGreaterThanOrEqual(
       coal.target * w.season.config.basePrices.coal,

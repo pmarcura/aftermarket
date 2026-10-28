@@ -1,5 +1,5 @@
 import type { World, Property, Establishment, Category, Position } from './model';
-import { ECONOMIC_INTERVAL, products, recipes, type ProductId } from './model';
+import { ECONOMIC_INTERVAL, legacyProducts, products, recipes, type ProductId } from './model';
 import { createSeasonConfig } from './calibration';
 import { operatingCosts, recordMarket } from './metrics';
 import { initializeOperations } from './operations';
@@ -292,10 +292,9 @@ export function createWorld(now = Date.now()): World {
       name: 'Temporada local',
       startedAt: now,
       config: createSeasonConfig(
-        Object.fromEntries(Object.entries(products).map(([id, p]) => [id, p.basePrice])) as Record<
-          ProductId,
-          number
-        >,
+        Object.fromEntries(
+          Object.entries(legacyProducts).map(([id, p]) => [id, p.basePrice]),
+        ) as Record<ProductId, number>,
         recipes,
       ),
     },

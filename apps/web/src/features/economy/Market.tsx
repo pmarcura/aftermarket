@@ -11,7 +11,11 @@ import {
 import { useGame, cr, num, CategoryIcon } from '../../lib/game';
 import { PageHeading, Panel, Select, Badge, Rows, Empty, Modal, Tabs } from '../../components/ui';
 import { ProductAnalysisModal } from '../../components/ProductAnalysis';
-import { products, type ProductId } from '../../../../../packages/simulation/src/model';
+import {
+  products,
+  type ProductId,
+  seasonProducts,
+} from '../../../../../packages/simulation/src/model';
 import { quote } from '../../../../../packages/simulation/src/engine';
 import { useRoute } from '../../lib/routing';
 import '../../economy.css';
@@ -160,11 +164,13 @@ export function MarketPage() {
             }}
           >
             <option value="">Mercadoria (opcional)</option>
-            {Object.entries(products).map(([id, p]) => (
-              <option value={id} key={id}>
-                {p.name}
-              </option>
-            ))}
+            {seasonProducts(world)
+              .map((id) => [id, products[id]] as const)
+              .map(([id, p]) => (
+                <option value={id} key={id}>
+                  {p.name}
+                </option>
+              ))}
           </Select>
           <Select label="Ordenar ofertas" value={sort} onChange={(e) => setSort(e.target.value)}>
             <option value="">Ordenação (opcional)</option>

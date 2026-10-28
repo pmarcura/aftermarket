@@ -11,6 +11,7 @@ import {
   type Position,
   type ProductId,
   type Shipment,
+  seasonProducts,
 } from '../../../../packages/simulation/src/model';
 import { regions } from '../../../../packages/world/src/regions';
 import { createMapStyle } from '../lib/map-style';
@@ -252,7 +253,7 @@ export function WorldMap({
     if (layers.demand) {
       const values = regions.map((r) => ({
         r,
-        amount: (Object.keys(products) as ProductId[]).reduce(
+        amount: seasonProducts(world).reduce(
           (n, id) => n + marketView(world, id, r.id).demand * world.season.config.basePrices[id],
           0,
         ),
@@ -451,9 +452,7 @@ export function WorldMap({
       .map((r) => {
         const rows = economic.product
           ? [marketView(world, economic.product, r.id, economic.radiusKm)]
-          : (Object.keys(products) as ProductId[]).map((id) =>
-              marketView(world, id, r.id, economic.radiusKm),
-            );
+          : seasonProducts(world).map((id) => marketView(world, id, r.id, economic.radiusKm));
         const value =
           economic.metric === 'price'
             ? rows[0].price

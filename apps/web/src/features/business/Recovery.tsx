@@ -16,6 +16,7 @@ import {
   products,
   type ProductId,
   type Command,
+  seasonProducts,
 } from '../../../../../packages/simulation/src/model';
 
 export function Recovery() {
@@ -319,11 +320,13 @@ export function Recovery() {
             onChange={(e) => setHhiProduct(e.target.value)}
           >
             <option value="">Item (opcional) · faturamento agregado</option>
-            {Object.entries(products).map(([id, p]) => (
-              <option key={id} value={id}>
-                {p.name}
-              </option>
-            ))}
+            {seasonProducts(world)
+              .map((id) => [id, products[id]] as const)
+              .map(([id, p]) => (
+                <option key={id} value={id}>
+                  {p.name}
+                </option>
+              ))}
           </Select>
           <p className="analysis-caption">
             A concentração usa o item escolhido no piloto inteiro. Sem item, o índice compara

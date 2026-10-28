@@ -1,4 +1,4 @@
-import { products, type World, type ProductId } from './model';
+import { type World, type ProductId, seasonProducts } from './model';
 import { GAME_DAY, treasuryAvailable } from './operations';
 
 export const designRules = {
@@ -71,7 +71,7 @@ export function initializeDesign(w: World, at = w.updatedAt) {
         })),
       };
   }
-  for (const id of Object.keys(products) as ProductId[])
+  for (const id of seasonProducts(w))
     w.publicBenchmarks[id] ??= {
       price: w.season.config.basePrices[id],
       at,
@@ -150,7 +150,7 @@ export function recoveryQuote(w: World, actor: string, state: string, amount: nu
 }
 export function updatePublicBenchmarks(w: World, at: number) {
   initializeDesign(w, at);
-  const dueProducts = (Object.keys(products) as ProductId[]).filter(
+  const dueProducts = seasonProducts(w).filter(
     (id) => at - w.publicBenchmarks![id]!.at >= GAME_DAY,
   );
   if (!dueProducts.length) return;

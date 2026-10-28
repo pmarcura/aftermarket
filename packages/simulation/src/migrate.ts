@@ -1,5 +1,12 @@
 import { createSeasonConfig } from './calibration';
-import { products, recipes, ECONOMIC_INTERVAL, type World, type ProductId } from './model';
+import {
+  legacyProducts,
+  products,
+  recipes,
+  ECONOMIC_INTERVAL,
+  type World,
+  type ProductId,
+} from './model';
 import { calibrateProperty } from './seed';
 import { operatingCosts, recordMarket } from './metrics';
 import { initializeOperations } from './operations';
@@ -56,10 +63,9 @@ export function migrateWorld(input: unknown, now = Date.now()): { world: World; 
     name: 'Temporada local',
     startedAt: now,
     config: createSeasonConfig(
-      Object.fromEntries(Object.entries(products).map(([id, p]) => [id, p.basePrice])) as Record<
-        ProductId,
-        number
-      >,
+      Object.fromEntries(
+        Object.entries(legacyProducts).map(([id, p]) => [id, p.basePrice]),
+      ) as Record<ProductId, number>,
       recipes,
     ),
   };

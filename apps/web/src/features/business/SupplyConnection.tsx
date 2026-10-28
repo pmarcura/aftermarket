@@ -7,6 +7,7 @@ import {
   products,
   type ProductId,
   type SupplyPolicy,
+  seasonProducts,
 } from '../../../../../packages/simulation/src/model';
 import { defaultSupplyPolicy } from '../../../../../packages/simulation/src/competition';
 import { dailyNeed, supplyForecast } from '../../../../../packages/simulation/src/supply';
@@ -131,12 +132,14 @@ export function SupplyConnection({
         onChange={(e) => setProduct(e.target.value as ProductId)}
       >
         <option value="">Escolher mercadoria</option>
-        {Object.entries(products).map(([id, p]) => (
-          <option key={id} value={id}>
-            {p.name}
-            {origin ? ` · ${num(availableStock(world, origin, id as ProductId))} livres` : ''}
-          </option>
-        ))}
+        {seasonProducts(world)
+          .map((id) => [id, products[id]] as const)
+          .map(([id, p]) => (
+            <option key={id} value={id}>
+              {p.name}
+              {origin ? ` · ${num(availableStock(world, origin, id as ProductId))} livres` : ''}
+            </option>
+          ))}
       </Select>
       {origin && destination && product && (
         <>

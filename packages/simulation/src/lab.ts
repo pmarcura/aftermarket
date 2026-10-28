@@ -2,7 +2,7 @@ import type { SeasonConfig } from './calibration';
 import { arrears, economyHealth, outstandingLoans } from './design';
 import { advance } from './engine';
 import { marketView, withAppendOnlyMarketLedger } from './metrics';
-import { products, TIME_SCALE, type ProductId, type World } from './model';
+import { products, TIME_SCALE, type ProductId, type World, seasonProducts } from './model';
 import { GAME_DAY, treasuryReserved } from './operations';
 import { createScenario, type ScenarioName } from './scenarios';
 import { withDecisionTrace } from './decision-trace';
@@ -317,7 +317,7 @@ function snapshot(
   // Same product unit within each market; company grouping prevents counting branches as competitors.
   const salesByProduct = new Map<ProductId, Map<string, number>>();
   const flow = new Map(
-    (Object.keys(products) as ProductId[]).map((id) => [
+    seasonProducts(world).map((id) => [
       id,
       {
         produced: 0,
@@ -372,7 +372,7 @@ function snapshot(
         world.consumptionHistory.length >= 20000 &&
         (world.consumptionHistory[0]?.at ?? since) > since,
     },
-    items: (Object.keys(products) as ProductId[]).map((id) => {
+    items: seasonProducts(world).map((id) => {
       const market = marketView(world, id);
       const sales = [...(salesByProduct.get(id)?.values() ?? [])];
       const total = sales.reduce((sum, value) => sum + value, 0);
@@ -557,7 +557,7 @@ export function runLab(input: Partial<LabOptions> = {}, hooks: LabHooks = {}): L
     throw new Error('Receita alvo não existe no cenário.');
   const experiment = applyLabOpening(world, options);
   const openingPhysical = Object.fromEntries(
-    (Object.keys(products) as ProductId[]).map((id) => [
+    seasonProducts(world).map((id) => [
       id,
       world.establishments.reduce((sum, e) => sum + (e.inventory[id] ?? 0), 0),
     ]),

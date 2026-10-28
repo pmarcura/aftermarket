@@ -423,6 +423,12 @@ export function execute(w: World, actor: string, command: Command, now = Date.no
 
 function executeCommand(w: World, actor: string, command: Command, now: number): void {
   company(w, actor);
+  // Mundos da versão 1 não têm os itens novos do catálogo: a temporada define os produtos.
+  const product = (command as { product?: string }).product;
+  ensure(
+    product === undefined || product in w.season.config.basePrices,
+    'Esta mercadoria não existe nesta temporada.',
+  );
   switch (command.type) {
     case 'installBusiness': {
       const e = owned(w, command.establishmentId, actor),

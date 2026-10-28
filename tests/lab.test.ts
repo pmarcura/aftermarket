@@ -9,9 +9,8 @@ import {
 import { createScenario } from '../packages/simulation/src/scenarios';
 import { advance } from '../packages/simulation/src/engine';
 import {
-  products,
+  seasonProducts,
   type MarketSample,
-  type ProductId,
   type World,
 } from '../packages/simulation/src/model';
 import { GAME_DAY } from '../packages/simulation/src/operations';
@@ -20,7 +19,7 @@ import { regions } from '../packages/world/src/regions';
 // Query oracle: mirrors the previous recording contract only in the test.
 function queriedSamples(world: World, at: number): MarketSample[] {
   const result: MarketSample[] = [];
-  for (const product of Object.keys(products) as ProductId[])
+  for (const product of seasonProducts(world))
     for (const regionId of [
       '',
       ...regions.map((region) => region.id),
@@ -62,7 +61,7 @@ describe('laboratório headless', () => {
     const world = createScenario(at);
     const assertQueries = () => {
       const oracle = structuredClone(world);
-      for (const product of Object.keys(products) as ProductId[])
+      for (const product of seasonProducts(world))
         for (const scope of ['', regions[0].id, 'state:SP', 'state:MG', 'unknown', 'state:unknown'])
           expect(marketView(world, product, scope)).toEqual(marketView(oracle, product, scope));
     };

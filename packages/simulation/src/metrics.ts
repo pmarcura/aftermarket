@@ -1,10 +1,10 @@
 import {
-  products,
   type ProductId,
   type World,
   type Property,
   type Establishment,
   type Position,
+  seasonProducts,
 } from './model';
 import { regions } from '../../world/src/regions';
 import { distanceKm } from './geometry';
@@ -281,7 +281,7 @@ export function recordMarket(w: World, at: number) {
   // Tick-local aggregation: recording a history sample does not need retail/demand
   // calculations or a full ledger scan for every product × geographical scope.
   // marketView remains the query contract; no cache survives a mutation of the world.
-  const productIds = Object.keys(products) as ProductId[];
+  const productIds = seasonProducts(w);
   const scopeIds = [
     '',
     ...regions.map((region) => region.id),

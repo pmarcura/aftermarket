@@ -1,4 +1,5 @@
-import type { Category, ProductId, Recipe } from './model';
+import type { Category, LegacyProductId, ProductId, Recipe } from './model';
+import { designItems } from './catalog';
 import { competitionRules } from './competition';
 import { designRules } from './design';
 import { regions } from '../../world/src/regions';
@@ -58,10 +59,15 @@ export const monthlyConsumption: Partial<Record<ProductId, number>> = {
   sugar: 0.2,
   milk: 8,
 };
-export const priceReferences: Record<
-  ProductId,
-  { low: number; high: number; note: string; source: string; date: string; level: string }
-> = {
+type PriceReference = {
+  low: number;
+  high: number;
+  note: string;
+  source: string;
+  date: string;
+  level: string;
+};
+const legacyPriceReferences: Record<LegacyProductId, PriceReference> = {
   iron: {
     low: 35000,
     high: 65000,
@@ -143,6 +149,39 @@ export const priceReferences: Record<
     date: '2026-10-26',
     level: 'Varejo · 1 litro',
   },
+};
+// Itens da versão 2: faixas do catálogo da economia alvo (D-029).
+export const priceReferences: Record<ProductId, PriceReference> = {
+  ...legacyPriceReferences,
+  ...(Object.fromEntries(
+    (
+      [
+        'scrap',
+        'utensils',
+        'truckHeavy',
+        'truckLight',
+        'soySeed',
+        'feed',
+        'cow',
+        'riceSeed',
+        'beanSeed',
+        'caneSeedling',
+      ] as const
+    ).map((id) => [
+      id,
+      {
+        low: designItems[id].band[0],
+        high: designItems[id].band[1],
+        note: 'Faixa do catálogo da economia alvo.',
+        source: 'docs/product/ECONOMIA-ALVO.md',
+        date: '2026-10-27',
+        level:
+          designItems[id].bandSource === 'real'
+            ? 'Referência real · estimativa'
+            : 'Parâmetro de jogo',
+      },
+    ]),
+  ) as Record<Exclude<ProductId, LegacyProductId>, PriceReference>),
 };
 export const economicSources = [
   {

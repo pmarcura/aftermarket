@@ -1,6 +1,6 @@
 # Etapa B · Levar a economia alvo ao motor
 
-Plano de 27/10/2026. Base: proposta aprovada (D-028, D-029), números em [`ECONOMIA-ALVO`](../../../docs/product/ECONOMIA-ALVO.md) e fonte única em `packages/simulation/src/economy-design.ts`.
+Plano de 27/10/2026. Base: proposta aprovada (D-028, D-029), números em [`ECONOMIA-ALVO`](../../../docs/product/ECONOMIA-ALVO.md) ; itens e receitas em `packages/simulation/src/catalog.ts`.
 
 ## Resultado jogável
 
@@ -27,9 +27,9 @@ Cada fatia termina com build, testes e commit próprio.
 | 9   | Interface                | Telas de frota (registrar caminhão, vender sucata), rebanho e itens novos; ícones simples                                                                          | Fluxos principais testados no navegador desktop                             |
 | 10  | Prova                    | 90 dias, várias sementes aleatórias: margem por cadeia, estoque parado, empresas quebradas, concentração por produto                                               | Critérios da ECONOMIA-ALVO dentro das faixas, ou desvios explicados         |
 
-## Decisão em aberto para o Pedro
+## Decisão do Pedro (D-030)
 
-**Importação de caminhões como válvula de segurança.** Se ninguém montar caminhões, ninguém consegue frota e o mundo trava. Proposta: manter uma concessionária institucional que vende caminhões importados 30% mais caros que o preço alvo. Ela funciona como teto de preço para a montadora e o dinheiro sai da economia.
+**Importação de caminhões como válvula de segurança, aprovada.** Se ninguém montar caminhões, ninguém consegue frota e o mundo trava. Por isso fica uma concessionária institucional que vende caminhões importados 30% mais caros que o preço alvo. Ela funciona como teto de preço para a montadora e o dinheiro sai da economia.
 
 ## Riscos
 

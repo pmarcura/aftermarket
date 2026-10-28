@@ -1,6 +1,6 @@
 # Economia alvo · etapa B
 
-Números da proposta 1 aprovada pelo Pedro em 27/10/2026 (D-029). A fonte única é [`packages/simulation/src/economy-design.ts`](../../packages/simulation/src/economy-design.ts); este documento resume. Para ver tudo: `npm run economy:design`. O teste `tests/economy-design.test.ts` falha se alguma regra de balanceamento quebrar.
+Números da proposta 1 aprovada pelo Pedro em 27/10/2026 (D-029). Itens e receitas ficam em [`packages/simulation/src/catalog.ts`](../../packages/simulation/src/catalog.ts), lido pelo motor e pela calculadora [`economy-design.ts`](../../packages/simulation/src/economy-design.ts); este documento resume. Para ver tudo: `npm run economy:design`. O teste `tests/economy-design.test.ts` falha se alguma regra de balanceamento quebrar.
 
 Ainda **não** está no motor. O jogo atual segue o que descreve [ECONOMIA-HOJE](ECONOMIA-HOJE.md).
 

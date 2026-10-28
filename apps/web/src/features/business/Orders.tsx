@@ -8,6 +8,7 @@ import {
   type ProductId,
   type PurchaseOrder,
   type OrderProposal,
+  seasonProducts,
 } from '../../../../../packages/simulation/src/model';
 import { quote } from '../../../../../packages/simulation/src/engine';
 import { GAME_DAY, availableStock } from '../../../../../packages/simulation/src/operations';
@@ -321,11 +322,13 @@ export function Orders({ establishment: e }: { establishment?: Establishment }) 
             onChange={(ev) => setProduct(ev.target.value)}
           >
             <option value="">Escolher mercadoria</option>
-            {Object.entries(products).map(([id, p]) => (
-              <option key={id} value={id}>
-                {p.name}
-              </option>
-            ))}
+            {seasonProducts(world)
+              .map((id) => [id, products[id]] as const)
+              .map(([id, p]) => (
+                <option key={id} value={id}>
+                  {p.name}
+                </option>
+              ))}
           </Select>
           <label className="field">
             Quantidade

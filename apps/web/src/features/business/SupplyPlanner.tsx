@@ -9,6 +9,7 @@ import {
   products,
   type Establishment,
   type ProductId,
+  seasonProducts,
 } from '../../../../../packages/simulation/src/model';
 import { defaultSupplyPolicy } from '../../../../../packages/simulation/src/competition';
 import { supplyForecast, supplyProjection } from '../../../../../packages/simulation/src/supply';
@@ -138,7 +139,8 @@ export function SupplyPlanner({ establishment: e }: { establishment: Establishme
             onChange={(ev) => setAdd(ev.target.value)}
           >
             <option value="">Escolher mercadoria</option>
-            {Object.entries(products)
+            {seasonProducts(world)
+              .map((id) => [id, products[id]] as const)
               .filter(([id]) => !policy.rules.some((r) => r.product === id))
               .map(([id, p]) => (
                 <option key={id} value={id}>

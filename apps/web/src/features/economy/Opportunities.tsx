@@ -5,7 +5,11 @@ import { Badge, Empty, Modal, PageHeading, Panel, Select, Tabs } from '../../com
 import { WorldMap } from '../../components/WorldMap';
 import { ProductAnalysisModal } from '../../components/ProductAnalysis';
 import { EconomicChart } from '../../components/EconomicChart';
-import { products, type ProductId } from '../../../../../packages/simulation/src/model';
+import {
+  products,
+  type ProductId,
+  seasonProducts,
+} from '../../../../../packages/simulation/src/model';
 import { marketView, seasonPrice } from '../../../../../packages/simulation/src/metrics';
 import { regions } from '../../../../../packages/world/src/regions';
 import '../../economy.css';
@@ -28,8 +32,7 @@ export function OpportunitiesPage() {
   const scope = region || (state ? `state:${state}` : '');
   const radiusKm = Math.min(1000, Math.max(1, Number(radius) || 120));
   const rows = useMemo(
-    () =>
-      (Object.keys(products) as ProductId[]).map((id) => marketView(world, id, scope, radiusKm)),
+    () => seasonProducts(world).map((id) => marketView(world, id, scope, radiusKm)),
     [world.revision, scope, radiusKm],
   );
   const visible = rows.filter(
@@ -131,7 +134,8 @@ export function OpportunitiesPage() {
             onChange={(e) => setProduct(e.target.value)}
           >
             <option value="">Mercadoria (opcional)</option>
-            {Object.entries(products)
+            {seasonProducts(world)
+              .map((id) => [id, products[id]] as const)
               .filter(([, p]) => !category || p.category === category)
               .map(([id, p]) => (
                 <option key={id} value={id}>
@@ -322,7 +326,7 @@ export function OpportunitiesPage() {
           <div>
             <h2>Mercadorias da temporada</h2>
             <p>
-              {visible.length} de {Object.keys(products).length} itens · preços por unidade
+              {visible.length} de {seasonProducts(world).length} itens · preços por unidade
               comercial
             </p>
           </div>

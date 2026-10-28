@@ -1,6 +1,22 @@
 export type Category = 'retail' | 'industry' | 'farm' | 'mine' | 'warehouse' | 'logistics';
-export type ProductId =
+import { designItems, itemCategory, referencePrice } from './catalog';
+
+// Produtos da economia original; mundos da versão 2 somam os itens novos do catálogo.
+export type LegacyProductId =
   'iron' | 'coal' | 'steel' | 'soy' | 'soymeal' | 'oil' | 'rice' | 'beans' | 'sugar' | 'milk';
+export const newProductIds = [
+  'scrap',
+  'utensils',
+  'truckHeavy',
+  'truckLight',
+  'soySeed',
+  'feed',
+  'cow',
+  'riceSeed',
+  'beanSeed',
+  'caneSeedling',
+] as const;
+export type ProductId = LegacyProductId | (typeof newProductIds)[number];
 export type Position = [number, number];
 export interface Company {
   id: string;
@@ -387,17 +403,15 @@ export interface Recipe {
 }
 export const TIME_SCALE = 120;
 export const ECONOMIC_INTERVAL = 60_000; // duas horas virtuais por minuto real
-export const products: Record<
-  ProductId,
-  {
-    name: string;
-    category: string;
-    unit: string;
-    massT: number;
-    volumeM3: number;
-    basePrice: number;
-  }
-> = {
+export interface ProductInfo {
+  name: string;
+  category: string;
+  unit: string;
+  massT: number;
+  volumeM3: number;
+  basePrice: number;
+}
+export const legacyProducts: Record<LegacyProductId, ProductInfo> = {
   iron: {
     name: 'Minério de ferro',
     category: 'Matérias-primas',
@@ -479,6 +493,25 @@ export const products: Record<
     basePrice: 549,
   },
 };
+export const products: Record<ProductId, ProductInfo> = {
+  ...legacyProducts,
+  ...(Object.fromEntries(
+    newProductIds.map((id) => [
+      id,
+      {
+        name: designItems[id].name,
+        category: itemCategory[id],
+        unit: designItems[id].unit,
+        massT: designItems[id].massKg / 1000,
+        volumeM3: designItems[id].volumeM3,
+        basePrice: referencePrice(id),
+      },
+    ]),
+  ) as Record<(typeof newProductIds)[number], ProductInfo>),
+};
+// Produtos existentes na temporada deste mundo (a configuração congelada define o conjunto).
+export const seasonProducts = (w: Pick<World, 'season'>) =>
+  Object.keys(w.season.config.basePrices) as ProductId[];
 export const recipes: Recipe[] = [
   {
     id: 'steel-bars',

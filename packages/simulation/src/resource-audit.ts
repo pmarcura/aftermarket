@@ -1,4 +1,11 @@
-import { ECONOMIC_INTERVAL, products, TIME_SCALE, type ProductId, type World } from './model';
+import {
+  ECONOMIC_INTERVAL,
+  products,
+  TIME_SCALE,
+  type ProductId,
+  type World,
+  seasonProducts,
+} from './model';
 import { householdProducts, infrastructurePrograms } from './channels';
 import { GAME_DAY, availableStock, productionCapacity } from './operations';
 import { operatingCosts, productionCharges } from './metrics';
@@ -20,7 +27,6 @@ const defaultPolicy: AuditPolicy = {
   household: householdProducts,
   programs: infrastructurePrograms,
 };
-const ids = Object.keys(products) as ProductId[];
 const entries = (q: Partial<Record<ProductId, number>>) =>
   Object.entries(q) as [ProductId, number][];
 const positive = (n: number) => Number.isFinite(n) && n > 0;
@@ -28,6 +34,7 @@ const nonnegative = (n: number) => Number.isFinite(n) && n >= 0;
 
 /** Leitura pura. Não avança tempo, não consulta rede e não cria estoque nem dinheiro. */
 export function auditResources(w: World, policy: AuditPolicy = defaultPolicy) {
+  const ids = seasonProducts(w);
   const cfg = w.season.config;
   const issues: ResourceIssue[] = [];
   const add = (

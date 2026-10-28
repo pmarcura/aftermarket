@@ -343,3 +343,94 @@ summary:focus-visible {
   display: block;
   margin-top: 4px;
 }
+
+/* Primeiros passos: botão no menu lateral e lista de etapas conferidas pelo estado do mundo. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.first-steps-button {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: calc(100% - 16px);
+  margin: 0 8px 18px;
+  padding: 10px;
+  border: 1px solid #c9a35a66;
+  border-radius: 8px;
+  background: #c9a35a14;
+  color: #e9d3a4;
+  text-align: left;
+  cursor: pointer;
+}
+.first-steps-button:hover,
+.first-steps-button:focus-visible {
+  background: #c9a35a26;
+}
+.first-steps-button > span {
+  flex: 1;
+  min-width: 0;
+}
+.first-steps-button strong {
+  display: block;
+  font-size: 12px;
+}
+.first-steps-button small {
+  display: block;
+  margin: 2px 0 6px;
+  font-size: 10px;
+  color: #b7c7ce;
+}
+.collapsed .first-steps-button {
+  width: auto;
+  justify-content: center;
+}
+.first-steps {
+  list-style: none;
+  margin: 18px 0 0;
+  padding: 0;
+}
+.first-steps li {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+  color: #839fac;
+  font-size: 13px;
+}
+.first-steps li:last-child {
+  border: 0;
+}
+.first-steps li > i {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid #4e6876;
+}
+.first-steps li.done {
+  color: #9fc9b5;
+}
+.first-steps li.done > i {
+  background: #68bd9a33;
+  border-color: #68bd9a;
+}
+.first-steps li.current {
+  color: #e9f0f3;
+}
+.first-steps li.current > i {
+  border-color: #c9a35a;
+  color: #c9a35a;
+}
+.first-steps li p {
+  margin: 6px 0 10px;
+  color: #b3c7d2;
+  font-size: 12px;
+  line-height: 1.5;
+}

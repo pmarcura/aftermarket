@@ -1,3 +1,4 @@
+import { FirstSteps } from './components/FirstSteps';
 import { NotificationCenter } from './components/NotificationCenter';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import {
@@ -348,6 +349,7 @@ function Shell() {
           ))}
         </nav>
         <div className="sidebar-bottom">
+          <FirstSteps />
           <div className="world-status">
             <i />
             <div>

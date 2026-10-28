@@ -15,7 +15,11 @@ import { Installation } from './Installation';
 export function Workforce({ establishment: e }: { establishment: Establishment }) {
   const { world, run, pending } = useGame(),
     now = useClock();
-  const [employees, setEmployees] = useState(String(e.employees)),
+  // Unidade recém-instalada: sugere a equipe do perfil da especialidade para todas as linhas.
+  const suggested = world.season.config.operations.profiles[e.specialization ?? '']?.workers;
+  const [employees, setEmployees] = useState(
+      String(e.employees === 0 && suggested ? suggested * (e.equipmentLines ?? 1) : e.employees),
+    ),
     [confirm, setConfirm] = useState(false);
   const p = world.properties.find((p) => p.id === e.propertyId)!,
     labor = laborMarket(world, p),

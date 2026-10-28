@@ -24,6 +24,8 @@ export function Installation({
     perLine = equipmentCostFor(world, e.category, recipe?.id),
     price = Math.max(0, lines - current) * perLine,
     workers = profile ? profile.workers * lines : e.category === 'retail' ? 6 : 4;
+  // Sem especialidade escolhida, custo e equipe ainda não existem: não mostrar o valor padrão.
+  const pick = recipes.length > 0 && !recipe ? 'Escolha a especialidade' : undefined;
   const valid = lines > current && lines <= maximum && (recipes.length === 0 || Boolean(recipe)),
     daily = operatingCosts(world, { ...e, installed: true, employees: workers, mothballed: false }),
     labor = laborMarket(world, p);
@@ -70,25 +72,33 @@ export function Installation({
       </label>
       <Rows
         rows={[
-          { label: 'Área disponível', value: `${num(p.area)} m²` },
+          {
+            label: 'Área disponível',
+            value: pick
+              ? `${num(p.area)} m²`
+              : `${num(p.area)} m² · cabem ${num(maximum)} ${maximum === 1 ? 'linha' : 'linhas'}`,
+          },
           {
             label: 'Capacidade física após instalação',
             value: `${num(Math.floor(p.area * world.season.config.design.storageMassPerM2[e.category]))} t / ${num(Math.floor(p.area * world.season.config.design.storageVolumePerM2[e.category]))} m³`,
           },
           {
             label: 'Equipamento por linha',
-            value: cr(perLine),
+            value: pick ?? cr(perLine),
           },
-          { label: 'Investimento em equipamento agora', value: cr(price) },
+          { label: 'Investimento em equipamento agora', value: pick ?? cr(price) },
           {
             label: 'Equipe sugerida (não contratada automaticamente)',
-            value: `${workers} pessoas`,
+            value: pick ?? `${workers} pessoas`,
           },
           { label: 'Salário mensal por funcionário', value: cr(labor.monthlySalary) },
-          { label: 'Fixos estimados / dia com equipe sugerida', value: cr(daily.total) },
+          {
+            label: 'Fixos estimados / dia com equipe sugerida',
+            value: pick ?? cr(daily.total),
+          },
           {
             label: 'Capital de giro sugerido para sete dias, sem estoque/frete',
-            value: cr(daily.total * 7),
+            value: pick ?? cr(daily.total * 7),
           },
         ]}
       />

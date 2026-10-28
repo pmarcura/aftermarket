@@ -13,6 +13,7 @@ import {
 import { marketView, seasonPrice } from '../../../../../packages/simulation/src/metrics';
 import { regions } from '../../../../../packages/world/src/regions';
 import '../../economy.css';
+import { BusinessIdeas } from './BusinessIdeas';
 
 export function OpportunitiesPage() {
   const { world } = useGame();
@@ -96,6 +97,7 @@ export function OpportunitiesPage() {
         action={<Tabs values={['Simplificada', 'Avançada']} value={mode} onChange={setMode} />}
       />
       <div className="page-body economic-page">
+        {world.season.config.economyVersion ? <BusinessIdeas /> : null}
         <div className="season-strip">
           <span className="season-dot" />
           <strong>{world.season.name}</strong>

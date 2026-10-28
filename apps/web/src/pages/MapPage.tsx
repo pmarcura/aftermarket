@@ -19,7 +19,7 @@ import {
   ArrowUpRight,
 } from 'lucide-react';
 import { useGame, CategoryIcon, cr, num } from '../lib/game';
-import { freeCash } from '../../../../packages/simulation/src/design';
+import { equipmentCostFor, freeCash } from '../../../../packages/simulation/src/design';
 import { WorldMap, defaultLayers, type Layers } from '../components/WorldMap';
 import { Badge, Panel, PageHeading, Rows, Modal } from '../components/ui';
 import { categoryInfo, products } from '../../../../packages/simulation/src/model';
@@ -526,8 +526,20 @@ export function PurchasePage() {
             rows={[
               { label: 'Imóvel · pagamento agora', value: cr(p.price) },
               {
-                label: 'Equipamento inicial · etapa posterior',
-                value: cr(world.season.config.design.equipmentCost[p.category]),
+                label: 'Equipamento por linha · etapa posterior',
+                // Versão 2: o equipamento depende da atividade; mostra a faixa da categoria.
+                value: (() => {
+                  const costs = world.season.config.recipes
+                    .filter((r) => r.category === p.category && !r.alternativeOf)
+                    .map((r) => equipmentCostFor(world, p.category, r.id));
+                  const low = Math.min(...costs),
+                    high = Math.max(...costs);
+                  return !costs.length
+                    ? cr(world.season.config.design.equipmentCost[p.category])
+                    : low === high
+                      ? cr(low)
+                      : `${cr(low, 0)} a ${cr(high, 0)}`;
+                })(),
               },
               { label: 'Saldo após a compra', value: cr(balance - p.price) },
             ]}

@@ -145,7 +145,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [page, changePage] = useState<Page>(
     (localStorage.getItem('aftermarket.page') as Page) || 'map',
   );
-  const [selectedId, select] = useState<string | null>('hortolandia');
+  const [selectedId, select] = useState<string | null>(null);
   const [businessId, setBusinessId] = useState(
     () => localStorage.getItem('aftermarket.business') ?? 'e-industry',
   );

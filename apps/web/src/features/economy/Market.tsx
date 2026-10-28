@@ -8,7 +8,7 @@ import {
   X,
   ChartNoAxesCombined,
 } from 'lucide-react';
-import { useGame, cr, num, CategoryIcon } from '../../lib/game';
+import { useGame, cr, num, ProductIcon } from '../../lib/game';
 import { PageHeading, Panel, Select, Badge, Rows, Empty, Modal, Tabs } from '../../components/ui';
 import { ProductAnalysisModal } from '../../components/ProductAnalysis';
 import {
@@ -23,6 +23,12 @@ import { Orders } from '../business/Orders';
 import { BotActivity } from '../business/BotActivity';
 import { InfrastructureContracts } from '../business/InfrastructureContracts';
 import { inventoryQuality } from '../../../../../packages/simulation/src/operations';
+import { householdItems } from '../../../../../packages/simulation/src/channels';
+import {
+  householdDemand,
+  regionFor,
+  seasonPrice,
+} from '../../../../../packages/simulation/src/metrics';
 
 export function MarketPage() {
   const { world, actor, intent, navigate, openMarket, refresh } = useGame();
@@ -39,13 +45,42 @@ export function MarketPage() {
     [supplierType, setSupplierType] = useState(''),
     [search, setSearch] = useState(''),
     [mode, setMode] = useState('Simplificada'),
-    [analysis, setAnalysis] = useState<ProductId>();
+    [analysis, setAnalysis] = useState<ProductId>(),
+    [allProducts, setAllProducts] = useState(false);
   const destinations = world.establishments.filter((e) => e.companyId === actor),
     destination = destinations.find((e) => e.id === destinationId),
     selected = world.offers.find((o) => o.id === offerId),
     seller = world.establishments.find((e) => e.id === selected?.establishmentId),
     amount = Number(quantity),
     validAmount = Number.isInteger(amount) && amount > 0;
+  // Com um destino escolhido, o mercado mostra primeiro o que ele usa: a loja, o que as famílias
+  // compram; a produção, os insumos e o rebanho da receita.
+  const recipe = world.season.config.recipes.find((r) => r.id === destination?.specialization);
+  const relevant: Set<string> | undefined =
+    destination?.category === 'retail'
+      ? new Set(householdItems(world))
+      : recipe
+        ? new Set([...Object.keys(recipe.input), ...Object.keys(recipe.requires ?? {})])
+        : undefined;
+  const retailDestination = destination?.category === 'retail';
+  // Quantidade sugerida ao escolher uma oferta: 7 dias de procura da loja na cidade (compras
+  // menores pagam frete mínimo demais), ou 4 lotes
+  // do insumo da receita; nunca acima do estoque do fornecedor.
+  const suggest = (id: ProductId, stock: number) => {
+    if (!destination || !dp) return 0;
+    const stores = world.establishments.filter(
+      (x) =>
+        x.enabled &&
+        x.category === 'retail' &&
+        world.properties.find((p) => p.id === x.propertyId)!.city === dp.city,
+    ).length;
+    const want = retailDestination
+      ? (householdDemand(world, regionFor(dp.coordinates, dp.city).id, id) * 7) /
+        Math.max(1, stores)
+      : (recipe?.input[id] ?? recipe?.requires?.[id] ?? 0) * 4;
+    return Math.max(0, Math.min(Math.floor(stock), Math.ceil(want)));
+  };
+  const order = seasonProducts(world);
   const sp = world.properties.find((p) => p.id === seller?.propertyId),
     dp = world.properties.find((p) => p.id === destination?.propertyId);
   const loading = useRoute(sp?.id, dp?.id),
@@ -67,6 +102,7 @@ export function MarketPage() {
         e.enabled &&
         (!supplierId || e.id === supplierId) &&
         (!product || o.product === product) &&
+        (product || allProducts || !relevant || relevant.has(o.product)) &&
         (!sourceState || p.state === sourceState) &&
         (!supplierType || (supplierType === 'bot') === bot) &&
         (!search ||
@@ -79,7 +115,9 @@ export function MarketPage() {
     })
     .sort((a, b) => {
       if (sort === 'price' && product) return a.price - b.price;
-      if (!destination || !validAmount || !sort || (sort === 'total' && !product)) return 0;
+      // Sem ordenação escolhida: agrupa por mercadoria, mais barata primeiro.
+      if (!sort) return order.indexOf(a.product) - order.indexOf(b.product) || a.price - b.price;
+      if (!destination || !validAmount || (sort === 'total' && !product)) return 0;
       const qa = quote(world, a.establishmentId, destination.id, a.product, amount, 'transbrasil'),
         qb = quote(world, b.establishmentId, destination.id, b.product, amount, 'transbrasil');
       return sort === 'distance'
@@ -249,8 +287,20 @@ export function MarketPage() {
             <div className="market-grid">
               <Panel
                 title="Ofertas de fornecedores"
-                subtitle={`${offers.length} ofertas · valores na unidade de cada mercadoria`}
-                action={<Badge tone="blue">Estoque finito</Badge>}
+                subtitle={
+                  relevant && !product && !allProducts
+                    ? `${offers.length} ofertas do que ${destination!.name} usa · mais baratas primeiro`
+                    : `${offers.length} ofertas · valores na unidade de cada mercadoria`
+                }
+                action={
+                  relevant && !product ? (
+                    <button className="text-button" onClick={() => setAllProducts(!allProducts)}>
+                      {allProducts ? 'Só o que este destino usa' : 'Mostrar todos os produtos'}
+                    </button>
+                  ) : (
+                    <Badge tone="blue">Estoque finito</Badge>
+                  )
+                }
               >
                 {offers.length ? (
                   <div className="table-scroll">
@@ -261,6 +311,7 @@ export function MarketPage() {
                           <th>Origem</th>
                           <th className="numeric">Disponível</th>
                           <th className="numeric">Preço / unidade</th>
+                          {retailDestination && <th className="numeric">Na prateleira</th>}
                           {mode === 'Avançada' && (
                             <>
                               <th className="numeric">Distância</th>
@@ -292,7 +343,7 @@ export function MarketPage() {
                               <td>
                                 <div className="table-name">
                                   <i className="table-icon">
-                                    <CategoryIcon category={e.category} />
+                                    <ProductIcon product={o.product} size={17} />
                                   </i>
                                   <div>
                                     <strong>{e.name}</strong>
@@ -310,6 +361,22 @@ export function MarketPage() {
                               <td className="numeric">
                                 {cr(o.price)} / {products[o.product].unit}
                               </td>
+                              {retailDestination && (
+                                <td className="numeric">
+                                  {cr(seasonPrice(world, o.product))}
+                                  <small>
+                                    {seasonPrice(world, o.product) > o.price ? (
+                                      <Badge tone="green">
+                                        margem{' '}
+                                        {num((1 - o.price / seasonPrice(world, o.product)) * 100)}%
+                                        antes do frete
+                                      </Badge>
+                                    ) : (
+                                      <Badge tone="red">acima da prateleira</Badge>
+                                    )}
+                                  </small>
+                                </td>
+                              )}
                               {mode === 'Avançada' && (
                                 <>
                                   <td className="numeric">
@@ -328,7 +395,11 @@ export function MarketPage() {
                                 <button
                                   className={offerId === o.id ? 'primary' : 'secondary'}
                                   disabled={stock <= 0}
-                                  onClick={() => setOffer(o.id)}
+                                  onClick={() => {
+                                    setOffer(o.id);
+                                    const next = suggest(o.product, stock);
+                                    if (!validAmount && next > 0) setQuantity(String(next));
+                                  }}
                                 >
                                   {offerId === o.id
                                     ? 'Selecionado'
@@ -404,6 +475,21 @@ export function MarketPage() {
                         <strong>{cr(cost + freight.price)}</strong>
                       </div>
                     )}
+                    {freight && retailDestination && validAmount && (
+                      <p
+                        className={`small ${seasonPrice(world, selected.product) * amount > cost + freight.price ? 'positive' : 'warning-text'}`}
+                      >
+                        Vendendo tudo a {cr(seasonPrice(world, selected.product))} na prateleira, a
+                        loja recebe {cr(seasonPrice(world, selected.product) * amount)}: margem de{' '}
+                        {num(
+                          (1 -
+                            (cost + freight.price) /
+                              (seasonPrice(world, selected.product) * amount)) *
+                            100,
+                        )}
+                        % depois do frete, antes da equipe da loja.
+                      </p>
+                    )}
                     <button
                       className="primary full"
                       disabled={
@@ -425,7 +511,7 @@ export function MarketPage() {
                     >
                       <Truck size={16} /> Continuar para frete <ArrowRight size={14} />
                     </button>
-                    {validAmount && freight && !freight.compatible && (
+                    {validAmount && !loading && freight && !freight.compatible && (
                       <p className="warning-text small">
                         A frota disponível não comporta esta massa e volume. Compare outra
                         transportadora ou reduza a quantidade.

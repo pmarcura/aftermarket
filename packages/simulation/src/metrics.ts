@@ -238,7 +238,15 @@ function indexedTradeTotals(world: World, product: ProductId, scope: string): Tr
     }
     index.products.set(entry.product, scopesForProduct);
   }
-  return index.products.get(product)?.get(scope) ?? { tradedQuantity: 0, tradedValue: 0 };
+  const live = index.products.get(product)?.get(scope) ?? { tradedQuantity: 0, tradedValue: 0 };
+  // Registros arquivados no banco (history.ts) entram pelos totais guardados no mundo.
+  const archived = world.history?.trade[product]?.[scope];
+  return archived
+    ? {
+        tradedQuantity: archived.tradedQuantity + live.tradedQuantity,
+        tradedValue: archived.tradedValue + live.tradedValue,
+      }
+    : live;
 }
 
 export function marketView(w: World, product: ProductId, regionId = '', radiusKm = 120) {

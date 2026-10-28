@@ -53,8 +53,11 @@ export function worldView(w: World, actor: string): World {
   );
   const units = new Set(w.establishments.filter((e) => e.companyId === actor).map((e) => e.id));
   const properties = new Set(w.properties.filter((p) => p.ownerId === actor).map((p) => p.id));
-  const totals: WorldViewSummary['totals'] = {};
-  const retailByEstablishment: Record<string, number> = {};
+  // Começa pelos totais do histórico arquivado e soma o extrato que ainda está no mundo.
+  const totals: WorldViewSummary['totals'] = structuredClone(w.history?.companies[actor] ?? {});
+  const retailByEstablishment: Record<string, number> = Object.fromEntries(
+    Object.entries(w.history?.retail ?? {}).filter(([id]) => units.has(id)),
+  );
   for (const l of w.ledger) {
     if (l.to === actor) (totals[l.kind] ??= { in: 0, out: 0 }).in += l.amount;
     if (l.from === actor) (totals[l.kind] ??= { in: 0, out: 0 }).out += l.amount;

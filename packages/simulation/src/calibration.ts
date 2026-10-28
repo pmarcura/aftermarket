@@ -209,6 +209,8 @@ export interface SeasonConfig {
   government?: { lotScale: number; contractIntervalMs: number };
   // Versão 2: preço de referência na porta da fábrica; basePrices dos itens de consumo é o de loja.
   wholesalePrices?: Record<string, number>;
+  // Versão 2: o servidor arquiva extrato, lotes e entregas com mais de keepDays dias de jogo.
+  history?: { keepDays: number };
   design: typeof designRules & { equipmentByRecipe?: Record<string, number> };
   competition: typeof competitionRules;
   operations: typeof operationRules;

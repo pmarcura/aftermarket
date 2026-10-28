@@ -51,6 +51,7 @@ export function v2SeasonConfig(): SeasonConfig {
     v2Recipes(),
   );
   config.economyVersion = ECONOMY_V2;
+  config.history = { keepDays: 15 };
   config.wholesalePrices = Object.fromEntries(
     Object.entries(priceList()).map(([id, price]) => [id, Math.round(price)]),
   );

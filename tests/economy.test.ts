@@ -208,7 +208,8 @@ describe('transações SQLite e repetição de solicitações', () => {
   it('um erro desfaz integralmente a transação e não registra cobrança', () => {
     const store = createStore(':memory:');
     try {
-      const before = store.read();
+      // O servidor mantém o mundo vivo na memória: compara com uma cópia tirada antes.
+      const before = structuredClone(store.read());
       expect(() =>
         store.command('player', { ...trade, type: 'trade', quantity: 500 }, crypto.randomUUID()),
       ).toThrow();

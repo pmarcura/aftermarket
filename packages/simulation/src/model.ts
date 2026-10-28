@@ -246,6 +246,8 @@ export interface World {
   // Só no pacote enviado ao navegador (apps/server/src/view.ts): totais calculados no servidor
   // a partir do extrato completo, que não viaja inteiro.
   view?: WorldViewSummary;
+  // Totais do histórico arquivado no banco (history.ts); ausente enquanto nada foi arquivado.
+  history?: import('./history').HistoryBaseline;
 }
 export type Health = {
   all: number;

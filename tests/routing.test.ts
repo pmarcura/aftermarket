@@ -131,7 +131,8 @@ describe('roteamento autoritativo', () => {
         },
         crypto.randomUUID(),
       );
-      const before = store.read().shipments[0];
+      // Cópia: o servidor mantém o mundo vivo na memória.
+      const before = structuredClone(store.read().shipments[0]);
       store.route('ferrovale:industry', parseRoadRoute(response)!);
       const after = store.read().shipments[0];
       expect(shipmentRoute(store.read(), after)).toEqual(coordinates);

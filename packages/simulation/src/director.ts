@@ -1,7 +1,13 @@
 import { execute, quote, RuleError } from './engine';
 import { products, type Command, type ProductId, type World, type Establishment } from './model';
 import { institutional, publicReference, trainingQuote } from './competition';
-import { GAME_DAY, inventoryQuality, productionCapacity, productionQuality } from './operations';
+import {
+  GAME_DAY,
+  automationCyclesPerDay,
+  inventoryQuality,
+  productionCapacity,
+  productionQuality,
+} from './operations';
 import { operatingCosts, productionCharges, marketView } from './metrics';
 import { arrears, freeCash, recoveryQuote, outstandingLoans } from './design';
 import { emitDecisionTrace, hasDecisionTrace, withDecisionSource } from './decision-trace';
@@ -46,30 +52,39 @@ export function botRecoveryPlan(w: World, e: Establishment, at: number) {
     if (price === undefined) return;
     input += price * quantity;
   }
-  const outputProduct = Object.keys(r.output)[0] as ProductId,
-    quantity = r.output[outputProduct]!,
-    qualified = w.infrastructure.filter(
-      (c) => c.product === outputProduct && c.createdAt >= at - GAME_DAY * 14,
-    );
-  const publicPrice = qualified.length ? Math.min(...qualified.map((c) => c.unitPrice)) * 0.94 : 0;
-  const demand =
-    marketView(w, outputProduct).demand + qualified.reduce((n, c) => n + c.quantity, 0) / 14;
   const competitors = Math.max(
     1,
     w.establishments.filter(
       (x) => x.specialization === r.id && w.companies.find((c) => c.id === x.companyId)?.bot,
     ).length,
   );
-  const dailyQuantity = Math.min(
-    quantity * 12 * (e.automationCycles ?? 1),
-    (demand * 0.2) / competitors,
-  );
-  const marketPrice =
-    marketView(w, outputProduct).price ?? w.season.config.basePrices[outputProduct];
-  const price = publicPrice || marketPrice;
+  // Auditoria M02: ciclos limitados pela cadência executável e cada saída, coproduto incluso,
+  // limitada à sua própria fatia de demanda.
+  const cadence = automationCyclesPerDay(w, preview, r);
+  const sales = (Object.entries(r.output) as [ProductId, number][]).map(([id, quantity]) => {
+    const qualified = w.infrastructure.filter(
+      (c) => c.product === id && c.createdAt >= at - GAME_DAY * 14,
+    );
+    const view = marketView(w, id);
+    const publicPrice = qualified.length
+      ? Math.min(...qualified.map((c) => c.unitPrice)) * 0.94
+      : 0;
+    const demand = view.demand + qualified.reduce((n, c) => n + c.quantity, 0) / 14;
+    return {
+      quantity,
+      price: publicPrice || view.price || w.season.config.basePrices[id],
+      sellable: (demand * 0.2) / competitors,
+    };
+  });
+  const [main] = sales;
+  const cycles = Math.min(cadence, main.sellable / main.quantity);
   const perCycle = productionCharges(w, preview, r.id, 1).total + input;
-  const contribution = (price - perCycle / quantity) * dailyQuantity - fixed;
-  if (contribution <= fixed * 0.15 || dailyQuantity <= 0) return;
+  const revenue = sales.reduce(
+    (n, s) => n + s.price * Math.min(s.quantity * cycles, s.sellable),
+    0,
+  );
+  const contribution = revenue - perCycle * cycles - fixed;
+  if (contribution <= fixed * 0.15 || cycles <= 0) return;
   return {
     workers,
     fixed,

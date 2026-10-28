@@ -26,7 +26,7 @@ Cada etapa termina em algo que dá para ver ou jogar e tem um critério de "pron
 
 1. [x] **No papel, com o Pedro.** Proposta 1 aprovada (D-028, D-029): [`docs/economia-proposta.html`](../docs/economia-proposta.html).
 2. [x] **Números da proposta.** Calculadora `npm run economy:design` e resumo em [ECONOMIA-ALVO](../docs/product/ECONOMIA-ALVO.md); todas as verificações passam.
-3. [ ] **Corrigir as fórmulas** que enganam os bots (auditoria M02–M05 e M07).
+3. [x] **Corrigir as fórmulas** que enganam os bots (auditoria M02–M05 e M07), com provas de regressão.
 4. [ ] **Levar ao motor** os nove itens, as receitas, o rebanho e o caminhão como mercadoria, num mundo novo, nunca na season salva.
 5. [ ] **Provar no `/lab`:** 90 dias, várias sementes, margem por cadeia, estoque parado, empresas quebradas e concentração por produto.
 

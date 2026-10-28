@@ -18,19 +18,18 @@ O jogo roda localmente: mapa real de SP–MG, compra de imóveis, produção, es
 
 ## Furos conhecidos
 
-| Área        | Problema                                                                                      | Onde está o detalhe                                               |
-| ----------- | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| Economia    | Aço só tem o governo como comprador                                                           | [ECONOMIA-HOJE](../docs/product/ECONOMIA-HOJE.md)                 |
-| Economia    | Farelo sobra; quatro fazendas não pagam nem a folha                                           | idem                                                              |
-| Economia    | Semente não existe (planta-se o pacote de mercado); leite sem rebanho                         | idem                                                              |
-| Bots        | Três fórmulas erradas: leite, cadência do aço, demanda fracionária                            | [MATHEMATICS-AUDIT](../docs/product/MATHEMATICS-AUDIT.md) M02–M04 |
-| Desempenho  | Mundo salvo como um JSON único (63 MB), regravado a cada 2 s; navegador baixa tudo a cada 3 s | etapa C do roteiro                                                |
-| Multiplayer | Servidor só escuta `127.0.0.1`; perfis sem senha                                              | etapa D do roteiro                                                |
-| Interface   | Sem tutorial; loja com 10 abas                                                                | etapa E do roteiro                                                |
+| Área        | Problema                                                                                      | Onde está o detalhe                               |
+| ----------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| Economia    | Aço só tem o governo como comprador                                                           | [ECONOMIA-HOJE](../docs/product/ECONOMIA-HOJE.md) |
+| Economia    | Farelo sobra; quatro fazendas não pagam nem a folha                                           | idem                                              |
+| Economia    | Semente não existe (planta-se o pacote de mercado); leite sem rebanho                         | idem                                              |
+| Desempenho  | Mundo salvo como um JSON único (63 MB), regravado a cada 2 s; navegador baixa tudo a cada 3 s | etapa C do roteiro                                |
+| Multiplayer | Servidor só escuta `127.0.0.1`; perfis sem senha                                              | etapa D do roteiro                                |
+| Interface   | Sem tutorial; loja com 10 abas                                                                | etapa E do roteiro                                |
 
 ## Próximo passo
 
-Etapa **B**, passo 3: corrigir as fórmulas M02–M05 e M07 que enganam os bots. Depois, levar a economia alvo ao motor.
+Etapa **B**, passo 4: levar a economia alvo ao motor num mundo novo. As fórmulas M02–M05 e M07 que enganavam os bots foram corrigidas em 27/10 e têm provas de regressão no auditor e em `tests/formula-fixes.test.ts`.
 
 Decisões do Pedro em 27/10 (D-028, D-029): mundo semanal livre; realismo enxuto com cadeias completas; fechar metal e alimentos antes de crescer; aço vira caminhões e utensílios; sucata já; carne depois do playtest; relógio 1 h real = 6 h de jogo.
 

@@ -1,5 +1,5 @@
 import type { Category, Establishment, ProductId, Recipe, World } from './model';
-import { TIME_SCALE } from './model';
+import { ECONOMIC_INTERVAL, TIME_SCALE } from './model';
 
 // Parâmetros de jogo, copiados para a temporada. Não são estatísticas reais.
 export const operationRules = {
@@ -94,6 +94,20 @@ export function productionCapacity(w: World, e: Establishment, r: Recipe, cycles
             : 'Área limita as linhas',
   };
 }
+// Cadência da automação em regime (auditoria M03): o lote de c ciclos ocupa as linhas por
+// teto(c/l) durações e só recomeça na rodada econômica seguinte ao término.
+export function automationCyclesPerDay(
+  w: World,
+  e: Establishment,
+  r: Recipe,
+  batch = e.automationCycles ?? 1,
+) {
+  const { lines } = productionCapacity(w, e, r, batch);
+  if (!lines || batch <= 0) return 0;
+  const batchMs = r.duration * Math.ceil(batch / lines);
+  const period = ECONOMIC_INTERVAL * Math.ceil(batchMs / ECONOMIC_INTERVAL);
+  return (batch * GAME_DAY) / period;
+}
 export function productionQuality(w: World, e: Establishment, r: Recipe) {
   const site = w.properties.find((p) => p.id === e.propertyId)!;
   const input = Object.entries(r.input) as [ProductId, number][];
@@ -141,6 +155,7 @@ export function initializeOperations(w: World) {
   w.orders ??= [];
   w.infrastructure ??= [];
   w.consumptionHistory ??= [];
+  w.retailCarry ??= {};
   w.consumedMaterials ??= {};
   w.season.config.operations ??= structuredClone(operationRules);
   for (const [id, profile] of Object.entries(operationRules.profiles))

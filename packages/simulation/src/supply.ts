@@ -10,8 +10,8 @@ import {
 import { emitDecisionTrace, hasDecisionTrace, withDecisionSource } from './decision-trace';
 import {
   GAME_DAY,
+  automationCyclesPerDay,
   inventoryQuality,
-  productionCapacity,
   retailCapacity,
   availableStock,
 } from './operations';
@@ -233,13 +233,7 @@ export function supplyCandidates(
 }
 export function dailyNeed(w: World, e: Establishment, product: ProductId) {
   const recipe = w.season.config.recipes.find((r) => r.id === e.specialization);
-  if (recipe?.input[product]) {
-    const capacity = productionCapacity(w, e, recipe);
-    return (
-      recipe.input[product]! *
-      Math.min(12 * (e.automationCycles ?? 1), (capacity.lines * 86400000) / 120 / recipe.duration)
-    );
-  }
+  if (recipe?.input[product]) return recipe.input[product]! * automationCyclesPerDay(w, e, recipe);
   if (e.category === 'retail') {
     const p = w.properties.find((p) => p.id === e.propertyId)!;
     const stores = w.establishments.filter(
@@ -356,10 +350,7 @@ export function supplyForecast(w: World, e: Establishment, policy: SupplyPolicy)
     );
     contribution =
       (output - input - productionCharges(w, e, recipe.id, 1).total) *
-      Math.min(
-        12 * (e.automationCycles ?? 1),
-        (productionCapacity(w, e, recipe).lines * GAME_DAY) / recipe.duration,
-      );
+      automationCyclesPerDay(w, e, recipe);
   }
   const highFactor =
     e.category === 'retail'

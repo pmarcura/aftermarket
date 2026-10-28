@@ -216,6 +216,8 @@ export interface World {
   orders: PurchaseOrder[];
   infrastructure: InfrastructureContract[];
   consumptionHistory: ConsumptionSample[];
+  // Fração de demanda ainda não vendida por loja e produto; carregada entre rodadas (auditoria M04).
+  retailCarry?: Record<string, number>;
   consumedMaterials: Partial<Record<ProductId, number>>;
 }
 export interface PurchaseOrder {

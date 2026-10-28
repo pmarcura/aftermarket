@@ -1330,8 +1330,10 @@ function economicTick(w: World, at: number) {
   // Demanda do mundo: população representada na temporada, orçamento e preços internos.
   const retail = w.establishments.filter((e) => e.category === 'retail' && e.enabled);
   const cities = new Set(retail.map((e) => w.properties.find((p) => p.id === e.propertyId)!.city));
-  const remainingService = new Map(retail.map((e) => [e.id, retailCapacity(w, e)]));
   const calendar = gameCalendar(w, at);
+  const carry = (w.retailCarry ??= {});
+  // Primeiro a procura de cada loja e produto; depois a capacidade de atendimento é repartida.
+  const wanted: { e: Establishment; product: ProductId; regionId: string; desired: number }[] = [];
   for (const city of cities)
     for (const product of householdProducts) {
       const stores = retail.filter(
@@ -1350,50 +1352,75 @@ function economicTick(w: World, at: number) {
         (0.5 + inventoryQuality(e, product) / 100);
       const totalScore = stores.reduce((n, e) => n + score(e), 0);
       for (const e of stores) {
-        const desired = Math.max(
-          0,
-          Math.floor(((demand * score(e)) / totalScore) * Math.min(1.2, score(e))),
-        );
-        const quantity = Math.min(
-          e.inventory[product]!,
-          desired,
-          remainingService.get(e.id) ?? 0,
-          Math.floor(company(w, 'consumers').balance / e.prices[product]!),
-        );
-        w.consumptionHistory.push({
-          at,
-          establishmentId: e.id,
-          product,
-          desired,
-          sold: quantity,
-          weekday: calendar.weekday,
-          quality: inventoryQuality(e, product),
-        });
-        remainingService.set(e.id, (remainingService.get(e.id) ?? 0) - quantity);
-        if (!quantity) continue;
-        const amount = quantity * e.prices[product]!;
-        transfer(
-          w,
-          'consumers',
-          e.companyId,
-          amount,
-          `Varejo · ${e.name} · ${quantity} ${products[product].unit} de ${products[product].name}`,
-          'retail',
-          at,
-          e.id,
-          {
-            product,
-            quantity,
-            unitPrice: e.prices[product]!,
-            regionId: region.id,
-            channel: 'retail',
-          },
-        );
-        e.inventory[product]! -= quantity;
-        e.revenue += amount;
-        e.expenses += Math.round((e.unitCosts[product] ?? 0) * quantity);
+        // Auditoria M04: a fração que não forma uma unidade fica para a próxima rodada.
+        const key = `${e.id}:${product}`;
+        const exact =
+          ((demand * score(e)) / totalScore) * Math.min(1.2, score(e)) + (carry[key] ?? 0);
+        const desired = Math.max(0, Math.floor(exact));
+        carry[key] = Math.max(0, exact - desired);
+        wanted.push({ e, product, regionId: region.id, desired });
       }
     }
+  // Auditoria M05: sem capacidade para tudo, cada produto recebe parte proporcional à procura.
+  const service = new Map<string, number>();
+  for (const e of retail) {
+    const rows = wanted.filter((x) => x.e === e && x.desired > 0);
+    const asked = rows.reduce((n, x) => n + Math.min(x.desired, x.e.inventory[x.product]!), 0);
+    const capacity = retailCapacity(w, e);
+    if (asked <= capacity) {
+      for (const x of rows) service.set(`${e.id}:${x.product}`, x.desired);
+      continue;
+    }
+    const shares = rows.map((x) => {
+      const exact = (capacity * Math.min(x.desired, x.e.inventory[x.product]!)) / asked;
+      return { x, units: Math.floor(exact), rest: exact - Math.floor(exact) };
+    });
+    let left = capacity - shares.reduce((n, s) => n + s.units, 0);
+    for (const s of [...shares].sort(
+      (a, b) => b.rest - a.rest || a.x.product.localeCompare(b.x.product),
+    ))
+      if (left-- > 0) s.units++;
+    for (const s of shares) service.set(`${e.id}:${s.x.product}`, s.units);
+  }
+  for (const { e, product, regionId, desired } of wanted) {
+    const quantity = Math.min(
+      e.inventory[product]!,
+      desired,
+      service.get(`${e.id}:${product}`) ?? 0,
+      Math.floor(company(w, 'consumers').balance / e.prices[product]!),
+    );
+    w.consumptionHistory.push({
+      at,
+      establishmentId: e.id,
+      product,
+      desired,
+      sold: quantity,
+      weekday: calendar.weekday,
+      quality: inventoryQuality(e, product),
+    });
+    if (!quantity) continue;
+    const amount = quantity * e.prices[product]!;
+    transfer(
+      w,
+      'consumers',
+      e.companyId,
+      amount,
+      `Varejo · ${e.name} · ${quantity} ${products[product].unit} de ${products[product].name}`,
+      'retail',
+      at,
+      e.id,
+      {
+        product,
+        quantity,
+        unitPrice: e.prices[product]!,
+        regionId,
+        channel: 'retail',
+      },
+    );
+    e.inventory[product]! -= quantity;
+    e.revenue += amount;
+    e.expenses += Math.round((e.unitCosts[product] ?? 0) * quantity);
+  }
   // Pausar a produção não encerra contratos de trabalho nem manutenção.
   for (const e of w.establishments) {
     if (institutional(e.companyId)) continue;
@@ -1848,9 +1875,13 @@ function runAutomations(w: World, at: number) {
         continue;
       }
       const outputProduct = Object.keys(r.output)[0] as ProductId;
+      // Auditoria M07: três dias da demanda das famílias, repartidos entre os produtores ativos.
+      const producers = w.establishments.filter(
+        (x) => x.enabled && !x.mothballed && x.specialization === r.id,
+      ).length;
       const target =
         outputProduct === 'oil'
-          ? Math.max(600, marketView(w, 'oil').householdDemand * 3)
+          ? Math.max(600, (marketView(w, 'oil').householdDemand * 3) / Math.max(1, producers))
           : e.category === 'industry'
             ? Math.max(
                 64,

@@ -53,16 +53,20 @@ A diferença entre o melhor (aço) e o pior (arroz) é de mais de R$ 120 mil por
 4. **Semente inexistente.** Planta-se o pacote de mercado; as primeiras unidades aparecem na abertura do mundo. Leite não tem rebanho.
 5. **Massa que some.** No aço, 7 das 15 t de entrada desaparecem sem virar resíduo ou coproduto.
 
-## Contas erradas que enganam os bots
+## Contas dos bots corrigidas em 27/10
 
-| Código | O que acontece                                                                                                                                                    |
-| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| M02    | O bot calcula que a fazenda de leite rende +R$ 4.509/dia; respeitando o tempo de produção, rende −R$ 627/dia. Ele gasta caixa para reabrir uma operação inviável. |
-| M03    | A previsão de uma usina de aço anuncia 48 lotes/dia; a automação executa 30.                                                                                      |
-| M04    | Duas lojas iguais na mesma cidade podem vender zero cada uma, porque frações da demanda são arredondadas para baixo por loja.                                     |
-| M05    | A loja atende produtos na ordem da lista: o óleo consome toda a capacidade e o leite fica sem venda.                                                              |
-| M07    | Cada fábrica de óleo mira três dias da demanda **total** do mercado; com quatro fábricas, o estoque-alvo quadruplica.                                             |
+As cinco contas erradas que enganavam os bots foram corrigidas e viraram provas de regressão no [auditor](MATHEMATICS-AUDIT.md) e em `tests/formula-fixes.test.ts`.
+
+| Código | Antes                                                                                                                | Agora                                                                                                                              |
+| ------ | -------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| M02    | O bot calculava +R$ 4.509/dia para reabrir a fazenda de leite, que na verdade dá −R$ 627/dia, e gastava caixa nisso. | O planejador usa o ritmo real de produção e limita cada saída, coproduto incluso, à sua fatia de demanda. Ele recusa a reabertura. |
+| M03    | A previsão de uma usina de aço anunciava 48 lotes/dia; a automação executava 30.                                     | Previsão, reposição e demanda industrial usam a mesma conta da execução: 30.                                                       |
+| M04    | Duas lojas iguais na mesma cidade podiam vender zero, porque frações da demanda eram descartadas.                    | A fração fica guardada para a rodada seguinte. Em um dia, uma loja vende 13 e duas vendem 12 somadas.                              |
+| M05    | A loja atendia na ordem da lista: o óleo levava toda a capacidade e o leite ficava sem venda.                        | Sem capacidade para tudo, cada produto recebe parte proporcional à procura.                                                        |
+| M07    | Cada fábrica de óleo mirava três dias da demanda **total**; com quatro fábricas, o estoque-alvo quadruplicava.       | A meta é repartida entre as fábricas ativas.                                                                                       |
+
+Continuam abertos M01 (fazendas com prejuízo) e M06 (farelo sem destino). Os dois são de calibração e são resolvidos pela [economia alvo](ECONOMIA-ALVO.md).
 
 ## O que vem a seguir
 
-Etapa B do [roteiro](../../.planning/ROADMAP.md): redesenhar as cadeias no papel com o Pedro, corrigir M02–M05 e M07, ajustar receitas num mundo novo e provar no `/lab` com 90 dias de bots.
+Etapa B do [roteiro](../../.planning/ROADMAP.md): levar a [economia alvo](ECONOMIA-ALVO.md) ao motor num mundo novo e provar no `/lab` com 90 dias de bots.

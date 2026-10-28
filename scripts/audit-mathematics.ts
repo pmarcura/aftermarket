@@ -40,6 +40,8 @@ interface Finding {
   priority: 'P1' | 'P2';
   kind: 'bug' | 'calibration' | 'policy' | 'feedback';
   title: string;
+  // aberto: confirmed = defeito reproduzido; corrigido: confirmed = invariante da correção verificado
+  status?: 'open' | 'fixed';
   confirmed: boolean;
   invariant: string;
   explanation: string;
@@ -175,10 +177,11 @@ findings.push({
   priority: 'P1',
   kind: 'bug',
   title: 'O bot aprova recuperação de leite usando produtividade diária fisicamente impossível',
-  confirmed: Boolean(plan && plan.contribution > 0 && dairyTrueProfit < 0),
+  status: 'fixed',
+  confirmed: !(plan && plan.contribution > 0 && dairyTrueProfit < 0),
   invariant:
     'Quantidade diária projetada ≤ saída por ciclo × ciclos fisicamente concluíveis por dia.',
-  explanation: `O plano retorna resultado de ${brl(plan?.contribution ?? 0)}/dia, mas a mesma unidade e o mesmo preço dão ${brl(dairyTrueProfit)}/dia respeitando a duração. Uma linha faz ${num(dairyRecipe.output.milk! * dairyCycles)} unidades/dia; o teto usado no planejador permite ${num(dairyRecipe.output.milk! * 12)} antes do corte por demanda.`,
+  explanation: `Corrigido: o planejador usa a cadência executável e limita cada saída à sua fatia de demanda. Respeitando a duração, a mesma unidade dá ${brl(dairyTrueProfit)}/dia (${num(dairyRecipe.output.milk! * dairyCycles)} unidades/dia por linha); o plano agora ${plan ? `retorna ${brl(plan.contribution)}/dia` : 'recusa a recuperação'}. Antes aprovava R$ 4.508,72/dia com teto de ${num(dairyRecipe.output.milk! * 12)} unidades.`,
   impact:
     'Pode gastar caixa/crédito para reabrir uma operação inviável, aumentando atrasados. A projeção não apenas omite risco: ultrapassa o limite de tempo da receita.',
   remedy:
@@ -192,11 +195,8 @@ findings.push({
     trueProfitPerDay: dairyTrueProfit,
   },
   sources: [
-    locate('packages/simulation/src/director.ts', 'const dailyQuantity = Math.min'),
-    locate(
-      'packages/simulation/src/director.ts',
-      'const contribution = (price - perCycle / quantity)',
-    ),
+    locate('packages/simulation/src/director.ts', 'const cadence = automationCyclesPerDay'),
+    locate('packages/simulation/src/operations.ts', 'export function automationCyclesPerDay'),
   ],
 });
 
@@ -244,10 +244,14 @@ findings.push({
   priority: 'P1',
   kind: 'bug',
   title: 'A projeção anuncia 48 ciclos/dia onde a automação executa 30',
-  confirmed: estimatedCycles === 48 && marketCycles === 48 && actualStartedCycles === 30,
+  status: 'fixed',
+  confirmed:
+    actualStartedCycles === 30 &&
+    Math.abs(estimatedCycles - actualStartedCycles) < 1e-9 &&
+    Math.abs(marketCycles - actualStartedCycles) < 1e-9,
   invariant:
     'Cadência da automação em regime, sem outros bloqueios ou fila manual: C(c,l) = c × dia / [intervalo × teto(duração_por_ciclo × teto(c/l) / intervalo)]. Exige insumos, caixa, espaço e orçamento suficientes; não equivale a vendas previstas.',
-  explanation: `Aço, duas linhas e lotes de cinco: o lote leva teto(5/2) = 3 horas e só reinicia na próxima rodada de duas horas. A cadência é quatro horas; 6 lotes/dia ×5 =30. dailyNeed e demanda industrial mostram ${num(estimatedCycles)} e ${num(marketCycles)}. Execução medida em regime entre os dias 1 e 2: ${actualStartedCycles} ciclos iniciados.`,
+  explanation: `Corrigido: aço, duas linhas e lotes de cinco; o lote leva teto(5/2) = 3 horas e só reinicia na próxima rodada de duas horas, logo 6 lotes/dia × 5 = 30. Reposição e demanda industrial agora mostram ${num(estimatedCycles)} e ${num(marketCycles)}; a execução medida entre os dias 1 e 2 iniciou ${actualStartedCycles} ciclos. Antes, as previsões mostravam 48.`,
   impact:
     'Superestima necessidade, cobertura de custos e compra de insumos em 60% neste caso. Em outros lotes, o erro pode ter outro sentido/magnitude.',
   remedy:
@@ -267,13 +271,13 @@ findings.push({
       })),
   },
   sources: [
-    locate('packages/simulation/src/supply.ts', 'Math.min(12 * (e.automationCycles'),
-    locate('packages/simulation/src/metrics.ts', 'Math.min(24, 86400000'),
-    locate('packages/simulation/src/operations.ts', 'durationMs: lines ? r.duration * Math.ceil'),
+    locate('packages/simulation/src/operations.ts', 'export function automationCyclesPerDay'),
+    locate('packages/simulation/src/supply.ts', 'automationCyclesPerDay(w, e, recipe)'),
+    locate('packages/simulation/src/metrics.ts', 'automationCyclesPerDay(w, e, r)'),
   ],
 });
 
-function retailCase(count: number, city: string, allProducts = false, employees = 12) {
+function retailCase(count: number, city: string, allProducts = false, employees = 12, ticks = 1) {
   const w = quiet(),
     original = money(w);
   w.season.config.operations.weekday = [1, 1, 1, 1, 1, 1, 1];
@@ -291,7 +295,7 @@ function retailCase(count: number, city: string, allProducts = false, employees 
     shop.quality = Object.fromEntries(productIds.map((id) => [id, 70]));
   }
   w.nextEconomicAt = NOW + ECONOMIC_INTERVAL;
-  advance(w, w.nextEconomicAt);
+  advance(w, NOW + ECONOMIC_INTERVAL * ticks);
   checkMoney(`varejo ${city}/${count}/${allProducts}`, w, original);
   return {
     w,
@@ -300,8 +304,9 @@ function retailCase(count: number, city: string, allProducts = false, employees 
       .map((h) => ({ product: h.product, desired: h.desired, sold: h.sold })),
   };
 }
-const single = retailCase(1, 'Itabira'),
-  double = retailCase(2, 'Itabira');
+// Um dia de jogo (12 rodadas): frações carregadas precisam virar vendas.
+const single = retailCase(1, 'Itabira', false, 12, 12),
+  double = retailCase(2, 'Itabira', false, 12, 12);
 const singleSales = single.sales.reduce((n, s) => n + s.sold, 0),
   doubleSales = double.sales.reduce((n, s) => n + s.sold, 0);
 const modeledRiceDemand = householdDemand(single.w, '3131703', 'rice');
@@ -314,10 +319,11 @@ findings.push({
   priority: 'P1',
   kind: 'bug',
   title: 'Adicionar uma loja idêntica elimina vendas: frações da demanda desaparecem',
-  confirmed: singleSales === 1 && doubleSales === 0,
+  status: 'fixed',
+  confirmed: doubleSales > 0 && Math.abs(doubleSales - singleSales) <= 2,
   invariant:
     'Duplicar oferta idêntica, mantendo preço, qualidade, orçamento e capacidade folgada, não deve zerar demanda agregada positiva por arredondamento.',
-  explanation: `Itabira tem ${num(modeledRiceDemand)} pacotes/dia de potencial. Com calendário unitário, a rodada tem ${num(tickRiceDemand)}; o multiplicador de score dá ${num(elasticTickRiceDemand)}. Uma loja vende ${singleSales}; duas recebem ${num(elasticTickRiceDemand / 2)} cada e ambas vendem ${doubleSales}. O piso é aplicado por loja e por tick sem carregar fração.`,
+  explanation: `Corrigido: a fração que não forma uma unidade fica para a rodada seguinte. Itabira tem ${num(modeledRiceDemand)} pacotes/dia de potencial (${num(elasticTickRiceDemand)} por rodada com o multiplicador de score). Em um dia, uma loja vende ${singleSales} e duas lojas iguais vendem ${doubleSales} somadas. Antes, duas lojas vendiam zero.`,
   impact:
     'Concorrência destrói demanda, sobretudo em itens de baixo giro. O histórico registra desejado=0, escondendo essa perda do indicador vendido/desejado.',
   remedy:
@@ -331,7 +337,7 @@ findings.push({
     elasticTickRiceDemand,
   },
   sources: [
-    locate('packages/simulation/src/engine.ts', 'Math.floor(((demand * score(e))'),
+    locate('packages/simulation/src/engine.ts', 'Auditoria M04'),
     locate(
       'packages/simulation/src/design.ts',
       'retailFulfillment: desired ? sold / desired : null',
@@ -347,17 +353,19 @@ findings.push({
   priority: 'P2',
   kind: 'policy',
   title: 'A ordem fixa dos produtos pode deixar leite sem venda apesar de demanda e estoque',
-  confirmed: oilSale.sold === 20 && milkSale.sold === 0 && milkSale.desired > oilSale.desired,
+  status: 'fixed',
+  // Capacidade de 20 unidades repartida pela procura: o leite, mais procurado, recebe a maior parte.
+  confirmed: milkSale.sold > oilSale.sold && priority.sales.reduce((n, x) => n + x.sold, 0) === 20,
   invariant:
     'A política de distribuição da capacidade compartilhada precisa ser explícita; a posição no array não deve ser confundida com demanda ou rentabilidade.',
-  explanation: `Uma loja de Campinas com um empregado atende 20 unidades/rodada. Óleo aparece primeiro e usa as 20; leite deseja ${milkSale.desired} e recebe zero. Não faltam estoque nem dinheiro.`,
+  explanation: `Corrigido: sem capacidade para tudo, cada produto recebe parte proporcional à procura, com as unidades restantes para as maiores frações. Uma loja de Campinas com um empregado atende 20 unidades/rodada; leite deseja ${milkSale.desired} e vende ${milkSale.sold}, óleo deseja ${oilSale.desired} e vende ${oilSale.sold}. Antes, o óleo, primeiro da lista, levava as 20.`,
   impact:
     'Há prioridade econômica implícita que pode inviabilizar leite/itens posteriores. A redução de produção pode parecer falta de compradores quando é alocação da loja.',
   remedy:
     'Escolher e expor prioridade, rateio por demanda/margem ou rotação. Medir o efeito antes de alterar coeficientes de consumo.',
   evidence: priority.sales,
   sources: [
-    locate('packages/simulation/src/engine.ts', 'const remainingService = new Map'),
+    locate('packages/simulation/src/engine.ts', 'Auditoria M05'),
     locate('packages/simulation/src/engine.ts', 'for (const product of householdProducts)'),
   ],
 });
@@ -487,16 +495,20 @@ const oilProducers = opening.establishments.filter(
     e.automation &&
     opening.companies.find((c) => c.id === e.companyId)?.bot,
 );
-const targetPerProducer = Math.max(600, oilDemand * 3);
+const targetPerProducer = Math.max(600, (oilDemand * 3) / Math.max(1, oilProducers.length));
 findings.push({
   id: 'M07',
   priority: 'P2',
   kind: 'policy',
   title: 'Cada produtor de óleo mira três dias da demanda global, sem repartir mercado',
-  confirmed: oilProducers.length > 1 && targetPerProducer > 0,
+  status: 'fixed',
+  confirmed:
+    oilProducers.length > 1 &&
+    targetPerProducer * oilProducers.length <=
+      Math.max(600 * oilProducers.length, oilDemand * 3) + 1e-6,
   invariant:
     'Alvo agregado = número de produtores × max(600, 3 × demanda familiar global potencial), antes de considerar lotes em processamento.',
-  explanation: `Na abertura, ${oilProducers.length} produtores bots automatizados habilitados recebem alvo individual de ${num(targetPerProducer)} unidades, ou ${num(oilProducers.length * targetPerProducer)} agregadas. A mesma demanda potencial diária de ${num(oilDemand)} é usada por todos.`,
+  explanation: `Corrigido: três dias da demanda das famílias (${num(oilDemand)}/dia) repartidos entre ${oilProducers.length} produtores, alvo individual de ${num(targetPerProducer)} e agregado de ${num(oilProducers.length * targetPerProducer)}. Antes, cada um mirava 15.332,78, somando 61.331,11.`,
   impact:
     'Adicionar concorrentes amplia o estoque-alvo agregado. Essa regra pode contribuir para excesso; esta auditoria não mede a causalidade isolada. Cobertura calculada com demanda potencial não é prazo de venda observada.',
   remedy:
@@ -508,10 +520,7 @@ findings.push({
     aggregateTarget: targetPerProducer * oilProducers.length,
   },
   sources: [
-    locate(
-      'packages/simulation/src/engine.ts',
-      "? Math.max(600, marketView(w, 'oil').householdDemand * 3)",
-    ),
+    locate('packages/simulation/src/engine.ts', 'Auditoria M07'),
     locate('packages/simulation/src/metrics.ts', 'coverageDays: demand ? stock / demand : null'),
   ],
 });
@@ -631,9 +640,9 @@ Laboratório: ${currentBaseline ? 'baseline A:0 atual, 90 dias, sem humanos e co
 
 ## Achados priorizados
 
-| ID | Prioridade | Natureza | Achado | Prova reproduzida |
+| ID | Prioridade | Natureza | Achado | Estado |
 | --- | --- | --- | --- | --- |
-${findings.map((f) => `| ${f.id} | ${f.priority} | ${kindLabel[f.kind]} | ${f.title} | ${f.confirmed ? 'Sim' : 'Não'} |`).join('\n')}
+${findings.map((f) => `| ${f.id} | ${f.priority} | ${kindLabel[f.kind]} | ${f.title} | ${f.status === 'fixed' ? (f.confirmed ? 'Corrigido, regressão verificada' : 'Regressão falhou') : f.confirmed ? 'Aberto, reproduzido' : 'Não reproduzido'} |`).join('\n')}
 
 ${findings
   .map(

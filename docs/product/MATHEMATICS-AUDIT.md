@@ -1,26 +1,26 @@
 # Auditoria matemática · capacidade, demanda e sustentabilidade
 
-Gerado por `npm run mathematics:audit -- --write-doc`. Números simulados; dinheiro em centavos no JSON e reais neste documento. Cenários fixos de auditoria em 2026-10-30T12:00:00.000Z; geração em 2026-10-27T21:52:20.693Z. A fase 05 permanece parcial, sem aprovação de equilíbrio.
+Gerado por `npm run mathematics:audit -- --write-doc`. Números simulados; dinheiro em centavos no JSON e reais neste documento. Cenários fixos de auditoria em 2026-10-30T12:00:00.000Z; geração em 2026-10-28T00:11:55.245Z. A fase 05 permanece parcial, sem aprovação de equilíbrio.
 
 ## Escopo e validade
 
 Aberturas isoladas e leitura dos artefatos de /lab. Sem SQLite, store, API ou tick do jogador. Não altera o motor nem a season salva; fixtures isoladas controlam calendário, equipe, estoque e instalações.
 
-Fonte do motor: `52a839803fa761e109ad20fa341ecba118aab9d5b301422136c3db5749309a0a`. Auditor: `0913a5b3e5c53243249960bf4e1a25b104af35e6e3bfbec592ad1d44b068b689`. As fontes abaixo apontam para a versão auditada; conferir os hashes ao repetir. Executar o auditor reproduz os casos e atualiza somente os anexos. `--write-doc` também regenera este documento. Uma prova que deixe de reproduzir retorna erro; isso exige revisar o achado e não significa que corrigir o bug deva ser revertido. Não integra o gate de equilíbrio do jogo.
+Fonte do motor: `db891bb0368cf419ae5ae279a1fdcbe842ca4972ef62ff9ed15424c1dc957669`. Auditor: `c4f9f409aff5c67286c6b3d069d78a1ca4b1a45b0e02f8b44b899f6c63a2dea1`. As fontes abaixo apontam para a versão auditada; conferir os hashes ao repetir. Executar o auditor reproduz os casos e atualiza somente os anexos. `--write-doc` também regenera este documento. Uma prova que deixe de reproduzir retorna erro; isso exige revisar o achado e não significa que corrigir o bug deva ser revertido. Não integra o gate de equilíbrio do jogo.
 
-Laboratório: baseline A:0 atual, 90 dias, sem humanos e com rotas estimadas. A consulta reutiliza os artefatos de /lab; não substitui o A/B nem sua referência. Concentração/atrasados são observações, não diagnóstico causal de cada bot. Gates de candidatos não provam inação total. Séries são diárias e podem perder rupturas intradiárias; atendimento tem a janela de retenção registrada no JSON.
+Laboratório: baseline de 90 dias ausente ou desatualizado; não usar seus números como evidência atual. A consulta reutiliza os artefatos de /lab; não substitui o A/B nem sua referência. Concentração/atrasados são observações, não diagnóstico causal de cada bot. Gates de candidatos não provam inação total. Séries são diárias e podem perder rupturas intradiárias; atendimento tem a janela de retenção registrada no JSON.
 
 ## Achados priorizados
 
-| ID  | Prioridade | Natureza           | Achado                                                                                             | Prova reproduzida |
-| --- | ---------- | ------------------ | -------------------------------------------------------------------------------------------------- | ----------------- |
-| M01 | P1         | Calibração         | Quatro fazendas não cobrem nem a folha mínima aos preços de abertura, em qualquer número de linhas | Sim               |
-| M02 | P1         | Erro de fórmula    | O bot aprova recuperação de leite usando produtividade diária fisicamente impossível               | Sim               |
-| M03 | P1         | Erro de fórmula    | A projeção anuncia 48 ciclos/dia onde a automação executa 30                                       | Sim               |
-| M04 | P1         | Erro de fórmula    | Adicionar uma loja idêntica elimina vendas: frações da demanda desaparecem                         | Sim               |
-| M05 | P2         | Política implícita | A ordem fixa dos produtos pode deixar leite sem venda apesar de demanda e estoque                  | Sim               |
-| M06 | P1         | Calibração         | Óleo/farelo/leite não fecham proporções de absorção na hipótese apenas familiar                    | Sim               |
-| M07 | P2         | Política implícita | Cada produtor de óleo mira três dias da demanda global, sem repartir mercado                       | Sim               |
+| ID  | Prioridade | Natureza           | Achado                                                                                             | Estado                          |
+| --- | ---------- | ------------------ | -------------------------------------------------------------------------------------------------- | ------------------------------- |
+| M01 | P1         | Calibração         | Quatro fazendas não cobrem nem a folha mínima aos preços de abertura, em qualquer número de linhas | Aberto, reproduzido             |
+| M02 | P1         | Erro de fórmula    | O bot aprova recuperação de leite usando produtividade diária fisicamente impossível               | Corrigido, regressão verificada |
+| M03 | P1         | Erro de fórmula    | A projeção anuncia 48 ciclos/dia onde a automação executa 30                                       | Corrigido, regressão verificada |
+| M04 | P1         | Erro de fórmula    | Adicionar uma loja idêntica elimina vendas: frações da demanda desaparecem                         | Corrigido, regressão verificada |
+| M05 | P2         | Política implícita | A ordem fixa dos produtos pode deixar leite sem venda apesar de demanda e estoque                  | Corrigido, regressão verificada |
+| M06 | P1         | Calibração         | Óleo/farelo/leite não fecham proporções de absorção na hipótese apenas familiar                    | Aberto, reproduzido             |
+| M07 | P2         | Política implícita | Cada produtor de óleo mira três dias da demanda global, sem repartir mercado                       | Corrigido, regressão verificada |
 
 ## M01 · Quatro fazendas não cobrem nem a folha mínima aos preços de abertura, em qualquer número de linhas
 
@@ -32,37 +32,37 @@ Em SP, seis empregados custam R$ 960,96/dia de folha. Mesmo com entradas físic
 
 **Próxima ação:** Reconciliar preço de saída, rendimento, tempo e equipe por linha antes de ajustar demanda ou financiar os produtores. Comparar custo completo por unidade vendável, com e sem retenção de semente.
 
-Fontes: [packages/simulation/src/operations.ts:12](../../packages/simulation/src/operations.ts#L12), [packages/simulation/src/metrics.ts:56](../../packages/simulation/src/metrics.ts#L56), [packages/simulation/src/operations.ts:239](../../packages/simulation/src/operations.ts#L239).
+Fontes: [packages/simulation/src/operations.ts:12](../../packages/simulation/src/operations.ts#L12), [packages/simulation/src/metrics.ts:55](../../packages/simulation/src/metrics.ts#L55), [packages/simulation/src/operations.ts:254](../../packages/simulation/src/operations.ts#L254).
 
 ## M02 · O bot aprova recuperação de leite usando produtividade diária fisicamente impossível
 
 **Fórmula/invariante:** Quantidade diária projetada ≤ saída por ciclo × ciclos fisicamente concluíveis por dia.
 
-O plano retorna resultado de R$ 4.508,72/dia, mas a mesma unidade e o mesmo preço dão -R$ 626,58/dia respeitando a duração. Uma linha faz 300 unidades/dia; o teto usado no planejador permite 3.600 antes do corte por demanda.
+Corrigido: o planejador usa a cadência executável e limita cada saída à sua fatia de demanda. Respeitando a duração, a mesma unidade dá -R$ 626,58/dia (300 unidades/dia por linha); o plano agora recusa a recuperação. Antes aprovava R$ 4.508,72/dia com teto de 3.600 unidades.
 
 **Efeito:** Pode gastar caixa/crédito para reabrir uma operação inviável, aumentando atrasados. A projeção não apenas omite risco: ultrapassa o limite de tempo da receita.
 
 **Próxima ação:** Usar a capacidade de lote/tick/linhas compartilhada com a execução e avaliar caixa de ciclo, estoque inicial e todos os coprodutos separadamente.
 
-Fontes: [packages/simulation/src/director.ts:63](../../packages/simulation/src/director.ts#L63), [packages/simulation/src/director.ts:71](../../packages/simulation/src/director.ts#L71).
+Fontes: [packages/simulation/src/director.ts:63](../../packages/simulation/src/director.ts#L63), [packages/simulation/src/operations.ts:99](../../packages/simulation/src/operations.ts#L99).
 
 ## M03 · A projeção anuncia 48 ciclos/dia onde a automação executa 30
 
 **Fórmula/invariante:** Cadência da automação em regime, sem outros bloqueios ou fila manual: C(c,l) = c × dia / [intervalo × teto(duração_por_ciclo × teto(c/l) / intervalo)]. Exige insumos, caixa, espaço e orçamento suficientes; não equivale a vendas previstas.
 
-Aço, duas linhas e lotes de cinco: o lote leva teto(5/2) = 3 horas e só reinicia na próxima rodada de duas horas. A cadência é quatro horas; 6 lotes/dia ×5 =30. dailyNeed e demanda industrial mostram 48 e 48. Execução medida em regime entre os dias 1 e 2: 30 ciclos iniciados.
+Corrigido: aço, duas linhas e lotes de cinco; o lote leva teto(5/2) = 3 horas e só reinicia na próxima rodada de duas horas, logo 6 lotes/dia × 5 = 30. Reposição e demanda industrial agora mostram 30 e 30; a execução medida entre os dias 1 e 2 iniciou 30 ciclos. Antes, as previsões mostravam 48.
 
 **Efeito:** Superestima necessidade, cobertura de custos e compra de insumos em 60% neste caso. Em outros lotes, o erro pode ter outro sentido/magnitude.
 
 **Próxima ação:** Compartilhar o cálculo exato de cadência, incluindo os dois tetos e fila. Identificar previsão de início versus conclusão e horizonte de aquecimento.
 
-Fontes: [packages/simulation/src/supply.ts:240](../../packages/simulation/src/supply.ts#L240), [packages/simulation/src/metrics.ts:245](../../packages/simulation/src/metrics.ts#L245), [packages/simulation/src/operations.ts:84](../../packages/simulation/src/operations.ts#L84).
+Fontes: [packages/simulation/src/operations.ts:99](../../packages/simulation/src/operations.ts#L99), [packages/simulation/src/supply.ts:236](../../packages/simulation/src/supply.ts#L236), [packages/simulation/src/metrics.ts:243](../../packages/simulation/src/metrics.ts#L243).
 
 ## M04 · Adicionar uma loja idêntica elimina vendas: frações da demanda desaparecem
 
 **Fórmula/invariante:** Duplicar oferta idêntica, mantendo preço, qualidade, orçamento e capacidade folgada, não deve zerar demanda agregada positiva por arredondamento.
 
-Itabira tem 11,3343 pacotes/dia de potencial. Com calendário unitário, a rodada tem 0,9445; o multiplicador de score dá 1,1334. Uma loja vende 1; duas recebem 0,5667 cada e ambas vendem 0. O piso é aplicado por loja e por tick sem carregar fração.
+Corrigido: a fração que não forma uma unidade fica para a rodada seguinte. Itabira tem 11,3343 pacotes/dia de potencial (1,1334 por rodada com o multiplicador de score). Em um dia, uma loja vende 13 e duas lojas iguais vendem 12 somadas. Antes, duas lojas vendiam zero.
 
 **Efeito:** Concorrência destrói demanda, sobretudo em itens de baixo giro. O histórico registra desejado=0, escondendo essa perda do indicador vendido/desejado.
 
@@ -74,37 +74,37 @@ Fontes: [packages/simulation/src/engine.ts:1355](../../packages/simulation/src/e
 
 **Fórmula/invariante:** A política de distribuição da capacidade compartilhada precisa ser explícita; a posição no array não deve ser confundida com demanda ou rentabilidade.
 
-Uma loja de Campinas com um empregado atende 20 unidades/rodada. Óleo aparece primeiro e usa as 20; leite deseja 303 e recebe zero. Não faltam estoque nem dinheiro.
+Corrigido: sem capacidade para tudo, cada produto recebe parte proporcional à procura, com as unidades restantes para as maiores frações. Uma loja de Campinas com um empregado atende 20 unidades/rodada; leite deseja 303 e vende 16, óleo deseja 30 e vende 1. Antes, o óleo, primeiro da lista, levava as 20.
 
 **Efeito:** Há prioridade econômica implícita que pode inviabilizar leite/itens posteriores. A redução de produção pode parecer falta de compradores quando é alocação da loja.
 
 **Próxima ação:** Escolher e expor prioridade, rateio por demanda/margem ou rotação. Medir o efeito antes de alterar coeficientes de consumo.
 
-Fontes: [packages/simulation/src/engine.ts:1333](../../packages/simulation/src/engine.ts#L1333), [packages/simulation/src/engine.ts:1336](../../packages/simulation/src/engine.ts#L1336).
+Fontes: [packages/simulation/src/engine.ts:1364](../../packages/simulation/src/engine.ts#L1364), [packages/simulation/src/engine.ts:1338](../../packages/simulation/src/engine.ts#L1338).
 
 ## M06 · Óleo/farelo/leite não fecham proporções de absorção na hipótese apenas familiar
 
 **Fórmula/invariante:** Com óleo e leite atendidos só por estas receitas e sem outros destinos, farelo produzido por óleo deve ser igual ao farelo necessário ao leite demandado por óleo.
 
-Cada óleo produz 3,8 kg de farelo; consumir esse farelo exige 22,8 L de leite por óleo. O consumo familiar relativo é 10. Sob essa hipótese, 56,1404% do farelo fica sem destino. Na execução de 90 dias, o consumo produtivo acumulado foi 550 kg, equivalente a 0,3015% da produção acumulada de 182.400 kg; o estoque final é 184.850 kg. Não há rastreamento que atribua esse consumo ao estoque inaugural ou à produção nova.
+Cada óleo produz 3,8 kg de farelo; consumir esse farelo exige 22,8 L de leite por óleo. O consumo familiar relativo é 10. Sob essa hipótese, 56,1404% do farelo fica sem destino. A execução de 90 dias está ausente ou desatualizada; os números históricos ficam separados da prova algébrica.
 
 **Efeito:** Reduzir velocidade isoladamente não corrige a proporção. Estoque inicial, produção interrompida e distribuição afetam o excesso observado; a razão teórica não explica sozinha a trajetória.
 
 **Próxima ação:** Calibrar conjuntamente proporção de coprodutos, destinos executados, consumo e menor operação viável. Medir entradas/saídas efetivas e margem após fixos/frete; evitar financiar acúmulo.
 
-Fontes: [packages/simulation/src/model.ts:493](../../packages/simulation/src/model.ts#L493), [packages/simulation/src/operations.ts:239](../../packages/simulation/src/operations.ts#L239), [packages/simulation/src/calibration.ts:173](../../packages/simulation/src/calibration.ts#L173).
+Fontes: [packages/simulation/src/model.ts:495](../../packages/simulation/src/model.ts#L495), [packages/simulation/src/operations.ts:254](../../packages/simulation/src/operations.ts#L254), [packages/simulation/src/calibration.ts:173](../../packages/simulation/src/calibration.ts#L173).
 
 ## M07 · Cada produtor de óleo mira três dias da demanda global, sem repartir mercado
 
 **Fórmula/invariante:** Alvo agregado = número de produtores × max(600, 3 × demanda familiar global potencial), antes de considerar lotes em processamento.
 
-Na abertura, 4 produtores bots automatizados habilitados recebem alvo individual de 15.332,7784 unidades, ou 61.331,1136 agregadas. A mesma demanda potencial diária de 5.110,9261 é usada por todos.
+Corrigido: três dias da demanda das famílias (5.110,9261/dia) repartidos entre 4 produtores, alvo individual de 3.833,1946 e agregado de 15.332,7784. Antes, cada um mirava 15.332,78, somando 61.331,11.
 
 **Efeito:** Adicionar concorrentes amplia o estoque-alvo agregado. Essa regra pode contribuir para excesso; esta auditoria não mede a causalidade isolada. Cobertura calculada com demanda potencial não é prazo de venda observada.
 
 **Próxima ação:** Experimentar alvo por participação/vendas observadas e lead time, com limite para aquecimento sem histórico. Comparar contra a referência preservada, sem alterar consumo junto.
 
-Fontes: [packages/simulation/src/engine.ts:1853](../../packages/simulation/src/engine.ts#L1853), [packages/simulation/src/metrics.ts:274](../../packages/simulation/src/metrics.ts#L274).
+Fontes: [packages/simulation/src/engine.ts:1878](../../packages/simulation/src/engine.ts#L1878), [packages/simulation/src/metrics.ts:271](../../packages/simulation/src/metrics.ts#L271).
 
 ## Limite agrícola por linha em SP
 
@@ -127,9 +127,9 @@ Este teto ignora insumos físicos, retenção de sementes, todas as utilidades, 
 
 Unidades: óleo/leite em embalagens de 1 L; farelo em kg. Identidade: estoque físico + trânsito = inaugural + produção concluída − entradas consumidas − consumo familiar − consumo público. Saídas comprometidas de jobs ainda não concluídos ficam separadas. Não contar comércio de atacado como consumo final.
 
-No fim dos 90 dias: obrigações de R$ 3.226.858,34, HHI agregado de 7.752,4818 e dinheiro conservado=true. O HHI usa receita por vendedor na janela final de até sete dias; não equivale à concentração de estoque nem às vendas de toda a season.
+Conferir a validade da referência antes de interpretar os dados históricos.
 
-Experimento já registrado: Rejeitar esta intervenção pelos critérios pré-definidos; manter evidência e investigar demanda/margem/escala. Seu fingerprint está atual. Intervenção registrada: Velocidade de produção soy-oil ×0.75: duração dos ciclos dividida pelo fator, sem alterar quantidades, massa ou equipamento inaugural.. Farelo físico final: A = 184.850 kg e B = 184.850 kg, nos horizontes de 90/90 dias. Esses fatos não atribuem uma causa única à distribuição.
+Experimento já registrado: Rejeitar esta intervenção pelos critérios pré-definidos; manter evidência e investigar demanda/margem/escala. Seu fingerprint está desatualizado. Intervenção registrada: Velocidade de produção soy-oil ×0.75: duração dos ciclos dividida pelo fator, sem alterar quantidades, massa ou equipamento inaugural.. Farelo físico final: A = 184.850 kg e B = 184.850 kg, nos horizontes de 90/90 dias. Esses fatos não atribuem uma causa única à distribuição.
 
 Marcos extraídos da série da referência, com validade indicada acima. Quantidades acumuladas de produção/consumo e estoque observado; não inferir produção contínua durante os 90 dias de totais finais estáveis.
 

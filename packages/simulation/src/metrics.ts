@@ -1,6 +1,5 @@
 import {
   products,
-  TIME_SCALE,
   type ProductId,
   type World,
   type Property,
@@ -9,7 +8,7 @@ import {
 } from './model';
 import { regions } from '../../world/src/regions';
 import { distanceKm } from './geometry';
-import { productionCapacity, availableStock } from './operations';
+import { automationCyclesPerDay, availableStock } from './operations';
 
 const clamp = (n: number, min = 0, max = 100) => Math.min(max, Math.max(min, n));
 export function regionFor(position: Position, city?: string) {
@@ -241,9 +240,7 @@ export function marketView(w: World, product: ProductId, regionId = '', radiusKm
       // A configured recipe with no consumption of this product contributes
       // exactly zero; capacity computation has no side effects.
       if (!(r.input[product] ?? 0) && w.season.config.operations.profiles[r.id]) return n;
-      const cycles =
-        Math.min(24, 86400000 / TIME_SCALE / r.duration) * productionCapacity(w, e, r).lines;
-      return n + (r.input[product] ?? 0) * cycles;
+      return n + (r.input[product] ?? 0) * automationCyclesPerDay(w, e, r);
     }, 0);
   const demand = household + industrial;
   const indexed = indexedTradeTotals(w, product, region?.id ?? (state ? `state:${state}` : ''));

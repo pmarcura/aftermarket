@@ -242,6 +242,7 @@ describe('observação opcional das decisões', () => {
     }
     factory.automation = true;
     factory.inventory.soy = 0;
+    factory.inventory.oil = 0; // abaixo da meta, para a automação tentar produzir
     world.offers = world.offers.filter((offer) => offer.product !== 'soy');
     const events: DecisionTrace[] = [];
     withDecisionTrace(

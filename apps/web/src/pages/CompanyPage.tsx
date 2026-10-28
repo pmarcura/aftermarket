@@ -136,7 +136,7 @@ export function CompanyPage() {
         <div className="company-grid">
           <div className="left-stack">
             <Panel
-              title="Evolução do fluxo de caixa"
+              title={`Fluxo de caixa · últimos ${world.view?.ledgerDays ?? 7} dias`}
               action={
                 <div className="inline-actions">
                   <Badge tone="green">Acumulado</Badge>

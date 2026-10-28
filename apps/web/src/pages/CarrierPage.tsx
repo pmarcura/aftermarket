@@ -29,9 +29,12 @@ export function CarrierPage() {
   const fleet = world.vehicles.filter((v) => v.companyId === actor),
     available = fleet.filter((v) => v.status === 'available');
   const shipments = world.shipments.filter((s) => s.carrierId === actor),
-    revenue = world.ledger
-      .filter((l) => l.to === actor && l.kind === 'freight')
-      .reduce((n, l) => n + l.amount, 0);
+    // Totais desde a abertura vêm do servidor; o extrato que chega cobre só os dias recentes.
+    revenue =
+      world.view?.totals.freight?.in ??
+      world.ledger
+        .filter((l) => l.to === actor && l.kind === 'freight')
+        .reduce((n, l) => n + l.amount, 0);
   const logistics = world.establishments.find(
     (e) => e.companyId === actor && e.category === 'logistics',
   );
@@ -225,9 +228,10 @@ export function CarrierPage() {
                     {
                       label: 'Aquisição de veículos',
                       value: cr(
-                        world.ledger
-                          .filter((l) => l.from === actor && l.kind === 'vehicle')
-                          .reduce((n, l) => n + l.amount, 0),
+                        world.view?.totals.vehicle?.out ??
+                          world.ledger
+                            .filter((l) => l.from === actor && l.kind === 'vehicle')
+                            .reduce((n, l) => n + l.amount, 0),
                       ),
                     },
                     { label: 'Operação da sede', value: cr(logistics?.expenses ?? 0) },

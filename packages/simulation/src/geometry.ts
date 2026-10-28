@@ -39,3 +39,43 @@ export function positionAlongRoute(
     (Math.atan2((b[0] - a[0]) * Math.cos((a[1] * Math.PI) / 180), b[1] - a[1]) * 180) / Math.PI;
   return { position, completed: [...route.slice(0, i), position], bearing };
 }
+// Simplificação de Douglas-Peucker com no máximo `maxPoints` pontos, preservando início e fim.
+// Uma rota rodoviária tem milhares de pontos; o mapa precisa de algumas centenas.
+export function simplifyPath(route: Position[], maxPoints = 150): Position[] {
+  if (route.length <= maxPoints) return route;
+  const keep = new Uint8Array(route.length);
+  keep[0] = keep[route.length - 1] = 1;
+  const distance = (p: Position, a: Position, b: Position) => {
+    const dx = b[0] - a[0],
+      dy = b[1] - a[1];
+    const t = dx || dy ? ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / (dx * dx + dy * dy) : 0;
+    const c = Math.max(0, Math.min(1, t));
+    return Math.hypot(p[0] - (a[0] + c * dx), p[1] - (a[1] + c * dy));
+  };
+  // Mantém sempre o ponto mais distante do trecho com maior desvio até atingir o limite.
+  const spans: { from: number; to: number; index: number; gap: number }[] = [];
+  const measure = (from: number, to: number) => {
+    let index = -1,
+      gap = 0;
+    for (let i = from + 1; i < to; i++) {
+      const d = distance(route[i], route[from], route[to]);
+      if (d > gap) {
+        gap = d;
+        index = i;
+      }
+    }
+    if (index > 0) spans.push({ from, to, index, gap });
+  };
+  measure(0, route.length - 1);
+  let kept = 2;
+  while (kept < maxPoints && spans.length) {
+    let best = 0;
+    for (let i = 1; i < spans.length; i++) if (spans[i].gap > spans[best].gap) best = i;
+    const { from, to, index } = spans.splice(best, 1)[0];
+    keep[index] = 1;
+    kept++;
+    measure(from, index);
+    measure(index, to);
+  }
+  return route.filter((_, i) => keep[i]);
+}

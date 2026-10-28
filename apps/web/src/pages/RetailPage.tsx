@@ -113,7 +113,9 @@ export function RetailPage() {
         <div className="stats-grid">
           <Stat
             label="Vendas registradas"
-            value={cr(sales.reduce((n, l) => n + l.amount, 0))}
+            value={cr(
+              world.view?.retailByEstablishment[e.id] ?? sales.reduce((n, l) => n + l.amount, 0),
+            )}
             note="receita observada desde a abertura"
           />
           <Stat

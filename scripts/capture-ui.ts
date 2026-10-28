@@ -12,15 +12,14 @@ await mkdir('.runtime/review', { recursive: true });
 await page.goto('http://127.0.0.1:5173/');
 await page.getByRole('navigation').getByRole('button', { name: 'Mapa', exact: true }).click();
 await page
-  .locator('.main-map .map-marker')
-  .first()
+  .locator('.main-map [data-map-ready="true"]')
   .waitFor({ timeout: 25000 })
   .catch(() => undefined);
 await page.waitForTimeout(2500);
 await page.screenshot({ path: '.runtime/review/mapa.png', fullPage: true });
 console.log(
   JSON.stringify({
-    markers: await page.locator('.main-map .map-marker').count(),
+    markers: await page.locator('.main-map .map-access button').count(),
     issues: issues.slice(0, 12),
   }),
 );

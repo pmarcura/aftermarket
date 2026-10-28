@@ -6,8 +6,9 @@ import { createStore } from './store';
 import { createRoutingService } from './routing';
 import type { ScenarioName } from '../../../packages/simulation/src/scenarios';
 import { RuleError } from '../../../packages/simulation/src/engine';
-import type { World } from '../../../packages/simulation/src/model';
 import { commandSchema, product } from './commands';
+import { worldView } from './view';
+import { gzipSync } from 'node:zlib';
 
 const app = express();
 const port = Number(process.env.AFTERMARKET_PORT ?? 3001);
@@ -37,11 +38,28 @@ app.use('/api', (_req, res, next) => {
 app.get('/api/health', (_req, res) =>
   res.json({ ok: true, mode: 'local-development', version: '0.4.0' }),
 );
-const worldView = (w: World) => ({ ...w, marketHistory: w.marketHistory.slice(-220) });
-app.get('/api/world', (_req, res) => {
+// Pacote enxuto por jogador, comprimido; sem mudança desde a revisão que o navegador tem,
+// responde 204 sem corpo.
+const actorOf = (req: express.Request) => {
+  const actor = req.get('x-company-id') ?? 'player';
+  return actor === 'player2' ? 'player2' : 'player';
+};
+function sendJson(req: express.Request, res: express.Response, body: unknown) {
+  const json = Buffer.from(JSON.stringify(body));
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('Vary', 'Accept-Encoding, x-company-id');
+  if (json.length > 2048 && /gzip/.test(req.get('accept-encoding') ?? '')) {
+    res.setHeader('Content-Encoding', 'gzip');
+    res.end(gzipSync(json, { level: 6 }));
+  } else res.end(json);
+}
+app.get('/api/world', (req, res) => {
   const w = store.tick();
   routing.prepare(w);
-  res.json(worldView(w));
+  const actor = actorOf(req);
+  if (Number(req.query.since) === w.revision && req.query.actor === actor)
+    return res.status(204).end();
+  sendJson(req, res, worldView(w, actor));
 });
 app.get('/api/routing-status', (_req, res) => res.json(routing.status()));
 app.get('/api/market-history', (req, res) => {
@@ -80,7 +98,7 @@ app.post('/api/commands', (req, res, next) => {
     if (actor !== 'player' && actor !== 'player2')
       return res.status(403).json({ error: 'Escolha uma empresa de teste válida.' });
     const key = z.uuid().parse(req.get('idempotency-key'));
-    res.json(worldView(store.command(actor, commandSchema.parse(req.body), key)));
+    sendJson(req, res, worldView(store.command(actor, commandSchema.parse(req.body), key), actor));
   } catch (error) {
     next(error);
   }

@@ -142,6 +142,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [actor, changeActor] = useState(() =>
     localStorage.getItem('aftermarket.company') === 'player2' ? 'player2' : 'player',
   );
+  const actorRef = useRef(actor);
+  actorRef.current = actor;
   const [page, changePage] = useState<Page>(
     (localStorage.getItem('aftermarket.page') as Page) || 'map',
   );
@@ -154,13 +156,26 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [intent, setIntent] = useState<MarketIntent>({});
   const [pending, setPending] = useState(false),
     [toast, setToast] = useState<{ message: string; error: boolean; id: number }>();
+  // Pede só quando o mundo mudou: o servidor responde 204 se a revisão e a empresa são as mesmas.
   const refresh = useCallback(async () => {
-    const response = await fetch('/api/world');
+    const current = latestWorld.current;
+    const since =
+      current?.view?.actor === actorRef.current
+        ? `?since=${current.revision}&actor=${actorRef.current}`
+        : '';
+    const response = await fetch(`/api/world${since}`, {
+      headers: { 'x-company-id': actorRef.current },
+    });
+    if (response.status === 204) {
+      setError('');
+      return;
+    }
     if (!response.ok) throw new Error('O servidor não respondeu.');
     const next: World = await response.json();
     latestWorld.current = next;
     setWorld((previous) =>
       previous?.revision === next.revision &&
+      previous.view?.actor === next.view?.actor &&
       Object.keys(previous.routes).length === Object.keys(next.routes).length
         ? previous
         : next,
@@ -177,6 +192,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
     );
     return () => clearInterval(timer);
   }, [refresh]);
+  // Trocar de empresa pede o pacote da nova empresa na hora.
+  useEffect(() => {
+    if (latestWorld.current && latestWorld.current.view?.actor !== actor) void refresh();
+  }, [actor, refresh]);
   useEffect(() => {
     if (!toast || toast.error) return;
     const timer = setTimeout(() => setToast(undefined), 9000);

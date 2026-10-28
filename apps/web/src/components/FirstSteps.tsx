@@ -16,7 +16,9 @@ function useSteps() {
     world.orders.some((o) => storeIds.has(o.destinationId)) ||
     world.shipments.some((s) => storeIds.has(s.destinationId));
   const stocked = stores.some((e) => Object.values(e.inventory).some((q) => q > 0));
-  const sold = world.ledger.some((l) => l.to === actor && l.kind === 'retail');
+  const sold =
+    (world.view?.totals.retail?.in ?? 0) > 0 ||
+    world.ledger.some((l) => l.to === actor && l.kind === 'retail');
   const producing =
     world.jobs.some((j) => producers.some((e) => e.id === j.establishmentId)) ||
     producers.some((e) => e.automation);

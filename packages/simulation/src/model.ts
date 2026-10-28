@@ -243,6 +243,31 @@ export interface World {
   // Fração de demanda ainda não vendida por loja e produto; carregada entre rodadas (auditoria M04).
   retailCarry?: Record<string, number>;
   consumedMaterials: Partial<Record<ProductId, number>>;
+  // Só no pacote enviado ao navegador (apps/server/src/view.ts): totais calculados no servidor
+  // a partir do extrato completo, que não viaja inteiro.
+  view?: WorldViewSummary;
+}
+export type Health = {
+  all: number;
+  families: number;
+  governments: number;
+  privateCash: number;
+  turnover: number;
+  velocity: number;
+  obligations: number;
+  hhi: number | null;
+  retailFulfillment: number | null;
+  active: number;
+  mothballed: number;
+};
+export interface WorldViewSummary {
+  actor: string;
+  // Extrato do jogador: dias de jogo incluídos; totais por tipo desde a abertura.
+  ledgerDays: number;
+  totals: Partial<Record<Entry['kind'], { in: number; out: number }>>;
+  retailByEstablishment: Record<string, number>;
+  tradeTotals: Record<string, Record<string, { tradedQuantity: number; tradedValue: number }>>;
+  health: Record<string, Health>;
 }
 export interface PurchaseOrder {
   escrowReserved?: number;

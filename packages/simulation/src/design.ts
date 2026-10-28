@@ -1,4 +1,4 @@
-import { type World, type ProductId, seasonProducts } from './model';
+import { type World, type ProductId, type Health, seasonProducts } from './model';
 import { GAME_DAY, treasuryAvailable } from './operations';
 
 export const designRules = {
@@ -228,7 +228,10 @@ export function updatePublicBenchmarks(w: World, at: number) {
       };
   }
 }
-export function economyHealth(w: World, at = w.updatedAt, product?: ProductId) {
+export function economyHealth(w: World, at = w.updatedAt, product?: ProductId): Health {
+  // No navegador, os indicadores vêm calculados pelo servidor com o extrato completo.
+  const ready = w.view?.health[product ?? ''];
+  if (ready) return ready;
   const since = at - GAME_DAY * 7,
     recent = w.ledger.filter((l) => l.at >= since && l.at <= at && l.kind !== 'budget');
   const all = w.companies.reduce((n, c) => n + c.balance, 0);

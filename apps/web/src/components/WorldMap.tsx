@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import * as maplibregl from 'maplibre-gl';
 import type { GeoJSONSource } from 'maplibre-gl';
@@ -20,6 +20,24 @@ import { shipmentRoute } from '../../../../packages/simulation/src/road-path';
 import { shipmentStatus } from '../../../../packages/simulation/src/shipment';
 import { marketView } from '../../../../packages/simulation/src/metrics';
 maplibregl.setWorkerUrl(workerUrl);
+// Ícones das categorias desenhados uma vez como imagens do mapa (traço branco sobre o círculo
+// colorido da camada). Antes cada negócio era um elemento de página recriado a cada rodada e
+// reposicionado a cada quadro do zoom.
+const categories = ['farm', 'mine', 'industry', 'retail', 'logistics', 'warehouse'] as const;
+const iconImages = Promise.all(
+  categories.map(
+    (category) =>
+      new Promise<[string, HTMLImageElement]>((resolve) => {
+        const svg = renderToStaticMarkup(<CategoryIcon category={category} size={44} />)
+          .replaceAll('currentColor', '#ffffff')
+          .replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+        const image = new Image(44, 44);
+        image.onload = () => resolve([category, image]);
+        image.onerror = () => resolve([category, image]);
+        image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+      }),
+  ),
+);
 export interface Layers {
   companies: boolean;
   available: boolean;
@@ -70,14 +88,44 @@ export function WorldMap({
 }) {
   const { world, actor, selectedId, select, focus, consumeFocus } = useGame();
   const container = useRef<HTMLDivElement>(null),
-    map = useRef<maplibregl.Map | null>(null),
-    markers = useRef<maplibregl.Marker[]>([]);
+    map = useRef<maplibregl.Map | null>(null);
   const [ready, setReady] = useState(false),
     [failed, setFailed] = useState(false);
   const callback = useRef(onSelect);
   const framedRoute = useRef('');
   const framedEconomy = useRef<string | undefined>(undefined);
+  const drawnKey = useRef('');
+  const selectRef = useRef(select);
   callback.current = onSelect;
+  selectRef.current = select;
+  const visible = useMemo(
+    () =>
+      (economic ? [] : world.properties)
+        .filter((p) =>
+          ownership === 'mine'
+            ? p.ownerId === actor
+            : ownership === 'others'
+              ? Boolean(p.ownerId) && p.ownerId !== actor
+              : ownership === 'available'
+                ? !p.ownerId
+                : true,
+        )
+        .filter((p) =>
+          p.ownerId
+            ? layers.companies &&
+              (layers.resources || (p.category !== 'farm' && p.category !== 'mine'))
+            : layers.available,
+        ),
+    [
+      world.properties,
+      ownership,
+      actor,
+      layers.companies,
+      layers.resources,
+      layers.available,
+      Boolean(economic),
+    ],
+  );
   useEffect(() => {
     let saved: { center?: Position; zoom?: number } = {};
     try {
@@ -99,26 +147,54 @@ export function WorldMap({
       renderWorldCopies: false,
     });
     map.current = instance;
+    // Inspeção em desenvolvimento (laboratório e testes de navegador); não existe no build final.
+    if (import.meta.env.DEV && !mini)
+      (window as unknown as { aftermarketMap?: maplibregl.Map }).aftermarketMap = instance;
     const timeout = setTimeout(() => {
       if (!instance.isStyleLoaded()) setFailed(true);
     }, 15000);
-    instance.on('load', () => {
+    // Números das bolhas de agrupamento: o estilo não carrega fontes, então cada número vira
+    // uma pequena imagem. Gerados de antemão: criados sob demanda, os de dois algarismos
+    // chegavam depois do desenho e a bolha ficava sem número.
+    const countImage = (label: string) => {
+      const canvas = document.createElement('canvas');
+      canvas.width = canvas.height = 64;
+      const context = canvas.getContext('2d')!;
+      context.fillStyle = '#f4ead7';
+      context.font = `700 ${label.length > 2 ? 21 : 26}px Figtree, Inter, Arial, sans-serif`;
+      context.textAlign = 'center';
+      context.textBaseline = 'middle';
+      context.fillText(label, 32, 34);
+      return context.getImageData(0, 0, 64, 64);
+    };
+    instance.on('load', async () => {
       clearTimeout(timeout);
       setFailed(false);
+      for (const [category, image] of await iconImages)
+        if (!instance.hasImage(`cat-${category}`))
+          instance.addImage(`cat-${category}`, image, { pixelRatio: 2 });
+      for (let n = 2; n <= 100; n++) {
+        const label = n === 100 ? '99+' : String(n);
+        if (!instance.hasImage(`count-${label}`))
+          instance.addImage(`count-${label}`, countImage(label), { pixelRatio: 2 });
+      }
       instance.addSource('territories', {
         type: 'geojson',
         data: { type: 'FeatureCollection', features: [] },
       });
+      // Terrenos só aparecem de perto; de longe são milhares de polígonos sem leitura.
       instance.addLayer({
         id: 'territories-fill',
         type: 'fill',
         source: 'territories',
+        minzoom: mini ? 0 : 11,
         paint: { 'fill-color': ['get', 'color'], 'fill-opacity': 0.25 },
       });
       instance.addLayer({
         id: 'territories-line',
         type: 'line',
         source: 'territories',
+        minzoom: mini ? 0 : 11,
         paint: {
           'line-color': ['case', ['get', 'selected'], '#238cd3', ['get', 'color']],
           'line-width': ['case', ['get', 'selected'], 3, 1.2],
@@ -174,6 +250,110 @@ export function WorldMap({
         source: 'traveled',
         paint: { 'line-color': '#dfad63', 'line-width': 5 },
       });
+      // Negócios: uma camada desenhada pelo mapa, agrupada em bolhas quando o zoom é baixo.
+      instance.addSource('properties', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] },
+        cluster: !mini,
+        clusterRadius: 46,
+        clusterMaxZoom: 8,
+      });
+      instance.addLayer({
+        id: 'property-clusters',
+        type: 'circle',
+        source: 'properties',
+        filter: ['has', 'point_count'],
+        paint: {
+          'circle-radius': ['step', ['get', 'point_count'], 17, 10, 21, 40, 27],
+          'circle-color': '#163640',
+          'circle-stroke-color': '#e6b866',
+          'circle-stroke-width': 2,
+        },
+      });
+      instance.addLayer({
+        id: 'property-cluster-count',
+        type: 'symbol',
+        source: 'properties',
+        filter: ['has', 'point_count'],
+        layout: {
+          'icon-image': [
+            'case',
+            ['>', ['get', 'point_count'], 99],
+            'count-99+',
+            ['concat', 'count-', ['to-string', ['get', 'point_count']]],
+          ],
+          'icon-allow-overlap': true,
+          'icon-ignore-placement': true,
+        },
+      });
+      instance.addLayer({
+        id: 'property-halo',
+        type: 'circle',
+        source: 'properties',
+        filter: ['!', ['has', 'point_count']],
+        paint: {
+          'circle-radius': mini ? 12 : ['case', ['get', 'selected'], 21, 18],
+          'circle-color': [
+            'case',
+            ['get', 'selected'],
+            '#ffffff',
+            ['get', 'own'],
+            '#e6b866',
+            '#0b1418',
+          ],
+          'circle-opacity': ['case', ['any', ['get', 'selected'], ['get', 'own']], 0.9, 0.35],
+        },
+      });
+      instance.addLayer({
+        id: 'property-dots',
+        type: 'circle',
+        source: 'properties',
+        filter: ['!', ['has', 'point_count']],
+        paint: {
+          'circle-radius': mini ? 9 : 14,
+          'circle-color': ['get', 'color'],
+          'circle-opacity': ['case', ['get', 'available'], 0.55, 1],
+          'circle-stroke-color': ['case', ['get', 'available'], '#f4ead7', '#0b1418'],
+          'circle-stroke-width': ['case', ['get', 'available'], 2, 1.2],
+        },
+      });
+      instance.addLayer({
+        id: 'property-icons',
+        type: 'symbol',
+        source: 'properties',
+        filter: ['!', ['has', 'point_count']],
+        layout: {
+          'icon-image': ['concat', 'cat-', ['get', 'category']],
+          'icon-size': mini ? 0.6 : 0.82,
+          'icon-allow-overlap': true,
+          'icon-ignore-placement': true,
+        },
+      });
+      if (!mini) {
+        const pick = (event: maplibregl.MapLayerMouseEvent) => {
+          const id = event.features?.[0]?.properties?.id as string | undefined;
+          if (!id) return;
+          event.originalEvent.stopPropagation();
+          callback.current ? callback.current(id) : selectRef.current(id);
+        };
+        instance.on('click', 'property-dots', pick);
+        instance.on('click', 'property-clusters', async (event) => {
+          const feature = event.features?.[0];
+          if (!feature) return;
+          const zoom = await (
+            instance.getSource('properties') as GeoJSONSource
+          ).getClusterExpansionZoom(feature.properties!.cluster_id as number);
+          instance.easeTo({
+            center: (feature.geometry as { coordinates: [number, number] }).coordinates,
+            zoom,
+            duration: 500,
+          });
+        });
+        for (const layer of ['property-dots', 'property-clusters']) {
+          instance.on('mouseenter', layer, () => (instance.getCanvas().style.cursor = 'pointer'));
+          instance.on('mouseleave', layer, () => (instance.getCanvas().style.cursor = ''));
+        }
+      }
       setReady(true);
     });
     if (!mini) {
@@ -194,7 +374,6 @@ export function WorldMap({
     return () => {
       clearTimeout(timeout);
       observer.disconnect();
-      markers.current.forEach((m) => m.remove());
       instance.remove();
       map.current = null;
     };
@@ -202,22 +381,15 @@ export function WorldMap({
   useEffect(() => {
     const m = map.current;
     if (!ready || !m) return;
-    const visible = (economic ? [] : world.properties)
-      .filter((p) =>
-        ownership === 'mine'
-          ? p.ownerId === actor
-          : ownership === 'others'
-            ? Boolean(p.ownerId) && p.ownerId !== actor
-            : ownership === 'available'
-              ? !p.ownerId
-              : true,
-      )
-      .filter((p) =>
-        p.ownerId
-          ? layers.companies &&
-            (layers.resources || (p.category !== 'farm' && p.category !== 'mine'))
-          : layers.available,
-      );
+    const selectedProperty = propertyId ?? selectedId;
+    // Só reenvia ao mapa quando algo visível mudou (dono, seleção, filtro), não a cada rodada.
+    const key = JSON.stringify([
+      visible.map((p) => [p.id, p.ownerId, p.area]),
+      selectedProperty,
+      layers.zoning,
+    ]);
+    if (drawnKey.current === key) return;
+    drawnKey.current = key;
     (m.getSource('territories') as GeoJSONSource).setData({
       type: 'FeatureCollection',
       features: visible.map((p) => {
@@ -232,7 +404,7 @@ export function WorldMap({
                 ? '#6ba075'
                 : '#799ac0'
               : categoryInfo[p.category].color,
-            selected: p.id === (propertyId ?? selectedId),
+            selected: p.id === selectedProperty,
           },
           geometry: {
             type: 'Polygon',
@@ -249,56 +421,44 @@ export function WorldMap({
         };
       }),
     });
-    m.setLayoutProperty('demand-circles', 'visibility', layers.demand ? 'visible' : 'none');
-    if (layers.demand) {
-      const values = regions.map((r) => ({
-        r,
-        amount: seasonProducts(world).reduce(
-          (n, id) => n + marketView(world, id, r.id).demand * world.season.config.basePrices[id],
-          0,
-        ),
-      }));
-      const max = Math.max(1, ...values.map((v) => v.amount));
-      (m.getSource('demand') as GeoJSONSource).setData({
-        type: 'FeatureCollection',
-        features: values.map(({ r, amount }) => ({
-          type: 'Feature',
-          geometry: { type: 'Point', coordinates: r.coordinates },
-          properties: { demand: amount / max },
-        })),
-      });
-    }
-    markers.current.forEach((marker) => marker.remove());
-    markers.current = visible.map((p) => {
-      const node = document.createElement('button');
-      node.className = `map-marker ${p.category} ${p.ownerId ? '' : 'available'} ${p.id === (propertyId ?? selectedId) ? 'selected' : ''} ${mini ? 'mini' : ''}`;
-      node.setAttribute('aria-label', `${p.name} · ${p.city}${p.ownerId ? '' : ' · disponível'}`);
-      node.title = `${p.name} · ${p.city}`;
-      node.dataset.owner = p.ownerId ?? 'available';
-      node.dataset.property = p.id;
-      if (mini) {
-        node.tabIndex = -1;
-        node.setAttribute('aria-hidden', 'true');
-      }
-      node.innerHTML = renderToStaticMarkup(
-        <CategoryIcon category={p.category} size={mini ? 13 : 21} />,
-      );
-      node.addEventListener('click', (e) => {
-        e.stopPropagation();
-        callback.current ? callback.current(p.id) : select(p.id);
-      });
-      return new maplibregl.Marker({ element: node }).setLngLat(p.coordinates).addTo(m);
+    (m.getSource('properties') as GeoJSONSource).setData({
+      type: 'FeatureCollection',
+      features: visible.map((p) => ({
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: p.coordinates },
+        properties: {
+          id: p.id,
+          category: p.category,
+          color: categoryInfo[p.category].color,
+          available: !p.ownerId,
+          own: p.ownerId === actor,
+          selected: p.id === selectedProperty,
+        },
+      })),
     });
-  }, [
-    ready,
-    world.properties,
-    layers,
-    selectedId,
-    propertyId,
-    actor,
-    ownership,
-    Boolean(economic),
-  ]);
+  }, [ready, visible, layers.zoning, selectedId, propertyId, actor]);
+  useEffect(() => {
+    const m = map.current;
+    if (!ready || !m) return;
+    m.setLayoutProperty('demand-circles', 'visibility', layers.demand ? 'visible' : 'none');
+    if (!layers.demand) return;
+    const values = regions.map((r) => ({
+      r,
+      amount: seasonProducts(world).reduce(
+        (n, id) => n + marketView(world, id, r.id).demand * world.season.config.basePrices[id],
+        0,
+      ),
+    }));
+    const max = Math.max(1, ...values.map((v) => v.amount));
+    (m.getSource('demand') as GeoJSONSource).setData({
+      type: 'FeatureCollection',
+      features: values.map(({ r, amount }) => ({
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: r.coordinates },
+        properties: { demand: amount / max },
+      })),
+    });
+  }, [ready, layers.demand, world.revision]);
   useEffect(() => {
     const m = map.current;
     if (!m || !ready) return;
@@ -388,7 +548,8 @@ export function WorldMap({
     let frame = 0,
       last = 0;
     const draw = (timestamp: number) => {
-      if (timestamp - last >= (reduced ? 1000 : 50) && !document.hidden) {
+      // Cinco quadros por segundo bastam para o caminhão andar liso na escala do mapa.
+      if (timestamp - last >= (reduced ? 1000 : 200) && !document.hidden) {
         const features: {
           type: 'Feature';
           properties: Record<string, never>;
@@ -563,6 +724,24 @@ export function WorldMap({
   return (
     <div className={`world-map ${mini ? 'mini-map' : ''}`} data-map-ready={ready}>
       <div ref={container} className="map-canvas" />
+      {/* Acesso por teclado e leitor de tela: os ícones são desenhados pelo mapa, então cada
+          negócio também é um botão que só aparece quando recebe foco. */}
+      {!mini && !economic && (
+        <div className="map-access" role="group" aria-label="Negócios no mapa">
+          {visible.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              data-property={p.id}
+              data-owner={p.ownerId ?? 'available'}
+              onClick={() => (callback.current ? callback.current(p.id) : select(p.id))}
+            >
+              {p.name} · {p.city}
+              {p.ownerId ? '' : ' · disponível'}
+            </button>
+          ))}
+        </div>
+      )}
       {!ready && !failed && (
         <div className="map-loading" role="status">
           Carregando cartografia…

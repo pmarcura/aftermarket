@@ -11,11 +11,11 @@ test('titularidade, filtros vazios e análise profissional usam dados internos',
   await expect
     .poll(() =>
       page
-        .locator('.main-map .map-marker')
+        .locator('.main-map .map-access button')
         .evaluateAll((nodes) => nodes.every((n) => (n as HTMLElement).dataset.owner === 'player')),
     )
     .toBe(true);
-  expect(await page.locator('.main-map .map-marker').count()).toBeGreaterThan(0);
+  expect(await page.locator('.main-map .map-access button').count()).toBeGreaterThan(0);
   await page
     .getByRole('navigation')
     .getByRole('button', { name: 'Oportunidades', exact: true })

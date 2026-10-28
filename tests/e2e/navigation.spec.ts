@@ -4,9 +4,11 @@ test('as dez telas carregam, navegam e mantêm o estado do mundo', async ({ page
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/');
   await expect(page.getByRole('navigation', { name: 'Menu principal' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Propriedade disponível' })).toBeVisible();
   await page.locator('.main-map [data-map-ready="true"]').waitFor({ timeout: 25000 });
-  await page.locator('.main-map .map-marker').first().waitFor();
+  // O mapa abre sem terreno escolhido; escolhe um disponível pelo teclado.
+  await page.locator('.main-map .map-access button[data-owner="available"]').first().focus();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('heading', { name: 'Propriedade disponível' })).toBeVisible();
   await page.waitForTimeout(1200);
   await page.screenshot({ path: 'test-results/mapa-desktop.png', fullPage: true });
   await page.getByRole('button', { name: 'Comprar propriedade', exact: true }).click();

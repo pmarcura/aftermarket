@@ -161,13 +161,34 @@ type LedgerReadIndex = {
   regionStates: Map<string, string>;
 };
 const scopedLedgerIndexes = new WeakMap<World, LedgerReadIndex>();
+// Índice permanente do jogo: o extrato só recebe registros novos no fim, então os totais de
+// atacado somam apenas o que entrou desde a última leitura. Substituição ou corte do extrato
+// reconstrói o índice. Antes, cada consulta de mercado percorria o extrato inteiro (36% do
+// tempo da simulação aos 30 dias).
+const liveLedgerIndexes = new WeakMap<World, LedgerReadIndex>();
+// Buscas por id sem varrer a lista a cada chamada; refeitas quando a lista muda de
+// identidade ou de tamanho.
+const idIndexes = new WeakMap<object, { length: number; map: Map<string, unknown> }>();
+function byId<T extends { id: string }>(list: T[]): Map<string, T> {
+  const cached = idIndexes.get(list);
+  if (cached && cached.length === list.length) return cached.map as Map<string, T>;
+  const map = new Map(list.map((item) => [item.id, item]));
+  idIndexes.set(list, { length: list.length, map });
+  return map;
+}
+export function propertyOf(w: World, id: string) {
+  return byId(w.properties).get(id);
+}
+export function establishmentOf(w: World, id: string) {
+  return byId(w.establishments).get(id);
+}
 
 /**
  * Internal laboratory optimization for a synchronous, isolated append-only run.
  * Existing ledger entries and the region catalog must remain immutable inside the callback.
  * Replacement/truncation rebuilds the index; in-place edits of old entries are not supported.
  * The index never enters world state and is removed even when the callback throws.
- * Normal game queries do not enable this scope and always read the live ledger.
+ * Outside this scope the permanent live index below gives the same totals.
  */
 export function withAppendOnlyMarketLedger<T>(world: World, run: () => T): T {
   if (scopedLedgerIndexes.has(world)) return run();
@@ -184,9 +205,20 @@ export function withAppendOnlyMarketLedger<T>(world: World, run: () => T): T {
   }
 }
 
-function indexedTradeTotals(world: World, product: ProductId, scope: string) {
-  const index = scopedLedgerIndexes.get(world);
-  if (!index) return undefined;
+function indexedTradeTotals(world: World, product: ProductId, scope: string): TradeTotals {
+  // No navegador o extrato chega resumido; os totais vêm prontos do servidor.
+  if (world.view)
+    return world.view.tradeTotals[product]?.[scope] ?? { tradedQuantity: 0, tradedValue: 0 };
+  let index = scopedLedgerIndexes.get(world) ?? liveLedgerIndexes.get(world);
+  if (!index) {
+    index = {
+      ledger: world.ledger,
+      processed: 0,
+      products: new Map(),
+      regionStates: new Map(regions.map((region) => [region.id, region.state])),
+    };
+    liveLedgerIndexes.set(world, index);
+  }
   if (world.ledger !== index.ledger || world.ledger.length < index.processed) {
     index.ledger = world.ledger;
     index.processed = 0;
@@ -214,16 +246,13 @@ export function marketView(w: World, product: ProductId, regionId = '', radiusKm
   const state = regionId.startsWith('state:') ? regionId.slice(6) : '';
   const within = (e: Establishment) =>
     region
-      ? distanceKm(
-          w.properties.find((p) => p.id === e.propertyId)!.coordinates,
-          region.coordinates,
-        ) <= radiusKm
-      : !state || w.properties.find((p) => p.id === e.propertyId)!.state === state;
+      ? distanceKm(propertyOf(w, e.propertyId)!.coordinates, region.coordinates) <= radiusKm
+      : !state || propertyOf(w, e.propertyId)!.state === state;
   const offers = w.offers
     .filter((o) => o.product === product)
     .map((o) => ({
       ...o,
-      establishment: w.establishments.find((e) => e.id === o.establishmentId)!,
+      establishment: establishmentOf(w, o.establishmentId)!,
     }))
     .filter((o) => within(o.establishment) && (o.establishment.inventory[product] ?? 0) > 0)
     .map((o) => ({ ...o, quantity: availableStock(w, o.establishment, product) }))
@@ -257,21 +286,11 @@ export function marketView(w: World, product: ProductId, regionId = '', radiusKm
       return n + (r.input[product] ?? 0) * automationCyclesPerDay(w, e, r);
     }, 0);
   const demand = household + industrial;
-  const indexed = indexedTradeTotals(w, product, region?.id ?? (state ? `state:${state}` : ''));
-  let tradedQuantity = indexed?.tradedQuantity ?? 0;
-  let tradedValue = indexed?.tradedValue ?? 0;
-  if (!indexed)
-    for (const entry of w.ledger) {
-      if (
-        entry.product !== product ||
-        entry.channel !== 'wholesale' ||
-        (region && entry.regionId !== region.id) ||
-        (state && regions.find((candidate) => candidate.id === entry.regionId)?.state !== state)
-      )
-        continue;
-      tradedQuantity += entry.quantity ?? 0;
-      tradedValue += entry.amount;
-    }
+  const { tradedQuantity, tradedValue } = indexedTradeTotals(
+    w,
+    product,
+    region?.id ?? (state ? `state:${state}` : ''),
+  );
   return {
     product,
     regionId,
@@ -290,6 +309,20 @@ export function marketView(w: World, product: ProductId, regionId = '', radiusKm
     tradedValue,
     variation: price === null ? null : (price / seasonPrice(w, product) - 1) * 100,
   };
+}
+// Totais de atacado de todos os produtos em todos os recortes (mundo, praça e estado).
+export function tradeTotalsByScope(w: World) {
+  const scopes = [
+    '',
+    ...regions.map((region) => region.id),
+    ...[...new Set(regions.map((region) => region.state))].map((state) => `state:${state}`),
+  ];
+  return Object.fromEntries(
+    seasonProducts(w).map((product) => [
+      product,
+      Object.fromEntries(scopes.map((scope) => [scope, indexedTradeTotals(w, product, scope)])),
+    ]),
+  );
 }
 export function recordMarket(w: World, at: number) {
   // Tick-local aggregation: recording a history sample does not need retail/demand
@@ -316,7 +349,6 @@ export function recordMarket(w: World, at: number) {
     w.establishments.map((establishment) => [establishment.id, establishment]),
   );
   const properties = new Map(w.properties.map((property) => [property.id, property]));
-  const regionStates = new Map(regions.map((region) => [region.id, region.state]));
   const offerScopes = new Map<string, string[]>();
   for (const offer of w.offers) {
     const establishment = establishments.get(offer.establishmentId)!;
@@ -343,19 +375,6 @@ export function recordMarket(w: World, at: number) {
       sample.offerCount++;
     }
   }
-  // Ledger order and offer order match marketView's reductions, preserving rounding.
-  if (!scopedLedgerIndexes.has(w))
-    for (const entry of w.ledger) {
-      if (!entry.product || entry.channel !== 'wholesale') continue;
-      const state = regionStates.get(entry.regionId ?? '');
-      const scopes = ['', ...(state ? [entry.regionId!, `state:${state}`] : [])];
-      for (const scope of scopes) {
-        const sample = samples.get(entry.product)?.get(scope);
-        if (!sample) continue;
-        sample.tradedQuantity += entry.quantity ?? 0;
-        sample.tradedValue += entry.amount;
-      }
-    }
   for (const product of productIds)
     for (const regionId of scopeIds) {
       const row = samples.get(product)!.get(regionId)!;
@@ -367,8 +386,8 @@ export function recordMarket(w: World, at: number) {
         price: row.stock ? Math.round(row.weightedPrice / row.stock) : null,
         stock: row.stock,
         offerCount: row.offerCount,
-        tradedQuantity: indexed?.tradedQuantity ?? row.tradedQuantity,
-        tradedValue: indexed?.tradedValue ?? row.tradedValue,
+        tradedQuantity: indexed.tradedQuantity,
+        tradedValue: indexed.tradedValue,
       });
     }
   if (w.marketHistory.length > 33000) w.marketHistory.splice(0, w.marketHistory.length - 33000);

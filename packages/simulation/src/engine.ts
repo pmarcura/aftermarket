@@ -62,6 +62,8 @@ import {
   recordMarket,
   regionFor,
   seasonPrice,
+  propertyOf,
+  establishmentOf,
   wholesaleReference,
 } from './metrics';
 export { distanceKm } from './geometry';
@@ -88,7 +90,7 @@ function company(w: World, id: string) {
   return c;
 }
 function establishment(w: World, id: string) {
-  const e = w.establishments.find((x) => x.id === id);
+  const e = establishmentOf(w, id);
   ensure(e, 'Estabelecimento não encontrado.');
   return e;
 }
@@ -174,19 +176,18 @@ export function quote(
 ) {
   const origin = establishment(w, originId),
     dest = establishment(w, destinationId);
-  const op = w.properties.find((x) => x.id === origin.propertyId)!,
-    dp = w.properties.find((x) => x.id === dest.propertyId)!;
+  const op = propertyOf(w, origin.propertyId)!,
+    dp = propertyOf(w, dest.propertyId)!;
   const route = w.routes[`${op.id}:${dp.id}`];
   const km = route?.distanceKm ?? Math.max(3, distanceKm(op.coordinates, dp.coordinates) * 1.3);
   const load = loadOf({ [product]: quantity });
   const cfg = w.season.config.parameters;
-  const available = w.vehicles
-    .filter((x) => x.companyId === carrierId && x.status === 'available')
-    .sort(
-      (a, b) =>
-        distanceKm(w.properties.find((p) => p.id === a.propertyId)!.coordinates, op.coordinates) -
-        distanceKm(w.properties.find((p) => p.id === b.propertyId)!.coordinates, op.coordinates),
-    );
+  // Distância de cada caminhão até a origem calculada uma vez, não dentro da ordenação.
+  const gap = new Map<string, number>();
+  const available = w.vehicles.filter((x) => x.companyId === carrierId && x.status === 'available');
+  for (const v of available)
+    gap.set(v.id, distanceKm(propertyOf(w, v.propertyId)!.coordinates, op.coordinates));
+  available.sort((a, b) => gap.get(a.id)! - gap.get(b.id)!);
   let remaining = quantity;
   const ownFleet = carrierId === dest.companyId || carrierId === origin.companyId;
   const parts = [];
@@ -197,11 +198,7 @@ export function quote(
       Math.floor((vehicle.capacityM3 + 1e-9) / products[product].volumeM3),
     );
     if (units <= 0) continue;
-    const relocation =
-      distanceKm(
-        w.properties.find((x) => x.id === vehicle.propertyId)!.coordinates,
-        op.coordinates,
-      ) * 1.3;
+    const relocation = gap.get(vehicle.id)! * 1.3;
     const totalKm = km + relocation;
     const relocationMs = ((relocation / cfg.averageSpeedKmH) * 3600000) / TIME_SCALE;
     const loadingMs = (cfg.loadingMinutes * 60000) / TIME_SCALE;

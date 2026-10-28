@@ -1273,85 +1273,6 @@ td .primary {
   box-shadow: 0 3px 10px #10203020;
   border-radius: 6px;
 }
-.map-marker {
-  height: 37px;
-  width: 37px;
-  min-height: 37px;
-  padding: 7px;
-  border-radius: 8px;
-  background: #52646d;
-  color: #f2f6f5;
-  border: 2px solid #ffffffa8;
-  box-shadow: 0 3px 8px #112e3b44;
-  position: absolute;
-  z-index: 3;
-  transition:
-    background 0.12s,
-    box-shadow 0.12s;
-}
-.map-marker:after {
-  content: '';
-  position: absolute;
-  bottom: -7px;
-  width: 9px;
-  height: 9px;
-  transform: rotate(45deg);
-  background: inherit;
-  z-index: -1;
-  border-right: 2px solid #ffffffa8;
-  border-bottom: 2px solid #ffffffa8;
-}
-.map-marker.farm {
-  background: #629e68;
-}
-.map-marker.mine {
-  background: #ac7f49;
-}
-.map-marker.retail {
-  background: #cb685e;
-}
-.map-marker.logistics {
-  background: #508fb5;
-}
-.map-marker.warehouse {
-  background: #9275a0;
-}
-.map-marker.available {
-  border-style: dashed;
-  border-color: #eff9ff;
-  background: #447fa9;
-  box-shadow:
-    0 0 0 6px #3e8fc229,
-    0 3px 10px #25425140;
-}
-.map-marker.selected {
-  border-color: white;
-  background: #227cb9;
-  box-shadow:
-    0 0 0 8px #2b9ce536,
-    0 3px 12px #12374e66;
-  z-index: 5;
-}
-.map-marker:hover {
-  background: #244b60;
-  box-shadow:
-    0 0 0 6px #fffffc60,
-    0 3px 10px #0004;
-}
-.map-marker.mini {
-  width: 23px;
-  height: 23px;
-  min-height: 23px;
-  padding: 4px;
-  border-width: 1px;
-  border-radius: 4px;
-}
-.map-marker.mini:after {
-  height: 5px;
-  width: 5px;
-  bottom: -4px;
-  border-width: 1px;
-}
 .mini-map {
   min-height: 100%;
 }
@@ -4012,4 +3933,31 @@ td .primary {
   .property-sidebar .property-stats {
     padding-bottom: 12px;
   }
+}
+
+/* Botões de acesso aos negócios do mapa: invisíveis até receberem foco do teclado. */
+.map-access {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 6;
+}
+.map-access button {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.map-access button:focus-visible {
+  width: auto;
+  height: auto;
+  padding: 9px 14px;
+  clip: auto;
+  background: #12212a;
+  color: #e9f1f3;
+  border: 1px solid #e6b866;
+  border-radius: 10px;
 }

@@ -1,0 +1,117 @@
+import { economyHealth } from '../../../packages/simulation/src/design';
+import { tradeTotalsByScope } from '../../../packages/simulation/src/metrics';
+import { GAME_DAY } from '../../../packages/simulation/src/operations';
+import { simplifyPath } from '../../../packages/simulation/src/geometry';
+import {
+  seasonProducts,
+  type Entry,
+  type World,
+  type WorldViewSummary,
+} from '../../../packages/simulation/src/model';
+
+// Pacote que o navegador recebe. O mundo completo cresce sem parar (extrato, lotes, entregas e
+// estradas inteiras: 28 MB aos 30 dias); aqui vai só o que as telas do jogador usam, com os
+// totais desde a abertura calculados no servidor.
+export const VIEW_LEDGER_DAYS = 7;
+const RECENT_DAYS = 2;
+const MAX_LEDGER = 4000;
+const ROUTE_POINTS = 150;
+
+// Indicadores que não dependem do jogador: calculados uma vez por revisão do mundo.
+const shared = new WeakMap<
+  World,
+  { revision: number; trade: WorldViewSummary['tradeTotals']; health: WorldViewSummary['health'] }
+>();
+function sharedSummary(w: World) {
+  const cached = shared.get(w);
+  if (cached && cached.revision === w.revision) return cached;
+  const health: WorldViewSummary['health'] = { '': economyHealth(w) };
+  for (const product of seasonProducts(w)) health[product] = economyHealth(w, w.updatedAt, product);
+  const next = { revision: w.revision, trade: tradeTotalsByScope(w), health };
+  shared.set(w, next);
+  return next;
+}
+
+// O extrato só recebe registros no fim e em ordem de tempo (com pequenas inversões entre
+// comando e rodada); lê de trás para frente com um dia de folga.
+function recentEntries(ledger: Entry[], since: number, keep: (l: Entry) => boolean) {
+  const out: Entry[] = [];
+  for (let i = ledger.length - 1; i >= 0; i--) {
+    const l = ledger[i];
+    if (l.at < since - GAME_DAY) break;
+    if (l.at >= since && keep(l)) out.push(l);
+  }
+  return out.reverse();
+}
+
+export function worldView(w: World, actor: string): World {
+  const now = w.updatedAt,
+    recent = now - GAME_DAY * RECENT_DAYS;
+  const mine = (l: Entry) => l.from === actor || l.to === actor;
+  const ledger = recentEntries(w.ledger, now - GAME_DAY * VIEW_LEDGER_DAYS, mine).slice(
+    -MAX_LEDGER,
+  );
+  const units = new Set(w.establishments.filter((e) => e.companyId === actor).map((e) => e.id));
+  const properties = new Set(w.properties.filter((p) => p.ownerId === actor).map((p) => p.id));
+  const totals: WorldViewSummary['totals'] = {};
+  const retailByEstablishment: Record<string, number> = {};
+  for (const l of w.ledger) {
+    if (l.to === actor) (totals[l.kind] ??= { in: 0, out: 0 }).in += l.amount;
+    if (l.from === actor) (totals[l.kind] ??= { in: 0, out: 0 }).out += l.amount;
+    if (l.kind === 'retail' && l.establishmentId && units.has(l.establishmentId))
+      retailByEstablishment[l.establishmentId] =
+        (retailByEstablishment[l.establishmentId] ?? 0) + l.amount;
+  }
+  const shipments = w.shipments.filter((s) => !s.delivered || s.arrivesAt >= recent);
+  const usedPaths = new Set(
+    shipments.flatMap((s) => [s.routeKey, s.mapRouteKey].filter(Boolean) as string[]),
+  );
+  // Estradas: resumo de todas (distância e duração entram no cálculo do frete), desenho só das
+  // que tocam um imóvel do jogador, simplificado.
+  const routes = Object.fromEntries(
+    Object.entries(w.routes).map(([key, route]) => {
+      const [origin, destination] = key.split(':');
+      const draw = properties.has(origin) || properties.has(destination) || usedPaths.has(key);
+      return [
+        key,
+        { ...route, coordinates: draw ? simplifyPath(route.coordinates, ROUTE_POINTS) : [] },
+      ];
+    }),
+  );
+  const roadPaths = Object.fromEntries(
+    Object.entries(w.roadPaths ?? {})
+      .filter(([key]) => usedPaths.has(key))
+      .map(([key, path]) => [key, simplifyPath(path, ROUTE_POINTS)]),
+  );
+  const common = sharedSummary(w);
+  return {
+    ...w,
+    ledger,
+    jobs: w.jobs.filter((j) => !j.completed || j.finishesAt >= recent),
+    shipments,
+    orders: w.orders.filter(
+      (o) => o.status === 'pending' || o.status === 'accepted' || o.createdAt >= recent,
+    ),
+    consumptionHistory: w.consumptionHistory.filter(
+      (h) => h.at >= recent && units.has(h.establishmentId),
+    ),
+    supplyHistory: (w.supplyHistory ?? []).filter(
+      (h) => h.at >= recent && units.has(h.establishmentId),
+    ),
+    infrastructure: w.infrastructure.filter(
+      (c) => c.status === 'open' || c.status === 'delivering' || c.createdAt >= recent,
+    ),
+    botActivity: (w.botActivity ?? []).slice(-200),
+    marketHistory: w.marketHistory.slice(-220),
+    routes,
+    roadPaths,
+    view: {
+      actor,
+      ledgerDays: VIEW_LEDGER_DAYS,
+      totals,
+      retailByEstablishment,
+      tradeTotals: common.trade,
+      health: common.health,
+    },
+  };
+}

@@ -587,7 +587,27 @@ export function runSupplyPolicies(w: World, at: number) {
         );
         continue;
       }
-      let best = supplyCandidates(w, e, rule.product, want, policy, at)[0];
+      const found = supplyCandidates(w, e, rule.product, want, policy, at);
+      // Versão 2 (D-039): acima do mínimo, indústria e atacado só compram carga que valha a viagem
+      // (meio caminhão pesado ou tudo o que falta). Antes a fábrica de ração levava cada 1,5 t de
+      // farelo que saía da esmagadora vizinha, a R$ 228/t por 48 km, cinco vezes o frete de carga cheia.
+      const consolidate =
+        w.season.config.economyVersion && e.category !== 'retail' && position > rule.minimum;
+      const worthwhile = Math.min(
+        want,
+        Math.floor(vehicleModels.truckHeavy.capacityT / products[rule.product].massT / 2),
+      );
+      let best = (consolidate ? found.filter((c) => c.quantity >= worthwhile) : found)[0];
+      if (!best && found.length) {
+        trace(
+          e,
+          'waiting-full-load',
+          'Acima do mínimo, a compra espera o fornecedor juntar meia carga de caminhão.',
+          rule.product,
+          'idle',
+        );
+        continue;
+      }
       if (!best) {
         e.supplyStatus = `Sem origem elegível para ${products[rule.product].name}`;
         trace(e, 'no-eligible-source', e.supplyStatus, rule.product);

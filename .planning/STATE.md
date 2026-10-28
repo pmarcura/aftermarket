@@ -18,14 +18,14 @@ O jogo roda localmente: mapa real de SP–MG, compra de imóveis, produção, es
 
 ## Furos conhecidos
 
-| Área        | Problema                                                                                                                                 | Onde está o detalhe                                                                |
-| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| Economia v2 | Escala 20: ração, arroz, feijão, utensílios e caminhão leve no vermelho; aço ao governo 213 de 320 t/dia; procura atendida 50%           | [PROVA-V2-ESCALA-20](../docs/product/PROVA-V2-ESCALA-20.md), D-036, D-038, HANDOFF |
-| Mundo v2    | Só 12 lotes livres e os dois jogadores de teste começam em Campinas                                                                      | etapa D (uma cidade e lotes por amigo)                                             |
-| Economia v1 | O mundo principal salvo segue a economia antiga (aço só para o governo, farelo sobrando)                                                 | [ECONOMIA-HOJE](../docs/product/ECONOMIA-HOJE.md)                                  |
-| Desempenho  | Mundo salvo como um JSON único, regravado a cada 2 s; navegador baixa tudo a cada 3 s; ~2 s de cálculo por dia de jogo no fim de 90 dias | etapa C do roteiro                                                                 |
-| Multiplayer | Servidor só escuta `127.0.0.1`; perfis sem senha                                                                                         | etapa D do roteiro                                                                 |
-| Interface   | Loja com 9 abas; sem mural de notícias nem ranking                                                                                       | etapa E do roteiro                                                                 |
+| Área        | Problema                                                                                                                                 | Onde está o detalhe                                                                       |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Economia v2 | Escala 20: arroz, feijão, utensílios e caminhão leve no vermelho; aço ao governo ~190 de 320 t/dia; procura atendida 51%                 | [PROVA-V2-ESCALA-20](../docs/product/PROVA-V2-ESCALA-20.md), D-036, D-038, D-039, HANDOFF |
+| Mundo v2    | Só 12 lotes livres e os dois jogadores de teste começam em Campinas                                                                      | etapa D (uma cidade e lotes por amigo)                                                    |
+| Economia v1 | O mundo principal salvo segue a economia antiga (aço só para o governo, farelo sobrando)                                                 | [ECONOMIA-HOJE](../docs/product/ECONOMIA-HOJE.md)                                         |
+| Desempenho  | Mundo salvo como um JSON único, regravado a cada 2 s; navegador baixa tudo a cada 3 s; ~2 s de cálculo por dia de jogo no fim de 90 dias | etapa C do roteiro                                                                        |
+| Multiplayer | Servidor só escuta `127.0.0.1`; perfis sem senha                                                                                         | etapa D do roteiro                                                                        |
+| Interface   | Loja com 9 abas; sem mural de notícias nem ranking                                                                                       | etapa E do roteiro                                                                        |
 
 ## Próximo passo
 

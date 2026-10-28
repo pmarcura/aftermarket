@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "fixtureFingerprint": "0f31010d0f7352c5fd7718af3b7d6e17598ad9b9e70685928ea1bc20e0215554",
+  "fixtureFingerprint": "9129b0835d495942f55d4bf127d570782e084b71cb7e2a4581e5c2cc0fa3395a",
   "note": "Inventário estático alcançável por tela; inclui componentes compartilhados e ramos condicionais. Textos dinâmicos e estados visíveis precisam da evidência de navegador. Comandos type são candidatos, não prova de execução.",
   "screens": [
     {

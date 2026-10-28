@@ -184,7 +184,7 @@ export const designItems: Record<DesignItemId, DesignItem> = {
     isNew: true,
     band: [200, 330],
     bandSource: 'real',
-    price: { kind: 'band', position: 0.75 }, // paga o farelo de ~580 km (D-036)
+    price: { kind: 'band', position: 0.85 }, // paga o farelo de ~580 km em cargas reais (D-036, D-039)
   },
   cow: {
     name: 'Vaca leiteira',

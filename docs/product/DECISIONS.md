@@ -185,6 +185,15 @@ Calibração da cadeia do metal com ~500 bots. Decisões de rotina:
 - **Resultado (escala 20, 2 sementes, últimos 10 de 20 dias):** minério de 9 para 36 linhas, carvão de 9 para 35, aço de 16 para 68 (64% da referência; os bots abrem com 80%); siderúrgicas de −R$ 35 mil para +R$ 475 mil por dia; aço ao governo de 11,7 para 213 t/dia (meta 320); procura atendida de 38% para 50%; nenhuma quebra.
 - **Ainda abaixo da meta do governo:** cada edital pede de 6 a 24 t de uma só usina; as fábricas compram o aço assim que sai do forno e os editais de 24 t expiram sem lance. Fica para depois da ração.
 
+### D-039 · Carga que valha a viagem e ração pelo frete real (28/10/2026)
+
+Calibração da ração com ~500 bots. Decisões de rotina:
+
+- **Acima do mínimo, só carga que valha a viagem.** Indústria e atacado (jogadores e bots) só compram acima do estoque mínimo se a carga encher meio caminhão pesado ou cobrir tudo o que falta; abaixo do mínimo aceitam qualquer carga. Antes a fábrica de ração levava cada 1,5 t de farelo que saía da esmagadora vizinha: 175 cargas de menos de 5 t por 48 km, a R$ 228/t, cinco vezes o frete de carga cheia. Lojas ficam de fora (compram pouco e perto).
+- **Ração no ponto 0,85 da faixa real (R$ 3,11/kg, era R$ 2,98).** O farelo de ~1.000 km chega em cargas de 15 a 25 t, e o frete pago (~R$ 350/t) é o dobro dos R$ 172/t da calculadora, que supõe caminhão cheio. A ordenha, que lucra R$ 2,5 milhões por dia, absorve os 4%. Todas as 67 verificações da calculadora passam; margem de projeto da ração 16%, do leite 60%.
+- **Resultado (escala 20, 2 sementes, últimos 10 de 20 dias):** ração de −R$ 162 mil para −R$ 20 mil por dia; esmagadoras de −R$ 18 mil para +R$ 36 mil; lojas de +R$ 239 mil para +R$ 324 mil; procura atendida 51%; nenhuma quebra.
+- **Ruído entre rodadas continua grande:** utensílios variaram de −R$ 16 mil a −R$ 164 mil com mudanças que não tocam a cadeia deles; aço ao governo de 184 a 213 t/dia. Próximo a investigar.
+
 ### Ideia em avaliação · Genética de cultivares (Pedro, 28/10/2026)
 
 O Pedro propôs um sistema de genética a partir de uma pesquisa sobre a cana. O produtor compra uma pequena quantidade de mudas de alta tecnologia no viveiro e as multiplica numa área própria. Depois replanta com a própria cana por anos e só volta a comprar para trocar de variedade, para limpar o canavial de doenças ou para expandir a área de uma vez.

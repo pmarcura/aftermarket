@@ -1664,7 +1664,10 @@ export const publicSpendingRules = { dailyShare: 0.3, reservePerState: 150000000
 function publicSpending(w: World, at: number) {
   const share = 1 - (1 - publicSpendingRules.dailyShare) ** (ECONOMIC_INTERVAL / GAME_DAY);
   for (const c of w.companies.filter((c) => c.id.startsWith('treasury:'))) {
-    const free = treasuryAvailable(w, c.id.slice(9)) - publicSpendingRules.reservePerState;
+    // A reserva das obras cresce com a escala do mundo, como os editais (D-036).
+    const free =
+      treasuryAvailable(w, c.id.slice(9)) -
+      publicSpendingRules.reservePerState * (w.season.config.worldScale ?? 1);
     const amount = Math.floor(free * share);
     if (amount > 0)
       transfer(
@@ -2136,6 +2139,12 @@ function runAutomations(w: World, at: number) {
         );
     }
   }
+  // Uma leitura de mercado por produto na rodada, não uma por vendedor.
+  const markets = new Map<ProductId, ReturnType<typeof marketView>>();
+  const marketOf = (id: ProductId) => {
+    if (!markets.has(id)) markets.set(id, marketView(w, id));
+    return markets.get(id)!;
+  };
   for (const e of w.establishments.filter((e) => e.enabled && company(w, e.companyId).bot)) {
     const recipe = w.season.config.recipes.find((r) => r.id === e.specialization);
     // Versão 2: insumos comprados para a própria receita não voltam à venda.
@@ -2154,15 +2163,32 @@ function runAutomations(w: World, at: number) {
         (e.category === 'industry' && ['soy', 'iron', 'coal'].includes(id))
       )
         continue;
-      const daily = marketView(w, id).demand;
-      const scarce = daily > 0 ? Math.max(0, 1 - quantity / Math.max(daily * 3, 1)) : 0;
+      const market = marketOf(id),
+        daily = market.demand;
+      // Versão 2 (D-036): falta é o estoque do mercado inteiro abaixo de 3 dias de procura. Antes
+      // cada vendedor comparava o próprio estoque com a procura do país e, com 500 empresas, todos
+      // se achavam em falta e cobravam 8% acima da referência. A versão 1 segue igual.
+      const scarce =
+        daily > 0
+          ? Math.max(
+              0,
+              1 -
+                (w.season.config.wholesalePrices ? market.stock : quantity) /
+                  Math.max(daily * 3, 1),
+            )
+          : 0;
+      const cost = e.unitCosts[id] ?? 0,
+        margin = w.season.config.design.wholesaleMargin;
       // Versão 2 (D-033): mira a referência de fábrica, 8% abaixo com estoque sobrando e 8% acima
-      // quando falta, nunca abaixo do custo. A versão 1 segue custo mais margem.
+      // quando falta, nunca abaixo do custo. O atacadista (D-036) vende pelo custo posto, que já
+      // inclui o frete longo, mais a própria margem. A versão 1 segue custo mais margem.
       const price = w.season.config.wholesalePrices
-        ? Math.max(
-            Math.round((e.unitCosts[id] ?? 0) * 1.02),
-            Math.round(wholesaleReference(w, id) * (0.92 + scarce * 0.16)),
-          )
+        ? e.category === 'warehouse' && margin !== undefined && cost > 0
+          ? Math.round(cost * (1 + margin + scarce * 0.04))
+          : Math.max(
+              Math.round(cost * 1.02),
+              Math.round(wholesaleReference(w, id) * (0.92 + scarce * 0.16)),
+            )
         : Math.max(
             1,
             Math.round((e.unitCosts[id] ?? seasonPrice(w, id) * 0.75) * (1.12 + scarce * 0.18)),

@@ -12,7 +12,9 @@ import { cities, hubCity, hubs, siteNear, type City } from '../../world/src/geog
 import {
   dailyFlows,
   designWorld,
+  freightPerTonne,
   storeEconomics,
+  type DesignItemId,
   vehicleModels,
   type VehicleModel,
 } from './economy-design';
@@ -100,6 +102,16 @@ export function purchasedInputs(w: World, r: Recipe) {
   }));
 }
 
+// Teto de frete por unidade: 30% do preço do item ou o dobro do frete de projeto no mapa real, o
+// que for maior (D-036). Com 30% fixos, o carvão de Criciúma (~1.700 km) nunca chegava às usinas.
+function freightCap(w: World, product: ProductId) {
+  return Math.round(
+    Math.max(
+      0.3 * w.season.config.basePrices[product],
+      2 * freightPerTonne(product as DesignItemId) * products[product].massT,
+    ),
+  );
+}
 export function v2SupplyPolicy(w: World, e: Establishment): SupplyPolicy {
   const r = w.season.config.recipes.find((x) => x.id === e.specialization);
   const cycles = e.automationCycles ?? 1;
@@ -133,22 +145,32 @@ export function v2SupplyPolicy(w: World, e: Establishment): SupplyPolicy {
           maxBuy: target,
           maxPrice: Math.round(w.season.config.basePrices[product] * 1.5),
           // Teto de frete por produto: 30% do preço do próprio item (carvão distante segue viável).
-          maxFreightPerUnit: Math.round(0.3 * w.season.config.basePrices[product]),
+          maxFreightPerUnit: freightCap(w, product),
         };
       })
     : e.category === 'retail' || e.category === 'warehouse'
       ? householdItems(w).map((product) => {
+          const days = e.category === 'warehouse' ? DISTRIBUTOR_STOCK_DAYS : RETAIL_STOCK_DAYS;
+          // Atacadista (D-036) repõe em caminhão pesado cheio: pede quando falta uma carga para o
+          // alvo. Antes pedia o que faltava, às vezes 4 t para 1.300 km, e o frete passava do teto.
+          const truckload = Math.floor(
+            vehicleModels.truckHeavy.capacityT / products[product].massT,
+          );
           const target = Math.ceil(
-            retailDaily(product) *
-              (e.category === 'warehouse' ? DISTRIBUTOR_STOCK_DAYS : RETAIL_STOCK_DAYS),
+            e.category === 'warehouse'
+              ? Math.max(retailDaily(product) * days, truckload * 1.5)
+              : retailDaily(product) * days,
           );
           return {
             product,
-            minimum: Math.ceil(target / 3),
+            minimum:
+              e.category === 'warehouse'
+                ? Math.max(0, Math.min(target - truckload, Math.ceil(target / 3)))
+                : Math.ceil(target / 3),
             target,
             maxBuy: target,
             maxPrice: Math.round(w.season.config.basePrices[product] * 1.5),
-            maxFreightPerUnit: Math.round(0.3 * w.season.config.basePrices[product]),
+            maxFreightPerUnit: freightCap(w, product),
           };
         })
       : [];
@@ -163,20 +185,29 @@ export function v2SupplyPolicy(w: World, e: Establishment): SupplyPolicy {
           n + (rule.target / RETAIL_STOCK_DAYS) * w.season.config.basePrices[rule.product],
         0,
       );
-  // Teto de frete: 30% do preço do item mais barato; cargas pequenas esperam juntar volume.
-  const freightCap = Math.round(
-    0.3 * Math.min(...rules.map((rule) => w.season.config.basePrices[rule.product])),
-  );
+  // Teto geral: o menor teto por produto; cargas pequenas esperam juntar volume.
+  const policyCap = Math.min(...rules.map((rule) => rule.maxFreightPerUnit ?? Infinity));
   return {
     enabled: rules.length > 0,
-    dailyBudget: Math.max(2000000, Math.ceil(dailyInputs * 1.5)),
+    // Cabe ao menos o maior pedido da regra com frete (D-036): com 1,5 dia de insumos, o caminhão
+    // cheio de carvão (até uma semana de uso) era sempre barrado pelo orçamento.
+    dailyBudget: Math.max(
+      2000000,
+      Math.ceil(dailyInputs * 1.5),
+      ...rules.map((rule) =>
+        Math.ceil(
+          rule.target * w.season.config.basePrices[rule.product] +
+            (rule.maxFreightPerUnit ?? 0) * rule.target,
+        ),
+      ),
+    ),
     cashReserve: 500000,
     source: 'internal-first',
     purchaseMode: 'immediate',
     // Centro-Sul real: carvão de SC e RS abastece siderúrgicas de MG e RJ; o teto de frete limita o resto.
     maxDistanceKm: 3500,
     minQuality: 40,
-    maxFreightPerUnit: rules.length ? freightCap : 0,
+    maxFreightPerUnit: rules.length ? policyCap : 0,
     carrierId: 'auto',
     rules,
   };

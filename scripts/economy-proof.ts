@@ -14,14 +14,23 @@ const arg = (name: string, fallback: string) =>
 const from = arg('from', '')
   .split(',')
   .filter(Boolean)
-  .map((f) => JSON.parse(readFileSync(f, 'utf8')) as { days: number; results: SeedResult[] });
+  .map(
+    (f) =>
+      JSON.parse(readFileSync(f, 'utf8')) as {
+        days: number;
+        window?: number;
+        scale?: number;
+        results: SeedResult[];
+      },
+  );
 const days = from[0]?.days ?? Number(arg('days', '90'));
 const seeds = from.length
   ? from.flatMap((f) => f.results.map((r) => r.seed))
   : arg('seeds', '0,1,2').split(',').map(Number);
-const window = Math.min(30, days);
+// Janela medida: os últimos dias, depois da partida (padrão: até 30 dias, metade em rodadas curtas).
+const window = from[0]?.window ?? Number(arg('window', String(Math.min(30, Math.ceil(days / 2)))));
 const out = arg('out', 'test-results/economy-proof.json');
-const scale = Number(arg('scale', '1')); // últimos dias, depois da partida
+const scale = from[0]?.scale ?? Number(arg('scale', '1'));
 const AT = Date.UTC(2026, 9, 26, 12);
 const flows = dailyFlows();
 
@@ -42,6 +51,17 @@ interface SeedResult {
 }
 
 const money = (w: World) => w.companies.reduce((n, c) => n + c.balance, 0);
+// Estoque de cada empresa ao preço de referência: o caixa sozinho chama de prejuízo o estoque formado.
+const stockValue = (w: World) => {
+  const value = new Map<string, number>();
+  for (const e of w.establishments)
+    for (const [id, q] of Object.entries(e.inventory) as [ProductId, number][])
+      value.set(
+        e.companyId,
+        (value.get(e.companyId) ?? 0) + q * (w.season.config.wholesalePrices?.[id] ?? 0),
+      );
+  return value;
+};
 
 function run(seed: number): SeedResult {
   const w = createScenario(AT, 'economy-2', seed, { scale });
@@ -65,11 +85,13 @@ function run(seed: number): SeedResult {
     retired = 0,
     drift = 0;
   let fleet = new Map(w.vehicles.map((v) => [v.id, v.companyId]));
+  let startStock = stockValue(w);
   const started = performance.now();
   for (let d = 1; d <= days; d++) {
     const dayStart = AT + (d - 1) * GAME_DAY;
     advance(w, AT + d * GAME_DAY);
     drift = Math.max(drift, Math.abs(money(w) - opening));
+    if (AT + d * GAME_DAY === from) startStock = stockValue(w);
     if (dayStart < from) {
       fleet = new Map(w.vehicles.map((v) => [v.id, v.companyId]));
       for (const c of w.infrastructure) if (c.status === 'completed') completed.add(c.id);
@@ -112,19 +134,32 @@ function run(seed: number): SeedResult {
   const bought = (re: RegExp) =>
     recent.filter((l) => (l.kind === 'trade' || l.kind === 'vehicle') && re.test(l.description))
       .length / window;
-  // Fluxo de caixa operacional por especialidade dos rivais: entradas menos saídas, sem capital.
+  // Resultado operacional por especialidade dos rivais: entradas menos saídas mais o estoque
+  // formado, sem capital (imóveis, crédito, caminhões comprados e vendidos, educação da equipe).
+  // Uma vez por empresa: antes, empresa com duas unidades entrava duas vezes.
   const margins: Record<string, number> = {};
-  const capital = new Set(['property', 'loan', 'repayment', 'budget', 'asset-sale']);
-  for (const e of w.establishments.filter((e) => e.companyId.startsWith('rival-'))) {
-    const key = e.specialization ?? e.category;
-    const flow = recent
-      .filter((l) => !capital.has(l.kind))
-      .reduce(
-        (n, l) =>
-          n + (l.to === e.companyId ? l.amount : 0) - (l.from === e.companyId ? l.amount : 0),
-        0,
-      );
-    margins[key] = (margins[key] ?? 0) + flow / window;
+  const capital = new Set([
+    'property',
+    'loan',
+    'repayment',
+    'budget',
+    'asset-sale',
+    'vehicle',
+    'education',
+  ]);
+  const flowOf = new Map<string, number>();
+  for (const l of recent)
+    if (!capital.has(l.kind)) {
+      flowOf.set(l.to, (flowOf.get(l.to) ?? 0) + l.amount);
+      flowOf.set(l.from, (flowOf.get(l.from) ?? 0) - l.amount);
+    }
+  const endStock = stockValue(w);
+  for (const c of w.companies.filter((c) => c.id.startsWith('rival-'))) {
+    const units = w.establishments.filter((e) => e.companyId === c.id);
+    if (!units.length) continue;
+    const key = units[0].specialization ?? units[0].category;
+    const stock = (endStock.get(c.id) ?? 0) - (startStock.get(c.id) ?? 0);
+    margins[key] = (margins[key] ?? 0) + ((flowOf.get(c.id) ?? 0) + stock) / window;
   }
   // Estoque parado: dias de venda que o estoque total cobre, pelo atacado e varejo recentes.
   const idleStockDays: Record<string, number> = {};
@@ -190,7 +225,7 @@ for (const seed of from.length ? [] : seeds) {
   );
 }
 mkdirSync('test-results', { recursive: true });
-writeFileSync(out, JSON.stringify({ days, window, seeds, results }, null, 2));
+writeFileSync(out, JSON.stringify({ days, window, scale, seeds, results }, null, 2));
 console.log(`Relatório completo em ${out}`);
 if (process.argv.includes('--write-doc')) writeDoc();
 
@@ -207,10 +242,20 @@ function writeDoc() {
       0,
     )} |`;
   });
+  for (const [key, name] of [
+    ['retail', 'Lojas'],
+    ['warehouse', 'Distribuidores'],
+  ])
+    rows.push(
+      `| ${name} | — | — | — | ${fmt(
+        avg((x) => (x.margins[key] ?? 0) / 100),
+        0,
+      )} |`,
+    );
   const products = Object.keys(results[0].coverage).sort();
   const doc = `# Prova da economia versão 2
 
-Gerado por \`npm run economy:proof -- --days=${days} --seeds=${seeds.join(',')} --write-doc\`. Médias de ${seeds.length} sementes nos últimos ${window} dias de ${days}. As sementes variam o capital inicial e os orçamentos dos bots em ±15% e rodam as estratégias; não há jogadores humanos. Detalhe por semente em \`test-results/economy-proof.json\`.
+Gerado por \`npm run economy:proof -- --days=${days} --window=${window} --scale=${scale} --seeds=${seeds.join(',')} --write-doc\`, escala ${scale} do mundo de referência. Médias de ${seeds.length} sementes nos últimos ${window} dias de ${days}. As sementes variam o capital inicial e os orçamentos dos bots em ±15% e rodam as estratégias; não há jogadores humanos. Detalhe por semente em \`test-results/economy-proof.json\`.
 
 ## Resumo
 
@@ -246,9 +291,9 @@ Gerado por \`npm run economy:proof -- --days=${days} --seeds=${seeds.join(',')} 
 
 ## Produção por negócio
 
-"Linhas" é a produção diária dividida pela de uma linha a plena capacidade. Caixa é o fluxo operacional diário dos bots da especialidade (entradas menos saídas, sem compra de imóveis e equipamento).
+"Linhas" é a produção diária dividida pela de uma linha a plena capacidade. Resultado é o lucro operacional diário dos bots da especialidade: entradas menos saídas mais o estoque formado a preço de referência, sem imóveis, crédito, caminhões e educação da equipe.
 
-| Negócio | Linhas na referência | Linhas observadas | % | Caixa dos bots/dia (R$) |
+| Negócio | Linhas na referência | Linhas observadas | % | Resultado dos bots/dia (R$) |
 | --- | ---: | ---: | ---: | ---: |
 ${rows.join('\n')}
 
@@ -278,6 +323,7 @@ ${Object.keys(results[0].idleStockDays)
   )
   .join('\n')}
 `;
-  writeFileSync('docs/product/PROVA-V2.md', doc);
-  console.log('Documento em docs/product/PROVA-V2.md');
+  const target = arg('doc', 'docs/product/PROVA-V2.md');
+  writeFileSync(target, doc);
+  console.log(`Documento em ${target}`);
 }

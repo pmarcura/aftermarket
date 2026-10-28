@@ -153,7 +153,7 @@ export const designItems: Record<DesignItemId, DesignItem> = {
     isNew: false,
     band: [210000, 270000],
     bandSource: 'real',
-    price: { kind: 'band', position: 0.5 },
+    price: { kind: 'band', position: 0.4 }, // porta da fazenda no Centro-Oeste, longe do porto (D-036)
   },
   soymeal: {
     name: 'Farelo de soja',
@@ -184,7 +184,7 @@ export const designItems: Record<DesignItemId, DesignItem> = {
     isNew: true,
     band: [200, 330],
     bandSource: 'real',
-    price: { kind: 'band', position: 0.6 },
+    price: { kind: 'band', position: 0.75 }, // paga o farelo de ~580 km (D-036)
   },
   cow: {
     name: 'Vaca leiteira',
@@ -204,7 +204,7 @@ export const designItems: Record<DesignItemId, DesignItem> = {
     isNew: false,
     band: [400, 750],
     bandSource: 'real',
-    price: { kind: 'band', position: 0.6 },
+    price: { kind: 'band', position: 0.62 }, // leite viaja ~430 km até as cidades (D-036)
     monthlyPerPerson: 8,
   },
   riceSeed: {

@@ -69,7 +69,10 @@ export function v2SeasonConfig(scale = 1): SeasonConfig {
       .reduce((n, p) => n + p.quantity, 0) /
       infrastructurePrograms.length) *
     lotScale;
-  const contractsPerDay = (designWorld.government.steelTonnesPerDay * 2.2) / steelPerContract;
+  // A obra pública cresce com a escala do mundo, como as siderúrgicas (D-036); antes ficava no
+  // tamanho da escala 1 e, com 20×, o governo pedia 1/20 do aço da calculadora.
+  const contractsPerDay =
+    (designWorld.government.steelTonnesPerDay * 2.2 * scale) / steelPerContract;
   config.government = {
     lotScale,
     contractIntervalMs: Math.round((GAME_DAY * states) / contractsPerDay),
@@ -92,6 +95,7 @@ export function v2SeasonConfig(scale = 1): SeasonConfig {
   // A loja de referência da calculadora atende por dia; o motor conta por rodada de duas horas.
   config.operations.retailUnitsPerWorker = designWorld.retail.unitsPerWorkerDay / 12;
   // Equipamento por receita, arredondado a R$ 1.000: é o botão que faz cada linha se pagar no prazo.
+  config.design.wholesaleMargin = designWorld.wholesaleMargin;
   config.design.equipmentByRecipe = Object.fromEntries(
     analyzeDesign().recipes.map((r) => [r.id, Math.round(r.equipment / 100000) * 100000]),
   );

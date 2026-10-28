@@ -26,17 +26,27 @@ import {
 } from './metrics';
 import { freeCash } from './design';
 import { storageQuantity } from './transport';
+import { vehicleModels } from './catalog';
 
 // Busca de fornecedor em escala: transportadoras profissionais sempre cotam; das demais, só as
 // mais próximas da carga. Estimativa grosseira de frete (centavos por tonelada-km) só ordena.
 const CARRIERS = ['transbrasil', 'rodoleste', 'expresso'];
 // Transportadoras regionais (carrier-*) entram pela proximidade, como qualquer frota.
 const SEARCH_CARRIERS = 4;
+const SEARCH_HAULERS = 2;
 const SEARCH_OFFERS = 6;
 const ROUGH_FREIGHT_PER_TKM = 15;
+// Versão 2: custo aproximado de um caminhão pesado por km (diesel, desgaste, motorista, pedágio).
+const TRUCK_COST_PER_KM = 480;
+const ROAD_FACTOR = 1.3;
 const nearbyByRound = new WeakMap<
   World,
-  { at: number; map: Map<string, string[]>; fleets: Map<string, Position[]> | undefined }
+  {
+    at: number;
+    map: Map<string, string[]>;
+    fleets: Map<string, Position[]> | undefined;
+    logistics?: Set<string>;
+  }
 >();
 export function validateSupplyPolicy(policy: SupplyPolicy) {
   const int = (n: number, min = 0, max = 1e9) => Number.isSafeInteger(n) && n >= min && n <= max;
@@ -174,15 +184,26 @@ export function supplyCandidates(
             round!.fleets.set(v.companyId, [...(round!.fleets.get(v.companyId) ?? []), spot]);
         }
     }
-    const near = [...round!.fleets]
+    const ranked = [...round!.fleets]
       .map(([company, spots]) => ({
         company,
         km: Math.min(...spots.map((spot) => distanceKm(spot, at))),
       }))
-      .sort((a, b) => a.km - b.km)
-      .slice(0, SEARCH_CARRIERS)
+      .sort((a, b) => a.km - b.km);
+    const near = ranked.slice(0, SEARCH_CARRIERS).map((x) => x.company);
+    // D-036: as transportadoras regionais mais próximas sempre cotam. Perto de um polo, as frotas
+    // mais próximas são das outras indústrias, quase sempre ocupadas, e o farelo de Rondonópolis
+    // nunca chegava às fábricas de ração de Minas.
+    round!.logistics ??= new Set(
+      w.establishments.filter((x) => x.category === 'logistics').map((x) => x.companyId),
+    );
+    const haulers = ranked
+      .filter((x) => round!.logistics!.has(x.company))
+      .slice(0, SEARCH_HAULERS)
       .map((x) => x.company);
-    const shared = [...CARRIERS, origin.companyId, ...near].filter((id) => companies.get(id)?.bot);
+    const shared = [...new Set([...CARRIERS, origin.companyId, ...near, ...haulers])].filter(
+      (id) => companies.get(id)?.bot,
+    );
     nearby.set(origin.propertyId, shared);
     return [e.companyId, ...shared];
   };
@@ -192,15 +213,25 @@ export function supplyCandidates(
     policy.rules.find((r) => r.product === product)?.maxFreightPerUnit ?? policy.maxFreightPerUnit;
   // Só as ofertas mais baratas contando uma estimativa de frete recebem cotação completa.
   const destination = propertyOf(w, e.propertyId)!.coordinates;
-  const rough = (o: (typeof options)[number]) =>
-    o.price +
-    distanceKm(propertyOf(w, o.origin.propertyId)!.coordinates, destination) *
-      products[product].massT *
-      ROUGH_FREIGHT_PER_TKM;
-  const market = options
-    .filter((o) => !o.internal)
-    .sort((a, b) => rough(a) - rough(b))
-    .slice(0, SEARCH_OFFERS);
+  // Versão 2 (D-036): a viagem custa o mesmo com o caminhão meio vazio, então a estimativa divide
+  // o custo por km do caminhão pelas unidades que a compra leva. Supondo sempre carga cheia, a loja
+  // que queria 100 sacos de arroz só cotava fazendas a 1.300 km e nunca o atacadista da cidade.
+  // A carga também não passa do estoque que o vendedor tem.
+  const truckload = Math.floor(vehicleModels.truckHeavy.capacityT / products[product].massT);
+  const rough = (o: (typeof options)[number]) => {
+    const km = distanceKm(propertyOf(w, o.origin.propertyId)!.coordinates, destination);
+    if (!scaled) return o.price + km * products[product].massT * ROUGH_FREIGHT_PER_TKM;
+    const load = Math.max(
+      1,
+      Math.min(quantity, truckload, availableStock(w, o.origin, product), room),
+    );
+    return o.price + (km * ROAD_FACTOR * TRUCK_COST_PER_KM) / load;
+  };
+  const estimate = new Map(options.filter((o) => !o.internal).map((o) => [o, rough(o)]));
+  const market = [...estimate]
+    .sort((a, b) => a[1] - b[1])
+    .slice(0, SEARCH_OFFERS)
+    .map(([o]) => o);
   if (scaled) options.splice(0, options.length, ...options.filter((o) => o.internal), ...market);
   if (tracing && !options.length)
     trace(
@@ -489,9 +520,15 @@ export function runSupplyPolicies(w: World, at: number) {
       const incoming = w.shipments
           .filter((s) => s.destinationId === e.id && s.product === rule.product && !s.delivered)
           .reduce((n, s) => n + s.quantity, 0),
+        // Versão 2 (D-036): pedido aberto sem vendedor é só um anúncio de procura; contado como
+        // compra feita, travava a reposição por dias quando ninguém respondia.
         ordered = w.orders
           .filter(
-            (o) => o.destinationId === e.id && o.product === rule.product && o.status === 'pending',
+            (o) =>
+              o.destinationId === e.id &&
+              o.product === rule.product &&
+              o.status === 'pending' &&
+              (!w.season.config.economyVersion || o.sellerId || o.proposals?.length),
           )
           .reduce((n, o) => n + o.quantity, 0),
         position = (e.inventory[rule.product] ?? 0) + incoming + ordered;
@@ -529,10 +566,25 @@ export function runSupplyPolicies(w: World, at: number) {
         );
         continue;
       }
+      // Versão 2 (D-036): sem fornecedor elegível, a busca do produto espera meio dia. Repetida a
+      // cada rodada, a mesma busca vazia custava metade do tempo de simulação com 500 empresas.
+      const retry = w.season.config.economyVersion ? e.supplyRetryAt?.[rule.product] : undefined;
+      if (retry && at < retry) {
+        trace(
+          e,
+          'supply-retry-wait',
+          'Busca sem fornecedor recente; nova tentativa em breve.',
+          rule.product,
+          'idle',
+        );
+        continue;
+      }
       let best = supplyCandidates(w, e, rule.product, want, policy, at)[0];
       if (!best) {
         e.supplyStatus = `Sem origem elegível para ${products[rule.product].name}`;
         trace(e, 'no-eligible-source', e.supplyStatus, rule.product);
+        if (w.season.config.economyVersion)
+          (e.supplyRetryAt ??= {})[rule.product] = at + GAME_DAY / 2;
         continue;
       }
       const cash = freeCash(w, e.companyId) - policy.cashReserve;

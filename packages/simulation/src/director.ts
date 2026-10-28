@@ -545,8 +545,14 @@ export function runBotDirector(w: World, at: number) {
           )
         ) {
           // Pedido só aceita quantidade inteira; estoque em toneladas fica quebrado após produzir.
+          // Versão 2 (D-036): no máximo duas cargas de caminhão pesado. Um pedido aberto do alvo
+          // inteiro (400 t de arroz) não achava vendedor, ficava pendente por dias e, contado como
+          // já pedido, travava a reposição normal da unidade.
+          const loads = w.season.config.economyVersion
+            ? 2 * Math.floor(vehicleModels.truckHeavy.capacityT / products[rule.product].massT)
+            : Infinity;
           const qty = Math.ceil(
-            Math.min(rule.maxBuy, rule.target - (e.inventory[rule.product] ?? 0)),
+            Math.min(rule.maxBuy, loads, rule.target - (e.inventory[rule.product] ?? 0)),
           );
           const unitPrice = rule.maxPrice || Math.round(publicReference(w, rule.product) * 1.2),
             maxFreight = Math.max(

@@ -154,6 +154,17 @@ Decisão do Pedro, que substitui a regra antiga de "nenhum sistema de fusões":
 
 Detalhes de implementação e números no documento de passagem (`.planning/HANDOFF.md`).
 
+### D-036 · Frete do Brasil real nos preços e defeitos de escala (30/10/2026)
+
+Pedido do Pedro: calibrar a economia versão 2 no Brasil real com cerca de 500 bots (escala 20). Decisões de rotina, válidas para mundos novos; o mundo principal salvo não muda. Medição em [PROVA-V2-ESCALA-20](PROVA-V2-ESCALA-20.md).
+
+- **Preço de fábrica desconta o frete real.** A calculadora supunha 110 km por carga; no mapa real a média é perto de 730 km. Agora cada item tem a distância média entre os polos que produzem e os que compram (cada polo manda para o comprador mais perto que ainda precisa) e o frete de caminhão pesado cheio (R$ 0,28 por tonelada-km com metade da volta vazia, mais carga e descarga; consumo final paga ainda a entrega na cidade). Arroz viaja ~1.530 km, carvão ~1.400 km, farelo ~580 km, leite ~430 km. Como no mundo real, a porta da fazenda longe do mercado vale menos: arroz R$ 17,37 (era R$ 20,39), leite R$ 4,75 por litro na fábrica.
+- **Ajustes de faixa para manter 8% de margem:** soja na porta da fazenda no ponto 0,4 da faixa (R$ 2.340/t), ração no ponto 0,75 (R$ 2,98/kg, paga o farelo de longe) e leite no ponto 0,62 da faixa de varejo (R$ 6,17). Todas as verificações da calculadora passam.
+- **Atacadista tem margem própria:** distribuidor-bot vende pelo custo posto (que já inclui o frete longo) mais 4%, até 8% com falta no mercado. Antes vendia a ±8% da referência de fábrica, às vezes acima da prateleira (arroz a R$ 24,72 contra R$ 24,50 na loja).
+- **Distribuidor compra caminhão cheio:** pede quando falta uma carga de caminhão pesado para o alvo. Antes pedia o que faltava, às vezes 4 t para 1.300 km, e o frete passava do teto.
+- **Defeitos de escala corrigidos:** (1) o bot comparava o próprio estoque com a procura do país inteiro e todo vendedor se achava em falta, cobrando 8% acima da referência; agora conta o estoque do mercado todo. (2) Os editais de aço e a reserva de obras dos tesouros não cresciam com a escala; com 20× siderúrgicas o governo pedia 1/20 do aço. (3) Pedido aberto do bot pedia o alvo inteiro (400 t de arroz), não achava vendedor e travava a reposição por dias; agora pede até duas cargas e pedido aberto sem vendedor não conta como compra feita.
+- **Régua da prova:** o resultado por especialidade soma o estoque formado e deixa de fora caminhões comprados e educação da equipe (investimentos); empresa com duas unidades contava duas vezes. Lojas e distribuidores entram na tabela.
+
 ### Ideia em avaliação · Genética de cultivares (Pedro, 28/10/2026)
 
 O Pedro propôs um sistema de genética a partir de uma pesquisa sobre a cana. O produtor compra uma pequena quantidade de mudas de alta tecnologia no viveiro e as multiplica numa área própria. Depois replanta com a própria cana por anos e só volta a comprar para trocar de variedade, para limpar o canavial de doenças ou para expandir a área de uma vez.

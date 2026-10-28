@@ -215,7 +215,10 @@ export interface SeasonConfig {
   // referência da calculadora; 10 = cerca de 500 empresas-bot). Ausente: 10 praças piloto.
   regions?: import('../../world/src/geography-v2').City[];
   worldScale?: number;
-  design: typeof designRules & { equipmentByRecipe?: Record<string, number> };
+  design: typeof designRules & {
+    equipmentByRecipe?: Record<string, number>;
+    wholesaleMargin?: number; // versão 2: margem do atacadista sobre o custo posto
+  };
   competition: typeof competitionRules;
   operations: typeof operationRules;
   version: string;

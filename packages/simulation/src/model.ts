@@ -76,6 +76,8 @@ export interface Establishment {
   supplyPolicy?: SupplyPolicy;
   supplyStatus?: string;
   supplyReorder?: ProductId[];
+  // Versão 2: produto sem fornecedor elegível só volta a ser procurado depois deste instante.
+  supplyRetryAt?: Partial<Record<ProductId, number>>;
   education?: number;
   mothballed?: boolean;
   installed?: boolean;

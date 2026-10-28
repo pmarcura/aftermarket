@@ -3,6 +3,8 @@ import { calibration, monthlyMaintenance, salaryByCategory } from './calibration
 import { stateFactors } from './competition';
 import { designRules } from './design';
 import { regions } from '../../world/src/regions';
+import { cities, hubCity, hubs } from '../../world/src/geography-v2';
+import { distanceKm } from './geometry';
 
 import {
   designItems,
@@ -38,7 +40,12 @@ export const designWorld = {
     warehouse: 30,
     logistics: 30,
   } as Record<Category, number>,
-  freightPerTonne: 3500, // caminhão pesado, ~110 km, retorno vazio incluso
+  // Frete de projeto no Centro-Sul real (D-036): caminhão pesado cheio, 30 t, a R$ 4,87/km de
+  // diesel, desgaste médio, motorista e pedágio, margem de 15% da transportadora e metade da volta
+  // vazia; mais carga e descarga. Produto de consumo ainda paga a entrega da cidade em carga pequena.
+  freight: { perTonneKm: 28, handlingPerTonne: 1100, localDeliveryPerTonne: 4000, minKm: 30 },
+  // Margem do atacadista regional sobre o custo posto: compra caminhão cheio e revende às lojas.
+  wholesaleMargin: 0.04,
   government: { steelTonnesPerDay: 16 },
   // Compras de caminhão na semana de playtest: frota crescendo; só uma parte repõe caminhões aposentados.
   fleet: { heavyPerDay: 0.8, lightPerDay: 0.8, replacementShare: 0.25, scrapShare: 0.9 },
@@ -103,6 +110,68 @@ export function storeEconomics() {
   return { capex, fixed, unitsPerDay, averageRetail, grossMargin: x, markup: x / (1 - x) };
 }
 
+// Distância média de cada item no mapa real: cada polo produtor manda para o comprador mais perto
+// que ainda precisa (atribuição gulosa), com a estrada 30% mais longa que a linha reta. Consumo
+// final, caminhões e aço do governo vão às cidades conforme a população.
+let haulCache: Record<DesignItemId, number> | undefined;
+export function haulKm(): Record<DesignItemId, number> {
+  if (haulCache) return haulCache;
+  const flows = dailyFlows();
+  const sites = (recipe: string) =>
+    hubs[recipe]
+      ? hubs[recipe].map(([city, weight]) => ({ city, weight }))
+      : [{ city: hubCity(recipe, 0), weight: 1 }];
+  const spread = (list: { city: (typeof cities)[number]; weight: number }[], quantity: number) => {
+    const total = list.reduce((n, x) => n + x.weight, 0);
+    return list.map((x) => ({ at: x.city.coordinates, quantity: (quantity * x.weight) / total }));
+  };
+  const people = cities.map((city) => ({ city, weight: city.population }));
+  const result = {} as Record<DesignItemId, number>;
+  for (const id of Object.keys(designItems) as DesignItemId[]) {
+    const supply = designRecipes.flatMap((r) =>
+      r.output[id] ? spread(sites(r.id), (flows.lines[r.id] ?? 0) * r.output[id]!) : [],
+    );
+    const demand = designRecipes.flatMap((r) =>
+      r.input[id] ? spread(sites(r.id), (flows.lines[r.id] ?? 0) * r.input[id]!) : [],
+    );
+    const final =
+      (flows.finalDemand[id] ?? 0) +
+      (id === 'steel' ? designWorld.government.steelTonnesPerDay : 0);
+    if (final) demand.push(...spread(people, final));
+    if (id === 'scrap') supply.push(...spread(people, flows.steel.scrapSupply));
+    const pairs = supply
+      .flatMap((s) =>
+        demand.map((d) => ({
+          s,
+          d,
+          km: Math.max(designWorld.freight.minKm, distanceKm(s.at, d.at) * 1.3),
+        })),
+      )
+      .sort((a, b) => a.km - b.km);
+    let moved = 0,
+      tonneKm = 0;
+    for (const { s, d, km } of pairs) {
+      const q = Math.min(s.quantity, d.quantity);
+      if (q <= 0) continue;
+      s.quantity -= q;
+      d.quantity -= q;
+      moved += q;
+      tonneKm += q * km;
+    }
+    result[id] = moved ? tonneKm / moved : designWorld.freight.minKm;
+  }
+  return (haulCache = result);
+}
+// Frete de projeto por tonelada de cada item, pela distância média do mapa real.
+export function freightPerTonne(id: DesignItemId) {
+  const f = designWorld.freight;
+  return (
+    f.handlingPerTonne +
+    f.perTonneKm * haulKm()[id] +
+    (designItems[id].monthlyPerPerson ? f.localDeliveryPerTonne : 0)
+  );
+}
+
 export function priceList(): Record<DesignItemId, number> {
   const { markup } = storeEconomics();
   const ids = Object.keys(designItems) as DesignItemId[];
@@ -112,9 +181,11 @@ export function priceList(): Record<DesignItemId, number> {
       rule = item.price;
     if (rule.kind === 'fixed') price[id] = rule.price;
     if (rule.kind === 'band')
-      // Consumo final: a faixa é de varejo; a porta da fábrica desconta a margem da loja e o frete.
+      // Consumo final: a faixa é de varejo; a porta da fábrica desconta a margem da loja, a do
+      // atacadista e o frete até a cidade.
       price[id] = item.monthlyPerPerson
-        ? retailTarget(item) / (1 + markup) - (item.massKg / 1000) * designWorld.freightPerTonne
+        ? retailTarget(item) / (1 + markup) / (1 + designWorld.wholesaleMargin) -
+          (item.massKg / 1000) * freightPerTonne(id)
         : retailTarget(item);
   }
   for (const id of ids) {
@@ -130,9 +201,10 @@ export function lineEconomics(r: DesignRecipe, price: Record<DesignItemId, numbe
   const outputs = Object.entries(r.output) as [DesignItemId, number][];
   const materials = inputs.reduce((n, [id, q]) => n + q * price[id], 0) * cycles;
   const freight =
-    inputs.reduce((n, [id, q]) => n + (q * designItems[id].massKg) / 1000, 0) *
-    designWorld.freightPerTonne *
-    cycles;
+    inputs.reduce(
+      (n, [id, q]) => n + ((q * designItems[id].massKg) / 1000) * freightPerTonne(id),
+      0,
+    ) * cycles;
   const variable = (r.processing + r.energyKwh * electricity + r.waterM3 * water) * cycles;
   const fixed =
     payrollPerDay(r.category, r.workers) +
@@ -269,7 +341,9 @@ export function analyzeDesign() {
   const retail = Object.fromEntries(
     consumerItems().map(([id, i]) => [
       id,
-      (price[id] + (i.massKg / 1000) * designWorld.freightPerTonne) * (1 + store.markup),
+      (price[id] + (i.massKg / 1000) * freightPerTonne(id)) *
+        (1 + designWorld.wholesaleMargin) *
+        (1 + store.markup),
     ]),
   ) as Partial<Record<DesignItemId, number>>;
   const checks: { id: string; ok: boolean; detail: string }[] = [];

@@ -1614,3 +1614,284 @@
 .carga-custos ul {
   grid-template-columns: 1fr;
 }
+
+/* Vitrine de compra: um cartão por produto */
+.market-grid.sem-compra {
+  grid-template-columns: minmax(0, 1fr);
+}
+.market-grid.sem-compra .purchase-summary {
+  display: none;
+}
+.vitrine {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(232px, 1fr));
+  gap: 16px;
+  align-content: start;
+}
+.vit-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid #304955;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #1c3039 0, #15262e 120px);
+  transition:
+    transform 0.18s,
+    border-color 0.18s;
+  animation: neg-entra 0.4s both;
+}
+.vit-card:hover {
+  transform: translateY(-2px);
+  border-color: #5c8190;
+}
+.vit-card.on {
+  border-color: var(--gold);
+  box-shadow: inset 0 0 0 1px var(--gold);
+}
+.vit-palco {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 112px;
+}
+.vit-palco::before {
+  content: '';
+  position: absolute;
+  bottom: 8px;
+  width: 110px;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, #0b171d 0, transparent 100%);
+}
+.vit-arte {
+  position: relative;
+  max-height: 104px;
+  width: auto;
+  filter: drop-shadow(0 4px 2px rgb(0 0 0 / 0.35));
+  transition: transform 0.2s steps(3);
+}
+.vit-card:hover .vit-arte {
+  transform: translateY(-4px);
+}
+.vit-icone {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #22394366;
+  color: #c9d6db;
+}
+.vit-titulo h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 650;
+}
+.vit-titulo small {
+  color: var(--muted);
+  font-size: 11.5px;
+}
+.vit-lucro {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.vit-lucro b {
+  font-size: 30px;
+  line-height: 1;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+.vit-lucro.bom b {
+  color: var(--green);
+}
+.vit-lucro.ruim b {
+  color: var(--red);
+}
+.vit-lucro span {
+  display: grid;
+  font-size: 12px;
+  color: #c9d6db;
+  line-height: 1.25;
+}
+.vit-lucro small {
+  color: var(--muted);
+  font-size: 11px;
+}
+.vit-barra {
+  position: relative;
+  display: flex;
+  height: 12px;
+  border-radius: 6px;
+  background: #0f1d24;
+}
+.vit-barra i {
+  display: block;
+  height: 100%;
+  transform-origin: left center;
+  animation: neg-cresce 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.vit-barra i:first-child {
+  border-radius: 6px 0 0 6px;
+}
+.vit-barra i:last-of-type {
+  border-radius: 0 6px 6px 0;
+}
+.vit-barra .merc,
+.vit-legenda .merc::before {
+  background: #5d7a86;
+}
+.vit-barra .frete,
+.vit-legenda .frete::before {
+  background: var(--blue);
+}
+.vit-barra .lucro,
+.vit-legenda .lucro::before {
+  background: var(--green);
+}
+.vit-venda {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  margin-left: -1px;
+  background: #e7edef;
+}
+.vit-legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin-top: -4px;
+  font-size: 10.5px;
+  color: var(--muted);
+}
+.vit-legenda span::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 4px;
+  border-radius: 2px;
+}
+.vit-legenda .venda {
+  margin-left: auto;
+}
+.vit-legenda .venda::before {
+  width: 2px;
+  height: 9px;
+  background: #e7edef;
+  vertical-align: -1px;
+}
+.vit-fornecedor {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  font-size: 11.5px;
+  color: #c9d6db;
+}
+.vit-fornecedor em {
+  font-style: normal;
+  color: var(--muted);
+}
+.vit-card .full {
+  margin-top: auto;
+}
+.vit-card.esgotado {
+  border-style: dashed;
+  background: #15262e;
+}
+.vit-card.esgotado .vit-arte,
+.vit-card.esgotado .vit-icone {
+  filter: grayscale(1) brightness(0.7);
+}
+.vit-esgotado {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--gold);
+  font-weight: 650;
+  font-size: 13px;
+}
+.vit-nota {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.vit-card h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
+/* Trocar de fornecedor dentro da compra */
+.compra-fornecedores {
+  display: grid;
+  gap: 6px;
+  margin: 2px 0 12px;
+}
+.compra-fornecedores button {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0 10px;
+  padding: 8px 10px;
+  border: 1px solid #40545e;
+  border-radius: 8px;
+  background: #13232b;
+  color: #e0e8eb;
+  text-align: left;
+}
+.compra-fornecedores button small {
+  grid-row: 2;
+  color: var(--muted);
+  font-size: 11px;
+}
+.compra-fornecedores button span {
+  grid-row: 1 / 3;
+  grid-column: 2;
+  align-self: center;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.compra-fornecedores button.on {
+  border-color: var(--gold);
+  box-shadow: inset 0 0 0 1px var(--gold);
+}
+@media (prefers-reduced-motion: reduce) {
+  .vit-card,
+  .vit-barra i {
+    animation: none;
+  }
+}
+.vit-lucro.zero b {
+  color: var(--gold);
+}
+.compra-cab {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.compra-cab .vit-arte,
+.compra-cab .vit-icone {
+  flex: none;
+  max-height: 64px;
+}
+.compra-cab h2 {
+  margin: 0 !important;
+  font-size: 17px !important;
+}
+.compra-cab small {
+  display: block;
+  color: var(--muted);
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+.compra-cab .text-button {
+  min-height: 24px;
+  padding: 2px 0;
+  gap: 4px;
+}

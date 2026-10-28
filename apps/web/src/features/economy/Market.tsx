@@ -31,7 +31,8 @@ import {
   seasonPrice,
 } from '../../../../../packages/simulation/src/metrics';
 import { freeCash } from '../../../../../packages/simulation/src/design';
-import { Carga } from './Carga';
+import { Carga, unidade } from './Carga';
+import { Vitrine, ProdutoArte } from './Vitrine';
 import { PixelArt } from '../../components/PixelArt';
 import { spriteDoNegocio } from '../../design/arte';
 import { avaliar, procuraDiaria, quantidadeSugerida, type Avaliacao } from './compra';
@@ -168,6 +169,7 @@ export function MarketPage() {
   const caixa = freeCash(world, actor);
   // Com destino escolhido, a lista simplificada junta origem ao fornecedor e preço ao custo na porta.
   const compacto = Boolean(destination) && mode === 'Simplificada';
+  const vitrineAtiva = Boolean(destination) && mode === 'Simplificada' && !product && !search;
   const comprar = async () => {
     if (!selected || !destination || !compra?.frete) return;
     const minutos = Math.max(1, Math.round(compra.frete.durationMs / 60000));
@@ -186,8 +188,6 @@ export function MarketPage() {
     )
       setOffer('');
   };
-  const cost =
-    selected && seller?.companyId !== actor ? selected.price * (validAmount ? amount : 0) : 0;
   const clear = () => {
     setProduct('');
     setSupplier('');
@@ -257,249 +257,265 @@ export function MarketPage() {
                 );
               })}
             </div>
-            <div className="economic-filter-panel">
-              <label className="search-input">
-                <Search size={16} />
-                <input
-                  aria-label="Buscar oferta"
-                  placeholder="Fornecedor, item ou cidade…"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </label>
-              <Select
-                label="Produto"
-                value={product}
-                onChange={(e) => {
-                  setProduct(e.target.value);
-                  setOffer('');
-                  setSort('');
-                }}
-              >
-                <option value="">Mercadoria (opcional)</option>
-                {seasonProducts(world)
-                  .map((id) => [id, products[id]] as const)
-                  .map(([id, p]) => (
-                    <option value={id} key={id}>
-                      {p.name}
-                    </option>
-                  ))}
-              </Select>
-              <Select
-                label="Ordenar ofertas"
-                value={sort}
-                onChange={(e) => setSort(e.target.value)}
-              >
-                <option value="">Ordenação (opcional)</option>
-                <option value="price" disabled={!product}>
-                  Menor preço da mercadoria
-                </option>
-                <option value="total" disabled={!product || !destination || !validAmount}>
-                  Menor custo por carga
-                </option>
-                <option value="distance" disabled={!destination}>
-                  Menor distância ao destino
-                </option>
-              </Select>
-              <button className="secondary" onClick={() => setAdvanced(true)}>
-                <SlidersHorizontal size={15} /> Filtros avançados
-              </button>
-              <button className="secondary" onClick={() => void refresh()}>
-                Atualizar ofertas
-              </button>
-              <button className="text-button" onClick={clear}>
-                <X size={14} /> Limpar
-              </button>
-            </div>
-            <div className="market-grid">
-              <Panel
-                title="Ofertas de fornecedores"
-                subtitle={
-                  destination && !sort
-                    ? `${lista.length} ofertas com estoque · ${retailDestination ? 'mais lucrativas primeiro' : 'menor custo na porta primeiro'}, já com frete${semEstoque ? ` · ${semEstoque} sem estoque escondidas` : ''}`
-                    : `${lista.length} ofertas · valores na unidade de cada mercadoria`
-                }
-                action={
-                  relevant && !product ? (
-                    <button className="text-button" onClick={() => setAllProducts(!allProducts)}>
-                      {allProducts ? 'Só o que este destino usa' : 'Mostrar todos os produtos'}
-                    </button>
-                  ) : (
-                    <Badge tone="blue">Estoque finito</Badge>
-                  )
-                }
-              >
-                {lista.length ? (
-                  <div className="table-scroll">
-                    <table className="market-table">
-                      <thead>
-                        <tr>
-                          <th>Fornecedor / mercadoria</th>
-                          {!compacto && <th>Origem</th>}
-                          <th className="numeric">Disponível</th>
-                          {!compacto && <th className="numeric">Preço / unidade</th>}
-                          {destination && <th className="numeric">Na sua porta</th>}
-                          {mode === 'Avançada' && (
-                            <>
-                              <th className="numeric">Distância</th>
-                              <th className="numeric">Frete / carga</th>
-                              <th className="numeric">Total / unidade</th>
-                            </>
-                          )}
-                          <th aria-label="Selecionar" />
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {lista.map((o) => {
-                          const e = world.establishments.find((e) => e.id === o.establishmentId)!,
-                            p = world.properties.find((p) => p.id === e.propertyId)!,
-                            stock = e.inventory[o.product] ?? 0,
-                            aval = avaliacoes.get(o.id),
-                            q =
-                              destination && validAmount
-                                ? quote(
-                                    world,
-                                    e.id,
-                                    destination.id,
-                                    o.product,
-                                    amount,
-                                    'transbrasil',
-                                  )
-                                : undefined;
-                          return (
-                            <tr key={o.id} className={offerId === o.id ? 'selected-row' : ''}>
-                              <td>
-                                <div className="table-name">
-                                  <i className="table-icon">
-                                    <ProductIcon product={o.product} size={17} />
-                                  </i>
-                                  <div>
-                                    <strong>{e.name}</strong>
-                                    <small>
-                                      {products[o.product].name}
-                                      {compacto && ` · ${p.city} ${p.state}`}
-                                    </small>
-                                  </div>
-                                </div>
-                              </td>
-                              {!compacto && (
-                                <td>
-                                  {p.city}
-                                  <small>{p.state}</small>
-                                </td>
-                              )}
-                              <td className="numeric">
-                                {num(stock, 1)} {products[o.product].unit}
-                              </td>
-                              {!compacto && (
-                                <td className="numeric">
-                                  {cr(o.price)} / {products[o.product].unit}
-                                </td>
-                              )}
-                              {destination && (
-                                <td className="numeric">
-                                  {aval ? (
-                                    <>
-                                      {cr(aval.naPorta)} / {products[o.product].unit}
-                                      {compacto && (
-                                        <small className="muted">
-                                          {cr(o.price)} + frete {cr(aval.naPorta - o.price)}
-                                        </small>
-                                      )}
-                                      <small>
-                                        {aval.margem !== undefined ? (
-                                          <Badge tone={aval.margem >= 0 ? 'green' : 'red'}>
-                                            margem {aval.margem >= 0 ? '+' : '−'}
-                                            {num(Math.abs(aval.margem) * 100)}% ·{' '}
-                                            {num(aval.quantidade)} {products[o.product].unit}
-                                          </Badge>
-                                        ) : (
-                                          `com frete, ${num(aval.quantidade)} ${products[o.product].unit}`
-                                        )}
-                                      </small>
-                                    </>
-                                  ) : (
-                                    '—'
-                                  )}
-                                </td>
-                              )}
-                              {mode === 'Avançada' && (
-                                <>
-                                  <td className="numeric">
-                                    {q ? `${num(q.distanceKm, 1)} km` : 'Escolha destino'}
-                                    <small>
-                                      {q?.source === 'osrm' ? 'Rodoviária' : q ? 'Estimada' : ''}
-                                    </small>
-                                  </td>
-                                  <td className="numeric">{q ? cr(q.price) : '—'}</td>
-                                  <td className="numeric">
-                                    {q ? cr(o.price + q.price / amount) : '—'}
-                                  </td>
-                                </>
-                              )}
-                              <td>
-                                <button
-                                  className={offerId === o.id ? 'primary' : 'secondary'}
-                                  disabled={stock <= 0}
-                                  onClick={() => {
-                                    setOffer(o.id);
-                                    const next = aval?.quantidade || suggest(o.product, stock);
-                                    if (next > 0) setQuantity(String(next));
-                                  }}
-                                >
-                                  {offerId === o.id
-                                    ? 'Selecionado'
-                                    : stock > 0
-                                      ? 'Selecionar'
-                                      : 'Sem estoque'}
-                                </button>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <Empty
-                    title="Nenhuma oferta atende à busca"
-                    description="Amplie os filtros ou consulte novamente após a próxima produção."
-                    action={
-                      <button className="secondary" onClick={clear}>
-                        Limpar filtros
-                      </button>
-                    }
+            {mode === 'Avançada' && (
+              <div className="economic-filter-panel">
+                <label className="search-input">
+                  <Search size={16} />
+                  <input
+                    aria-label="Buscar oferta"
+                    placeholder="Fornecedor, item ou cidade…"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
                   />
-                )}
-                <div className="panel-content">
-                  <p className="muted small icon-paragraph">
-                    <Info size={17} />
-                    Compare preços somente na mesma unidade e canal. Frete e disponibilidade podem
-                    mudar o melhor fornecedor.
-                  </p>
-                </div>
-              </Panel>
+                </label>
+                <Select
+                  label="Produto"
+                  value={product}
+                  onChange={(e) => {
+                    setProduct(e.target.value);
+                    setOffer('');
+                    setSort('');
+                  }}
+                >
+                  <option value="">Mercadoria (opcional)</option>
+                  {seasonProducts(world)
+                    .map((id) => [id, products[id]] as const)
+                    .map(([id, p]) => (
+                      <option value={id} key={id}>
+                        {p.name}
+                      </option>
+                    ))}
+                </Select>
+                <Select
+                  label="Ordenar ofertas"
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value)}
+                >
+                  <option value="">Ordenação (opcional)</option>
+                  <option value="price" disabled={!product}>
+                    Menor preço da mercadoria
+                  </option>
+                  <option value="total" disabled={!product || !destination || !validAmount}>
+                    Menor custo por carga
+                  </option>
+                  <option value="distance" disabled={!destination}>
+                    Menor distância ao destino
+                  </option>
+                </Select>
+                <button className="secondary" onClick={() => setAdvanced(true)}>
+                  <SlidersHorizontal size={15} /> Filtros avançados
+                </button>
+                <button className="secondary" onClick={() => void refresh()}>
+                  Atualizar ofertas
+                </button>
+                <button className="text-button" onClick={clear}>
+                  <X size={14} /> Limpar
+                </button>
+              </div>
+            )}
+            <div className={`market-grid ${vitrineAtiva && !selected ? 'sem-compra' : ''}`}>
+              {vitrineAtiva && destination ? (
+                <Vitrine
+                  destino={destination}
+                  ofertas={lista}
+                  avaliacoes={avaliacoes}
+                  relevantes={relevant}
+                  escolhida={offerId}
+                  onComprar={(o) => {
+                    setOffer(o.id);
+                    const q = avaliacoes.get(o.id)?.quantidade;
+                    if (q) setQuantity(String(q));
+                  }}
+                />
+              ) : (
+                <Panel
+                  title="Ofertas de fornecedores"
+                  subtitle={
+                    destination && !sort
+                      ? `${lista.length} ofertas com estoque · ${retailDestination ? 'mais lucrativas primeiro' : 'menor custo na porta primeiro'}, já com frete${semEstoque ? ` · ${semEstoque} sem estoque escondidas` : ''}`
+                      : `${lista.length} ofertas · valores na unidade de cada mercadoria`
+                  }
+                  action={
+                    relevant && !product ? (
+                      <button className="text-button" onClick={() => setAllProducts(!allProducts)}>
+                        {allProducts ? 'Só o que este destino usa' : 'Mostrar todos os produtos'}
+                      </button>
+                    ) : (
+                      <Badge tone="blue">Estoque finito</Badge>
+                    )
+                  }
+                >
+                  {lista.length ? (
+                    <div className="table-scroll">
+                      <table className="market-table">
+                        <thead>
+                          <tr>
+                            <th>Fornecedor / mercadoria</th>
+                            {!compacto && <th>Origem</th>}
+                            <th className="numeric">Disponível</th>
+                            {!compacto && <th className="numeric">Preço / unidade</th>}
+                            {destination && <th className="numeric">Na sua porta</th>}
+                            {mode === 'Avançada' && (
+                              <>
+                                <th className="numeric">Distância</th>
+                                <th className="numeric">Frete / carga</th>
+                                <th className="numeric">Total / unidade</th>
+                              </>
+                            )}
+                            <th aria-label="Selecionar" />
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {lista.map((o) => {
+                            const e = world.establishments.find((e) => e.id === o.establishmentId)!,
+                              p = world.properties.find((p) => p.id === e.propertyId)!,
+                              stock = e.inventory[o.product] ?? 0,
+                              aval = avaliacoes.get(o.id),
+                              q =
+                                destination && validAmount
+                                  ? quote(
+                                      world,
+                                      e.id,
+                                      destination.id,
+                                      o.product,
+                                      amount,
+                                      'transbrasil',
+                                    )
+                                  : undefined;
+                            return (
+                              <tr key={o.id} className={offerId === o.id ? 'selected-row' : ''}>
+                                <td>
+                                  <div className="table-name">
+                                    <i className="table-icon">
+                                      <ProductIcon product={o.product} size={17} />
+                                    </i>
+                                    <div>
+                                      <strong>{e.name}</strong>
+                                      <small>
+                                        {products[o.product].name}
+                                        {compacto && ` · ${p.city} ${p.state}`}
+                                      </small>
+                                    </div>
+                                  </div>
+                                </td>
+                                {!compacto && (
+                                  <td>
+                                    {p.city}
+                                    <small>{p.state}</small>
+                                  </td>
+                                )}
+                                <td className="numeric">
+                                  {num(stock, 1)} {products[o.product].unit}
+                                </td>
+                                {!compacto && (
+                                  <td className="numeric">
+                                    {cr(o.price)} / {products[o.product].unit}
+                                  </td>
+                                )}
+                                {destination && (
+                                  <td className="numeric">
+                                    {aval ? (
+                                      <>
+                                        {cr(aval.naPorta)} / {products[o.product].unit}
+                                        {compacto && (
+                                          <small className="muted">
+                                            {cr(o.price)} + frete {cr(aval.naPorta - o.price)}
+                                          </small>
+                                        )}
+                                        <small>
+                                          {aval.margem !== undefined ? (
+                                            <Badge tone={aval.margem >= 0 ? 'green' : 'red'}>
+                                              margem {aval.margem >= 0 ? '+' : '−'}
+                                              {num(Math.abs(aval.margem) * 100)}% ·{' '}
+                                              {num(aval.quantidade)} {products[o.product].unit}
+                                            </Badge>
+                                          ) : (
+                                            `com frete, ${num(aval.quantidade)} ${products[o.product].unit}`
+                                          )}
+                                        </small>
+                                      </>
+                                    ) : (
+                                      '—'
+                                    )}
+                                  </td>
+                                )}
+                                {mode === 'Avançada' && (
+                                  <>
+                                    <td className="numeric">
+                                      {q ? `${num(q.distanceKm, 1)} km` : 'Escolha destino'}
+                                      <small>
+                                        {q?.source === 'osrm' ? 'Rodoviária' : q ? 'Estimada' : ''}
+                                      </small>
+                                    </td>
+                                    <td className="numeric">{q ? cr(q.price) : '—'}</td>
+                                    <td className="numeric">
+                                      {q ? cr(o.price + q.price / amount) : '—'}
+                                    </td>
+                                  </>
+                                )}
+                                <td>
+                                  <button
+                                    className={offerId === o.id ? 'primary' : 'secondary'}
+                                    disabled={stock <= 0}
+                                    onClick={() => {
+                                      setOffer(o.id);
+                                      const next = aval?.quantidade || suggest(o.product, stock);
+                                      if (next > 0) setQuantity(String(next));
+                                    }}
+                                  >
+                                    {offerId === o.id
+                                      ? 'Selecionado'
+                                      : stock > 0
+                                        ? 'Selecionar'
+                                        : 'Sem estoque'}
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <Empty
+                      title="Nenhuma oferta atende à busca"
+                      description="Amplie os filtros ou consulte novamente após a próxima produção."
+                      action={
+                        <button className="secondary" onClick={clear}>
+                          Limpar filtros
+                        </button>
+                      }
+                    />
+                  )}
+                  <div className="panel-content">
+                    <p className="muted small icon-paragraph">
+                      <Info size={17} />
+                      Compare preços somente na mesma unidade e canal. Frete e disponibilidade podem
+                      mudar o melhor fornecedor.
+                    </p>
+                  </div>
+                </Panel>
+              )}
               <Panel title="Sua compra" className="purchase-summary">
                 {selected && seller ? (
                   <div className="panel-content">
-                    <Badge tone="blue">{products[selected.product].name}</Badge>
-                    <h2>{seller.name}</h2>
-                    <button className="text-button" onClick={() => setAnalysis(selected.product)}>
-                      <ChartNoAxesCombined size={15} /> Ver análise da mercadoria
-                    </button>
-                    <Rows
-                      rows={[
-                        {
-                          label: 'Qualidade disponível',
-                          value: `${num(inventoryQuality(seller, selected.product))}/100 · média do estoque`,
-                        },
-                        {
-                          label: 'Preço unitário',
-                          value: `${cr(selected.price)} / ${products[selected.product].unit}`,
-                        },
-                        { label: 'Subtotal', value: validAmount ? cr(cost) : '—' },
-                      ]}
-                    />
+                    <div className="compra-cab">
+                      <ProdutoArte product={selected.product} escala={1} />
+                      <div>
+                        <h2>{products[selected.product].name}</h2>
+                        <small>
+                          de {seller.name},{' '}
+                          {world.properties.find((p) => p.id === seller.propertyId)?.city}
+                          {' · '}qualidade {num(inventoryQuality(seller, selected.product))}/100
+                        </small>
+                        <button
+                          className="text-button"
+                          onClick={() => setAnalysis(selected.product)}
+                        >
+                          <ChartNoAxesCombined size={14} /> Preço ao longo do tempo
+                        </button>
+                      </div>
+                    </div>
                     {retailDestination && destination && (
                       <div className="compra-dias" role="group" aria-label="Dias de estoque">
                         {[7, 15, 30].map((d, i, todos) => {
@@ -551,6 +567,42 @@ export function MarketPage() {
                         })}
                       </div>
                     )}
+                    {(() => {
+                      const outros = lista.filter(
+                        (o) => o.product === selected.product && avaliacoes.has(o.id),
+                      );
+                      return outros.length > 1 ? (
+                        <div
+                          className="compra-fornecedores"
+                          role="radiogroup"
+                          aria-label="Fornecedor"
+                        >
+                          {outros.map((o) => {
+                            const v = world.establishments.find((e) => e.id === o.establishmentId)!;
+                            const c = world.properties.find((p) => p.id === v.propertyId)!;
+                            const a = avaliacoes.get(o.id)!;
+                            return (
+                              <button
+                                key={o.id}
+                                role="radio"
+                                aria-checked={o.id === offerId}
+                                className={o.id === offerId ? 'on' : ''}
+                                onClick={() => {
+                                  setOffer(o.id);
+                                  setQuantity(String(a.quantidade));
+                                }}
+                              >
+                                <b>{v.name}</b>
+                                <small>{c.city}</small>
+                                <span>
+                                  {cr(a.naPorta)} por {unidade(o.product, 1)}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      ) : null;
+                    })()}
                     <label className="compra-qtd">
                       Quantidade
                       <input

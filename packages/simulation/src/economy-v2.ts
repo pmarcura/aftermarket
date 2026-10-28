@@ -7,19 +7,34 @@ import { analyzeDesign, designWorld } from './economy-design';
 export const ECONOMY_V2 = 2;
 
 export function v2Recipes(): Recipe[] {
-  return designRecipes.map((r) => ({
-    id: r.id,
-    name: r.name,
-    category: r.category,
-    input: { ...r.input } as Recipe['input'],
-    output: { ...r.output } as Recipe['output'],
-    ...(r.requires ? { requires: { ...r.requires } as Recipe['input'] } : {}),
-    cost: r.processing,
-    duration: (r.hours * 3_600_000) / TIME_SCALE,
-    energyKwh: r.energyKwh,
-    waterM3: r.waterM3,
-    lossKg: r.lossKg,
-  }));
+  return designRecipes.map((r) => {
+    // Itens exigidos na linha (vacas) não entram como insumo: nascem e se aposentam pelo rebanho.
+    const herdItem = Object.keys(r.requires ?? {})[0] as DesignItemId | undefined;
+    const strip = (q: Partial<Record<DesignItemId, number>>) =>
+      Object.fromEntries(Object.entries(q).filter(([id]) => id !== herdItem)) as Recipe['input'];
+    return {
+      id: r.id,
+      name: r.name,
+      category: r.category,
+      input: strip(r.input),
+      output: strip(r.output),
+      ...(r.requires ? { requires: { ...r.requires } as Recipe['input'] } : {}),
+      ...(herdItem
+        ? {
+            herd: {
+              product: herdItem as ProductId,
+              births: r.output[herdItem] ?? 0,
+              retirements: r.input[herdItem] ?? 0,
+            },
+          }
+        : {}),
+      cost: r.processing,
+      duration: (r.hours * 3_600_000) / TIME_SCALE,
+      energyKwh: r.energyKwh,
+      waterM3: r.waterM3,
+      lossKg: r.lossKg,
+    };
+  });
 }
 
 export function v2SeasonConfig(): SeasonConfig {

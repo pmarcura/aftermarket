@@ -14,7 +14,7 @@ A nova economia vale para **mundos novos**: o cenário iniciante, o laboratório
 
 Cada fatia termina com build, testes e commit próprio.
 
-Andamento: fatias 1 e 2 entregues em 27/10. O mundo versão 2 é criado com `createWorld(agora, { economy: 2 })`; o padrão continua sendo a versão 1 até a fatia 10 provar a nova economia.
+Andamento: fatias 1 a 5 entregues em 27/10 (catálogo, configuração, sementes, rebanho e ração; testes em `tests/economy-v2*.test.ts`). O mundo versão 2 é criado com `createWorld(agora, { economy: 2 })`; o padrão continua sendo a versão 1 até a fatia 10 provar a nova economia.
 
 | #   | Fatia                    | O que entra                                                                                                                                                        | Pronto quando                                                               |
 | --- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |

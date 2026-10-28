@@ -40,7 +40,9 @@ export function availableStock(w: World, e: Establishment, id: ProductId) {
     e.automation && e.category === 'farm' && r?.input[id] && r.output[id]
       ? r.input[id]! * (e.automationCycles ?? 1)
       : 0;
-  return Math.max(0, (e.inventory[id] ?? 0) - seed);
+  // O rebanho que mantém as linhas instaladas não fica disponível para venda automática.
+  const herd = (r?.requires?.[id] ?? 0) * (e.equipmentLines ?? 0);
+  return Math.max(0, (e.inventory[id] ?? 0) - seed - herd);
 }
 export function siteQuality(propertyId: string) {
   return 60 + ([...propertyId].reduce((n, c) => n + c.charCodeAt(0), 0) % 26);
@@ -71,11 +73,18 @@ export function productionCapacity(w: World, e: Establishment, r: Recipe, cycles
     };
   const areaLines = Math.floor(p.area / rule.areaM2),
     laborLines = Math.floor(e.employees / rule.workers);
+  // Rebanho: cada linha exige seus animais presentes, que não são consumidos.
+  const herdLines = Math.min(
+    Infinity,
+    ...(Object.entries(r.requires ?? {}) as [ProductId, number][]).map(([id, q]) =>
+      Math.floor((e.inventory[id] ?? 0) / q),
+    ),
+  );
   // Um lote ocupa as linhas até terminar; lotes seguintes aguardam na fila.
   const lines =
     e.installed === false
       ? 0
-      : Math.max(0, Math.min(areaLines, laborLines, e.equipmentLines ?? Infinity));
+      : Math.max(0, Math.min(areaLines, laborLines, herdLines, e.equipmentLines ?? Infinity));
   return {
     ...rule,
     areaLines,
@@ -84,14 +93,18 @@ export function productionCapacity(w: World, e: Establishment, r: Recipe, cycles
     durationMs: lines ? r.duration * Math.ceil(cycles / lines) : Infinity,
     bottleneck:
       lines === 0
-        ? laborLines === 0
-          ? 'Equipe insuficiente'
-          : 'Área insuficiente'
-        : lines < Math.min(areaLines, laborLines)
-          ? 'Equipamentos limitam as linhas'
-          : laborLines < areaLines
-            ? 'Equipe limita as linhas'
-            : 'Área limita as linhas',
+        ? herdLines === 0
+          ? 'Rebanho insuficiente'
+          : laborLines === 0
+            ? 'Equipe insuficiente'
+            : 'Área insuficiente'
+        : herdLines < Math.min(areaLines, laborLines, e.equipmentLines ?? Infinity)
+          ? 'Rebanho limita as linhas'
+          : lines < Math.min(areaLines, laborLines)
+            ? 'Equipamentos limitam as linhas'
+            : laborLines < areaLines
+              ? 'Equipe limita as linhas'
+              : 'Área limita as linhas',
   };
 }
 // Cadência da automação em regime (auditoria M03): o lote de c ciclos ocupa as linhas por

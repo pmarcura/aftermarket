@@ -2160,6 +2160,20 @@ export function advance(w: World, now = Date.now()) {
           (previous + quantity);
         e.inventory[p as ProductId] = previous + quantity;
       }
+      if (r.herd) {
+        // Nascimentos menos aposentadorias em unidades inteiras; a fração fica para o próximo lote.
+        const exact = (r.herd.births - r.herd.retirements) * j.cycles + (e.herdCarry ?? 0);
+        const whole = Math.max(-(e.inventory[r.herd.product] ?? 0), Math.floor(exact));
+        e.herdCarry = exact - whole;
+        if (whole) {
+          const before = e.inventory[r.herd.product] ?? 0;
+          // Bezerras nascem sem custo e diluem o custo médio; aposentadas saem pelo custo médio.
+          if (whole > 0)
+            e.unitCosts[r.herd.product] =
+              ((e.unitCosts[r.herd.product] ?? 0) * before) / (before + whole);
+          e.inventory[r.herd.product] = before + whole;
+        }
+      }
       j.completed = true;
     }
     for (const t of (w.training ?? []).filter((t) => !t.completed && t.finishesAt <= next)) {

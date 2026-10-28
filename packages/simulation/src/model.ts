@@ -46,6 +46,8 @@ export interface Property {
   energyConnected?: boolean;
 }
 export interface Establishment {
+  // Fração líquida de nascimentos menos aposentadorias ainda não formada em unidade (rebanho).
+  herdCarry?: number;
   id: string;
   name: string;
   companyId: string;
@@ -404,6 +406,8 @@ export interface Recipe {
   waterM3: number;
   // Massa que sai do processo sem virar item (escória, gases, umidade), por ciclo.
   lossKg?: number;
+  // Rebanho: nascimentos e aposentadorias por ciclo de uma linha, aplicados em unidades inteiras.
+  herd?: { product: ProductId; births: number; retirements: number };
 }
 export const TIME_SCALE = 120;
 export const ECONOMIC_INTERVAL = 60_000; // duas horas virtuais por minuto real

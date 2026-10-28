@@ -22,8 +22,18 @@ describe('mundo versão 2 · configuração da economia alvo', () => {
     expect(seasonProducts(v2).sort()).toEqual(Object.keys(products).sort());
     for (const r of designRecipes) {
       const recipe = v2.season.config.recipes.find((x) => x.id === r.id)!;
-      expect(recipe.input).toEqual(r.input);
-      expect(recipe.output).toEqual(r.output);
+      // Vacas exigidas na linha saem dos insumos e viram nascimentos/aposentadorias do rebanho.
+      const herd = Object.keys(r.requires ?? {})[0];
+      const without = (q: Record<string, number | undefined>) =>
+        Object.fromEntries(Object.entries(q).filter(([id]) => id !== herd));
+      expect(recipe.input).toEqual(without(r.input));
+      expect(recipe.output).toEqual(without(r.output));
+      if (herd)
+        expect(recipe.herd).toEqual({
+          product: herd,
+          births: r.output[herd as keyof typeof r.output],
+          retirements: r.input[herd as keyof typeof r.input],
+        });
       expect(recipe.cost).toBe(r.processing);
       expect(recipe.duration).toBe((r.hours * 3_600_000) / TIME_SCALE);
       expect(v2.season.config.operations.profiles[r.id]).toEqual({

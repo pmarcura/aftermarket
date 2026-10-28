@@ -140,6 +140,20 @@ Pedido do Pedro: mapa leve, negócios onde existem de verdade, 500 bots. Decisõ
 - **Defeitos achados no caminho:** compra de quantidade quebrada em toneladas era sempre recusada como carga incompatível (estrangulava a cadeia do metal desde a versão 2); o teto de frete dos bots usava o insumo mais barato para todos (carvão distante sempre recusado), agora é por produto; lojas da mesma cidade estocavam a cidade inteira cada uma.
 - **Busca de fornecedor em escala:** cada compra cota a própria empresa, as transportadoras, o vendedor e as 4 frotas mais próximas da carga, e só as 6 ofertas mais baratas com frete estimado. Com 260 bots, o dia de jogo caiu de 36 s para 1,2 s; com 486 bots fica perto de 8 s.
 
+### D-035 · Jogador é um empresário com grupo de empresas (Pedro, 30/10/2026)
+
+Decisão do Pedro, que substitui a regra antiga de "nenhum sistema de fusões":
+
+- **Empresário:** cada jogador (e cada bot) é um empresário com nome, descrição e imagem, e caixa pessoal.
+- **Grupo:** o empresário tem uma ou mais empresas, cada uma com caixa, unidades e dívidas próprias. Começa com uma (a loja). Abrir ou comprar empresas exige muito dinheiro: não pode ser fácil ter muitas.
+- **Dividendos e capital:** lucro sobe para o caixa pessoal; o caixa pessoal põe capital nas empresas.
+- **Quebra só da empresa:** aviso → crédito do tesouro com garantia → venda de unidades → leilão aberto. O empresário segue com as outras empresas e o caixa pessoal; sem recomeço artificial.
+- **Compra de empresas inteiras** entre grupos (jogadores e bots), com dívidas e tudo; as empresas não se fundem.
+- **Contra abuso:** dívida de empresa quebrada cobra primeiro os dividendos tirados dela nos dias anteriores e bloqueia crédito por um tempo; limite de concentração de 40% de um produto por grupo (como o CADE).
+- **Ranking por grupo**, com bots e jogadores juntos. Bots usam exatamente os mesmos comandos.
+
+Detalhes de implementação e números no documento de passagem (`.planning/HANDOFF.md`).
+
 ### Ideia em avaliação · Genética de cultivares (Pedro, 28/10/2026)
 
 O Pedro propôs um sistema de genética a partir de uma pesquisa sobre a cana. O produtor compra uma pequena quantidade de mudas de alta tecnologia no viveiro e as multiplica numa área própria. Depois replanta com a própria cana por anos e só volta a comprar para trocar de variedade, para limpar o canavial de doenças ou para expandir a área de uma vez.

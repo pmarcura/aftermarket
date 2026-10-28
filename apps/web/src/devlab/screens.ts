@@ -67,6 +67,27 @@ export const screens = [
     task: 'Encontrar um veículo livre e comparar sua capacidade.',
   },
   {
+    id: 'quotes',
+    title: 'Cotações',
+    source: 'features/economy/Cotacoes.tsx',
+    purpose: 'Consultar o preço de todos os itens e o movimento das outras empresas.',
+    task: 'Achar o produto que mais subiu e quem está vendendo.',
+  },
+  {
+    id: 'orders',
+    title: 'Pedidos e negociações',
+    source: 'pages/ComercioPages.tsx',
+    purpose: 'Acompanhar compras e vendas combinadas com outras empresas.',
+    task: 'Encontrar um pedido aberto e responder à contraproposta.',
+  },
+  {
+    id: 'contracts',
+    title: 'Contratos públicos',
+    source: 'pages/ComercioPages.tsx',
+    purpose: 'Disputar editais de prefeituras e acompanhar entregas públicas.',
+    task: 'Entender quanto um edital paga e como a vencedora é escolhida.',
+  },
+  {
     id: 'company',
     title: 'Empresa e finanças',
     source: 'pages/CompanyPage.tsx',

@@ -101,7 +101,10 @@ export type Page =
   | 'purchase'
   | 'industry'
   | 'retail'
-  | 'carrier';
+  | 'carrier'
+  | 'quotes'
+  | 'orders'
+  | 'contracts';
 export interface MarketIntent {
   supplierId?: string;
   product?: ProductId;

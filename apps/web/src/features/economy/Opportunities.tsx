@@ -3,6 +3,7 @@ import { Search, SlidersHorizontal, X, ArrowUpRight, Box, Globe2, Info } from 'l
 import { useGame, cr, num } from '../../lib/game';
 import { Badge, Empty, Modal, PageHeading, Panel, Select, Tabs } from '../../components/ui';
 import { SecaoAbas } from '../../components/SecaoAbas';
+import { BotActivity } from '../business/BotActivity';
 import { WorldMap } from '../../components/WorldMap';
 import { ProductAnalysisModal } from '../../components/ProductAnalysis';
 import { EconomicChart } from '../../components/EconomicChart';
@@ -453,6 +454,12 @@ export function OpportunitiesPage() {
           <Info size={14} /> A variação compara a oferta atual com o valor de abertura. Não é
           variação diária nem cotação do mercado brasileiro.
         </p>
+        <Panel
+          title="Concorrentes e movimento do mundo"
+          subtitle="O que as outras empresas estão comprando, vendendo e abrindo agora"
+        >
+          <BotActivity />
+        </Panel>
       </div>
       {advanced && (
         <Modal title="Filtros avançados de mercado" onClose={() => setAdvanced(false)}>

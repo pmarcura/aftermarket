@@ -5,8 +5,11 @@ const secoes = {
     nome: 'Comércio',
     abas: [
       ['market', 'Comprar'],
-      ['opportunities', 'Oportunidades'],
+      ['quotes', 'Cotações'],
+      ['orders', 'Pedidos'],
+      ['contracts', 'Contratos'],
       ['logistics', 'Entregas'],
+      ['opportunities', 'Oportunidades'],
     ],
   },
   negocios: {

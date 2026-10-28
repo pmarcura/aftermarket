@@ -12,13 +12,28 @@ import { procuraDiaria, type Avaliacao } from './compra';
 import { unidade } from './Carga';
 
 // Ilustrações em pixel art dos produtos (apps/web/public/arte/produto-*.png).
+// Sem arte própria, o produto usa a peça do negócio que o produz.
 const arteDoProduto: Partial<Record<ProductId, string>> = {
-  rice: 'arroz',
-  beans: 'feijao',
-  sugar: 'acucar',
-  oil: 'oleo',
-  milk: 'leite',
-  utensils: 'utensilios',
+  rice: 'produto-arroz',
+  beans: 'produto-feijao',
+  sugar: 'produto-acucar',
+  oil: 'produto-oleo',
+  milk: 'produto-leite',
+  utensils: 'produto-utensilios',
+  steel: 'aco-utensilio',
+  scrap: 'aco-utensilio',
+  iron: 'mina',
+  coal: 'mina',
+  soy: 'soja-oleo',
+  soymeal: 'soja-oleo',
+  soySeed: 'soja-oleo',
+  feed: 'silos',
+  cow: 'fazenda-leite',
+  riceSeed: 'lavoura',
+  beanSeed: 'lavoura',
+  caneSeedling: 'lavoura',
+  truckHeavy: 'caminhao',
+  truckLight: 'caminhao',
 };
 
 /** Ilustração do produto ampliada em múltiplo inteiro; sem arte, o ícone de traço. */
@@ -35,10 +50,18 @@ export function ProdutoArte({ product, escala = 2 }: { product: ProductId; escal
   return (
     <img
       className="pixel-art vit-arte"
-      src={`/arte/produto-${nome}.png`}
+      src={`/arte/${nome}.png`}
       alt=""
       draggable={false}
-      style={tamanho ? { width: tamanho[0] * escala, height: tamanho[1] * escala } : undefined}
+      style={
+        tamanho
+          ? {
+              // Ícones de produto ampliam; peças de negócio já são grandes e ficam em tamanho natural.
+              width: tamanho[0] * (nome.startsWith('produto-') ? escala : 1),
+              height: tamanho[1] * (nome.startsWith('produto-') ? escala : 1),
+            }
+          : undefined
+      }
       onLoad={(e) => setTamanho([e.currentTarget.naturalWidth, e.currentTarget.naturalHeight])}
       onError={() => setFalhou(true)}
     />

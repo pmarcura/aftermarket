@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Check, ChevronDown, MapPin } from 'lucide-react';
+import { Check, ChevronDown } from 'lucide-react';
 import { useGame, cr, num } from '../../lib/game';
 import { PixelArt } from '../../components/PixelArt';
 import {
@@ -9,6 +9,7 @@ import {
   type ProductId,
 } from '../../../../../packages/simulation/src/model';
 import { melhorFrete, procuraDiaria, type Frete } from './compra';
+import { spriteDoNegocio } from '../../design/arte';
 
 // Como o jogador chama cada unidade. Toneladas e quilos ficam como estão.
 const nomes: Partial<Record<ProductId, [string, string]>> = {
@@ -117,75 +118,74 @@ export function Carga({
   const minimo = caminhoes.some((c) => c.price === 28000);
   const u1 = unidade(product, 1),
     u = unidade(product);
+  const vendedor = world.companies.find((c) => c.id === origem.companyId);
   return (
     <section className="carga" aria-label="Transporte da compra">
       <header className="carga-cab">
         <h3>Transporte</h3>
         <span className={`carga-veredito ${nivel}`}>
           {nivel === 'leve' ? 'Frete leve' : nivel === 'medio' ? 'Frete médio' : 'Frete pesado'} ·{' '}
-          {num(peso * 100)}% do {precoVenda ? 'preço de venda' : 'preço da mercadoria'}
+          {num(peso * 100)}% do {precoVenda ? 'preço de venda' : 'preço'}
         </span>
       </header>
-      <div className="carga-rota">
-        <span>
-          <MapPin size={13} aria-hidden="true" /> {op.city}, {op.state}
-        </span>
-        <span className="carga-estrada" aria-hidden="true">
-          <i />
-        </span>
-        <span>
-          <MapPin size={13} aria-hidden="true" /> {dp.city}, {dp.state}
-        </span>
-        <p>
-          {num(frete.distanceKm, 0)} km de estrada. A carga chega em cerca de {minutos}{' '}
-          {minutos === 1 ? 'minuto' : 'minutos'} ({horasJogo} {horasJogo === 1 ? 'hora' : 'horas'}{' '}
-          no jogo), levada por {quem}.
-        </p>
-      </div>
-      <div className="carga-frota">
-        <div className="carga-caminhoes">
-          {caminhoes.slice(0, 3).map((c) => (
-            <figure key={c.vehicleId} className="carga-caminhao">
+      <div
+        className="carga-cena"
+        role="img"
+        aria-label={`De ${op.city} até ${dp.city}, ${num(frete.distanceKm, 0)} km, chega em cerca de ${minutos} minutos`}
+      >
+        <div className="cena-ponta">
+          <PixelArt name={spriteDoNegocio(origem, world)} scale={1} />
+          <b>{op.city}</b>
+          <small>{vendedor?.id === actor ? origem.name : (vendedor?.name ?? origem.name)}</small>
+        </div>
+        <div className="cena-estrada">
+          <span className="cena-km">{num(frete.distanceKm, 0)} km</span>
+          <span className="cena-pista" aria-hidden="true">
+            <span className="cena-caminhao">
               <PixelArt name="caminhao" scale={1} />
-              <span
-                className="carga-cheio"
-                role="meter"
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-valuenow={Math.round(c.cheio * 100)}
-                aria-label="Quanto o caminhão vai cheio"
-              >
-                <i
-                  className={c.cheio < 0.5 ? 'pouco' : c.cheio < 0.8 ? 'medio' : ''}
-                  style={{ width: `${c.cheio * 100}%` }}
-                />
-              </span>
-              <figcaption>{num(c.cheio * 100)}% cheio</figcaption>
-            </figure>
-          ))}
-          {caminhoes.length > 3 && <span className="carga-mais">+{caminhoes.length - 3}</span>}
+              {caminhoes.length > 1 && <b>×{caminhoes.length}</b>}
+            </span>
+          </span>
+          <span className="cena-tempo">
+            ~{minutos} min · {horasJogo} h de jogo
+          </span>
         </div>
-        <div className="carga-valor">
-          <strong>{cr(frete.price)}</strong>
-          <span>
-            de frete por {caminhoes.length} {caminhoes.length === 1 ? 'caminhão' : 'caminhões'}
-          </span>
-          <span>
-            levando {num(quantidade)} de {num(capacidadeTotal)} {u} que cabem
-          </span>
+        <div className="cena-ponta">
+          <PixelArt name={spriteDoNegocio(destino, world)} scale={1} />
+          <b>{dp.city}</b>
+          <small>{destino.name}</small>
         </div>
       </div>
-      <p className="carga-traducao">
-        {precoVenda ? (
-          <>
-            De cada {u1} vendido a {cr(precoVenda)}, <b>{cr(porUnidade)}</b> pagam o frete.
-          </>
-        ) : (
-          <>
-            O frete soma <b>{cr(porUnidade)}</b> a cada {u1}, que custa {cr(precoUnidade)} no
-            fornecedor.
-          </>
-        )}
+      <div className="carga-numeros">
+        <div>
+          <b>{cr(frete.price, 0)}</b>
+          <span>frete total</span>
+        </div>
+        <div className={nivel}>
+          <b>{cr(porUnidade)}</b>
+          <span>por {u1}</span>
+        </div>
+        <div>
+          <b>{num(ocupacao * 100)}%</b>
+          <span>do caminhão</span>
+          <i
+            className="carga-mini"
+            role="meter"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={Math.round(ocupacao * 100)}
+            aria-label="Quanto o caminhão vai cheio"
+          >
+            <i
+              className={ocupacao < 0.5 ? 'pouco' : ocupacao < 0.8 ? 'medio' : ''}
+              style={{ width: `${Math.min(1, ocupacao) * 100}%` }}
+            />
+          </i>
+        </div>
+      </div>
+      <p className="carga-quem">
+        {num(quantidade)} de {num(capacidadeTotal)} {u} que cabem em {caminhoes.length}{' '}
+        {caminhoes.length === 1 ? 'caminhão' : 'caminhões'} de {quem}.
       </p>
       {encher && freteCheio ? (
         <div className="carga-dica">

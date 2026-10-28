@@ -20,9 +20,6 @@ import {
 import { quote } from '../../../../../packages/simulation/src/engine';
 import { useRoute } from '../../lib/routing';
 import '../../economy.css';
-import { Orders } from '../business/Orders';
-import { BotActivity } from '../business/BotActivity';
-import { InfrastructureContracts } from '../business/InfrastructureContracts';
 import { inventoryQuality } from '../../../../../packages/simulation/src/operations';
 import { householdItems } from '../../../../../packages/simulation/src/channels';
 import {
@@ -718,29 +715,6 @@ export function MarketPage() {
             </div>
           </>
         )}
-        <details className="infrastructure-market">
-          <summary>
-            Pedidos e negociações{' '}
-            <Badge tone="blue">
-              {world.orders.filter((o) => o.status === 'pending').length} em aberto
-            </Badge>
-          </summary>
-          <Orders />
-        </details>
-        <details className="infrastructure-market">
-          <summary>Concorrentes e movimento do mundo</summary>
-          <BotActivity />
-        </details>
-        <details className="infrastructure-market">
-          <summary>
-            Contratos de infraestrutura{' '}
-            <Badge tone="gold">
-              {world.infrastructure.filter((c) => c.status === 'open').length} abertos
-            </Badge>
-            <span>Disputar projetos estaduais e entregas municipais</span>
-          </summary>
-          <InfrastructureContracts />
-        </details>
       </div>
       {advanced && (
         <Modal title="Filtros avançados de fornecedores" onClose={() => setAdvanced(false)}>

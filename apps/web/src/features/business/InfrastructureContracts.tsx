@@ -1,7 +1,7 @@
 import { FleetPicker } from '../../components/FleetPicker';
 import { useState } from 'react';
 import { useGame, cr, num } from '../../lib/game';
-import { Badge, Empty, Modal, Rows, Select, Progress } from '../../components/ui';
+import { Empty, Modal, Rows, Select, Progress } from '../../components/ui';
 import { EconomicChart } from '../../components/EconomicChart';
 import {
   products,
@@ -16,6 +16,8 @@ import { quote } from '../../../../../packages/simulation/src/engine';
 import { useClock } from '../../lib/clock';
 import { useRoute } from '../../lib/routing';
 import { Pagination, usePagination } from '../../components/Pagination';
+import { ProdutoArte } from '../economy/Vitrine';
+import { ShieldCheck, Timer, Trophy, Users } from 'lucide-react';
 export function InfrastructureContracts() {
   const { world, actor, run, pending, navigate, focusMap } = useGame(),
     now = useClock();
@@ -33,7 +35,12 @@ export function InfrastructureContracts() {
   const contracts = world.infrastructure
     .filter((c) => (!state || c.state === state) && (!status || c.status === status))
     .slice()
-    .reverse();
+    .reverse()
+    .sort(
+      (a, b) =>
+        ['open', 'delivering', 'completed', 'expired'].indexOf(a.status) -
+        ['open', 'delivering', 'completed', 'expired'].indexOf(b.status),
+    );
   const page = usePagination(contracts, (c) =>
     [c.id, c.title, c.municipality, c.state, products[c.product].name].join(' '),
   );
@@ -54,77 +61,79 @@ export function InfrastructureContracts() {
   );
   return (
     <div className="business-section">
-      <div className="panel-content">
-        <div className="section-title">
+      <div className="ed-topo">
+        <div className="ed-caixa">
           <div>
-            <h3>Tesouros estaduais e contratos municipais</h3>
-            <p className="small muted">
-              Arrecadação paga projetos da própria UF. O caixa determina quantos contratos cabem; o
-              preço de cada item tem teto de referência interna + 25%.
-            </p>
-          </div>
-          <Select
-            label="Estado dos contratos públicos"
-            value={state}
-            onChange={(ev) => setState(ev.target.value)}
-          >
-            <option value="">Estado (opcional)</option>
-            {government.length &&
-              world.companies
-                .filter((c) => c.id.startsWith('treasury:'))
-                .map((c) => (
-                  <option key={c.id} value={c.homeState}>
-                    {c.homeState}
-                  </option>
-                ))}
-          </Select>
-        </div>
-        <div className="supply-kpis">
-          <div>
-            <span>Caixa público no recorte</span>
-            <strong>{cr(government.reduce((n, c) => n + c.balance, 0))}</strong>
+            <b>
+              {cr(
+                government.reduce((n, c) => n + c.balance, 0),
+                0,
+              )}
+            </b>
+            <span>no caixa das prefeituras e estados{state ? ` de ${state}` : ''}</span>
           </div>
           <div>
-            <span>Compromissos reservados</span>
-            <strong>{cr(treasuryReserved(world, state || undefined))}</strong>
+            <b>{cr(treasuryReserved(world, state || undefined), 0)}</b>
+            <span>já prometidos a contratos</span>
           </div>
-          <div>
-            <span>Disponível para novos projetos</span>
-            <strong>{cr(treasuryAvailable(world, state || undefined))}</strong>
+          <div className="livre">
+            <b>{cr(treasuryAvailable(world, state || undefined), 0)}</b>
+            <span>livres para novos editais</span>
           </div>
         </div>
-        <p className="formula-note">
-          Julgamento: qualidade até 45 pontos; preço até 25; prazo até 20; custo do frete até 10.
-          Caixa e estoque são revalidados no fechamento.
-        </p>
-        <div className="treasury-states">
-          {government
-            .filter((c) => c.balance > 0 || state)
-            .map((c) => (
-              <div key={c.id}>
-                <strong>{c.homeState ?? 'Custódia anterior'}</strong>
-                <span>{cr(c.balance)}</span>
-                <small>
-                  {
-                    world.infrastructure.filter((x) => x.treasuryId === c.id && x.status === 'open')
-                      .length
-                  }{' '}
-                  disputas abertas
-                </small>
-              </div>
+        <figure className="ed-regra">
+          <figcaption>Como a vencedora é escolhida</figcaption>
+          <div className="ed-regra-barra" aria-hidden="true">
+            <i style={{ flex: 45 }}>Qualidade 45</i>
+            <i style={{ flex: 25 }}>Preço 25</i>
+            <i style={{ flex: 20 }}>Prazo 20</i>
+            <i style={{ flex: 10 }}>Frete 10</i>
+          </div>
+          <small>
+            Pontos de 100. O teto por unidade é a referência interna + 25%; caixa e estoque são
+            conferidos no fechamento.
+          </small>
+        </figure>
+        <div className="ed-filtros">
+          <div role="group" aria-label="Estado dos contratos públicos">
+            {[
+              '',
+              ...world.infrastructure
+                .map((c) => c.state ?? '')
+                .filter(Boolean)
+                .sort(),
+            ]
+              .filter((uf, i, all) => all.indexOf(uf) === i)
+              .map((uf) => (
+                <button
+                  key={uf || 'todos'}
+                  aria-pressed={state === uf}
+                  className={state === uf ? 'on' : ''}
+                  onClick={() => setState(uf)}
+                >
+                  {uf || 'Todos os estados'}
+                </button>
+              ))}
+          </div>
+          <div role="group" aria-label="Situação dos contratos públicos">
+            {[
+              ['', 'Todos'],
+              ['open', 'Em disputa'],
+              ['delivering', 'Em entrega'],
+              ['completed', 'Concluídos'],
+              ['expired', 'Sem vencedor'],
+            ].map(([v, rot]) => (
+              <button
+                key={v || 'todos'}
+                aria-pressed={status === v}
+                className={status === v ? 'on' : ''}
+                onClick={() => setStatus(v)}
+              >
+                {rot}
+              </button>
             ))}
+          </div>
         </div>
-        <Select
-          label="Situação dos contratos públicos"
-          value={status}
-          onChange={(ev) => setStatus(ev.target.value)}
-        >
-          <option value="">Situação (opcional)</option>
-          <option value="open">Em disputa</option>
-          <option value="delivering">Em entrega</option>
-          <option value="completed">Concluído</option>
-          <option value="expired">Encerrado sem fornecedor</option>
-        </Select>
       </div>
       <Pagination value={page} label="contratos públicos" />
       {page.rows.length ? (
@@ -135,146 +144,158 @@ export function InfrastructureContracts() {
               open = c.status === 'open' && (!c.biddingEndsAt || now < c.biddingEndsAt),
               cap = c.referencePrice ? Math.round(c.referencePrice * 1.25) : c.unitPrice;
             return (
-              <article className="commercial-order" key={c.id}>
-                <div className="section-title">
-                  <div>
-                    <Badge tone="gold">{c.state ?? p.state}</Badge>
-                    <strong> {c.title}</strong>
-                    <small className="block">
-                      Prefeitura de {c.municipality ?? p.city} · #{c.id.slice(0, 6)}
-                    </small>
-                  </div>
-                  <Badge
-                    tone={
-                      c.status === 'completed' ? 'green' : c.status === 'open' ? 'gold' : 'blue'
-                    }
-                  >
-                    {
+              <article className={`edital ${c.status}`} key={c.id}>
+                <div className="ed-arte">
+                  <ProdutoArte product={c.product} />
+                  <span className="ed-uf">{c.state ?? p.state}</span>
+                </div>
+                <div className="ed-corpo">
+                  <div className="ed-linha">
+                    <span className={`ed-status ${c.status}`}>
                       {
-                        open: 'Em disputa',
-                        delivering: 'Em entrega',
-                        completed: 'Concluído',
-                        expired: 'Sem adjudicação',
-                      }[c.status]
-                    }
-                  </Badge>
-                </div>
-                <div className="order-numbers">
-                  <span>
-                    Solicitado{' '}
-                    <b>
-                      {num(c.quantity)} {products[c.product].unit} · {products[c.product].name}
-                    </b>
-                  </span>
-                  <span>
-                    Teto por unidade <b>{cr(cap)}</b>
-                  </span>
-                  <span>
-                    Qualidade mínima <b>{c.minQuality}/100</b>
-                  </span>
-                  <span>
-                    Propostas <b>{c.bids?.length ?? 0}</b>
-                  </span>
-                </div>
-                {c.referencePrice && (
-                  <p className="formula-note">
-                    Referência interna protegida {cr(c.referencePrice)} × 1,25 = teto {cr(cap)}. Os
-                    fornecedores podem propor descontos. A referência é congelada neste edital.
-                  </p>
-                )}
-                <Progress value={(c.deliveredQuantity / c.quantity) * 100} />
-                <p className="small muted">
-                  {num(c.deliveredQuantity)} / {num(c.quantity)} {products[c.product].unit}{' '}
-                  recebidos.{' '}
-                  {open && c.biddingEndsAt
-                    ? `Propostas encerram em ${Math.max(0, Math.ceil((c.biddingEndsAt - now) / 1000))} s reais.`
-                    : c.paid
-                      ? `Total contratado: ${cr(c.paid)}.`
-                      : ''}
-                </p>
-                <div className="inline-actions">
-                  {open && (
-                    <button
-                      className="primary"
-                      onClick={() => {
-                        setSelected(c);
-                        setOrigin('');
-                        setCarrier('');
-                        setPrice(c.unitPrice);
-                      }}
-                    >
-                      Participar da disputa
-                    </button>
-                  )}
-                  <button className="secondary" onClick={() => focusMap(p.coordinates, p.id)}>
-                    Ver prefeitura no mapa
-                  </button>
-                  {c.supplierId === actor && (
-                    <button className="secondary" onClick={() => navigate('logistics')}>
-                      Acompanhar pedido e caminhões
-                    </button>
-                  )}
-                </div>
-                {!!c.bids?.length && (
-                  <details>
-                    <summary>Comparar propostas e resultado</summary>
-                    <div className="table-scroll">
-                      <table>
-                        <thead>
-                          <tr>
-                            <th>Fornecedor</th>
-                            <th>Preço / un.</th>
-                            <th>Qualidade</th>
-                            <th>Frete</th>
-                            <th>Pontuação</th>
-                            <th>Resultado</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {[...c.bids]
-                            .sort((a, b) => b.score - a.score)
-                            .map((b) => (
-                              <tr key={b.id}>
-                                <td>{world.companies.find((x) => x.id === b.supplierId)?.name}</td>
-                                <td>{cr(b.unitPrice)}</td>
-                                <td>{b.quality}/100</td>
-                                <td>{cr(b.freight)}</td>
-                                <td>{b.score}</td>
-                                <td>
-                                  {
-                                    {
-                                      valid: 'Em disputa',
-                                      won: 'Vencedora',
-                                      lost: 'Não selecionada',
-                                      invalid: 'Inviável na revalidação',
-                                    }[b.status]
-                                  }
-                                  {b.reason && <small className="block">{b.reason}</small>}
-                                </td>
-                              </tr>
-                            ))}
-                        </tbody>
-                      </table>
+                        {
+                          open: 'Em disputa',
+                          delivering: 'Em entrega',
+                          completed: 'Concluído',
+                          expired: 'Sem vencedor',
+                        }[c.status]
+                      }
+                    </span>
+                    {open && c.biddingEndsAt && (
+                      <span className="ed-relogio">
+                        <Timer size={13} aria-hidden="true" /> encerra em{' '}
+                        {(() => {
+                          const t = Math.max(0, Math.ceil((c.biddingEndsAt - now) / 1000));
+                          return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`;
+                        })()}
+                      </span>
+                    )}
+                  </div>
+                  <h3>
+                    Prefeitura de {c.municipality ?? p.city} compra {num(c.quantity)}{' '}
+                    {products[c.product].unit} de {products[c.product].name}
+                  </h3>
+                  <small className="ed-sub">
+                    {c.title} · #{c.id.slice(0, 6)}
+                  </small>
+                  <div className="ed-valor">
+                    <b>{cr(cap * c.quantity, 0)}</b>
+                    <span>
+                      pagos no máximo · até {cr(cap)} por {products[c.product].unit}
+                    </span>
+                  </div>
+                  <div className="ed-selos">
+                    <span>
+                      <ShieldCheck size={13} aria-hidden="true" /> qualidade mínima {c.minQuality}
+                    </span>
+                    <span>
+                      <Users size={13} aria-hidden="true" /> {c.bids?.length ?? 0}{' '}
+                      {(c.bids?.length ?? 0) === 1 ? 'proposta' : 'propostas'}
+                    </span>
+                    {c.supplierId && (
+                      <span>
+                        <Trophy size={13} aria-hidden="true" />{' '}
+                        {c.supplierId === actor
+                          ? 'você venceu'
+                          : world.companies.find((x) => x.id === c.supplierId)?.name}
+                      </span>
+                    )}
+                  </div>
+                  {c.status !== 'open' && c.status !== 'expired' && (
+                    <div className="ed-entrega">
+                      <Progress value={(c.deliveredQuantity / c.quantity) * 100} />
+                      <small>
+                        {num(c.deliveredQuantity)} de {num(c.quantity)} {products[c.product].unit}{' '}
+                        entregues{c.paid ? ` · ${cr(c.paid)} pagos` : ''}
+                      </small>
                     </div>
-                    <EconomicChart
-                      label="Pontuação real das propostas do contrato"
-                      height={220}
-                      option={{
-                        color: ['#77bdc5'],
-                        tooltip: { trigger: 'axis' },
-                        grid: { left: 140, right: 30, top: 20, bottom: 30 },
-                        xAxis: { type: 'value', max: 100 },
-                        yAxis: {
-                          type: 'category',
-                          data: c.bids.map(
-                            (b) => world.companies.find((x) => x.id === b.supplierId)?.name,
-                          ),
-                        },
-                        series: [{ type: 'bar', data: c.bids.map((b) => b.score) }],
-                      }}
-                    />
-                  </details>
-                )}
+                  )}
+                  <div className="inline-actions">
+                    {open && (
+                      <button
+                        className="primary"
+                        onClick={() => {
+                          setSelected(c);
+                          setOrigin('');
+                          setCarrier('');
+                          setPrice(c.unitPrice);
+                        }}
+                      >
+                        Participar da disputa
+                      </button>
+                    )}
+                    <button className="secondary" onClick={() => focusMap(p.coordinates, p.id)}>
+                      Ver prefeitura no mapa
+                    </button>
+                    {c.supplierId === actor && (
+                      <button className="secondary" onClick={() => navigate('logistics')}>
+                        Acompanhar pedido e caminhões
+                      </button>
+                    )}
+                  </div>
+                  {!!c.bids?.length && (
+                    <details>
+                      <summary>Comparar propostas e resultado</summary>
+                      <div className="table-scroll">
+                        <table>
+                          <thead>
+                            <tr>
+                              <th>Fornecedor</th>
+                              <th>Preço / un.</th>
+                              <th>Qualidade</th>
+                              <th>Frete</th>
+                              <th>Pontuação</th>
+                              <th>Resultado</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {[...c.bids]
+                              .sort((a, b) => b.score - a.score)
+                              .map((b) => (
+                                <tr key={b.id}>
+                                  <td>
+                                    {world.companies.find((x) => x.id === b.supplierId)?.name}
+                                  </td>
+                                  <td>{cr(b.unitPrice)}</td>
+                                  <td>{b.quality}/100</td>
+                                  <td>{cr(b.freight)}</td>
+                                  <td>{b.score}</td>
+                                  <td>
+                                    {
+                                      {
+                                        valid: 'Em disputa',
+                                        won: 'Vencedora',
+                                        lost: 'Não selecionada',
+                                        invalid: 'Inviável na revalidação',
+                                      }[b.status]
+                                    }
+                                    {b.reason && <small className="block">{b.reason}</small>}
+                                  </td>
+                                </tr>
+                              ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      <EconomicChart
+                        label="Pontuação real das propostas do contrato"
+                        height={220}
+                        option={{
+                          color: ['#77bdc5'],
+                          tooltip: { trigger: 'axis' },
+                          grid: { left: 140, right: 30, top: 20, bottom: 30 },
+                          xAxis: { type: 'value', max: 100 },
+                          yAxis: {
+                            type: 'category',
+                            data: c.bids.map(
+                              (b) => world.companies.find((x) => x.id === b.supplierId)?.name,
+                            ),
+                          },
+                          series: [{ type: 'bar', data: c.bids.map((b) => b.score) }],
+                        }}
+                      />
+                    </details>
+                  )}
+                </div>
               </article>
             );
           })}

@@ -50,6 +50,15 @@ const RetailPage = lazy(() =>
 const CarrierPage = lazy(() =>
   import('./pages/CarrierPage').then((m) => ({ default: m.CarrierPage })),
 );
+const CotacoesPage = lazy(() =>
+  import('./features/economy/Cotacoes').then((m) => ({ default: m.CotacoesPage })),
+);
+const PedidosPage = lazy(() =>
+  import('./pages/ComercioPages').then((m) => ({ default: m.PedidosPage })),
+);
+const ContratosPage = lazy(() =>
+  import('./pages/ComercioPages').then((m) => ({ default: m.ContratosPage })),
+);
 const CompanyPage = lazy(() =>
   import('./pages/CompanyPage').then((m) => ({ default: m.CompanyPage })),
 );
@@ -71,20 +80,17 @@ const destinations: { id: Page; label: string; icon: typeof Map; pages: Page[] }
     id: 'market',
     label: 'Comércio',
     icon: ArrowLeftRight,
-    pages: ['market', 'opportunities', 'logistics'],
+    pages: ['market', 'quotes', 'orders', 'contracts', 'logistics', 'opportunities'],
   },
   { id: 'company', label: 'Empresa', icon: Building2, pages: ['company'] },
 ];
 function Brand() {
   return (
-    <div className="brand">
-      <svg width="38" height="35" viewBox="0 0 52 46" aria-hidden="true">
-        <path d="M3 40 25 3l12 20-10 17-8-14-8 14zm29 0 10-18 10 18z" fill="currentColor" />
-        <path d="m18 17 7-12 8 13-8 5z" fill="#c6d5db" />
-      </svg>
+    <div className="marca">
+      <img src="/arte/marca-logo.png" alt="" />
       <div>
         <strong>AFTERMARKET</strong>
-        <small>ECONOMIA EM MOVIMENTO</small>
+        <small>Economia em movimento</small>
       </div>
     </div>
   );
@@ -164,6 +170,9 @@ function Shell() {
     industry: <OperationPage />,
     retail: <RetailPage />,
     carrier: <CarrierPage />,
+    quotes: <CotacoesPage />,
+    orders: <PedidosPage />,
+    contracts: <ContratosPage />,
   };
   return (
     <div className={`app-shell ${collapsed ? 'collapsed' : ''}`}>

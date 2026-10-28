@@ -7,7 +7,8 @@ Este repositório reúne código do AFTERMARKET e dependências de terceiros, ca
 | React / React DOM                                  | MIT · Meta e colaboradores                                                                              |
 | MapLibre GL JS                                     | BSD-3-Clause · comunidade MapLibre                                                                      |
 | Lucide React                                       | ISC · comunidade Lucide; observar avisos do acervo                                                      |
-| Inter                                              | SIL Open Font License 1.1 · autores da fonte                                                            |
+| Archivo                                            | SIL Open Font License 1.1 · Omnibus-Type                                                                |
+| Arte em pixel art (`apps/web/public/arte`)        | Criada para o projeto: prancha do Pedro convertida e peças geradas no PixelLab                           |
 | Apache ECharts                                     | Apache-2.0 · Apache Software Foundation e colaboradores                                                 |
 | Express                                            | MIT · colaboradores                                                                                     |
 | Zod                                                | MIT · autores e colaboradores                                                                           |

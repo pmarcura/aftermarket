@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "fixtureFingerprint": "512dc4e137bba5601d8a334fd37f0449a5e6f452e167d6d5a9d2cd30483e4c77",
+  "fixtureFingerprint": "96193ca442be8ff4453bf39a1e1c417b18665b98fa8c1cc11bbbdb3045aef789",
   "note": "Inventário estático alcançável por tela; inclui componentes compartilhados e ramos condicionais. Textos dinâmicos e estados visíveis precisam da evidência de navegador. Comandos type são candidatos, não prova de execução.",
   "screens": [
     {
@@ -9,7 +9,7 @@
       "source": "pages/MapPage.tsx",
       "purpose": "Encontrar e inspecionar propriedades.",
       "task": "Localizar uma propriedade e entender titularidade e acesso.",
-      "fingerprint": "9c78c2729cc45ea8195d443e33bb1b68b059633520565168f775131a759c0e24",
+      "fingerprint": "bc3884fcb790d9160df5b1fbc28c91c6a860e2fbac2310358065f266e5973db1",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -37,7 +37,7 @@
       "source": "pages/MapPage.tsx",
       "purpose": "Revisar imóvel, instalação e capital necessário.",
       "task": "Entender o custo antes de confirmar a aquisição.",
-      "fingerprint": "9c78c2729cc45ea8195d443e33bb1b68b059633520565168f775131a759c0e24",
+      "fingerprint": "bc3884fcb790d9160df5b1fbc28c91c6a860e2fbac2310358065f266e5973db1",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -65,7 +65,7 @@
       "source": "pages/OpportunitiesPage.tsx",
       "purpose": "Comparar mercados e oportunidades por item e região.",
       "task": "Filtrar um produto e explicar demanda, preço e oferta.",
-      "fingerprint": "671d0ed01d763b5a23862429ae76a01cc0d67b0a1f5ad17c1c754e6adeab68bb",
+      "fingerprint": "7a93a841a74d2c85145ea2fb4d3449173ad72d9e6c00b4775036f00f588629eb",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -75,12 +75,14 @@
         "apps/web/src/components/FirstSteps.tsx",
         "apps/web/src/components/Notice.tsx",
         "apps/web/src/components/NotificationCenter.tsx",
+        "apps/web/src/components/Pagination.tsx",
         "apps/web/src/components/ProductAnalysis.tsx",
         "apps/web/src/components/SecaoAbas.tsx",
         "apps/web/src/components/WorldMap.tsx",
         "apps/web/src/components/ui.tsx",
         "apps/web/src/devlab/screens.ts",
         "apps/web/src/economy.css",
+        "apps/web/src/features/business/BotActivity.tsx",
         "apps/web/src/features/economy/BusinessIdeas.tsx",
         "apps/web/src/features/economy/Opportunities.tsx",
         "apps/web/src/lib/game.tsx",
@@ -97,7 +99,7 @@
       "source": "pages/BusinessesPage.tsx",
       "purpose": "Gerenciar estruturas e conexões de abastecimento.",
       "task": "Identificar uma estrutura parada e abrir sua operação.",
-      "fingerprint": "4ddd39b5602ac150670670995c6c1df914818a22e28a160f253b5073d148672e",
+      "fingerprint": "9d7e79d21db9c11d41b6400bffccd7f2e7412e35eac6b472beb0df431aa9a805",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -136,7 +138,7 @@
       "business": "e-industry",
       "purpose": "Produzir, abastecer, contratar e vender.",
       "task": "Revisar insumos, capacidade e custo antes de iniciar produção.",
-      "fingerprint": "a0253407108509048d98fc942a612019a27cf7407c6ae14c758a2e74e0ad6740",
+      "fingerprint": "6b26a5e917d89c6caecbefbc905818981f2dc13bf3326cb7e5e33034511d47c3",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -178,7 +180,7 @@
       "business": "e-retail",
       "purpose": "Acompanhar estoque, preços e reposição da loja.",
       "task": "Reconhecer ruptura e configurar uma reposição viável.",
-      "fingerprint": "55092ce8506b6b9fabcacd320a8a8d1e8dddaa401891971835a599ad2ea33758",
+      "fingerprint": "265900b26bec7ece45a7196b4363f1c796da7266492cc9361b05d1c84755d132",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -220,7 +222,7 @@
       "source": "pages/MarketPage.tsx",
       "purpose": "Comprar, negociar e observar concorrentes e editais.",
       "task": "Comparar custo posto e escolher uma compra compatível.",
-      "fingerprint": "3e7608238e96da340c29d4bf1abd918632d70629e972b1e7339669fe9213ebeb",
+      "fingerprint": "98cb029c21a747593a8cfb6b81ce23bafe692b77151f3275f4277b7624d806c2",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -228,10 +230,8 @@
         "apps/web/src/competition.css",
         "apps/web/src/components/EconomicChart.tsx",
         "apps/web/src/components/FirstSteps.tsx",
-        "apps/web/src/components/FleetPicker.tsx",
         "apps/web/src/components/Notice.tsx",
         "apps/web/src/components/NotificationCenter.tsx",
-        "apps/web/src/components/Pagination.tsx",
         "apps/web/src/components/PixelArt.tsx",
         "apps/web/src/components/ProductAnalysis.tsx",
         "apps/web/src/components/SecaoAbas.tsx",
@@ -239,14 +239,10 @@
         "apps/web/src/design/arte.ts",
         "apps/web/src/devlab/screens.ts",
         "apps/web/src/economy.css",
-        "apps/web/src/features/business/BotActivity.tsx",
-        "apps/web/src/features/business/InfrastructureContracts.tsx",
-        "apps/web/src/features/business/Orders.tsx",
         "apps/web/src/features/economy/Carga.tsx",
         "apps/web/src/features/economy/Market.tsx",
         "apps/web/src/features/economy/Vitrine.tsx",
         "apps/web/src/features/economy/compra.ts",
-        "apps/web/src/lib/clock.ts",
         "apps/web/src/lib/game.tsx",
         "apps/web/src/lib/routing.ts",
         "apps/web/src/main.tsx",
@@ -261,7 +257,7 @@
       "source": "pages/LogisticsPage.tsx",
       "purpose": "Contratar e acompanhar transporte.",
       "task": "Entender disponibilidade, limite, custo e prazo de uma carga.",
-      "fingerprint": "e85471e8bffd4f38988d7af9e5f982883110356f11dd27f1a0ab75adb43dcb1d",
+      "fingerprint": "3e748645e3aa33462adde833ec079fc0fb77813ef4d507e5665efdb78197cec3",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -296,7 +292,7 @@
       "business": "e-logistics",
       "purpose": "Gerenciar veículos, disponibilidade e capacidade.",
       "task": "Encontrar um veículo livre e comparar sua capacidade.",
-      "fingerprint": "9def9ec3fd88f1dedac582a97a38fc82c734e2bb2acbfeb0952a6df2ffdf1cb0",
+      "fingerprint": "df5d6dce5c8829ff542a16b840d15993c27e132057933626ee699c05de8b913f",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -326,12 +322,121 @@
       ]
     },
     {
+      "id": "quotes",
+      "title": "Cotações",
+      "source": "features/economy/Cotacoes.tsx",
+      "purpose": "Consultar o preço de todos os itens e o movimento das outras empresas.",
+      "task": "Achar o produto que mais subiu e quem está vendendo.",
+      "fingerprint": "66310d2abbf2460da68994e73dbf21de11610b756986b58b2fbd6256467668cb",
+      "files": [
+        "apps/web/src/App.tsx",
+        "apps/web/src/analysis.css",
+        "apps/web/src/business.css",
+        "apps/web/src/competition.css",
+        "apps/web/src/components/EconomicChart.tsx",
+        "apps/web/src/components/FirstSteps.tsx",
+        "apps/web/src/components/Notice.tsx",
+        "apps/web/src/components/NotificationCenter.tsx",
+        "apps/web/src/components/PixelArt.tsx",
+        "apps/web/src/components/ProductAnalysis.tsx",
+        "apps/web/src/components/SecaoAbas.tsx",
+        "apps/web/src/components/ui.tsx",
+        "apps/web/src/design/arte.ts",
+        "apps/web/src/devlab/screens.ts",
+        "apps/web/src/economy.css",
+        "apps/web/src/features/economy/Carga.tsx",
+        "apps/web/src/features/economy/Cotacoes.tsx",
+        "apps/web/src/features/economy/Vitrine.tsx",
+        "apps/web/src/features/economy/compra.ts",
+        "apps/web/src/lib/game.tsx",
+        "apps/web/src/main.tsx",
+        "apps/web/src/negocios.css",
+        "apps/web/src/styles.css"
+      ]
+    },
+    {
+      "id": "orders",
+      "title": "Pedidos e negociações",
+      "source": "pages/ComercioPages.tsx",
+      "purpose": "Acompanhar compras e vendas combinadas com outras empresas.",
+      "task": "Encontrar um pedido aberto e responder à contraproposta.",
+      "fingerprint": "6e5da6e4116138770f92396a18d4dcbd86946417911ef14fd9e13d18b5107461",
+      "files": [
+        "apps/web/src/App.tsx",
+        "apps/web/src/analysis.css",
+        "apps/web/src/business.css",
+        "apps/web/src/competition.css",
+        "apps/web/src/components/EconomicChart.tsx",
+        "apps/web/src/components/FirstSteps.tsx",
+        "apps/web/src/components/FleetPicker.tsx",
+        "apps/web/src/components/Notice.tsx",
+        "apps/web/src/components/NotificationCenter.tsx",
+        "apps/web/src/components/Pagination.tsx",
+        "apps/web/src/components/PixelArt.tsx",
+        "apps/web/src/components/SecaoAbas.tsx",
+        "apps/web/src/components/ui.tsx",
+        "apps/web/src/design/arte.ts",
+        "apps/web/src/devlab/screens.ts",
+        "apps/web/src/economy.css",
+        "apps/web/src/features/business/InfrastructureContracts.tsx",
+        "apps/web/src/features/business/Orders.tsx",
+        "apps/web/src/features/economy/Carga.tsx",
+        "apps/web/src/features/economy/Vitrine.tsx",
+        "apps/web/src/features/economy/compra.ts",
+        "apps/web/src/lib/clock.ts",
+        "apps/web/src/lib/game.tsx",
+        "apps/web/src/lib/routing.ts",
+        "apps/web/src/main.tsx",
+        "apps/web/src/negocios.css",
+        "apps/web/src/pages/ComercioPages.tsx",
+        "apps/web/src/styles.css"
+      ]
+    },
+    {
+      "id": "contracts",
+      "title": "Contratos públicos",
+      "source": "pages/ComercioPages.tsx",
+      "purpose": "Disputar editais de prefeituras e acompanhar entregas públicas.",
+      "task": "Entender quanto um edital paga e como a vencedora é escolhida.",
+      "fingerprint": "6e5da6e4116138770f92396a18d4dcbd86946417911ef14fd9e13d18b5107461",
+      "files": [
+        "apps/web/src/App.tsx",
+        "apps/web/src/analysis.css",
+        "apps/web/src/business.css",
+        "apps/web/src/competition.css",
+        "apps/web/src/components/EconomicChart.tsx",
+        "apps/web/src/components/FirstSteps.tsx",
+        "apps/web/src/components/FleetPicker.tsx",
+        "apps/web/src/components/Notice.tsx",
+        "apps/web/src/components/NotificationCenter.tsx",
+        "apps/web/src/components/Pagination.tsx",
+        "apps/web/src/components/PixelArt.tsx",
+        "apps/web/src/components/SecaoAbas.tsx",
+        "apps/web/src/components/ui.tsx",
+        "apps/web/src/design/arte.ts",
+        "apps/web/src/devlab/screens.ts",
+        "apps/web/src/economy.css",
+        "apps/web/src/features/business/InfrastructureContracts.tsx",
+        "apps/web/src/features/business/Orders.tsx",
+        "apps/web/src/features/economy/Carga.tsx",
+        "apps/web/src/features/economy/Vitrine.tsx",
+        "apps/web/src/features/economy/compra.ts",
+        "apps/web/src/lib/clock.ts",
+        "apps/web/src/lib/game.tsx",
+        "apps/web/src/lib/routing.ts",
+        "apps/web/src/main.tsx",
+        "apps/web/src/negocios.css",
+        "apps/web/src/pages/ComercioPages.tsx",
+        "apps/web/src/styles.css"
+      ]
+    },
+    {
       "id": "company",
       "title": "Empresa e finanças",
       "source": "pages/CompanyPage.tsx",
       "purpose": "Explicar caixa, resultado, compromissos e recuperação.",
       "task": "Distinguir saldo, caixa livre, dívida e resultado operacional.",
-      "fingerprint": "a45143b62901384dcf1b6f931b43aa368d60a6d6aca3aabdc1b97fb73fd5690d",
+      "fingerprint": "6068d61f8a1000f94ace231a7471509159d0af64fdf5e5a710f3321effafdb7f",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -363,7 +468,7 @@
     },
     {
       "path": "apps/web/src/App.tsx",
-      "hash": "b4a72a920835c8da893c355c69b350cff2c3d42c25db3c3988196ffddd4cb766",
+      "hash": "4af681e2515b70f477e3716cce92082f61cbf777c205f5dce72ba23010bee8fc",
       "components": [
         "ArrowUpRight",
         "Badge",
@@ -375,6 +480,8 @@
         "ChevronDown",
         "Coins",
         "CompanyPage",
+        "ContratosPage",
+        "CotacoesPage",
         "ExternalLink",
         "FirstSteps",
         "GameProvider",
@@ -388,6 +495,7 @@
         "OpportunitiesPage",
         "PanelLeftClose",
         "PanelLeftOpen",
+        "PedidosPage",
         "PurchasePage",
         "RetailPage",
         "Rows",
@@ -402,57 +510,57 @@
         {
           "kind": "aria-label",
           "text": "AFTERMARKET · Abrir mapa",
-          "line": 177
+          "line": 186
         },
         {
           "kind": "aria-label",
           "text": "Buscar cidade, empresa ou recurso",
-          "line": 184
+          "line": 193
         },
         {
           "kind": "placeholder",
           "text": "Buscar cidade, empresa, recurso ou coordenadas…",
-          "line": 185
+          "line": 194
         },
         {
           "kind": "button",
           "text": "Ver minha empresa",
-          "line": 318
+          "line": 327
         },
         {
           "kind": "button",
           "text": "Preferências e contas",
-          "line": 326
+          "line": 335
         },
         {
           "kind": "aria-label",
           "text": "Menu principal",
-          "line": 339
+          "line": 348
         },
         {
           "kind": "title",
           "text": "Preferências",
-          "line": 365
+          "line": 374
         },
         {
           "kind": "button",
           "text": "{dinâmico}",
-          "line": 370
+          "line": 379
         },
         {
           "kind": "role",
           "text": "status",
-          "line": 392
+          "line": 401
         },
         {
           "kind": "title",
           "text": "Preferências do mundo",
-          "line": 401
+          "line": 410
         },
         {
           "kind": "button",
           "text": "{dinâmico}",
-          "line": 411
+          "line": 420
         }
       ],
       "commands": []
@@ -860,13 +968,13 @@
     },
     {
       "path": "apps/web/src/components/SecaoAbas.tsx",
-      "hash": "7b8462e46599033889db59bc30027786697345490e9aa589aa16d364433cd0b7",
+      "hash": "b65c913096ddd38ea510e5fa5372abb521421fdcacf5ce3f7a4e6382b9221f14",
       "components": [],
       "literals": [
         {
           "kind": "button",
           "text": "{dinâmico}",
-          "line": 29
+          "line": 32
         }
       ],
       "commands": []
@@ -1080,14 +1188,14 @@
     },
     {
       "path": "apps/web/src/devlab/screens.ts",
-      "hash": "96a16a8694972acff0f08b51175975eb693d4cb5f8b0095c132795add14f9a8a",
+      "hash": "6870b5fc1ac9b29b3806e30dcc0a742b96a42699a4d04d1e053abfb08669e3b6",
       "components": [],
       "literals": [],
       "commands": []
     },
     {
       "path": "apps/web/src/economy.css",
-      "hash": "4dc56ebcb1501126b2eec16e103db689ca4688accd8bc2e050880ef761dd01ce",
+      "hash": "de2d8a86139b1d953f76b88e8fedb0549ae24f4f653b1a37ca4996b042d399c0",
       "components": [],
       "literals": [],
       "commands": []
@@ -1323,158 +1431,157 @@
     },
     {
       "path": "apps/web/src/features/business/InfrastructureContracts.tsx",
-      "hash": "d0c05f6b152738e9caa0432701e7afda6b5e68cb64fb10a21c2495f12817d4ad",
+      "hash": "462e9f6fd4e1ce96988b8fd58b753d8d9eed8dce0d7c866cca5a257aa359812b",
       "components": [
-        "Badge",
         "EconomicChart",
         "Empty",
         "FleetPicker",
         "Modal",
         "Pagination",
+        "ProdutoArte",
         "Progress",
         "Rows",
-        "Select"
+        "Select",
+        "ShieldCheck",
+        "Timer",
+        "Trophy",
+        "Users"
       ],
       "literals": [
         {
-          "kind": "h3",
-          "text": "Tesouros estaduais e contratos municipais",
-          "line": 60
+          "kind": "role",
+          "text": "group",
+          "line": 98
         },
         {
-          "kind": "option",
-          "text": "Estado (opcional)",
-          "line": 71
+          "kind": "aria-label",
+          "text": "Estado dos contratos públicos",
+          "line": 98
         },
         {
-          "kind": "option",
+          "kind": "button",
           "text": "{dinâmico}",
-          "line": 76
+          "line": 108
         },
         {
-          "kind": "option",
-          "text": "Situação (opcional)",
-          "line": 122
+          "kind": "role",
+          "text": "group",
+          "line": 118
         },
         {
-          "kind": "option",
-          "text": "Em disputa",
-          "line": 123
+          "kind": "aria-label",
+          "text": "Situação dos contratos públicos",
+          "line": 118
         },
         {
-          "kind": "option",
-          "text": "Em entrega",
-          "line": 124
-        },
-        {
-          "kind": "option",
-          "text": "Concluído",
-          "line": 125
-        },
-        {
-          "kind": "option",
-          "text": "Encerrado sem fornecedor",
+          "kind": "button",
+          "text": "{dinâmico}",
           "line": 126
+        },
+        {
+          "kind": "h3",
+          "text": "Prefeitura de {dinâmico} compra {dinâmico} {dinâmico} {dinâmico} de {dinâmico}",
+          "line": 174
         },
         {
           "kind": "button",
           "text": "Participar da disputa",
-          "line": 197
+          "line": 215
         },
         {
           "kind": "button",
           "text": "Ver prefeitura no mapa",
-          "line": 209
+          "line": 227
         },
         {
           "kind": "button",
           "text": "Acompanhar pedido e caminhões",
-          "line": 213
+          "line": 231
         },
         {
           "kind": "summary",
           "text": "Comparar propostas e resultado",
-          "line": 220
+          "line": 238
         },
         {
           "kind": "th",
           "text": "Fornecedor",
-          "line": 225
+          "line": 243
         },
         {
           "kind": "th",
           "text": "Preço / un.",
-          "line": 226
+          "line": 244
         },
         {
           "kind": "th",
           "text": "Qualidade",
-          "line": 227
+          "line": 245
         },
         {
           "kind": "th",
           "text": "Frete",
-          "line": 228
+          "line": 246
         },
         {
           "kind": "th",
           "text": "Pontuação",
-          "line": 229
+          "line": 247
         },
         {
           "kind": "th",
           "text": "Resultado",
-          "line": 230
+          "line": 248
         },
         {
           "kind": "title",
           "text": "Nenhum contrato neste recorte",
-          "line": 284
+          "line": 305
         },
         {
           "kind": "Modal",
           "text": "{dinâmico}",
-          "line": 289
+          "line": 310
         },
         {
           "kind": "title",
           "text": "Enviar proposta ao contrato público",
-          "line": 290
+          "line": 311
         },
         {
           "kind": "option",
           "text": "Escolher meu estoque",
-          "line": 304
+          "line": 325
         },
         {
           "kind": "option",
           "text": "{dinâmico} · {dinâmico} em estoque",
-          "line": 306
+          "line": 327
         },
         {
           "kind": "label",
           "text": "Preço proposto por unidade (R$)",
-          "line": 320
+          "line": 341
         },
         {
           "kind": "aria-label",
           "text": "Preço da proposta pública",
-          "line": 323
+          "line": 344
         },
         {
           "kind": "button",
           "text": "Registrar proposta",
-          "line": 355
+          "line": 376
         }
       ],
       "commands": [
         {
           "type": "bidInfrastructure",
-          "line": 374
+          "line": 395
         },
         {
           "type": "fulfillInfrastructure",
-          "line": 381
+          "line": 402
         }
       ]
     },
@@ -2850,33 +2957,37 @@
     },
     {
       "path": "apps/web/src/features/economy/Carga.tsx",
-      "hash": "22142ea4d0fe7022454473ee412fe748d71af0f0ca4259c4b2447c0e9435d004",
+      "hash": "d13b71eea06b2fbf1afb42e1d414ff9b4778a3782e7f9b835a366ac742ebe8d7",
       "components": [
         "Check",
         "ChevronDown",
-        "MapPin",
         "PixelArt"
       ],
       "literals": [
         {
           "kind": "aria-label",
           "text": "Transporte da compra",
-          "line": 121
+          "line": 123
         },
         {
           "kind": "h3",
           "text": "Transporte",
-          "line": 123
+          "line": 125
+        },
+        {
+          "kind": "role",
+          "text": "img",
+          "line": 133
         },
         {
           "kind": "role",
           "text": "meter",
-          "line": 152
+          "line": 173
         },
         {
           "kind": "aria-label",
           "text": "Quanto o caminhão vai cheio",
-          "line": 156
+          "line": 177
         },
         {
           "kind": "button",
@@ -2896,6 +3007,58 @@
       "hash": "49e9932698de941b34a7ebc59f49e6c85f7ee9955815b26f068df409aa3f9549",
       "components": [],
       "literals": [],
+      "commands": []
+    },
+    {
+      "path": "apps/web/src/features/economy/Cotacoes.tsx",
+      "hash": "7ecd1f9d1d066ad630ac8940bfda14d3a6867df85a534c304a9104a80cc2b34f",
+      "components": [
+        "ArrowDownRight",
+        "ArrowUpRight",
+        "Faisca",
+        "Minus",
+        "PageHeading",
+        "ProductAnalysisModal",
+        "ProdutoArte",
+        "SecaoAbas"
+      ],
+      "literals": [
+        {
+          "kind": "title",
+          "text": "Cotações",
+          "line": 162
+        },
+        {
+          "kind": "role",
+          "text": "group",
+          "line": 186
+        },
+        {
+          "kind": "aria-label",
+          "text": "Categoria",
+          "line": 186
+        },
+        {
+          "kind": "button",
+          "text": "{dinâmico}",
+          "line": 188
+        },
+        {
+          "kind": "aria-label",
+          "text": "Quadro de cotações",
+          "line": 199
+        },
+        {
+          "kind": "aria-label",
+          "text": "Movimento do mercado",
+          "line": 259
+        },
+        {
+          "kind": "h2",
+          "text": "Movimento do mercado",
+          "line": 260
+        }
+      ],
       "commands": []
     },
     {
@@ -3018,17 +3181,14 @@
     },
     {
       "path": "apps/web/src/features/economy/Market.tsx",
-      "hash": "4f2bf9e8b537202af063b827c7be644acdfa051033ea57188c7535d25f40f515",
+      "hash": "d6ccf0f1dca9e1f37981de6e8408bb039943311722d8dda454d3cc3971b68c5a",
       "components": [
         "Badge",
-        "BotActivity",
         "Carga",
         "ChartNoAxesCombined",
         "Empty",
         "Info",
-        "InfrastructureContracts",
         "Modal",
-        "Orders",
         "PageHeading",
         "Panel",
         "PixelArt",
@@ -3050,322 +3210,308 @@
         {
           "kind": "title",
           "text": "Comprar mercadorias",
-          "line": 208
+          "line": 205
         },
         {
           "kind": "button",
           "text": "Ver todos os fornecedores",
-          "line": 219
+          "line": 216
         },
         {
           "kind": "title",
           "text": "Escolha um imóvel para receber mercadorias",
-          "line": 226
+          "line": 223
         },
         {
           "kind": "button",
           "text": "Explorar propriedades",
-          "line": 229
+          "line": 226
         },
         {
           "kind": "role",
           "text": "group",
-          "line": 236
+          "line": 233
         },
         {
           "kind": "aria-label",
           "text": "Comprar para",
-          "line": 236
+          "line": 233
         },
         {
           "kind": "aria-label",
           "text": "Buscar oferta",
-          "line": 265
+          "line": 262
         },
         {
           "kind": "placeholder",
           "text": "Fornecedor, item ou cidade…",
-          "line": 266
+          "line": 263
         },
         {
           "kind": "option",
           "text": "Mercadoria (opcional)",
-          "line": 280
+          "line": 277
         },
         {
           "kind": "option",
           "text": "{dinâmico}",
-          "line": 284
+          "line": 281
         },
         {
           "kind": "option",
           "text": "Ordenação (opcional)",
-          "line": 294
+          "line": 291
         },
         {
           "kind": "option",
           "text": "Menor preço da mercadoria",
-          "line": 295
+          "line": 292
         },
         {
           "kind": "option",
           "text": "Menor custo por carga",
-          "line": 298
+          "line": 295
         },
         {
           "kind": "option",
           "text": "Menor distância ao destino",
-          "line": 301
+          "line": 298
         },
         {
           "kind": "button",
           "text": "Filtros avançados",
-          "line": 305
+          "line": 302
         },
         {
           "kind": "button",
           "text": "Atualizar ofertas",
-          "line": 308
+          "line": 305
         },
         {
           "kind": "button",
           "text": "Limpar",
-          "line": 311
+          "line": 308
         },
         {
           "kind": "title",
           "text": "Ofertas de fornecedores",
-          "line": 332
+          "line": 329
         },
         {
           "kind": "button",
           "text": "{dinâmico}",
-          "line": 340
+          "line": 337
         },
         {
           "kind": "th",
           "text": "Fornecedor / mercadoria",
-          "line": 353
+          "line": 350
         },
         {
           "kind": "th",
           "text": "Origem",
-          "line": 354
+          "line": 351
         },
         {
           "kind": "th",
           "text": "Disponível",
-          "line": 355
+          "line": 352
         },
         {
           "kind": "th",
           "text": "Preço / unidade",
-          "line": 356
+          "line": 353
         },
         {
           "kind": "th",
           "text": "Na sua porta",
-          "line": 357
+          "line": 354
         },
         {
           "kind": "th",
           "text": "Distância",
-          "line": 360
+          "line": 357
         },
         {
           "kind": "th",
           "text": "Frete / carga",
-          "line": 361
+          "line": 358
         },
         {
           "kind": "th",
           "text": "Total / unidade",
-          "line": 362
+          "line": 359
         },
         {
           "kind": "aria-label",
           "text": "Selecionar",
-          "line": 365
+          "line": 362
         },
         {
           "kind": "button",
           "text": "{dinâmico}",
-          "line": 457
+          "line": 454
         },
         {
           "kind": "title",
           "text": "Nenhuma oferta atende à busca",
-          "line": 481
+          "line": 478
         },
         {
           "kind": "button",
           "text": "Limpar filtros",
-          "line": 484
+          "line": 481
         },
         {
           "kind": "title",
           "text": "Sua compra",
-          "line": 499
+          "line": 496
         },
         {
           "kind": "h2",
           "text": "{dinâmico}",
-          "line": 505
+          "line": 502
         },
         {
           "kind": "button",
           "text": "Preço ao longo do tempo",
-          "line": 511
+          "line": 508
         },
         {
           "kind": "role",
           "text": "group",
-          "line": 520
+          "line": 517
         },
         {
           "kind": "aria-label",
           "text": "Dias de estoque",
-          "line": 520
+          "line": 517
         },
         {
           "kind": "button",
           "text": "{dinâmico}",
-          "line": 546
+          "line": 543
         },
         {
           "kind": "role",
           "text": "radiogroup",
-          "line": 577
+          "line": 574
         },
         {
           "kind": "aria-label",
           "text": "Fornecedor",
-          "line": 578
+          "line": 575
         },
         {
           "kind": "role",
           "text": "radio",
-          "line": 587
+          "line": 584
         },
         {
           "kind": "label",
           "text": "Quantidade",
-          "line": 606
+          "line": 603
         },
         {
           "kind": "aria-label",
           "text": "Quantidade de mercadoria",
-          "line": 609
+          "line": 606
         },
         {
           "kind": "button",
           "text": "{dinâmico} {dinâmico}",
-          "line": 665
+          "line": 662
         },
         {
           "kind": "button",
           "text": "Escolher outra transportadora ou pedir com prazo",
-          "line": 695
+          "line": 692
         },
         {
           "kind": "title",
           "text": "Compare antes de escolher",
-          "line": 713
-        },
-        {
-          "kind": "summary",
-          "text": "Pedidos e negociações {dinâmico}",
-          "line": 722
-        },
-        {
-          "kind": "summary",
-          "text": "Concorrentes e movimento do mundo",
-          "line": 731
-        },
-        {
-          "kind": "summary",
-          "text": "Contratos de infraestrutura {dinâmico}",
-          "line": 735
+          "line": 710
         },
         {
           "kind": "title",
           "text": "Filtros avançados de fornecedores",
-          "line": 746
+          "line": 720
         },
         {
           "kind": "label",
           "text": "Estado de origem",
-          "line": 747
+          "line": 721
         },
         {
           "kind": "option",
           "text": "Qualquer estado",
-          "line": 754
+          "line": 728
         },
         {
           "kind": "option",
           "text": "{dinâmico}",
-          "line": 756
+          "line": 730
         },
         {
           "kind": "label",
           "text": "Tipo de fornecedor",
-          "line": 760
+          "line": 734
         },
         {
           "kind": "option",
           "text": "Sem preferência",
-          "line": 767
+          "line": 741
         },
         {
           "kind": "option",
           "text": "Empresa automatizada",
-          "line": 768
+          "line": 742
         },
         {
           "kind": "option",
           "text": "Empresa de jogador",
-          "line": 769
+          "line": 743
         },
         {
           "kind": "label",
           "text": "Distância máxima ao destino (km)",
-          "line": 772
+          "line": 746
         },
         {
           "kind": "placeholder",
           "text": "Sem limite",
-          "line": 777
+          "line": 751
         },
         {
           "kind": "label",
           "text": "Preço máximo por unidade (R$)",
-          "line": 783
+          "line": 757
         },
         {
           "kind": "placeholder",
           "text": "Sem limite",
-          "line": 789
+          "line": 763
         },
         {
           "kind": "button",
           "text": "Aplicar filtros",
-          "line": 794
+          "line": 768
         }
       ],
       "commands": [
         {
           "type": "trade",
-          "line": 179
+          "line": 176
         }
       ]
     },
     {
       "path": "apps/web/src/features/economy/Opportunities.tsx",
-      "hash": "ef3394eb804079547d424fee740bd381b1dfd67c89b71f3fc7cceef5fd53cbf9",
+      "hash": "5643fb6e5672e9e2bb9fcf333e9d977ba3e18174ceb9308336220bf920df568a",
       "components": [
         "ArrowUpRight",
         "Badge",
+        "BotActivity",
         "Box",
         "BusinessIdeas",
         "EconomicChart",
@@ -3388,249 +3534,254 @@
         {
           "kind": "title",
           "text": "Análise de oportunidades",
-          "line": 95
+          "line": 96
         },
         {
           "kind": "aria-label",
           "text": "Buscar mercadoria",
-          "line": 112
+          "line": 113
         },
         {
           "kind": "placeholder",
           "text": "Buscar mercadoria…",
-          "line": 113
+          "line": 114
         },
         {
           "kind": "option",
           "text": "Categoria (opcional)",
-          "line": 128
+          "line": 129
         },
         {
           "kind": "option",
           "text": "{dinâmico}",
-          "line": 130
+          "line": 131
         },
         {
           "kind": "option",
           "text": "Mercadoria (opcional)",
-          "line": 138
+          "line": 139
         },
         {
           "kind": "option",
           "text": "{dinâmico}",
-          "line": 143
+          "line": 144
         },
         {
           "kind": "option",
           "text": "Estado (opcional)",
-          "line": 156
+          "line": 157
         },
         {
           "kind": "option",
           "text": "{dinâmico}",
-          "line": 158
+          "line": 159
         },
         {
           "kind": "option",
           "text": "Município (opcional)",
-          "line": 166
+          "line": 167
         },
         {
           "kind": "option",
           "text": "{dinâmico}",
-          "line": 170
+          "line": 171
         },
         {
           "kind": "button",
           "text": "Filtros avançados {dinâmico} {dinâmico}",
-          "line": 175
+          "line": 176
         },
         {
           "kind": "button",
           "text": "Limpar",
-          "line": 180
+          "line": 181
         },
         {
           "kind": "title",
           "text": "Mapa da economia",
-          "line": 206
+          "line": 207
         },
         {
           "kind": "option",
           "text": "Demanda do jogo",
-          "line": 220
-        },
-        {
-          "kind": "option",
-          "text": "Estoque anunciado",
           "line": 221
         },
         {
           "kind": "option",
-          "text": "Cobertura em dias",
+          "text": "Estoque anunciado",
           "line": 222
         },
         {
           "kind": "option",
-          "text": "Preço por unidade",
+          "text": "Cobertura em dias",
           "line": 223
+        },
+        {
+          "kind": "option",
+          "text": "Preço por unidade",
+          "line": 224
         },
         {
           "kind": "h3",
           "text": "Compare o custo no destino",
-          "line": 310
+          "line": 311
         },
         {
           "kind": "h3",
           "text": "Observe a disponibilidade",
-          "line": 315
+          "line": 316
         },
         {
           "kind": "h3",
           "text": "Confira as premissas",
-          "line": 320
+          "line": 321
         },
         {
           "kind": "h2",
           "text": "Mercadorias da temporada",
-          "line": 329
+          "line": 330
         },
         {
           "kind": "h3",
           "text": "{dinâmico}",
-          "line": 349
+          "line": 350
         },
         {
           "kind": "button",
           "text": "Ver mais",
-          "line": 379
+          "line": 380
         },
         {
           "kind": "th",
           "text": "Mercadoria / unidade",
-          "line": 396
-        },
-        {
-          "kind": "th",
-          "text": "Oferta média",
           "line": 397
         },
         {
           "kind": "th",
-          "text": "Menor / maior",
+          "text": "Oferta média",
           "line": 398
         },
         {
           "kind": "th",
-          "text": "Abertura",
+          "text": "Menor / maior",
           "line": 399
         },
         {
           "kind": "th",
-          "text": "Estoque",
+          "text": "Abertura",
           "line": 400
         },
         {
           "kind": "th",
-          "text": "Demanda / dia",
+          "text": "Estoque",
           "line": 401
         },
         {
           "kind": "th",
-          "text": "Negociado",
+          "text": "Demanda / dia",
           "line": 402
+        },
+        {
+          "kind": "th",
+          "text": "Negociado",
+          "line": 403
         },
         {
           "kind": "aria-label",
           "text": "Análise",
-          "line": 403
+          "line": 404
         },
         {
           "kind": "button",
           "text": "Analisar",
-          "line": 430
+          "line": 431
         },
         {
           "kind": "title",
           "text": "Nenhuma mercadoria atende aos filtros",
-          "line": 443
+          "line": 444
         },
         {
           "kind": "button",
           "text": "Limpar filtros",
-          "line": 446
+          "line": 447
+        },
+        {
+          "kind": "title",
+          "text": "Concorrentes e movimento do mundo",
+          "line": 458
         },
         {
           "kind": "title",
           "text": "Filtros avançados de mercado",
-          "line": 458
+          "line": 465
         },
         {
           "kind": "label",
           "text": "Estoque mínimo",
-          "line": 460
+          "line": 467
         },
         {
           "kind": "aria-label",
           "text": "Estoque mínimo",
-          "line": 463
+          "line": 470
         },
         {
           "kind": "placeholder",
           "text": "Sem mínimo",
-          "line": 466
+          "line": 473
         },
         {
           "kind": "label",
           "text": "Preço máximo por unidade (R$)",
-          "line": 471
+          "line": 478
         },
         {
           "kind": "aria-label",
           "text": "Preço máximo por unidade",
-          "line": 474
+          "line": 481
         },
         {
           "kind": "placeholder",
           "text": "Sem limite",
-          "line": 478
+          "line": 485
         },
         {
           "kind": "label",
           "text": "Raio econômico da praça (km)",
-          "line": 483
+          "line": 490
         },
         {
           "kind": "aria-label",
           "text": "Raio econômico",
-          "line": 486
+          "line": 493
         },
         {
           "kind": "placeholder",
           "text": "Padrão do modelo: 120 km",
-          "line": 490
+          "line": 497
         },
         {
           "kind": "label",
           "text": "{dinâmico} Apenas itens com ofertas disponíveis",
-          "line": 495
+          "line": 502
         },
         {
           "kind": "button",
           "text": "Limpar todos",
-          "line": 504
+          "line": 511
         },
         {
           "kind": "button",
           "text": "Aplicar filtros",
-          "line": 507
+          "line": 514
         }
       ],
       "commands": []
     },
     {
       "path": "apps/web/src/features/economy/Vitrine.tsx",
-      "hash": "f8c136e6c2d2a1ed0e2599f48fd544bef372069e40e6f2a499d8b9e3eb103d7f",
+      "hash": "5fb839904de41e7acb8938f0cb270e893d955ff2e2a5866d715f2345ab01e7cb",
       "components": [
         "MapPin",
         "ProductIcon",
@@ -3641,27 +3792,27 @@
         {
           "kind": "h3",
           "text": "{dinâmico}",
-          "line": 109
+          "line": 132
         },
         {
           "kind": "button",
           "text": "Ver como produzir",
-          "line": 114
+          "line": 137
         },
         {
           "kind": "h3",
           "text": "{dinâmico}",
-          "line": 137
+          "line": 160
         },
         {
           "kind": "role",
           "text": "img",
-          "line": 171
+          "line": 194
         },
         {
           "kind": "button",
           "text": "{dinâmico}",
-          "line": 198
+          "line": 221
         }
       ],
       "commands": []
@@ -3675,7 +3826,7 @@
     },
     {
       "path": "apps/web/src/lib/game.tsx",
-      "hash": "29b4217e541f88427caf3506c419d1b29301d729710528f93db5ddfc3b56c242",
+      "hash": "e2a11cb23d503e144d54224855bfb4c6ff545213206fa2ad2a5336793f0fa09e",
       "components": [
         "GameContext.Provider",
         "Icon",
@@ -3685,17 +3836,17 @@
         {
           "kind": "h1",
           "text": "AFTERMARKET",
-          "line": 247
+          "line": 250
         },
         {
           "kind": "button",
           "text": "Tentar novamente",
-          "line": 250
+          "line": 253
         },
         {
           "kind": "role",
           "text": "status",
-          "line": 309
+          "line": 312
         }
       ],
       "commands": []
@@ -3716,7 +3867,7 @@
     },
     {
       "path": "apps/web/src/main.tsx",
-      "hash": "b7c961361a834a7de089dda2a9bb5d8283a24e655e4c9e9daf349dd56da07775",
+      "hash": "dba1ed6a2798c3567f4ca32df30ce12dd4f6a31a4a3ba437c2fa7c312baf9a74",
       "components": [
         "React.StrictMode",
         "Root",
@@ -4051,6 +4202,30 @@
           "line": 376
         }
       ]
+    },
+    {
+      "path": "apps/web/src/pages/ComercioPages.tsx",
+      "hash": "72934ba44038677e6b2264802c464469fbbc199c8bbf7d2f0a57d394c0a4e6c2",
+      "components": [
+        "InfrastructureContracts",
+        "Orders",
+        "PageHeading",
+        "Panel",
+        "SecaoAbas"
+      ],
+      "literals": [
+        {
+          "kind": "title",
+          "text": "Pedidos e negociações",
+          "line": 12
+        },
+        {
+          "kind": "title",
+          "text": "Contratos públicos",
+          "line": 29
+        }
+      ],
+      "commands": []
     },
     {
       "path": "apps/web/src/pages/CompanyPage.tsx",
@@ -4767,7 +4942,7 @@
     },
     {
       "path": "apps/web/src/styles.css",
-      "hash": "8cffb4bee1315dd3d9949390db81928557ad17e8b0084abd76de7d0980e7b0bb",
+      "hash": "c1ff056bf78acd06186a387e4111cb88b2c4a2c2353a745633fa8352d45c4b79",
       "components": [],
       "literals": [],
       "commands": []

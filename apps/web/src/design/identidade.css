@@ -1,0 +1,189 @@
+/*
+ * Identidade do Aftermarket. Carregada depois de todo o resto: vale para o jogo inteiro.
+ * Uma família (Archivo) com duas vozes: expandida e pesada para títulos e números que importam,
+ * normal para leitura. Selos têm o quadradinho de pixel no lugar da pílula; divisores lembram estrada.
+ */
+:root {
+  --fonte: 'Archivo Variable', Archivo, 'Segoe UI', system-ui, sans-serif;
+  --largo: 118%;
+  --estrada: repeating-linear-gradient(90deg, #e9dfb8 0 10px, transparent 10px 18px);
+  /* chão das categorias, o mesmo das peças em pixel art */
+  --terra-varejo: #c96a43;
+  --terra-industria: #7f8f9a;
+  --terra-lavoura: #6f9e5c;
+  --terra-mina: #a7774a;
+  --terra-armazem: #9c7fa6;
+  --terra-logistica: #4f8db3;
+  font-family: var(--fonte);
+  font-stretch: 100%;
+  font-variant-numeric: tabular-nums;
+}
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+/* Títulos */
+.page-heading h1,
+.marca strong,
+.secao-nome {
+  font-stretch: var(--largo);
+  font-weight: 800;
+  letter-spacing: -0.005em;
+}
+.page-heading h1 {
+  font-size: 29px;
+  line-height: 1.1;
+}
+.page-heading p {
+  max-width: 72ch;
+}
+.panel-heading h2,
+.vit-titulo h3,
+.edital h3,
+.neg-topo h3,
+.carga-cab h3,
+.empate-texto h2 {
+  font-weight: 700;
+  letter-spacing: -0.005em;
+}
+.eyebrow {
+  font-family: inherit;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--gold);
+}
+
+/* Números que importam: largos, como placa de estrada */
+.stat strong,
+.neg-figuras strong,
+.vit-lucro b,
+.ed-valor b,
+.ed-caixa b,
+.carga-numeros b,
+.cena-km,
+.carga-valor strong,
+.total-row strong:last-child,
+.empate-texto h2,
+.cot-preco b,
+.cot-topo b {
+  font-stretch: var(--largo);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+/* Selos: fundo leve, cantos retos e o quadradinho de pixel na cor do estado */
+.badge {
+  gap: 6px;
+  border: 0;
+  border-radius: 2px;
+  padding: 4px 8px 4px 7px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+.badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  flex: none;
+  background: currentColor;
+}
+.badge.green {
+  background: #62c89e1f;
+  color: #84d6ab;
+}
+.badge.gold {
+  background: #d9b16b1f;
+  color: #eac079;
+}
+.badge.blue {
+  background: #72b2d11f;
+  color: #9dcce6;
+}
+.badge.red {
+  background: #ef867a1f;
+  color: #ffa89c;
+}
+.badge.muted {
+  background: #93a8b21a;
+  color: #c0ced4;
+}
+.ed-status,
+.carga-veredito,
+.chip-selo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 2px !important;
+}
+.ed-status::before,
+.carga-veredito::before,
+.chip-selo::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: currentColor;
+}
+
+/* Divisor de estrada */
+.divisor-estrada {
+  height: 2px;
+  border: 0;
+  margin: 4px 0;
+  background: var(--estrada);
+  opacity: 0.45;
+}
+
+/* Marca */
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #eef3f4;
+}
+.marca img {
+  width: 52px;
+  height: 30px;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 2px 1px rgb(0 0 0 / 0.45));
+}
+.marca strong {
+  display: block;
+  font-size: 19px;
+  line-height: 1;
+  letter-spacing: 0.01em;
+}
+.marca small {
+  display: block;
+  margin-top: 4px;
+  font-size: 10.5px;
+  color: #a5b8c1;
+  letter-spacing: 0;
+}
+
+/* Cartões com chão: a base na cor da terra, como as peças */
+.vit-card,
+.edital,
+.neg-card {
+  box-shadow: inset 0 -3px 0 var(--chao, transparent);
+}
+.vit-card {
+  --chao: var(--terra-varejo);
+}
+.edital.open {
+  --chao: #b98b3c;
+}
+.edital.delivering {
+  --chao: var(--terra-logistica);
+}
+.edital.completed {
+  --chao: var(--terra-lavoura);
+}
+.neg-card {
+  --chao: var(--cat);
+}

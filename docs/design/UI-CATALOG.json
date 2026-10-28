@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "fixtureFingerprint": "95624a499de31ef1be535a0f2dc2e5a6da89685b91493f8143b97714c538782e",
+  "fixtureFingerprint": "f8ab1e6574ab9c6f37a4a152cc8be532418e2569e7ceb6693f5a7aeba715e499",
   "note": "Inventário estático alcançável por tela; inclui componentes compartilhados e ramos condicionais. Textos dinâmicos e estados visíveis precisam da evidência de navegador. Comandos type são candidatos, não prova de execução.",
   "screens": [
     {
@@ -122,7 +122,7 @@
       "business": "e-industry",
       "purpose": "Produzir, abastecer, contratar e vender.",
       "task": "Revisar insumos, capacidade e custo antes de iniciar produção.",
-      "fingerprint": "b335423302416d217e10305e755ecae098aa01dafdd31018bc12bf9c5c3ac98b",
+      "fingerprint": "84c965e20e77932eff0a341e2fd47fec42431e5cc923ce2adb09b4aa2ec5b191",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -161,7 +161,7 @@
       "business": "e-retail",
       "purpose": "Acompanhar estoque, preços e reposição da loja.",
       "task": "Reconhecer ruptura e configurar uma reposição viável.",
-      "fingerprint": "783d41ffb14af4ae5663ba939e0bcea1493b955e34922f193696f994f807bee4",
+      "fingerprint": "d5c53a36324ff8d4a441c323b5b696133d4db61d4673185820249afd8aba2cc5",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -1175,7 +1175,7 @@
     },
     {
       "path": "apps/web/src/features/business/Installation.tsx",
-      "hash": "785788927bee95be56e0612957d365422e6251313ab348749d728186998720ae",
+      "hash": "6a4cc2655b6f102c4cd79b50d8c8811d41bedb486105174226017dd77d8d859b",
       "components": [
         "Modal",
         "Rows",
@@ -1185,53 +1185,53 @@
         {
           "kind": "h2",
           "text": "{dinâmico}",
-          "line": 30
+          "line": 32
         },
         {
           "kind": "option",
           "text": "Escolher especialidade",
-          "line": 50
+          "line": 52
         },
         {
           "kind": "option",
           "text": "{dinâmico}",
-          "line": 52
+          "line": 54
         },
         {
           "kind": "label",
           "text": "Linhas de equipamento",
-          "line": 58
+          "line": 60
         },
         {
           "kind": "aria-label",
           "text": "Linhas de equipamento",
-          "line": 61
+          "line": 63
         },
         {
           "kind": "button",
           "text": "Revisar investimento em equipamento",
-          "line": 98
+          "line": 100
         },
         {
           "kind": "button",
           "text": "Voltar aos negócios",
-          "line": 101
+          "line": 103
         },
         {
           "kind": "title",
           "text": "Instalar equipamentos e capitalizar investimento",
-          "line": 107
+          "line": 109
         },
         {
           "kind": "button",
           "text": "Pagar equipamento e instalar",
-          "line": 114
+          "line": 116
         }
       ],
       "commands": [
         {
           "type": "installBusiness",
-          "line": 120
+          "line": 122
         }
       ]
     },

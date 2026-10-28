@@ -396,10 +396,14 @@ export interface Recipe {
   category: Category;
   input: Partial<Record<ProductId, number>>;
   output: Partial<Record<ProductId, number>>;
+  // Itens que precisam estar na linha sem serem consumidos (rebanho), por linha.
+  requires?: Partial<Record<ProductId, number>>;
   cost: number;
   duration: number;
   energyKwh: number;
   waterM3: number;
+  // Massa que sai do processo sem virar item (escória, gases, umidade), por ciclo.
+  lossKg?: number;
 }
 export const TIME_SCALE = 120;
 export const ECONOMIC_INTERVAL = 60_000; // duas horas virtuais por minuto real

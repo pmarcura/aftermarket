@@ -14,6 +14,8 @@ A nova economia vale para **mundos novos**: o cenário iniciante, o laboratório
 
 Cada fatia termina com build, testes e commit próprio.
 
+Andamento: fatias 1 e 2 entregues em 27/10. O mundo versão 2 é criado com `createWorld(agora, { economy: 2 })`; o padrão continua sendo a versão 1 até a fatia 10 provar a nova economia.
+
 | #   | Fatia                    | O que entra                                                                                                                                                        | Pronto quando                                                               |
 | --- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
 | 1   | Catálogo                 | Módulo de dados puro com os 20 itens e 14 receitas, importado pelo motor e pela calculadora; itens novos com massa, volume e unidade; perda declarada nas receitas | Mundo novo lista os itens; calculadora e motor leem os mesmos números       |

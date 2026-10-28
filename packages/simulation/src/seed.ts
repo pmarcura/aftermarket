@@ -1,12 +1,14 @@
 import type { World, Property, Establishment, Category, Position } from './model';
 import { ECONOMIC_INTERVAL, legacyProducts, products, recipes, type ProductId } from './model';
 import { createSeasonConfig } from './calibration';
+import { v2SeasonConfig } from './economy-v2';
 import { operatingCosts, recordMarket } from './metrics';
 import { initializeOperations } from './operations';
 import { initializeCompetition } from './competition';
 import { initializeDesign } from './design';
 
-export function createWorld(now = Date.now()): World {
+// Mundo versão 1 por padrão; `economy: 2` abre a economia alvo da etapa B (D-028 a D-030).
+export function createWorld(now = Date.now(), options: { economy?: 1 | 2 } = {}): World {
   const properties: Property[] = [];
   const establishments: Establishment[] = [];
   const add = (
@@ -291,12 +293,15 @@ export function createWorld(now = Date.now()): World {
       id: `local-${now}`,
       name: 'Temporada local',
       startedAt: now,
-      config: createSeasonConfig(
-        Object.fromEntries(
-          Object.entries(legacyProducts).map(([id, p]) => [id, p.basePrice]),
-        ) as Record<ProductId, number>,
-        recipes,
-      ),
+      config:
+        options.economy === 2
+          ? v2SeasonConfig()
+          : createSeasonConfig(
+              Object.fromEntries(
+                Object.entries(legacyProducts).map(([id, p]) => [id, p.basePrice]),
+              ) as Record<ProductId, number>,
+              recipes,
+            ),
     },
   };
   initializeOperations(world);

@@ -1,7 +1,10 @@
-import type { ProductId } from './model';
+import { seasonProducts, type ProductId, type World } from './model';
 
 // Canais executados pelo motor. Adicionar apenas consumo na configuração não cria comprador.
 export const householdProducts: readonly ProductId[] = ['oil', 'rice', 'beans', 'sugar', 'milk'];
+// Itens que as famílias compram nesta temporada (a versão 2 soma os utensílios).
+export const householdItems = (w: Pick<World, 'season'>) =>
+  seasonProducts(w).filter((id) => (w.season.config.consumption[id] ?? 0) > 0);
 
 export const infrastructurePrograms: readonly {
   name: string;

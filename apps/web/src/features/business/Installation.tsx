@@ -3,6 +3,7 @@ import { useGame, cr, num } from '../../lib/game';
 import { Rows, Select, Modal } from '../../components/ui';
 import { operatingCosts, laborMarket } from '../../../../../packages/simulation/src/metrics';
 import type { Establishment } from '../../../../../packages/simulation/src/model';
+import { equipmentCostFor } from '../../../../../packages/simulation/src/design';
 export function Installation({
   establishment: e,
   onInstalled,
@@ -20,7 +21,8 @@ export function Installation({
     profile = recipe ? world.season.config.operations.profiles[recipe.id] : undefined;
   const maximum = profile ? Math.floor(p.area / profile.areaM2) : 1,
     current = e.installed === false ? 0 : (e.equipmentLines ?? maximum),
-    price = Math.max(0, lines - current) * world.season.config.design.equipmentCost[e.category],
+    perLine = equipmentCostFor(world, e.category, recipe?.id),
+    price = Math.max(0, lines - current) * perLine,
     workers = profile ? profile.workers * lines : e.category === 'retail' ? 6 : 4;
   const valid = lines > current && lines <= maximum && (recipes.length === 0 || Boolean(recipe)),
     daily = operatingCosts(world, { ...e, installed: true, employees: workers, mothballed: false }),
@@ -75,7 +77,7 @@ export function Installation({
           },
           {
             label: 'Equipamento por linha',
-            value: cr(world.season.config.design.equipmentCost[e.category]),
+            value: cr(perLine),
           },
           { label: 'Investimento em equipamento agora', value: cr(price) },
           {

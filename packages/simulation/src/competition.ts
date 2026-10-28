@@ -8,7 +8,7 @@ import {
 } from './model';
 import { regions } from '../../world/src/regions';
 import { GAME_DAY, defaultSpecialization } from './operations';
-import { householdProducts } from './channels';
+import { householdItems } from './channels';
 
 export const stateFactors: Record<string, number> = {
   AC: 0.85,
@@ -83,7 +83,7 @@ function openingTransfer(
 export function defaultSupplyPolicy(w: World, e: Establishment): SupplyPolicy {
   const recipe = w.season.config.recipes.find((r) => r.id === e.specialization);
   const ids =
-    e.category === 'retail' ? householdProducts : (Object.keys(recipe?.input ?? {}) as ProductId[]);
+    e.category === 'retail' ? householdItems(w) : (Object.keys(recipe?.input ?? {}) as ProductId[]);
   return {
     enabled: false,
     dailyBudget: e.automationDailyBudget ?? 10000000,

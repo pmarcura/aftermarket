@@ -201,7 +201,9 @@ export const economicSources = [
 ];
 
 export interface SeasonConfig {
-  design: typeof designRules;
+  // Ausente nos mundos da versão 1; 2 = economia alvo da etapa B.
+  economyVersion?: number;
+  design: typeof designRules & { equipmentByRecipe?: Record<string, number> };
   competition: typeof competitionRules;
   operations: typeof operationRules;
   version: string;

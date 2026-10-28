@@ -9,7 +9,7 @@ import {
   type Entry,
 } from './model';
 import { distanceKm } from './geometry';
-import { householdProducts, infrastructurePrograms } from './channels';
+import { householdItems, infrastructurePrograms } from './channels';
 import { committedStorage, fleetAvailability } from './transport';
 import {
   actorState,
@@ -30,6 +30,7 @@ import {
   withDecisionSource,
 } from './decision-trace';
 import {
+  equipmentCostFor,
   freeCash,
   recoveryQuote,
   arrears,
@@ -453,7 +454,7 @@ function executeCommand(w: World, actor: string, command: Command, now: number):
         current === 0 || !productive || e.specialization === r!.id,
         'Troca de tecnologia exige nova unidade neste laboratório.',
       );
-      const cost = (command.lines - current) * w.season.config.design.equipmentCost[e.category];
+      const cost = (command.lines - current) * equipmentCostFor(w, e.category, r?.id);
       transfer(
         w,
         actor,
@@ -1341,7 +1342,7 @@ function economicTick(w: World, at: number) {
   // Primeiro a procura de cada loja e produto; depois a capacidade de atendimento é repartida.
   const wanted: { e: Establishment; product: ProductId; regionId: string; desired: number }[] = [];
   for (const city of cities)
-    for (const product of householdProducts) {
+    for (const product of householdItems(w)) {
       const stores = retail.filter(
         (e) =>
           w.properties.find((p) => p.id === e.propertyId)!.city === city &&
@@ -1847,7 +1848,7 @@ function runAutomations(w: World, at: number) {
   for (const e of w.establishments.filter((e) => e.enabled && e.automation)) {
     const bot = company(w, e.companyId).bot;
     if (e.category === 'retail' && !e.supplyPolicy?.enabled)
-      for (const product of householdProducts) {
+      for (const product of householdItems(w)) {
         const region = regionFor(dpOf(w, e).coordinates, dpOf(w, e).city);
         const competitors = Math.max(
           1,

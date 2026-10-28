@@ -34,6 +34,15 @@ export const designRules = {
     logistics: 0.15,
   },
 };
+// Equipamento por linha: a versão 2 define por receita; a versão 1, por categoria.
+export function equipmentCostFor(
+  w: Pick<World, 'season'>,
+  category: keyof typeof designRules.equipmentCost,
+  recipeId?: string,
+) {
+  const design = w.season.config.design;
+  return (recipeId && design.equipmentByRecipe?.[recipeId]) || design.equipmentCost[category];
+}
 const institution = (id: string) =>
   id === 'consumers' || id === 'treasury' || id.startsWith('treasury:');
 export function initializeDesign(w: World, at = w.updatedAt) {

@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: "📖 Documentação do Projeto"
+    url: "https://github.com/TODO/aftermarket/wiki"
+    about: "Consulte a wiki antes de abrir uma issue — talvez sua dúvida já esteja respondida."
+  - name: "💬 Discussões"
+    url: "https://github.com/TODO/aftermarket/discussions"
+    about: "Perguntas, ideias e conversas que não são bugs nem features específicas."

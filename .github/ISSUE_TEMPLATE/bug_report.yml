@@ -1,0 +1,85 @@
+name: "🐛 Relatório de Bug"
+description: "Algo não está funcionando como deveria? Conta pra gente."
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Obrigado por reportar! Quanto mais detalhes, mais rápido a gente resolve.
+
+  - type: textarea
+    id: descricao
+    attributes:
+      label: Descrição do bug
+      description: "O que aconteceu de errado?"
+      placeholder: "Ex: Ao comprar um caminhão, o saldo não é debitado mas o veículo aparece na frota."
+    validations:
+      required: true
+
+  - type: textarea
+    id: passos
+    attributes:
+      label: Passos para reproduzir
+      description: "Como a gente consegue ver o mesmo problema?"
+      placeholder: |
+        1. Ir para a tela de transportadoras
+        2. Clicar em "Comprar Veículo"
+        3. Selecionar qualquer caminhão
+        4. Confirmar a compra
+        5. Observar que o saldo permanece inalterado
+    validations:
+      required: true
+
+  - type: textarea
+    id: esperado
+    attributes:
+      label: Comportamento esperado
+      description: "O que deveria ter acontecido?"
+      placeholder: "O saldo deveria ser debitado no valor do veículo."
+    validations:
+      required: true
+
+  - type: textarea
+    id: atual
+    attributes:
+      label: Comportamento atual
+      description: "O que aconteceu de fato?"
+      placeholder: "O veículo foi adicionado à frota mas o saldo ficou igual."
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots / Vídeos
+      description: "Se possível, cole prints ou grave a tela."
+      placeholder: "Arraste imagens aqui ou cole URLs."
+    validations:
+      required: false
+
+  - type: input
+    id: versao
+    attributes:
+      label: Versão do jogo
+      description: "Qual versão do AFTERMARKET? (ver rodapé da tela)"
+      placeholder: "Ex: 0.4.0"
+    validations:
+      required: true
+
+  - type: input
+    id: navegador
+    attributes:
+      label: Navegador / Ambiente
+      description: "Qual navegador e sistema operacional?"
+      placeholder: "Ex: Chrome 120 no Windows 11"
+    validations:
+      required: false
+
+  - type: textarea
+    id: contexto
+    attributes:
+      label: Contexto adicional
+      description: "Algo mais que possa ajudar? Logs do console, dia do jogo, estado da partida..."
+      placeholder: "Aconteceu no dia 45 da simulação, com 3 bots ativos."
+    validations:
+      required: false

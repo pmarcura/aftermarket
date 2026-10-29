@@ -1,0 +1,62 @@
+name: "✨ Sugestão de Feature"
+description: "Tem uma ideia que pode melhorar o jogo? Manda ver."
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Toda grande feature começa com uma boa ideia. Descreva a sua!
+
+  - type: textarea
+    id: problema
+    attributes:
+      label: Qual problema isso resolve?
+      description: "Descreva a frustração ou limitação atual."
+      placeholder: "Ex: Não consigo comparar o desempenho das minhas empresas lado a lado."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solucao
+    attributes:
+      label: Solução proposta
+      description: "Como você imagina que deveria funcionar?"
+      placeholder: |
+        Um dashboard comparativo onde seleciono 2+ empresas e vejo
+        receita, despesas e margem no mesmo gráfico.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternativas
+    attributes:
+      label: Alternativas consideradas
+      description: "Pensou em outras formas de resolver? O que descartou e por quê?"
+      placeholder: "Considerei exportar CSV e comparar no Excel, mas perde a praticidade."
+    validations:
+      required: false
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Área do jogo
+      description: "Em qual parte do jogo isso se encaixa?"
+      options:
+        - Interface / UX
+        - Simulação / Economia
+        - Logística / Transporte
+        - Produção / Receitas
+        - Bots / IA
+        - Mapa / Geografia
+        - Infraestrutura / Dev
+        - Outra
+    validations:
+      required: true
+
+  - type: textarea
+    id: contexto
+    attributes:
+      label: Contexto adicional
+      description: "Mockups, referências de outros jogos, dados que suportam a ideia..."
+    validations:
+      required: false

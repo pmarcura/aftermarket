@@ -1,0 +1,76 @@
+name: "⚖️ Relatório de Balanceamento"
+description: "Algum item, receita ou mecânica parece desbalanceado? Reporta aqui."
+labels: ["balanceamento"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Balanceamento é o coração de um simulador econômico.
+        Se algo parece fácil demais, impossível, ou simplesmente estranho — queremos saber.
+
+  - type: input
+    id: elemento
+    attributes:
+      label: Item / Receita / Mecânica afetada
+      description: "O que exatamente está desbalanceado?"
+      placeholder: "Ex: Receita de ração de frango (chicken-feed)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: tipo
+    attributes:
+      label: Tipo de desbalanceamento
+      options:
+        - Muito lucrativo / fácil
+        - Muito caro / impossível
+        - Proporção de insumos irreal
+        - Tempo de produção inadequado
+        - Custo de transporte distorcido
+        - Vantagem injusta para bots
+        - Outro
+    validations:
+      required: true
+
+  - type: textarea
+    id: situacao
+    attributes:
+      label: Situação observada
+      description: |
+        Descreva o que você viu. Se possível, inclua dados do lab:
+        `npm run lab:query -- --item=<id> --day=<dia>`
+      placeholder: |
+        No dia 30, a margem da ração de frango é de 85%, enquanto
+        todas as outras receitas ficam entre 15-30%.
+        Lab: `lab:query -- --item=chicken-feed --day=30`
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidencia
+    attributes:
+      label: Evidência / Dados
+      description: "Cole outputs do lab, screenshots de preços, ou qualquer dado concreto."
+      placeholder: "Saída do lab:query, prints de preço, comparações..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: sugestao
+    attributes:
+      label: Sugestão de ajuste
+      description: "Tem ideia de como corrigir? Não precisa ser definitivo."
+      placeholder: |
+        Aumentar o custo de milho na receita de 2 para 4 unidades,
+        ou reduzir o preço de venda do produto final em 30%.
+    validations:
+      required: false
+
+  - type: textarea
+    id: impacto
+    attributes:
+      label: Impacto na cadeia
+      description: "Que outros itens, receitas ou mecânicas seriam afetados pelo ajuste?"
+      placeholder: "Se o milho subir, afeta também ração bovina e etanol."
+    validations:
+      required: false

@@ -6,14 +6,14 @@ Valeu pelo interesse em contribuir! 🚛 O AFTERMARKET é um simulador empresari
 
 ### Pré-requisitos
 
-- **Node.js** 18+ (recomendado: 20 LTS)
+- **Node.js** 22.13+
 - **npm** 9+
 - **Git**
 
 ### Setup
 
 ```bash
-git clone https://github.com/TODO/aftermarket.git
+git clone https://github.com/pmarcura/aftermarket.git
 cd aftermarket
 npm install
 npm run dev
@@ -23,13 +23,13 @@ O servidor de desenvolvimento sobe em `http://localhost:5173` (Vite) com a API E
 
 ### Estrutura do projeto
 
-| Diretório | Responsabilidade |
-|---|---|
-| `apps/web` | Interface React + Vite (páginas, componentes, integrações) |
-| `apps/server` | API Express + SQLite (persistência, operações financeiras em transação) |
-| `packages/simulation` | Regras puras de simulação (tempo injetável, sem dependência de UI) |
-| `packages/world` | Dados geográficos e proveniência |
-| `.planning/` | Estado do projeto, roadmap, requisitos por fase |
+| Diretório             | Responsabilidade                                                        |
+| --------------------- | ----------------------------------------------------------------------- |
+| `apps/web`            | Interface React + Vite (páginas, componentes, integrações)              |
+| `apps/server`         | API Express + SQLite (persistência, operações financeiras em transação) |
+| `packages/simulation` | Regras puras de simulação (tempo injetável, sem dependência de UI)      |
+| `packages/world`      | Dados geográficos e proveniência                                        |
+| `.planning/`          | Estado do projeto, roadmap, requisitos por fase                         |
 
 ## Workflow de branches
 
@@ -56,16 +56,16 @@ Refs #123
 
 ### Tipos
 
-| Tipo | Quando usar |
-|---|---|
-| `feat` | Nova funcionalidade |
-| `fix` | Correção de bug |
-| `balance` | Ajuste de balanceamento econômico |
-| `docs` | Documentação |
+| Tipo       | Quando usar                              |
+| ---------- | ---------------------------------------- |
+| `feat`     | Nova funcionalidade                      |
+| `fix`      | Correção de bug                          |
+| `balance`  | Ajuste de balanceamento econômico        |
+| `docs`     | Documentação                             |
 | `refactor` | Refatoração sem mudança de comportamento |
-| `test` | Adição ou correção de testes |
-| `chore` | Tarefas de manutenção, CI, dependências |
-| `perf` | Melhoria de performance |
+| `test`     | Adição ou correção de testes             |
+| `chore`    | Tarefas de manutenção, CI, dependências  |
+| `perf`     | Melhoria de performance                  |
 
 ### Exemplos
 

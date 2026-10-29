@@ -128,7 +128,9 @@ export function CompanyPage() {
             <IconePixel nome="predio" tamanho={64} />
             <div>
               <h2 id="emp-nome">{company.name}</h2>
-              <span className="emp-porte">Empresa {porte.atual.nome.toLocaleLowerCase('pt-BR')}</span>
+              <span className="emp-porte">
+                Empresa {porte.atual.nome.toLocaleLowerCase('pt-BR')}
+              </span>
             </div>
           </div>
           <div className="emp-hero-valor">
@@ -193,7 +195,8 @@ export function CompanyPage() {
           </header>
           <p className="emp-vazio">
             Movimentações disponíveis dos últimos {resumo.dias} dias de jogo, até agora.
-            {world.view && ' O servidor envia um extrato recente limitado; os totais podem ser parciais.'}
+            {world.view &&
+              ' O servidor envia um extrato recente limitado; os totais podem ser parciais.'}
           </p>
           <div className="emp-tres">
             <div className="entrou">
@@ -259,7 +262,11 @@ export function CompanyPage() {
                     <IconePixel nome={b.icone} tamanho={48} />
                     <span>{b.nome}</span>
                     <b>{cr(b.valor, 0)}</b>
-                    <div className="emp-meter peq" role="img" aria-label={`${Math.round(parte * 100)}% dos bens`}>
+                    <div
+                      className="emp-meter peq"
+                      role="img"
+                      aria-label={`${Math.round(parte * 100)}% dos bens`}
+                    >
                       <i style={{ width: `${parte * 100}%` }} />
                     </div>
                     <small>{Math.round(parte * 100)}% dos bens</small>

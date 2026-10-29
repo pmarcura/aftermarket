@@ -2,9 +2,9 @@
 
 ## Versões suportadas
 
-| Versão | Suporte |
-|--------|---------|
-| 0.4.x  | ✅ Ativa |
+| Versão | Suporte        |
+| ------ | -------------- |
+| 0.4.x  | ✅ Ativa       |
 | < 0.4  | ❌ Sem suporte |
 
 ## Reportando uma vulnerabilidade
@@ -13,7 +13,7 @@
 
 Se você encontrou uma falha de segurança no AFTERMARKET, entre em contato de forma privada:
 
-1. Envie um e-mail para **TODO@email.com** com o assunto `[SECURITY] Descrição breve`.
+1. Envie um e-mail para **broomarcura@gmail.com** com o assunto `[SECURITY] Descrição breve`.
 2. Inclua:
    - Descrição da vulnerabilidade
    - Passos para reproduzir

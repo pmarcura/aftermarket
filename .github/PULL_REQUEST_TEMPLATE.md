@@ -38,7 +38,7 @@
 <!-- Para mudanças visuais, cole antes/depois aqui. Delete esta seção se não se aplica. -->
 
 | Antes | Depois |
-|-------|--------|
+| ----- | ------ |
 |       |        |
 
 ## Observações

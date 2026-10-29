@@ -29,7 +29,10 @@ export function porteDe(patrimonio: number) {
 export type GrupoSaida = 'mercadoria' | 'frete' | 'equipe' | 'imoveis' | 'outros';
 
 // A cor e a forma seguem o assunto, nunca a posição (mesma regra da aba Finanças da loja).
-export const GRUPOS: Record<GrupoSaida, Pick<ParteEmpilhada, 'rotulo' | 'cor' | 'forma' | 'ajuda'>> = {
+export const GRUPOS: Record<
+  GrupoSaida,
+  Pick<ParteEmpilhada, 'rotulo' | 'cor' | 'forma' | 'ajuda'>
+> = {
   mercadoria: {
     rotulo: 'Mercadoria',
     cor: 3,
@@ -38,7 +41,12 @@ export const GRUPOS: Record<GrupoSaida, Pick<ParteEmpilhada, 'rotulo' | 'cor' | 
   },
   frete: { rotulo: 'Frete', cor: 2, forma: 'losango' },
   equipe: { rotulo: 'Equipe', cor: 4, forma: 'triangulo' },
-  imoveis: { rotulo: 'Imóveis e caminhões', cor: 1, forma: 'cruz', ajuda: 'Investimento: fica no patrimônio.' },
+  imoveis: {
+    rotulo: 'Imóveis e caminhões',
+    cor: 1,
+    forma: 'cruz',
+    ajuda: 'Investimento: fica no patrimônio.',
+  },
   outros: { rotulo: 'Energia, manutenção e outros', cor: 5, forma: 'octogono' },
 };
 
@@ -54,7 +62,10 @@ const grupoDe = (kind: Entry['kind']): GrupoSaida =>
           : 'outros';
 
 /** Ícone de cada tipo de movimentação, para a lista de transações. */
-export const ICONE_DO_TIPO: Record<string, 'moeda' | 'caixa' | 'caminhao' | 'predio' | 'cartao' | 'pedido'> = {
+export const ICONE_DO_TIPO: Record<
+  string,
+  'moeda' | 'caixa' | 'caminhao' | 'predio' | 'cartao' | 'pedido'
+> = {
   retail: 'moeda',
   trade: 'caixa',
   freight: 'caminhao',
@@ -74,12 +85,24 @@ export const ICONE_DO_TIPO: Record<string, 'moeda' | 'caixa' | 'caminhao' | 'pre
  */
 export function resumoDaEmpresa(world: World, empresa: string, dias: number, pontos = 36) {
   const fim = agoraDoMundo(world);
-  const n = Math.max(1, Math.min(dias, world.view?.ledgerDays ?? dias,
-    Math.ceil((comecoDoDia(world) + GAME_DAY - world.economyStartedAt) / GAME_DAY)));
+  const n = Math.max(
+    1,
+    Math.min(
+      dias,
+      world.view?.ledgerDays ?? dias,
+      Math.ceil((comecoDoDia(world) + GAME_DAY - world.economyStartedAt) / GAME_DAY),
+    ),
+  );
   const inicio = Math.max(world.economyStartedAt, comecoDoDia(world) - (n - 1) * GAME_DAY);
   const largura = Math.max(1, fim - inicio) / pontos;
   const variacao = new Array<number>(pontos).fill(0);
-  const porGrupo: Record<GrupoSaida, number> = { mercadoria: 0, frete: 0, equipe: 0, imoveis: 0, outros: 0 };
+  const porGrupo: Record<GrupoSaida, number> = {
+    mercadoria: 0,
+    frete: 0,
+    equipe: 0,
+    imoveis: 0,
+    outros: 0,
+  };
   let entrou = 0;
   let saiu = 0;
   for (const l of world.ledger) {

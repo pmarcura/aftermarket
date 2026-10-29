@@ -10,11 +10,9 @@ describe('catálogo de interfaces', () => {
     expect(market.files).not.toContain('apps/web/src/devlab/LabPage.tsx');
     // Pedidos saíram da compra para a aba própria de Comércio.
     const orders = catalog.screens.find((s) => s.id === 'orders')!;
-    expect(orders.files).toContain('apps/web/src/features/business/Orders.tsx');
+    expect(orders.files).toContain('apps/web/src/features/pedidos/Pedidos.tsx');
     const files = catalog.files.filter((f) => orders.files.includes(f.path));
     expect(files.flatMap((f) => f.commands).length).toBeGreaterThan(0);
-    expect(files.flatMap((f) => f.literals.map((l) => l.text))).toContain(
-      'Publicar pedido de compra',
-    );
+    expect(files.flatMap((f) => f.literals.map((l) => l.text))).toContain('Pedir mercadoria');
   });
 });

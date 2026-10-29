@@ -44,7 +44,10 @@ export function SupplyNetwork() {
             const incoming = world.shipments
               .filter(
                 (s) =>
-                  s.originId === rule.originId && s.destinationId === destination.id && s.product === rule.product && !s.delivered,
+                  s.originId === rule.originId &&
+                  s.destinationId === destination.id &&
+                  s.product === rule.product &&
+                  !s.delivered,
               )
               .reduce((n, s) => n + s.quantity, 0);
             return (
@@ -62,7 +65,15 @@ export function SupplyNetwork() {
                     {products[rule.product].name}
                   </BotaoProduto>{' '}
                   ·{' '}
-                  {!origin ? 'origem indisponível' : destination.mothballed ? 'destino suspenso' : !destination.enabled ? 'destino pausado' : ativa ? 'ligada' : 'pausada: ligue o abastecimento automático'}
+                  {!origin
+                    ? 'origem indisponível'
+                    : destination.mothballed
+                      ? 'destino suspenso'
+                      : !destination.enabled
+                        ? 'destino pausado'
+                        : ativa
+                          ? 'ligada'
+                          : 'pausada: ligue o abastecimento automático'}
                   {incoming > 0 && (
                     <>
                       {' '}

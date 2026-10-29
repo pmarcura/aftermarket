@@ -138,6 +138,12 @@ export function WorldMap({
     }
     const p = world.properties.find((x) => x.id === propertyId);
     const initial = center && typeof center[0] === 'number' ? (center as Position) : p?.coordinates;
+    // Filtro pixel-art: o mapa é renderizado em resolução reduzida (pixelRatio < 1)
+    // e esticado via CSS com image-rendering: pixelated. Toda a interatividade (cliques,
+    // zoom, popups, markers) continua funcionando porque o MapLibre calcula coordenadas
+    // em pixels de tela, não em pixels de canvas. Apenas o canvas do mapa é pixelado;
+    // controles HTML (botões, popups) ficam nítidos como antes.
+    const PIXEL_BLOCK = 4; // 1 = nítido, 2 = sutil, 4 = retrô clássico, 6+ = 8-bits pesado
     const instance = new maplibregl.Map({
       container: container.current!,
       style: createMapStyle(),
@@ -148,6 +154,7 @@ export function WorldMap({
       attributionControl: { compact: true },
       interactive: !mini,
       renderWorldCopies: false,
+      pixelRatio: (window.devicePixelRatio || 1) / PIXEL_BLOCK,
     });
     map.current = instance;
     // Inspeção em desenvolvimento (laboratório e testes de navegador); não existe no build final.

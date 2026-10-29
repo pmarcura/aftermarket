@@ -24,20 +24,14 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: '24'
           cache: npm
 
       - name: Instalar dependências
         run: npm ci
 
-      - name: Build (tsc + vite)
-        run: npm run build
-
-      - name: Testes unitários
-        run: npm test
-
-      - name: Auditoria de recursos
-        run: npm run resources:check
-
       - name: Verificar formatação
         run: npm run format:check
+
+      - name: Build · Testes · Recursos · Catálogo
+        run: npm run check

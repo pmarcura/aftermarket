@@ -101,7 +101,8 @@ export function TruckPurchase({ depot, onClose }: { depot?: Establishment; onClo
         },
       ];
   const pagos = vendedores.filter((s) => !s.own);
-  const maisBarato = pagos.length > 1 ? pagos.reduce((m, s) => (s.price < m.price ? s : m)) : undefined;
+  const maisBarato =
+    pagos.length > 1 ? pagos.reduce((m, s) => (s.price < m.price ? s : m)) : undefined;
   const cabe = (s: Vendedor) => s.own || s.price <= cash;
   const atual =
     vendedores.find((s) => s.chave === escolhido) ?? vendedores.find(cabe) ?? vendedores[0];
@@ -120,7 +121,11 @@ export function TruckPurchase({ depot, onClose }: { depot?: Establishment; onClo
   };
 
   return (
-    <GavetaFrota titulo="Comprar caminhão" matiz={v2 ? (model === 'truckHeavy' ? 214 : 150) : 214} onClose={onClose}>
+    <GavetaFrota
+      titulo="Comprar caminhão"
+      matiz={v2 ? (model === 'truckHeavy' ? 214 : 150) : 214}
+      onClose={onClose}
+    >
       {comprado ? (
         <section className="gaveta-ok" aria-live="polite">
           <div className="gaveta-estrada" aria-hidden="true">
@@ -242,7 +247,9 @@ export function TruckPurchase({ depot, onClose }: { depot?: Establishment; onClo
               <span>Você paga</span>
               <b>{total ? cr(total, 0) : 'Nada'}</b>
               <small className={falta ? 'falta' : ''}>
-                {falta ? `Faltam ${cr(falta, 0)} no caixa` : `Sobram ${cr(cash - total, 0)} no caixa`}
+                {falta
+                  ? `Faltam ${cr(falta, 0)} no caixa`
+                  : `Sobram ${cr(cash - total, 0)} no caixa`}
               </small>
             </div>
             <button

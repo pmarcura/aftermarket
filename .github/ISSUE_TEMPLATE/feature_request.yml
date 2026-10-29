@@ -1,6 +1,6 @@
-name: "✨ Sugestão de Feature"
-description: "Tem uma ideia que pode melhorar o jogo? Manda ver."
-labels: ["enhancement"]
+name: '✨ Sugestão de Feature'
+description: 'Tem uma ideia que pode melhorar o jogo? Manda ver.'
+labels: ['enhancement']
 body:
   - type: markdown
     attributes:
@@ -11,8 +11,8 @@ body:
     id: problema
     attributes:
       label: Qual problema isso resolve?
-      description: "Descreva a frustração ou limitação atual."
-      placeholder: "Ex: Não consigo comparar o desempenho das minhas empresas lado a lado."
+      description: 'Descreva a frustração ou limitação atual.'
+      placeholder: 'Ex: Não consigo comparar o desempenho das minhas empresas lado a lado.'
     validations:
       required: true
 
@@ -20,7 +20,7 @@ body:
     id: solucao
     attributes:
       label: Solução proposta
-      description: "Como você imagina que deveria funcionar?"
+      description: 'Como você imagina que deveria funcionar?'
       placeholder: |
         Um dashboard comparativo onde seleciono 2+ empresas e vejo
         receita, despesas e margem no mesmo gráfico.
@@ -31,8 +31,8 @@ body:
     id: alternativas
     attributes:
       label: Alternativas consideradas
-      description: "Pensou em outras formas de resolver? O que descartou e por quê?"
-      placeholder: "Considerei exportar CSV e comparar no Excel, mas perde a praticidade."
+      description: 'Pensou em outras formas de resolver? O que descartou e por quê?'
+      placeholder: 'Considerei exportar CSV e comparar no Excel, mas perde a praticidade.'
     validations:
       required: false
 
@@ -40,7 +40,7 @@ body:
     id: area
     attributes:
       label: Área do jogo
-      description: "Em qual parte do jogo isso se encaixa?"
+      description: 'Em qual parte do jogo isso se encaixa?'
       options:
         - Interface / UX
         - Simulação / Economia
@@ -57,6 +57,6 @@ body:
     id: contexto
     attributes:
       label: Contexto adicional
-      description: "Mockups, referências de outros jogos, dados que suportam a ideia..."
+      description: 'Mockups, referências de outros jogos, dados que suportam a ideia...'
     validations:
       required: false

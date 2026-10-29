@@ -98,5 +98,4 @@ describe('economia versão 2 no mapa real', () => {
     order.sellerId = 'rival-2';
     expect(supplySpent(w, mill, NOW).promised).toBe(58 * 50000 + 200000);
   });
-
 });

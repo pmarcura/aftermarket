@@ -2,7 +2,7 @@ name: Limpeza de Issues
 
 on:
   schedule:
-    - cron: "30 4 * * *" # Diariamente às 04:30 UTC
+    - cron: '30 4 * * *' # Diariamente às 04:30 UTC
   workflow_dispatch:
 
 permissions:
@@ -35,5 +35,5 @@ jobs:
           close-pr-message: >
             Fechado automaticamente por inatividade.
             Reabra se ainda for relevante.
-          exempt-issue-labels: "prioridade-alta,em-progresso"
-          exempt-pr-labels: "prioridade-alta,em-progresso"
+          exempt-issue-labels: 'prioridade-alta,em-progresso'
+          exempt-pr-labels: 'prioridade-alta,em-progresso'

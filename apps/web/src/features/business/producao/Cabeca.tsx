@@ -127,7 +127,9 @@ export function Cabeca({
                 disabled={!podeProduzir}
                 onClick={onProduzir}
                 title={
-                  semLinha ? 'Sem capacidade para uma linha. Veja o motivo em Como esta unidade produz.' : undefined
+                  semLinha
+                    ? 'Sem capacidade para uma linha. Veja o motivo em Como esta unidade produz.'
+                    : undefined
                 }
               >
                 <Hammer size={18} /> Produzir agora

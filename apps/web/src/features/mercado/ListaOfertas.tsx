@@ -237,7 +237,9 @@ export function ListaOfertas({
                     </div>
                     <div className="of-preco">
                       <b>{a?.frete ? cr(a.naPorta) : cr(o.price)}</b>
-                      <small>{a?.frete ? 'na sua porta' : 'preço na origem · frete a consultar'}</small>
+                      <small>
+                        {a?.frete ? 'na sua porta' : 'preço na origem · frete a consultar'}
+                      </small>
                     </div>
                     <div className="of-estoque">
                       <IconePixel nome="caixa" tamanho={22} />

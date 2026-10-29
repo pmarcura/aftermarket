@@ -42,7 +42,9 @@ export function Transacoes({ limite = 12 }: { limite?: number }) {
                   <IconePixel nome={ICONE_DO_TIPO[l.kind] ?? 'pedido'} tamanho={28} />
                   <span className="emp-trans-texto">
                     <b>{l.description}</b>
-                    <small>{String(momentoDoJogo(world, l.at).hora).padStart(2, '0')}h no jogo</small>
+                    <small>
+                      {String(momentoDoJogo(world, l.at).hora).padStart(2, '0')}h no jogo
+                    </small>
                   </span>
                   <strong className={entrou ? 'entrou' : 'saiu'}>
                     {entrou ? '+' : '−'}

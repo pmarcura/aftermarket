@@ -87,7 +87,12 @@
   height: 100%;
   min-width: 6px;
   border-radius: 7px;
-  background: linear-gradient(180deg, var(--lavoura-clara), var(--lavoura) 45%, var(--lavoura-escura));
+  background: linear-gradient(
+    180deg,
+    var(--lavoura-clara),
+    var(--lavoura) 45%,
+    var(--lavoura-escura)
+  );
   transition: width 0.5s ease-out;
 }
 .emp-meter.peq {
@@ -241,8 +246,7 @@
 }
 .emp-bens .item {
   background:
-    radial-gradient(circle at 15% 20%, hsl(var(--h) 50% 28%), transparent 60%),
-    var(--chapa-2);
+    radial-gradient(circle at 15% 20%, hsl(var(--h) 50% 28%), transparent 60%), var(--chapa-2);
 }
 .emp-bem {
   display: grid;
@@ -284,7 +288,11 @@
 }
 .emp-pag.atraso {
   border-color: var(--brasa);
-  background: linear-gradient(110deg, color-mix(in srgb, var(--brasa) 16%, var(--chapa)), var(--chapa) 70%);
+  background: linear-gradient(
+    110deg,
+    color-mix(in srgb, var(--brasa) 16%, var(--chapa)),
+    var(--chapa) 70%
+  );
   box-shadow: 6px 6px 0 color-mix(in srgb, var(--brasa) 45%, var(--sombra));
 }
 .emp-pag > header {

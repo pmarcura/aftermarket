@@ -33,7 +33,10 @@ export function OperationPage() {
   const { world, actor, businessId, run, pending, navigate, openRepor } = useGame();
   const e =
     world.establishments.find((x) => x.id === businessId && x.companyId === actor) ??
-    world.establishments.find((x) => x.companyId === actor && ['industry', 'farm', 'mine', 'warehouse'].includes(x.category));
+    world.establishments.find(
+      (x) =>
+        x.companyId === actor && ['industry', 'farm', 'mine', 'warehouse'].includes(x.category),
+    );
   const [tab, setTab] = useState('Produção'),
     [recipeId, setRecipe] = useState('steel-bars'),
     [queue, setQueue] = useState(false),
@@ -197,7 +200,8 @@ export function OperationPage() {
               <div>
                 <h3>{recipe.name}</h3>
                 <p>
-                  {line.lines} {line.lines === 1 ? 'linha disponível' : 'linhas disponíveis'} de capacidade
+                  {line.lines} {line.lines === 1 ? 'linha disponível' : 'linhas disponíveis'} de
+                  capacidade
                 </p>
               </div>
             </header>
@@ -293,7 +297,12 @@ export function OperationPage() {
                     : '—'}
                 </b>
                 <small>{Number.isFinite(line.durationMs) ? 'de jogo' : line.bottleneck}</small>
-                {espera > 0 && <small>Mais ~{num(Math.max(1, horasDeJogo(espera)))} h de jogo aguardando os lotes anteriores.</small>}
+                {espera > 0 && (
+                  <small>
+                    Mais ~{num(Math.max(1, horasDeJogo(espera)))} h de jogo aguardando os lotes
+                    anteriores.
+                  </small>
+                )}
               </section>
               <section>
                 <h4>
@@ -328,7 +337,14 @@ export function OperationPage() {
             )}
             <button
               className="primary full recibo-confirmar"
-              disabled={pending || !e.enabled || !line.lines || faltando.length > 0 || freeCash(world, actor) < charges.total || (e.category === 'mine' && (e.reserve ?? 0) < cycles)}
+              disabled={
+                pending ||
+                !e.enabled ||
+                !line.lines ||
+                faltando.length > 0 ||
+                freeCash(world, actor) < charges.total ||
+                (e.category === 'mine' && (e.reserve ?? 0) < cycles)
+              }
               onClick={async () => {
                 if (
                   await run(
@@ -342,8 +358,11 @@ export function OperationPage() {
               {pending ? 'Separando…' : 'Começar a produzir'}
             </button>
             <p className="recibo-nota">
-              {freeCash(world, actor) < charges.total && 'Caixa livre insuficiente para este lote. '}
-              {e.category === 'mine' && (e.reserve ?? 0) < cycles && 'Reserva mineral insuficiente para este lote. '}
+              {freeCash(world, actor) < charges.total &&
+                'Caixa livre insuficiente para este lote. '}
+              {e.category === 'mine' &&
+                (e.reserve ?? 0) < cycles &&
+                'Reserva mineral insuficiente para este lote. '}
               Os insumos saem do armazém agora e a produção chega quando o lote termina. A equipe
               fica ocupada até lá.
             </p>

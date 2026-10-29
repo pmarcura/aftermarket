@@ -61,21 +61,16 @@ export function Recovery() {
 
   return (
     <>
-      <section
-        className={`emp-pag ${due > 0 ? 'atraso' : ''}`}
-        aria-labelledby="emp-pag-titulo"
-      >
+      <section className={`emp-pag ${due > 0 ? 'atraso' : ''}`} aria-labelledby="emp-pag-titulo">
         <header>
           <IconePixel nome={due > 0 ? 'alerta' : 'cartao'} tamanho={44} />
           <div>
-            <h2 id="emp-pag-titulo">
-              {due > 0 ? 'Pagamentos atrasados' : 'Pagamentos em dia'}
-            </h2>
+            <h2 id="emp-pag-titulo">{due > 0 ? 'Pagamentos atrasados' : 'Pagamentos em dia'}</h2>
             <p>
               {due > 0 ? (
                 <>
-                  Faltam <b>{cr(due)}</b>. Salários são pagos primeiro. Pausar a produção não
-                  para os custos da estrutura; suspender um negócio zera a equipe e deixa só 10% da
+                  Faltam <b>{cr(due)}</b>. Salários são pagos primeiro. Pausar a produção não para
+                  os custos da estrutura; suspender um negócio zera a equipe e deixa só 10% da
                   manutenção.
                 </>
               ) : principal > 0 ? (
@@ -267,7 +262,8 @@ export function Recovery() {
                     <span>
                       <b>{e.name}</b>
                       <small>
-                        {cr(operatingCosts(world, e).total, 0)} por dia · {num(e.employees)} na equipe
+                        {cr(operatingCosts(world, e).total, 0)} por dia · {num(e.employees)} na
+                        equipe
                       </small>
                     </span>
                     <button

@@ -7,7 +7,11 @@ import { matizDoProduto, type Sprite } from '../../design/arte';
 import { ProdutoArte } from './Vitrine';
 import { analyzeDesign } from '../../../../../packages/simulation/src/economy-design';
 import { equipmentCostFor, freeCash } from '../../../../../packages/simulation/src/design';
-import { products, type Category, type ProductId } from '../../../../../packages/simulation/src/model';
+import {
+  products,
+  type Category,
+  type ProductId,
+} from '../../../../../packages/simulation/src/model';
 import '../../design/cotacoes.css';
 
 const spriteDaCategoria: Record<Category, Sprite> = {
@@ -41,13 +45,16 @@ export function useNegocios() {
           const profile = world.season.config.operations.profiles[r.id];
           if (!line || !profile) return [];
           const site = world.properties
-            .filter((p) => p.ownerId === null && p.category === r.category && p.area >= profile.areaM2)
+            .filter(
+              (p) => p.ownerId === null && p.category === r.category && p.area >= profile.areaM2,
+            )
             .sort((a, b) => a.price - b.price)[0];
           const rebanho = (Object.entries(r.requires ?? {}) as [ProductId, number][]).reduce(
             (n, [id, q]) => n + q * world.season.config.basePrices[id],
             0,
           );
-          const investimento = (site?.price ?? 0) + equipmentCostFor(world, r.category, r.id) + rebanho;
+          const investimento =
+            (site?.price ?? 0) + equipmentCostFor(world, r.category, r.id) + rebanho;
           const saidas = Object.keys(r.output) as ProductId[];
           return [
             {
@@ -175,7 +182,9 @@ export function BusinessIdeas({
 }) {
   const { itens, caixa } = useNegocios();
   const lista = itens
-    .filter((i) => (filtro === 'falta' ? i.falta : filtro === 'caixa' ? i.investimento <= caixa : true))
+    .filter((i) =>
+      filtro === 'falta' ? i.falta : filtro === 'caixa' ? i.investimento <= caixa : true,
+    )
     .slice(0, limite);
   if (!lista.length) return <p className="neg-vazio">Nenhum negócio atende a este filtro agora.</p>;
   return (

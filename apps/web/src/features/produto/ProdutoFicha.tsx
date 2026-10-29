@@ -32,7 +32,10 @@ function reduzir<T extends { at: number }>(
   if (itens.length <= n) return itens.map((i) => ({ at: i.at, v: valor(i) }));
   const tam = itens.length / n;
   return Array.from({ length: n }, (_, k) => {
-    const fatia = itens.slice(Math.floor(k * tam), Math.max(Math.floor(k * tam) + 1, Math.floor((k + 1) * tam)));
+    const fatia = itens.slice(
+      Math.floor(k * tam),
+      Math.max(Math.floor(k * tam) + 1, Math.floor((k + 1) * tam)),
+    );
     return {
       at: fatia[fatia.length - 1].at,
       v: fatia.reduce((s, i) => s + valor(i), 0) / (somar ? 1 : fatia.length),
@@ -134,7 +137,11 @@ function Ficha({ id }: { id: ProductId }) {
     const m = new Map<string, number>();
     for (const j of world.jobs) {
       const q = j.completed ? (j.output?.[id] ?? 0) : 0;
-      if (q > 0) m.set(dono.get(j.establishmentId) ?? '?', (m.get(dono.get(j.establishmentId) ?? '?') ?? 0) + q);
+      if (q > 0)
+        m.set(
+          dono.get(j.establishmentId) ?? '?',
+          (m.get(dono.get(j.establishmentId) ?? '?') ?? 0) + q,
+        );
     }
     return [...m].sort((a, b) => b[1] - a[1]).slice(0, 5);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -181,7 +188,8 @@ function Ficha({ id }: { id: ProductId }) {
   // Posição do preço dentro da faixa de referência, para o medidor.
   const baixo = faixa?.low ?? 0;
   const alto = faixa?.high ?? 0;
-  const pos = (v: number) => (alto > baixo ? Math.min(100, Math.max(0, ((v - baixo) / (alto - baixo)) * 100)) : 50);
+  const pos = (v: number) =>
+    alto > baixo ? Math.min(100, Math.max(0, ((v - baixo) / (alto - baixo)) * 100)) : 50;
 
   return (
     <dialog
@@ -204,7 +212,9 @@ function Ficha({ id }: { id: ProductId }) {
             <h2 id="ficha-titulo">{info.name}</h2>
             <span className={`item-estado tom-${situacao.tom}`}>{situacao.texto}</span>
             <p>
-              Vendido por {unidade(id, 1)} · {info.massT >= 1 ? `${num(info.massT, 2)} t` : `${num(info.massT * 1000, 1)} kg`} por unidade
+              Vendido por {unidade(id, 1)} ·{' '}
+              {info.massT >= 1 ? `${num(info.massT, 2)} t` : `${num(info.massT * 1000, 1)} kg`} por
+              unidade
             </p>
           </div>
           <div className="ficha-preco">
@@ -240,13 +250,16 @@ function Ficha({ id }: { id: ProductId }) {
               <span>Procura por dia</span>
               <b>{num(mercado.demand, 0)}</b>
               <small>
-                famílias {num(mercado.householdDemand, 0)} · indústria {num(mercado.industrialDemand, 0)}
+                famílias {num(mercado.householdDemand, 0)} · indústria{' '}
+                {num(mercado.industrialDemand, 0)}
               </small>
             </li>
             <li>
               <IconePixel nome="prazo" tamanho={30} />
               <span>O estoque dá para</span>
-              <b className={`tom-${situacao.tom}`}>{cobertura === null ? '—' : `${num(cobertura, 1)} dias`}</b>
+              <b className={`tom-${situacao.tom}`}>
+                {cobertura === null ? '—' : `${num(cobertura, 1)} dias`}
+              </b>
               <small>{situacao.texto.toLowerCase()}</small>
             </li>
           </ul>
@@ -254,7 +267,11 @@ function Ficha({ id }: { id: ProductId }) {
           {faixa && alto > baixo && (
             <section className="ficha-bloco" aria-labelledby="ficha-faixa">
               <h3 id="ficha-faixa">Onde o preço está</h3>
-              <div className="ficha-faixa" role="img" aria-label={`Faixa de referência de ${cr(baixo)} a ${cr(alto)}${preco !== null ? `; preço atual ${cr(preco)}` : ''}`}>
+              <div
+                className="ficha-faixa"
+                role="img"
+                aria-label={`Faixa de referência de ${cr(baixo)} a ${cr(alto)}${preco !== null ? `; preço atual ${cr(preco)}` : ''}`}
+              >
                 <div className="ficha-trilho">
                   {preco !== null && (
                     <span className="ficha-pino" style={{ left: `${pos(preco)}%` }}>
@@ -275,8 +292,8 @@ function Ficha({ id }: { id: ProductId }) {
                 </div>
               </div>
               <p className="ficha-nota">
-                Referência real de mercado ({faixa.source}, {faixa.date}). A moeda é o preço médio das
-                ofertas no jogo; a balança é o preço justo da temporada.
+                Referência real de mercado ({faixa.source}, {faixa.date}). A moeda é o preço médio
+                das ofertas no jogo; a balança é o preço justo da temporada.
               </p>
             </section>
           )}
@@ -299,10 +316,14 @@ function Ficha({ id }: { id: ProductId }) {
               </div>
             </div>
             {falhou && !amostras ? (
-              <p className="ficha-vazio">Não foi possível carregar o histórico agora. Tentando de novo.</p>
+              <p className="ficha-vazio">
+                Não foi possível carregar o histórico agora. Tentando de novo.
+              </p>
             ) : serie.precos.length < 2 ? (
               <p className="ficha-vazio">
-                {amostras ? 'Ainda há poucos dados nesse período. O histórico cresce a cada rodada.' : 'Carregando o histórico…'}
+                {amostras
+                  ? 'Ainda há poucos dados nesse período. O histórico cresce a cada rodada.'
+                  : 'Carregando o histórico…'}
               </p>
             ) : (
               <>
@@ -329,7 +350,9 @@ function Ficha({ id }: { id: ProductId }) {
                   tipo="barras"
                   altura={150}
                   rotulos={serie.rotulosVolume}
-                  series={[{ nome: 'Negociado', valores: serie.negociado.map((p) => Math.round(p.v)) }]}
+                  series={[
+                    { nome: 'Negociado', valores: serie.negociado.map((p) => Math.round(p.v)) },
+                  ]}
                   formato={(v) => `${num(v)} ${unidade(id, v)}`}
                   formatoEixo={(v) => num(v)}
                 />
@@ -337,7 +360,10 @@ function Ficha({ id }: { id: ProductId }) {
             )}
           </section>
 
-          <p className="ficha-nota">Produção e vendas abaixo consideram apenas os registros disponíveis nesta sessão, não um ranking completo do mundo.</p>
+          <p className="ficha-nota">
+            Produção e vendas abaixo consideram apenas os registros disponíveis nesta sessão, não um
+            ranking completo do mundo.
+          </p>
           <div className="ficha-duas">
             <section className="ficha-bloco" aria-labelledby="ficha-prod">
               <h3 id="ficha-prod">
@@ -350,7 +376,9 @@ function Ficha({ id }: { id: ProductId }) {
                   formato={(v) => `${num(v)} ${unidade(id, v)}`}
                 />
               ) : (
-                <p className="ficha-vazio">Ninguém concluiu produção desse item nos dados guardados.</p>
+                <p className="ficha-vazio">
+                  Ninguém concluiu produção desse item nos dados guardados.
+                </p>
               )}
             </section>
             <section className="ficha-bloco" aria-labelledby="ficha-vend">
@@ -364,7 +392,9 @@ function Ficha({ id }: { id: ProductId }) {
                   formato={(v) => `${num(v)} ${unidade(id, v)}`}
                 />
               ) : (
-                <p className="ficha-vazio">Nenhuma venda registrada desse item nos dados guardados.</p>
+                <p className="ficha-vazio">
+                  Nenhuma venda registrada desse item nos dados guardados.
+                </p>
               )}
             </section>
           </div>

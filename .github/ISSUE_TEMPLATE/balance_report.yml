@@ -1,6 +1,6 @@
-name: "⚖️ Relatório de Balanceamento"
-description: "Algum item, receita ou mecânica parece desbalanceado? Reporta aqui."
-labels: ["balanceamento"]
+name: '⚖️ Relatório de Balanceamento'
+description: 'Algum item, receita ou mecânica parece desbalanceado? Reporta aqui.'
+labels: ['balanceamento']
 body:
   - type: markdown
     attributes:
@@ -12,8 +12,8 @@ body:
     id: elemento
     attributes:
       label: Item / Receita / Mecânica afetada
-      description: "O que exatamente está desbalanceado?"
-      placeholder: "Ex: Receita de ração de frango (chicken-feed)"
+      description: 'O que exatamente está desbalanceado?'
+      placeholder: 'Ex: Receita de ração de frango (chicken-feed)'
     validations:
       required: true
 
@@ -50,8 +50,8 @@ body:
     id: evidencia
     attributes:
       label: Evidência / Dados
-      description: "Cole outputs do lab, screenshots de preços, ou qualquer dado concreto."
-      placeholder: "Saída do lab:query, prints de preço, comparações..."
+      description: 'Cole outputs do lab, screenshots de preços, ou qualquer dado concreto.'
+      placeholder: 'Saída do lab:query, prints de preço, comparações...'
     validations:
       required: false
 
@@ -59,7 +59,7 @@ body:
     id: sugestao
     attributes:
       label: Sugestão de ajuste
-      description: "Tem ideia de como corrigir? Não precisa ser definitivo."
+      description: 'Tem ideia de como corrigir? Não precisa ser definitivo.'
       placeholder: |
         Aumentar o custo de milho na receita de 2 para 4 unidades,
         ou reduzir o preço de venda do produto final em 30%.
@@ -70,7 +70,7 @@ body:
     id: impacto
     attributes:
       label: Impacto na cadeia
-      description: "Que outros itens, receitas ou mecânicas seriam afetados pelo ajuste?"
-      placeholder: "Se o milho subir, afeta também ração bovina e etanol."
+      description: 'Que outros itens, receitas ou mecânicas seriam afetados pelo ajuste?'
+      placeholder: 'Se o milho subir, afeta também ração bovina e etanol.'
     validations:
       required: false

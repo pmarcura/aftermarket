@@ -37,7 +37,8 @@ export function BusinessesPage() {
     .filter(
       (e) =>
         meus.length < MUITOS ||
-        (e.name.toLowerCase().includes(busca.toLowerCase()) && (tipo === 'all' || e.category === tipo)),
+        (e.name.toLowerCase().includes(busca.toLowerCase()) &&
+          (tipo === 'all' || e.category === tipo)),
     )
     .sort(
       (a, b) =>
@@ -140,7 +141,9 @@ export function BusinessesPage() {
               ) : (
                 <Plus size={40} aria-hidden="true" />
               )}
-              <strong>{meus.length === 0 ? 'Abra o seu primeiro negócio' : 'Abrir um negócio'}</strong>
+              <strong>
+                {meus.length === 0 ? 'Abra o seu primeiro negócio' : 'Abrir um negócio'}
+              </strong>
               <small>Escolha um imóvel no mapa</small>
             </button>
           </li>

@@ -18,9 +18,10 @@ import { Chave, ChipEstado } from './pecas';
 function LoteCard({ j, agora }: { j: Job; agora: number }) {
   const { world } = useGame();
   const receita = world.season.config.recipes.find((r) => r.id === j.recipeId)!;
-  const saidas = Object.entries(j.output ?? Object.fromEntries(
-    Object.entries(receita.output).map(([id, q]) => [id, q! * j.cycles]),
-  )) as [ProductId, number][];
+  const saidas = Object.entries(
+    j.output ??
+      Object.fromEntries(Object.entries(receita.output).map(([id, q]) => [id, q! * j.cycles])),
+  ) as [ProductId, number][];
   const [principal] = saidas[0];
   const naFila = agora < j.startedAt;
   const progresso = naFila

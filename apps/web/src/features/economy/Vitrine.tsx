@@ -111,7 +111,8 @@ export function Vitrine({
     const melhor = dele.sort((a, b) => {
       const x = avaliacoes.get(a.id)!,
         y = avaliacoes.get(b.id)!;
-      if (Boolean(x.frete) !== Boolean(y.frete)) return Number(Boolean(y.frete)) - Number(Boolean(x.frete));
+      if (Boolean(x.frete) !== Boolean(y.frete))
+        return Number(Boolean(y.frete)) - Number(Boolean(x.frete));
       return loja ? (y.margem ?? 0) - (x.margem ?? 0) : x.naPorta - y.naPorta;
     })[0];
     return {
@@ -174,12 +175,15 @@ export function Vitrine({
         const estado = !aval.frete
           ? { tom: 'ouro', texto: 'Frete a consultar' }
           : !loja
-          ? { tom: 'ceu', texto: 'Insumo da produção' }
-          : empata
-            ? { tom: 'ouro', texto: 'Empata' }
-            : lucroUn > 0
-              ? { tom: 'lavoura', texto: `Margem estimada de ${num((aval.margem ?? 0) * 100)}%` }
-              : { tom: 'brasa', texto: `Margem estimada de −${num(Math.abs(aval.margem ?? 0) * 100)}%` };
+            ? { tom: 'ceu', texto: 'Insumo da produção' }
+            : empata
+              ? { tom: 'ouro', texto: 'Empata' }
+              : lucroUn > 0
+                ? { tom: 'lavoura', texto: `Margem estimada de ${num((aval.margem ?? 0) * 100)}%` }
+                : {
+                    tom: 'brasa',
+                    texto: `Margem estimada de −${num(Math.abs(aval.margem ?? 0) * 100)}%`,
+                  };
         return (
           <li key={product}>
             <article className={`prod-card ${emFoco ? 'em-foco' : ''}`} style={estilo}>
@@ -203,7 +207,9 @@ export function Vitrine({
                   <b>{cr(aval.naPorta)}</b>
                   <span>
                     por {unidade(product, 1)}, {aval.frete ? 'na sua porta' : 'na origem'}
-                    <small>{aval.frete ? 'frete já incluído' : 'transporte ainda não cotado'}</small>
+                    <small>
+                      {aval.frete ? 'frete já incluído' : 'transporte ainda não cotado'}
+                    </small>
                   </span>
                 </div>
                 {loja && aval.frete && (
@@ -233,7 +239,8 @@ export function Vitrine({
                     </ul>
                     <p className="prod-ritmo">
                       Estimativa ao vender pelo preço de referência de {cr(venda)}
-                      {porDia > 0 && `, cerca de ${num(porDia)} ${unidade(product)} por dia`}. Antes dos custos de operação.
+                      {porDia > 0 && `, cerca de ${num(porDia)} ${unidade(product)} por dia`}. Antes
+                      dos custos de operação.
                     </p>
                   </div>
                 )}

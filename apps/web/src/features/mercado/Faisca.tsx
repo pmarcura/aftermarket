@@ -4,7 +4,8 @@ export function Faisca({ valores, sobe }: { valores: number[]; sobe: boolean }) 
   const id = useId();
   const w = 160;
   const h = 44;
-  if (valores.length < 2) return <svg className="faisca" viewBox={`0 0 ${w} ${h}`} aria-hidden="true" />;
+  if (valores.length < 2)
+    return <svg className="faisca" viewBox={`0 0 ${w} ${h}`} aria-hidden="true" />;
   const min = Math.min(...valores);
   const max = Math.max(...valores);
   const px = valores.map((_, i) => (i / (valores.length - 1)) * w);
@@ -22,7 +23,11 @@ export function Faisca({ valores, sobe }: { valores: number[]; sobe: boolean }) 
     linha += ` C${px[i] + c} ${py[i] + t[i] * c} ${px[i + 1] - c} ${py[i + 1] - t[i + 1] * c} ${px[i + 1]} ${py[i + 1]}`;
   }
   return (
-    <svg className={`faisca ${sobe ? 'sobe' : 'desce'}`} viewBox={`0 0 ${w} ${h}`} aria-hidden="true">
+    <svg
+      className={`faisca ${sobe ? 'sobe' : 'desce'}`}
+      viewBox={`0 0 ${w} ${h}`}
+      aria-hidden="true"
+    >
       <defs>
         <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="currentColor" stopOpacity="0.4" />
@@ -30,7 +35,14 @@ export function Faisca({ valores, sobe }: { valores: number[]; sobe: boolean }) 
         </linearGradient>
       </defs>
       <path d={`${linha} L${w} ${h} L0 ${h} Z`} fill={`url(#${id})`} />
-      <path d={linha} fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d={linha}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }

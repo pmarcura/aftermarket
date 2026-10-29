@@ -158,7 +158,9 @@ export function CotacoesPage() {
             <IconePixel nome="alerta" tamanho={40} />
             <span>
               <b>{faltando}</b>
-              <small>{faltando === 1 ? 'esgotado em todo o mercado' : 'esgotados em todo o mercado'}</small>
+              <small>
+                {faltando === 1 ? 'esgotado em todo o mercado' : 'esgotados em todo o mercado'}
+              </small>
             </span>
           </div>
           {maisAlta && maisAlta.variacao > 0.005 && (
@@ -227,7 +229,9 @@ export function CotacoesPage() {
                           ) : (
                             <Minus size={16} aria-hidden="true" />
                           )}
-                          {l.temComparacao ? `${sobe ? 'Subiu' : desce ? 'Caiu' : 'Estável'} ${num(Math.abs(l.variacao) * 100, 1)}%` : 'Sem histórico de um dia'}
+                          {l.temComparacao
+                            ? `${sobe ? 'Subiu' : desce ? 'Caiu' : 'Estável'} ${num(Math.abs(l.variacao) * 100, 1)}%`
+                            : 'Sem histórico de um dia'}
                         </span>
                       </div>
                       <Faisca valores={l.faisca} sobe={l.variacao >= 0} />
@@ -239,7 +243,8 @@ export function CotacoesPage() {
                               <b>
                                 {num(l.estoque)} {u}
                               </b>{' '}
-                              à venda por {l.vendedores} {l.vendedores === 1 ? 'empresa' : 'empresas'}
+                              à venda por {l.vendedores}{' '}
+                              {l.vendedores === 1 ? 'empresa' : 'empresas'}
                             </span>
                           ) : (
                             <span>Ninguém vende agora</span>
@@ -248,14 +253,19 @@ export function CotacoesPage() {
                         <li>
                           <IconePixel nome="justo" tamanho={22} />
                           <span>
-                            {!l.preco ? 'Sem preço observado' : Math.abs(ref) < 0.03
-                              ? 'No preço justo'
-                              : `${num(Math.abs(ref) * 100)}% ${ref > 0 ? 'acima' : 'abaixo'} do preço justo`}
+                            {!l.preco
+                              ? 'Sem preço observado'
+                              : Math.abs(ref) < 0.03
+                                ? 'No preço justo'
+                                : `${num(Math.abs(ref) * 100)}% ${ref > 0 ? 'acima' : 'abaixo'} do preço justo`}
                           </span>
                         </li>
                       </ul>
                       {l.vendedores === 0 && l.ideia ? (
-                        <button className="primary cot-acao" onClick={() => navigate('opportunities')}>
+                        <button
+                          className="primary cot-acao"
+                          onClick={() => navigate('opportunities')}
+                        >
                           <IconePixel nome="fabrica" tamanho={24} /> Falta no mercado: abrir negócio
                         </button>
                       ) : (
@@ -269,7 +279,8 @@ export function CotacoesPage() {
                       )}
                       {l.vendedores === 0 && l.ideia && (
                         <small className="cot-ideia">
-                          Rende {cr(l.ideia.line.profit, 0)} por dia e se paga em {num(l.ideia.retorno)} dias.
+                          Rende {cr(l.ideia.line.profit, 0)} por dia e se paga em{' '}
+                          {num(l.ideia.retorno)} dias.
                         </small>
                       )}
                     </div>
@@ -300,7 +311,9 @@ export function CotacoesPage() {
                   <small>{haQuanto(m.at)}</small>
                 </li>
               ))}
-              {!movimento.length && <li className="mov-vazio">Ainda nada aconteceu neste mundo.</li>}
+              {!movimento.length && (
+                <li className="mov-vazio">Ainda nada aconteceu neste mundo.</li>
+              )}
             </ol>
           </aside>
         </div>

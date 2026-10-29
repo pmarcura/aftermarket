@@ -45,7 +45,11 @@ export function OpportunitiesPage() {
                 <IconePixel nome="alerta" tamanho={40} />
                 <span>
                   <b>{faltam}</b>
-                  <small>{faltam === 1 ? 'produto sem ninguém vendendo' : 'produtos sem ninguém vendendo'}</small>
+                  <small>
+                    {faltam === 1
+                      ? 'produto sem ninguém vendendo'
+                      : 'produtos sem ninguém vendendo'}
+                  </small>
                 </span>
               </div>
             </div>

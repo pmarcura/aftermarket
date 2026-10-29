@@ -4,9 +4,9 @@
   display: grid;
   grid-template-columns: minmax(0, 1.55fr) minmax(260px, 1fr);
   margin-bottom: 18px;
-  border: 1px solid #304955;
+  border: 1px solid #2f3952;
   border-radius: 9px;
-  background: #192c35;
+  background: #1b2131;
   overflow: hidden;
 }
 .neg-figuras {
@@ -18,7 +18,7 @@
   flex-direction: column;
   gap: 6px;
   padding: 19px 21px;
-  border-right: 1px solid #2a404a;
+  border-right: 1px solid #2a3147;
   min-width: 0;
 }
 .neg-figuras > div:last-child {
@@ -26,7 +26,7 @@
 }
 .neg-figuras span {
   font-size: 11px;
-  color: #9aafb9;
+  color: #b7ae9c;
 }
 .neg-figuras strong {
   font-size: 18px;
@@ -46,12 +46,12 @@
   display: grid;
   gap: 9px;
   align-content: start;
-  background: #15262e;
-  border-left: 1px solid #2a404a;
+  background: #171c2a;
+  border-left: 1px solid #2a3147;
 }
 .neg-div figcaption {
   font-size: 11px;
-  color: #9aafb9;
+  color: #b7ae9c;
 }
 .neg-div-linha {
   display: grid;
@@ -64,13 +64,13 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: #c9d6db;
+  color: #dad5ca;
 }
 .neg-div-trilho {
   position: relative;
   height: 9px;
   border-radius: 3px;
-  background: #0f1d24;
+  background: #121520;
 }
 .neg-div-trilho::before {
   content: '';
@@ -79,7 +79,7 @@
   top: -3px;
   bottom: -3px;
   width: 1px;
-  background: #56707b;
+  background: #545d76;
 }
 .neg-div-trilho i {
   position: absolute;
@@ -93,7 +93,7 @@
   transform-origin: left center;
 }
 .neg-div-trilho i.neg {
-  background: #d4766b;
+  background: #e46b5b;
   transform-origin: right center;
 }
 .neg-div-valor {
@@ -116,9 +116,9 @@
   flex-direction: column;
   gap: 11px;
   padding: 0 16px 16px;
-  border: 1px solid #33505c;
+  border: 1px solid #323d58;
   border-radius: 10px;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--cat) 16%, #15262e) 0, #15262e 96px);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--cat) 16%, #171c2a) 0, #171c2a 96px);
   cursor: pointer;
   transition:
     transform 0.18s,
@@ -127,10 +127,10 @@
 }
 .neg-card:hover {
   transform: translateY(-2px);
-  border-color: #5c8190;
+  border-color: #5b678a;
 }
 .neg-card.parado {
-  border-color: #6d5a34;
+  border-color: #936b0e;
   border-style: dashed;
 }
 .neg-arte {
@@ -167,7 +167,7 @@
   position: absolute;
   width: 6px;
   height: 6px;
-  background: #f1ece0;
+  background: #fbf0d6;
   box-shadow: 4px 2px 0 #cfc8b8;
   opacity: 0;
   animation: pixel-fumaca 3.4s steps(8) infinite;
@@ -218,7 +218,7 @@
   stroke-width: 4.5;
 }
 .neg-anel-trilho {
-  stroke: #0f1d24;
+  stroke: #121520;
 }
 .neg-anel-barra {
   stroke-linecap: round;
@@ -239,8 +239,8 @@
   display: grid;
   grid-template-columns: 1.5fr 0.7fr 1fr;
   gap: 8px;
-  border-top: 1px solid #2a404a;
-  border-bottom: 1px solid #2a404a;
+  border-top: 1px solid #2a3147;
+  border-bottom: 1px solid #2a3147;
 }
 .neg-numeros dt {
   display: flex;
@@ -269,7 +269,7 @@
   display: block;
   height: 5px;
   border-radius: 2px;
-  background: #0f1d24;
+  background: #121520;
 }
 .neg-fluxo-b i {
   display: block;
@@ -282,7 +282,7 @@
   background: var(--green);
 }
 .neg-fluxo-b i.cus {
-  background: #d4766b;
+  background: #e46b5b;
 }
 .neg-card .secondary.full {
   margin-top: auto;
@@ -291,26 +291,26 @@
 /* Alternador cartões e lista */
 .neg-visao {
   display: inline-flex;
-  border: 1px solid #40545e;
+  border: 1px solid #3f465a;
   border-radius: 6px;
   overflow: hidden;
-  background: #13232b;
+  background: #161a27;
 }
 .neg-visao button {
   border: 0;
   border-radius: 0;
   background: transparent;
-  color: #9fb4be;
+  color: #bcb3a1;
   gap: 6px;
   padding: 0 11px;
   min-height: 34px;
 }
 .neg-visao button:hover {
-  color: #e0e8eb;
+  color: #eae7e1;
 }
 .neg-visao button.on {
-  background: #2b424d;
-  color: #f0f4f5;
+  background: #2b334a;
+  color: #f5f3f0;
 }
 .neg-vazio {
   display: grid;
@@ -355,7 +355,7 @@
   }
   .neg-div {
     border-left: 0;
-    border-top: 1px solid #2a404a;
+    border-top: 1px solid #2a3147;
   }
 }
 @media (max-width: 760px) {
@@ -366,7 +366,7 @@
     border-right: 0;
   }
   .neg-figuras > div:nth-child(-n + 2) {
-    border-bottom: 1px solid #2a404a;
+    border-bottom: 1px solid #2a3147;
   }
   .neg-grade {
     grid-template-columns: 1fr;

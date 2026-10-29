@@ -5,26 +5,26 @@
   display: flex;
   align-items: center;
   gap: 13px;
-  color: #a9bec9;
+  color: #c7beab;
   font-size: 11px;
   padding: 0 1px 18px;
   flex-wrap: wrap;
 }
 .season-strip strong {
-  color: #e2eef2;
+  color: #f1ece3;
   font-size: 12px;
 }
 .season-dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #68bca0;
+  background: #79bc68;
   box-shadow: 0 0 0 4px #68bca015;
 }
 .season-explanation {
   margin-left: auto;
   font-size: 10px;
-  color: #7f9da9;
+  color: #a79a81;
 }
 .economic-filter-panel {
   display: flex;
@@ -32,8 +32,8 @@
   gap: 10px;
   flex-wrap: wrap;
   padding: 15px;
-  border: 1px solid #34515f;
-  background: #152933;
+  border: 1px solid #333e5b;
+  background: #191e2d;
   border-radius: 8px;
   margin-bottom: 16px;
 }
@@ -59,16 +59,16 @@
 }
 .filter-count {
   font-style: normal;
-  background: #416176;
+  background: #404d71;
   border-radius: 12px;
   padding: 1px 6px;
   font-size: 9px;
 }
 .economic-summary {
   display: flex;
-  border: 1px solid #314c59;
+  border: 1px solid #313a55;
   border-radius: 7px;
-  background: #172c35;
+  background: #1a202f;
   margin-bottom: 18px;
 }
 .economic-summary > div {
@@ -77,13 +77,13 @@
   gap: 10px;
   flex: 1;
   padding: 18px 20px;
-  border-right: 1px solid #314c59;
+  border-right: 1px solid #313a55;
 }
 .economic-summary > div:last-child {
   border-right: 0;
 }
 .economic-summary span {
-  color: #93aebb;
+  color: #b9ad95;
   font-size: 11px;
 }
 .economic-summary strong {
@@ -93,7 +93,7 @@
   font-variant-numeric: tabular-nums;
 }
 .economic-summary svg {
-  color: #84b7c9;
+  color: #c6b187;
 }
 .economic-map-grid {
   display: grid;
@@ -116,7 +116,7 @@
   padding: 9px 13px;
   background: #102934ed;
   border-radius: 5px;
-  color: #d1e4ec;
+  color: #ebe3d2;
   font-size: 12px;
   pointer-events: none;
 }
@@ -132,14 +132,14 @@
   left: 16px;
   right: 16px;
   background: #102934ed;
-  border: 1px solid #3c6676;
+  border: 1px solid #3e4b6f;
   border-radius: 5px;
   padding: 10px 13px;
   display: flex;
   align-items: center;
   gap: 10px;
   font-size: 10px;
-  color: #d1e4ec;
+  color: #ebe3d2;
   pointer-events: none;
 }
 .intensity-legend {
@@ -147,7 +147,7 @@
   display: flex;
   align-items: center;
   gap: 7px;
-  color: #aac5d3;
+  color: #d1c5ac;
   font-size: 9px;
   white-space: nowrap;
 }
@@ -155,7 +155,7 @@
   width: 68px;
   height: 6px;
   border-radius: 4px;
-  background: linear-gradient(90deg, #7faaaa33, #58acac);
+  background: linear-gradient(90deg, #7faaaa33, #5a6da2);
 }
 .economic-map-footer {
   display: flex;
@@ -163,8 +163,8 @@
   gap: 9px;
   padding: 13px 17px;
   font-size: 10px;
-  color: #8faebe;
-  border-top: 1px solid #304c59;
+  color: #bcae91;
+  border-top: 1px solid #303a55;
   line-height: 1.6;
 }
 .economic-map-footer svg {
@@ -175,10 +175,10 @@
   padding: 7px 10px;
   border-radius: 6px;
   position: absolute;
-  border: 1px solid #b9d8dc;
+  border: 1px solid #dad0bb;
   box-shadow: 0 4px 10px #12313d22;
-  color: #e6f4f6;
-  background: color-mix(in srgb, #265562 calc(var(--intensity) * 100%), #1b343de8);
+  color: #f4f0e8;
+  background: color-mix(in srgb, #2f3955 calc(var(--intensity) * 100%), #1b343de8);
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -192,11 +192,11 @@
 .economic-bubble > span {
   font-size: 11px;
   font-variant-numeric: tabular-nums;
-  color: #c9e5e9;
+  color: #e7decb;
 }
 .economic-bubble:hover {
   z-index: 3;
-  background: #366d77;
+  background: #3c496c;
   border-color: #fff;
 }
 .economic-playbook {
@@ -217,8 +217,8 @@
   width: 23px;
   display: grid;
   place-items: center;
-  border: 1px solid #426372;
-  color: #e4b673;
+  border: 1px solid #414d6d;
+  color: #f0c767;
   border-radius: 5px;
   font-size: 11px;
 }
@@ -228,7 +228,7 @@
 }
 .economic-playbook p {
   font-size: 11px;
-  color: #97b2c1;
+  color: #bfb299;
   line-height: 1.8;
 }
 .catalog-heading {
@@ -240,7 +240,7 @@
 }
 .catalog-heading p {
   font-size: 11px;
-  color: #8ea9b8;
+  color: #b6a990;
   margin-top: 5px;
 }
 .commodity-grid {
@@ -249,8 +249,8 @@
   gap: 14px;
 }
 .commodity-card {
-  border: 1px solid #34515f;
-  background: #172c36;
+  border: 1px solid #333e5b;
+  background: #1b2030;
   border-radius: 8px;
   overflow: hidden;
   padding: 18px;
@@ -281,14 +281,14 @@
   white-space: nowrap;
   padding: 3px 5px;
   border-radius: 3px;
-  background: #24434d;
+  background: #273046;
   font-variant-numeric: tabular-nums;
 }
 .price-change.up {
-  color: #e8ba79;
+  color: #f1ca70;
 }
 .price-change.down {
-  color: #89cbc8;
+  color: #c8b48c;
 }
 .commodity-price {
   display: flex;
@@ -303,14 +303,14 @@
   font-weight: 600;
 }
 .commodity-price > span {
-  color: #85a2b2;
+  color: #b0a287;
   font-size: 11px;
 }
 .commodity-facts {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  border-top: 1px solid #2e4856;
+  border-top: 1px solid #2e3852;
   padding-top: 15px;
 }
 .commodity-facts > span {
@@ -318,23 +318,23 @@
   justify-content: space-between;
   gap: 12px;
   font-size: 10px;
-  color: #8daab9;
+  color: #b7aa8f;
 }
 .commodity-facts b {
   font-weight: 500;
-  color: #c5d8e2;
+  color: #e1d8c6;
 }
 .commodity-card > button {
   font-size: 10px;
   margin-top: 18px;
   min-height: 33px;
-  background: #1f3c4b;
+  background: #252d42;
 }
 .economic-disclaimer {
   display: flex;
   gap: 8px;
   font-size: 10px;
-  color: #7c9aaa;
+  color: #a89a7e;
   margin: 18px 1px;
 }
 .economic-catalog td {
@@ -383,7 +383,7 @@
 }
 .analysis-heading p {
   font-size: 11px;
-  color: #8ba9b9;
+  color: #b7a98d;
 }
 .analysis-heading > button {
   font-size: 11px;
@@ -392,13 +392,13 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0;
-  border-top: 1px solid #335361;
-  border-bottom: 1px solid #335361;
+  border-top: 1px solid #333e5c;
+  border-bottom: 1px solid #333e5c;
   margin-bottom: 20px;
 }
 .analysis-stats > div {
   padding: 19px 17px 18px;
-  border-right: 1px solid #335361;
+  border-right: 1px solid #333e5c;
   min-width: 0;
 }
 .analysis-stats > div:first-child {
@@ -410,7 +410,7 @@
 .analysis-stats span {
   display: block;
   font-size: 10px;
-  color: #8eafbf;
+  color: #bdae90;
   margin-bottom: 9px;
 }
 .analysis-stats strong {
@@ -422,7 +422,7 @@
 .analysis-stats small {
   display: block;
   font-size: 9px;
-  color: #7798a9;
+  color: #a6987a;
   margin-top: 5px;
 }
 .product-analysis > .tabs {
@@ -458,7 +458,7 @@
   align-items: center;
   gap: 6px;
   white-space: nowrap;
-  color: #b5cdd8;
+  color: #d6ccb7;
   font-size: 10px;
   cursor: pointer;
 }
@@ -478,7 +478,7 @@
   align-items: flex-start;
   gap: 7px;
   font-size: 10px;
-  color: #87a8b8;
+  color: #b6a789;
   line-height: 1.7;
   margin: 8px 0 17px;
 }
@@ -489,7 +489,7 @@
   height: 285px;
   display: grid;
   place-items: center;
-  color: #86a6b6;
+  color: #b4a588;
   font-size: 12px;
 }
 .analysis-bottom {
@@ -497,7 +497,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  border-top: 1px solid #2d4a58;
+  border-top: 1px solid #2e3853;
   padding-top: 20px;
   margin-top: 22px;
 }
@@ -505,7 +505,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #85a5b6;
+  color: #b4a587;
   font-size: 10px;
 }
 .analysis-bottom .primary {
@@ -514,12 +514,12 @@
 }
 .analysis-data-table {
   max-height: 300px;
-  border: 1px solid #36515e;
+  border: 1px solid #353f5a;
   border-radius: 6px;
   margin: 14px 0;
 }
 .analysis-data-table caption {
-  color: #98b6c5;
+  color: #c3b59a;
   font-size: 10px;
   padding: 12px;
   text-align: left;
@@ -533,7 +533,7 @@
 }
 .method-content > p {
   font-size: 12px;
-  color: #acc5d1;
+  color: #cfc4ae;
   margin: 12px 0;
   line-height: 1.8;
 }
@@ -542,10 +542,10 @@
 }
 .formula-note {
   font-size: 11px;
-  background: #102833;
-  border-left: 2px solid #759fad;
+  background: #102433;
+  border-left: 2px solid #aa9978;
   padding: 13px;
-  color: #b4d0dc;
+  color: #daceb6;
   line-height: 1.8;
   margin: 15px 0;
 }
@@ -579,7 +579,7 @@
   align-items: center;
   gap: 12px;
   padding: 14px 0;
-  border-bottom: 1px solid #304e5c;
+  border-bottom: 1px solid #313b57;
   font-size: 10px;
 }
 .index-component > span {
@@ -613,7 +613,7 @@
   font-size: 10px;
   width: 175px;
   background: #112b36ed;
-  border-color: #436773;
+  border-color: #424e6e;
   padding: 8px;
 }
 .map-owner-controls .secondary {
@@ -626,15 +626,15 @@
   border-radius: 50%;
   display: grid;
   place-items: center;
-  background: #e6b76c;
-  color: #173343;
+  background: #f0c562;
+  color: #1f2638;
   border: 3px solid #fff;
   box-shadow: 0 3px 14px #16354466;
   z-index: 5;
   pointer-events: auto;
 }
 .shipment-truck.delivered {
-  background: #73c5a3;
+  background: #83c573;
 }
 .purchase-context {
   display: flex;
@@ -642,15 +642,15 @@
   align-items: center;
   margin: 0 0 18px;
   padding: 14px 17px;
-  background: #152a34;
-  border: 1px solid #345260;
+  background: #191f2d;
+  border: 1px solid #343e5c;
   border-radius: 7px;
 }
 .purchase-context > span {
   display: flex;
   align-items: center;
   gap: 9px;
-  color: #b5cfdc;
+  color: #daceb7;
   font-size: 11px;
   white-space: nowrap;
 }
@@ -679,10 +679,10 @@
   margin-bottom: 20px;
 }
 .logistics-toolbar > .tabs {
-  border: 1px solid #365665;
+  border: 1px solid #364161;
   border-radius: 6px;
   overflow: hidden;
-  background: #172e3b;
+  background: #1c2233;
 }
 .logistics-toolbar > .tabs button {
   font-size: 11px;
@@ -736,9 +736,9 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #668796;
+  color: #647090;
   font-size: 10px;
-  border-top: 2px solid #2d4958;
+  border-top: 2px solid #2e3853;
   padding-top: 12px;
   position: relative;
 }
@@ -749,14 +749,14 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #2d4958;
+  background: #2e3853;
 }
 .delivery-timeline .done {
-  color: #97cbbd;
-  border-color: #64b9a5;
+  color: #a1cb97;
+  border-color: #b59b68;
 }
 .delivery-timeline .done i {
-  background: #64b9a5;
+  background: #b59b68;
 }
 @media (max-width: 1500px) {
   .commodity-grid {
@@ -818,7 +818,7 @@
   }
   .economic-summary > div {
     flex-basis: 50%;
-    border-bottom: 1px solid #314c59;
+    border-bottom: 1px solid #313a55;
   }
   .commodity-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1026,7 +1026,7 @@
   }
   .analysis-stats > div {
     padding: 14px 11px;
-    border-bottom: 1px solid #335361;
+    border-bottom: 1px solid #333e5c;
   }
   .analysis-stats > div:first-child {
     padding-left: 11px;
@@ -1210,7 +1210,7 @@
   }
   .page-heading > .tabs {
     width: 100%;
-    border: 1px solid #355463;
+    border: 1px solid #35405f;
     border-radius: 5px;
   }
   .page-heading > .tabs button {
@@ -1234,10 +1234,10 @@
   gap: 2px;
   min-height: 62px;
   padding: 7px 4px;
-  border: 1px solid #40545e;
+  border: 1px solid #3f465a;
   border-radius: 8px;
-  background: #13232b;
-  color: #e0e8eb;
+  background: #161a27;
+  color: #eae7e1;
 }
 .compra-dias button b {
   font-size: 13px;
@@ -1278,10 +1278,10 @@
   gap: 10px;
   min-height: 52px;
   padding: 4px 14px 4px 6px;
-  border: 1px solid #40545e;
+  border: 1px solid #3f465a;
   border-radius: 10px;
-  background: #15262e;
-  color: #e0e8eb;
+  background: #171c2a;
+  color: #eae7e1;
   text-align: left;
 }
 .comprar-para button span {
@@ -1319,9 +1319,9 @@
   gap: 12px;
   margin: 4px 0 14px;
   padding: 14px;
-  border: 1px solid #33505c;
+  border: 1px solid #323d58;
   border-radius: 10px;
-  background: #13232b;
+  background: #161a27;
 }
 .carga-rota {
   display: grid;
@@ -1345,7 +1345,7 @@
 .carga-estrada {
   position: relative;
   height: 2px;
-  border-top: 2px dashed #56707b;
+  border-top: 2px dashed #545d76;
 }
 .carga-estrada i {
   position: absolute;
@@ -1382,7 +1382,7 @@
   width: 100%;
   height: 7px;
   border-radius: 4px;
-  background: #0b171d;
+  background: #0e1119;
   overflow: hidden;
 }
 .carga-cheio i {
@@ -1395,7 +1395,7 @@
   background: var(--gold);
 }
 .carga-cheio i.pouco {
-  background: #d4766b;
+  background: #e46b5b;
 }
 .carga-caminhao figcaption {
   font-size: 10.5px;
@@ -1417,7 +1417,7 @@
 }
 .carga-valor strong {
   font-size: 17px;
-  color: #e7edef;
+  color: #efece7;
   font-variant-numeric: tabular-nums;
 }
 .carga-dica {
@@ -1535,11 +1535,11 @@
   font-weight: 650;
 }
 .carga-veredito.leve {
-  color: #84d6ab;
-  background: #123a2d;
+  color: #94d684;
+  background: #1a3a12;
 }
 .carga-veredito.medio {
-  color: #eac079;
+  color: #f1cb72;
   background: #403827;
 }
 .carga-veredito.pesado {
@@ -1563,7 +1563,7 @@
   margin: 0;
   padding: 9px 12px;
   border-radius: 6px;
-  background: #0f1d24;
+  background: #121520;
   font-size: 12.5px;
 }
 .carga-traducao b {
@@ -1582,10 +1582,10 @@
   gap: 1px;
   padding: 8px 10px;
   border-radius: 6px;
-  background: #0f1d24;
+  background: #121520;
 }
 .carga-comparar > div.melhor {
-  box-shadow: inset 0 0 0 1px #2a7358;
+  box-shadow: inset 0 0 0 1px #39732a;
 }
 .carga-comparar b {
   font-size: 16px;
@@ -1633,9 +1633,9 @@
   flex-direction: column;
   gap: 10px;
   padding: 16px;
-  border: 1px solid #304955;
+  border: 1px solid #2f3952;
   border-radius: 12px;
-  background: linear-gradient(180deg, #1c3039 0, #15262e 120px);
+  background: linear-gradient(180deg, #1d2435 0, #171c2a 120px);
   transition:
     transform 0.18s,
     border-color 0.18s;
@@ -1643,7 +1643,7 @@
 }
 .vit-card:hover {
   transform: translateY(-2px);
-  border-color: #5c8190;
+  border-color: #5b678a;
 }
 .vit-card.on {
   border-color: var(--gold);
@@ -1662,7 +1662,7 @@
   width: 110px;
   height: 22px;
   border-radius: 50%;
-  background: radial-gradient(closest-side, #0b171d 0, transparent 100%);
+  background: radial-gradient(closest-side, #0e1119 0, transparent 100%);
 }
 .vit-arte {
   position: relative;
@@ -1682,7 +1682,7 @@
   height: 72px;
   border-radius: 50%;
   background: #22394366;
-  color: #c9d6db;
+  color: #dad5ca;
 }
 .vit-titulo h3 {
   margin: 0;
@@ -1714,7 +1714,7 @@
 .vit-lucro span {
   display: grid;
   font-size: 12px;
-  color: #c9d6db;
+  color: #dad5ca;
   line-height: 1.25;
 }
 .vit-lucro small {
@@ -1726,7 +1726,7 @@
   display: flex;
   height: 12px;
   border-radius: 6px;
-  background: #0f1d24;
+  background: #121520;
 }
 .vit-barra i {
   display: block;
@@ -1742,7 +1742,7 @@
 }
 .vit-barra .merc,
 .vit-legenda .merc::before {
-  background: #5d7a86;
+  background: #5b6581;
 }
 .vit-barra .frete,
 .vit-legenda .frete::before {
@@ -1758,7 +1758,7 @@
   bottom: -4px;
   width: 2px;
   margin-left: -1px;
-  background: #e7edef;
+  background: #efece7;
 }
 .vit-legenda {
   display: flex;
@@ -1782,7 +1782,7 @@
 .vit-legenda .venda::before {
   width: 2px;
   height: 9px;
-  background: #e7edef;
+  background: #efece7;
   vertical-align: -1px;
 }
 .vit-fornecedor {
@@ -1791,7 +1791,7 @@
   gap: 4px;
   margin: 0;
   font-size: 11.5px;
-  color: #c9d6db;
+  color: #dad5ca;
 }
 .vit-fornecedor em {
   font-style: normal;
@@ -1802,7 +1802,7 @@
 }
 .vit-card.esgotado {
   border-style: dashed;
-  background: #15262e;
+  background: #171c2a;
 }
 .vit-card.esgotado .vit-arte,
 .vit-card.esgotado .vit-icone {
@@ -1838,10 +1838,10 @@
   grid-template-columns: 1fr auto;
   gap: 0 10px;
   padding: 8px 10px;
-  border: 1px solid #40545e;
+  border: 1px solid #3f465a;
   border-radius: 8px;
-  background: #13232b;
-  color: #e0e8eb;
+  background: #161a27;
+  color: #eae7e1;
   text-align: left;
 }
 .compra-fornecedores button small {
@@ -1906,7 +1906,7 @@
   border-radius: 10px;
   background:
     radial-gradient(120% 90% at 50% 120%, #2c4a37 0, transparent 60%),
-    linear-gradient(180deg, #19303a, #13232b);
+    linear-gradient(180deg, #1d2334, #161a27);
 }
 .cena-ponta {
   display: grid;
@@ -1948,10 +1948,10 @@
   width: 100%;
   height: 16px;
   border-radius: 3px;
-  background: #3a4a50;
+  background: #393e4d;
   box-shadow:
-    inset 0 2px 0 #4c5d63,
-    inset 0 -2px 0 #2a363b;
+    inset 0 2px 0 #4a505f,
+    inset 0 -2px 0 #292d39;
 }
 .cena-pista::after {
   content: '';
@@ -1960,7 +1960,7 @@
   right: 4px;
   top: 7px;
   height: 2px;
-  background: repeating-linear-gradient(90deg, #e9dfb8 0 8px, transparent 8px 16px);
+  background: repeating-linear-gradient(90deg, #f7e0aa 0 8px, transparent 8px 16px);
 }
 .cena-caminhao {
   position: absolute;
@@ -1990,7 +1990,7 @@
 }
 .cena-tempo {
   font-size: 11px;
-  color: #c9d6db;
+  color: #dad5ca;
 }
 .carga-numeros {
   display: grid;
@@ -2003,7 +2003,7 @@
   gap: 2px;
   padding: 10px 10px 12px;
   border-radius: 8px;
-  background: #0f1d24;
+  background: #121520;
 }
 .carga-numeros b {
   font-size: 17px;
@@ -2015,10 +2015,10 @@
   color: var(--muted);
 }
 .carga-numeros .leve b {
-  color: #84d6ab;
+  color: #94d684;
 }
 .carga-numeros .medio b {
-  color: #eac079;
+  color: #f1cb72;
 }
 .carga-numeros .pesado b {
   color: #f3a59b;
@@ -2030,7 +2030,7 @@
   bottom: 6px;
   height: 3px;
   border-radius: 2px;
-  background: #23363f;
+  background: #232a3c;
   overflow: hidden;
 }
 .carga-mini i {
@@ -2042,7 +2042,7 @@
   background: var(--gold);
 }
 .carga-mini i.pouco {
-  background: #d4766b;
+  background: #e46b5b;
 }
 .carga-quem {
   margin: -4px 0 0;
@@ -2075,9 +2075,9 @@
   align-content: start;
   margin: 0;
   padding: 14px;
-  border: 1px solid #304955;
+  border: 1px solid #2f3952;
   border-radius: 10px;
-  background: #192c35;
+  background: #1b2131;
 }
 .ed-caixa b {
   font-size: 19px;
@@ -2102,7 +2102,7 @@
   overflow: hidden;
   font-size: 10.5px;
   font-weight: 650;
-  color: #0d181e;
+  color: #0f121b;
 }
 .ed-regra-barra i {
   display: grid;
@@ -2138,16 +2138,16 @@
 .ed-filtros button {
   min-height: 32px;
   padding: 0 12px;
-  border: 1px solid #40545e;
+  border: 1px solid #3f465a;
   border-radius: 99px;
-  background: #13232b;
-  color: #c9d6db;
+  background: #161a27;
+  color: #dad5ca;
   font-size: 12px;
 }
 .ed-filtros button.on {
   border-color: var(--gold);
   background: #2c2a1f;
-  color: #f4e3bd;
+  color: #f8e5b9;
 }
 .business-section .infrastructure-cards {
   display: grid;
@@ -2159,12 +2159,12 @@
   grid-template-columns: 96px minmax(0, 1fr);
   gap: 14px;
   padding: 16px;
-  border: 1px solid #304955;
+  border: 1px solid #2f3952;
   border-radius: 12px;
-  background: linear-gradient(135deg, #1c3039, #15262e 60%);
+  background: linear-gradient(135deg, #1d2435, #171c2a 60%);
 }
 .edital.open {
-  border-color: #6d5a34;
+  border-color: #936b0e;
 }
 .edital.expired {
   opacity: 0.7;
@@ -2187,7 +2187,7 @@
   left: 0;
   padding: 2px 7px;
   border-radius: 6px;
-  background: #0d181e;
+  background: #0f121b;
   color: var(--gold);
   font-size: 11px;
   font-weight: 700;
@@ -2211,19 +2211,19 @@
 }
 .ed-status.open {
   background: #403827;
-  color: #eac079;
+  color: #f1cb72;
 }
 .ed-status.delivering {
-  background: #1b3649;
-  color: #9dcce6;
+  background: #232a3e;
+  color: #9dc6e6;
 }
 .ed-status.completed {
-  background: #123a2d;
-  color: #84d6ab;
+  background: #1a3a12;
+  color: #94d684;
 }
 .ed-status.expired {
-  background: #2b363b;
-  color: #93a8b2;
+  background: #2a2e39;
+  color: #b0a795;
 }
 .ed-relogio {
   display: inline-flex;
@@ -2231,7 +2231,7 @@
   gap: 4px;
   font-size: 11.5px;
   font-variant-numeric: tabular-nums;
-  color: #f4e3bd;
+  color: #f8e5b9;
 }
 .edital h3 {
   margin: 0;
@@ -2269,9 +2269,9 @@
   gap: 4px;
   padding: 3px 8px;
   border-radius: 6px;
-  background: #0f1d24;
+  background: #121520;
   font-size: 11px;
-  color: #c9d6db;
+  color: #dad5ca;
 }
 .ed-entrega {
   display: grid;
@@ -2338,7 +2338,7 @@
   min-width: 180px;
   padding: 12px 16px;
   border-left: 3px solid var(--green);
-  background: #192c35;
+  background: #1b2131;
 }
 .cot-topo > div.alerta {
   border-left-color: var(--gold);
@@ -2359,15 +2359,15 @@
 .cot-grupos button {
   min-height: 32px;
   padding: 0 12px;
-  border: 1px solid #40545e;
+  border: 1px solid #3f465a;
   border-radius: 2px;
-  background: #13232b;
-  color: #c9d6db;
+  background: #161a27;
+  color: #dad5ca;
   font-size: 12px;
 }
 .cot-grupos button.on {
   border-color: var(--gold);
-  color: #f4e3bd;
+  color: #f8e5b9;
   background: #2c2a1f;
 }
 .cot-layout {
@@ -2379,7 +2379,7 @@
 .cot-quadro {
   display: grid;
   gap: 2px;
-  border-top: 2px solid #2a404a;
+  border-top: 2px solid #2a3147;
 }
 .cot-item {
   display: grid;
@@ -2391,7 +2391,7 @@
   min-height: 72px;
   padding: 6px 12px 6px 6px;
   border: 0;
-  border-bottom: 1px solid #22353e;
+  border-bottom: 1px solid #22293b;
   border-radius: 0;
   background: transparent;
   color: inherit;
@@ -2399,7 +2399,7 @@
   transition: background 0.15s;
 }
 .cot-item:hover {
-  background: #192c35;
+  background: #1b2131;
 }
 .cot-item.esgotado {
   background: repeating-linear-gradient(135deg, transparent 0 10px, #d9b16b08 10px 20px);
@@ -2487,7 +2487,7 @@
 }
 .cot-ref {
   font-size: 11.5px;
-  color: #c9d6db;
+  color: #dad5ca;
 }
 .cot-ref::before {
   content: '';
@@ -2509,8 +2509,8 @@
   max-height: calc(100vh - 100px);
   overflow-y: auto;
   padding: 16px;
-  border: 1px solid #304955;
-  background: #15262e;
+  border: 1px solid #2f3952;
+  background: #171c2a;
 }
 .cot-movimento h2 {
   margin: 0;
@@ -2536,7 +2536,7 @@
   gap: 10px;
   align-items: start;
   padding: 9px 0;
-  border-bottom: 1px solid #22353e;
+  border-bottom: 1px solid #22293b;
   font-size: 12px;
   line-height: 1.4;
 }

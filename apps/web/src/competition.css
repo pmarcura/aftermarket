@@ -16,21 +16,21 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1px;
-  background: #35505b;
-  border: 1px solid #35505b;
+  background: #343e57;
+  border: 1px solid #343e57;
   border-radius: 6px;
   overflow: hidden;
   margin: 18px 0 24px;
 }
 .supply-kpis > div {
-  background: #162b35;
+  background: #1a202f;
   padding: 18px;
   min-width: 0;
 }
 .supply-kpis span,
 .supply-kpis small {
   display: block;
-  color: #9ab3c0;
+  color: #beb39c;
   font-size: 11px;
   line-height: 1.5;
 }
@@ -51,10 +51,10 @@
 .supply-rule,
 .supply-advanced,
 .education-panel {
-  border: 1px solid #37545f;
+  border: 1px solid #36405b;
   border-radius: 6px;
   padding: 20px;
-  background: #132630;
+  background: #171c2a;
 }
 .supply-rule > .section-title {
   gap: 12px;
@@ -77,7 +77,7 @@
   padding: 0;
   border: 0;
   background: transparent;
-  accent-color: #dcb575;
+  accent-color: #efc562;
   box-shadow: none;
 }
 .supply-rule-summary,
@@ -86,19 +86,19 @@
   gap: 20px;
   flex-wrap: wrap;
   padding: 15px 0;
-  color: #9db5c0;
+  color: #beb49f;
   font-size: 11px;
 }
 .supply-rule-summary b,
 .order-numbers b {
   display: block;
-  color: #e2edf1;
+  color: #f0ece3;
   font-variant-numeric: tabular-nums;
   font-size: 13px;
   margin-top: 5px;
 }
 .supply-simulation {
-  border-top: 1px solid #36505d;
+  border-top: 1px solid #353f59;
   padding-top: 22px;
 }
 .supply-simulation > .select-wrap {
@@ -114,9 +114,9 @@
 }
 .commercial-order {
   padding: 20px;
-  border: 1px solid #36505f;
+  border: 1px solid #353f5b;
   border-radius: 6px;
-  background: #142831;
+  background: #181d2b;
 }
 .commercial-order > .section-title {
   align-items: flex-start;
@@ -127,16 +127,16 @@
 }
 .commercial-order .block {
   margin-top: 7px;
-  color: #9ab2bf;
+  color: #bdb29c;
   line-height: 1.5;
 }
 .commercial-order details {
-  border-top: 1px solid #36515f;
+  border-top: 1px solid #353f5b;
   margin-top: 18px;
   padding-top: 15px;
 }
 .commercial-order summary {
-  color: #dcb575;
+  color: #efc562;
   cursor: pointer;
   padding: 6px 0;
 }
@@ -157,18 +157,18 @@
   display: flex;
   flex-direction: column;
   gap: 7px;
-  border-left: 3px solid #dcb575;
+  border-left: 3px solid #efc562;
   padding: 10px 15px;
-  background: #122630;
+  background: #171c29;
 }
 .treasury-states small {
-  color: #99b4c1;
+  color: #bfb39b;
   font-size: 10px;
 }
 .bot-event {
   display: flex;
   gap: 12px;
-  border-bottom: 1px solid #304a55;
+  border-bottom: 1px solid #2f3952;
   padding: 14px 0;
   align-items: flex-start;
 }
@@ -176,10 +176,10 @@
   margin: 7px 0;
   font-size: 12px;
   line-height: 1.5;
-  color: #bfd1d9;
+  color: #d8d0c0;
 }
 .bot-event small {
-  color: #87a8b8;
+  color: #b6a789;
   font-size: 10px;
 }
 .bot-event strong {

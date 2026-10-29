@@ -1,13 +1,13 @@
 :root {
-  --chart-ink: #dce8ee;
-  --chart-muted: #adc4d0;
+  --chart-ink: #ede8dd;
+  --chart-muted: #cec4af;
 }
 .chart-frame {
   min-width: 0;
   width: 100%;
 }
 .chart-frame:fullscreen {
-  background: #142732;
+  background: #181d2c;
   padding: 24px;
   overflow: auto;
 }
@@ -15,10 +15,10 @@
   height: calc(100vh - 180px) !important;
 }
 .chart-tools {
-  border-top: 1px solid #36515f;
+  border-top: 1px solid #353f5b;
   margin-top: 10px;
   padding-top: 10px;
-  color: #b8cfda;
+  color: #d8ceba;
 }
 .chart-tools summary {
   cursor: pointer;
@@ -45,14 +45,14 @@
 .chart-data caption {
   text-align: left;
   padding: 12px;
-  color: #dce8ee;
+  color: #ede8dd;
   font-size: 13px;
 }
 .chart-data thead {
   position: sticky;
   top: 0;
   z-index: 1;
-  background: #17303c;
+  background: #1d2334;
 }
 .chart-data td:not(:first-child),
 .chart-data th:not(:first-child) {
@@ -64,7 +64,7 @@
   min-width: 0;
 }
 .analysis-caption {
-  color: #b4cbd7;
+  color: #d5cbb6;
   font-size: 12px;
   line-height: 1.6;
 }
@@ -74,12 +74,12 @@
   gap: 10px;
   flex-wrap: wrap;
   padding: 14px 18px;
-  background: #142e3d;
-  border-bottom: 1px solid #3c5c6b;
+  background: #142b3d;
+  border-bottom: 1px solid #3b4767;
   font-size: 13px;
 }
 .road-status strong {
-  color: #8fdbfa;
+  color: #8fccfa;
 }
 .route-steps {
   max-height: 260px;
@@ -93,10 +93,10 @@
   justify-content: space-between;
   gap: 20px;
   padding: 10px 0;
-  border-bottom: 1px solid #34505d;
+  border-bottom: 1px solid #333e59;
 }
 .route-steps span {
-  color: #b3cbd7;
+  color: #d5cab5;
   font-size: 12px;
   white-space: nowrap;
 }
@@ -105,11 +105,11 @@
 }
 .shipment-truck.focused {
   border-color: #ffdb88;
-  outline: 3px solid #183e56;
+  outline: 3px solid #183b56;
   z-index: 20 !important;
 }
 .shipment-truck:focus-visible {
-  outline: 3px solid #ffdf9d;
+  outline: 3px solid #ffe29d;
 }
 .recovery-grid {
   display: grid;
@@ -125,13 +125,13 @@
   margin: 22px 0;
 }
 .opening-steps li {
-  border-bottom: 2px solid #506572;
+  border-bottom: 2px solid #4e576e;
   padding: 12px;
-  color: #b1c5d1;
+  color: #cfc6b3;
 }
 .opening-steps .complete {
-  border-color: #75cfad;
-  color: #c2eedc;
+  border-color: #87cf75;
+  color: #cbedc3;
 }
 .recovery-actions {
   display: flex;
@@ -184,14 +184,14 @@
 }
 .page-body .muted,
 .panel-content .muted {
-  color: #a9c0cd;
+  color: #cbc0ab;
 }
 .fleet-picker {
-  border: 1px solid #466371;
+  border: 1px solid #45506d;
   border-radius: 10px;
   padding: 16px;
   margin: 18px 0;
-  background: #102630;
+  background: #102230;
 }
 .fleet-picker h3,
 .supply-connection h3 {
@@ -210,7 +210,7 @@
   flex-wrap: wrap;
   padding: 12px 0;
   font-size: 12px;
-  color: #b6cbd6;
+  color: #d4cbb8;
 }
 .fleet-search {
   display: flex;
@@ -230,21 +230,21 @@
   padding-right: 5px;
 }
 .fleet-card {
-  border: 1px solid #385360;
+  border: 1px solid #37415c;
   border-radius: 8px;
   padding: 15px;
-  background: #182e39;
+  background: #1c2232;
   margin: 0 0 10px;
 }
 .fleet-card.selected {
-  border-color: #d6af67;
-  background: #203641;
-  box-shadow: inset 3px 0 #d6af67;
+  border-color: #eebe4f;
+  background: #22293c;
+  box-shadow: inset 3px 0 #eebe4f;
 }
 .fleet-card small {
   display: block;
   margin-top: 5px;
-  color: #aec4d0;
+  color: #cec4b0;
   line-height: 1.5;
 }
 .fleet-card-metrics {
@@ -255,7 +255,7 @@
 }
 .fleet-card-metrics span {
   display: block;
-  color: #afc6d2;
+  color: #d0c6b1;
   font-size: 11px;
   margin-bottom: 6px;
 }
@@ -265,24 +265,24 @@
 }
 .fleet-card details {
   margin-top: 12px;
-  border-top: 1px solid #385360;
+  border-top: 1px solid #37415c;
   padding-top: 12px;
 }
 .fleet-warning {
   padding: 12px 14px;
-  background: #493b23;
+  background: #62480a;
   border: 1px solid #8b7044;
   border-radius: 6px;
-  color: #f8d798;
+  color: #f8db98;
   line-height: 1.6;
   font-size: 12px;
 }
 .fleet-empty {
   padding: 16px;
-  background: #132a35;
-  border: 1px dashed #526b78;
+  background: #191e2d;
+  border: 1px dashed #505a73;
   border-radius: 8px;
-  color: #b4cad5;
+  color: #d3c9b6;
 }
 .transfer-modes {
   margin-bottom: 20px;
@@ -294,15 +294,15 @@
   justify-content: space-between;
   align-items: center;
   padding: 16px;
-  border: 1px solid #486574;
+  border: 1px solid #47526f;
   border-radius: 8px;
-  background: #19313d;
+  background: #1e2436;
 }
 .supply-connection {
   padding: 18px;
   margin: 16px 0;
-  background: #102630;
-  border: 1px solid #476776;
+  background: #102230;
+  border: 1px solid #465271;
   border-radius: 10px;
 }
 .connection-flow {
@@ -322,7 +322,7 @@
   flex-wrap: wrap;
   gap: 10px;
   padding: 14px 0;
-  color: #d3e1e8;
+  color: #e7e1d4;
   line-height: 1.6;
 }
 .connection-fields {
@@ -367,7 +367,7 @@
   justify-content: flex-start;
   text-align: left;
   gap: 12px;
-  border-bottom: 1px solid #385360;
+  border-bottom: 1px solid #37415c;
   border-radius: 0;
   padding: 14px 6px;
 }
@@ -376,14 +376,14 @@
 }
 .notification-content small {
   display: block;
-  color: #b2c8d4;
+  color: #d2c8b4;
   margin-top: 5px;
   font-size: 11px;
   line-height: 1.5;
 }
 .notification-section {
   padding: 14px 4px 8px;
-  border-top: 1px solid #385360;
+  border-top: 1px solid #37415c;
 }
 .form-modal[open] {
   display: flex;
@@ -478,7 +478,7 @@
 }
 .page-body .chart-caption,
 .page-body .formula-note {
-  color: #b3cbd7;
+  color: #d5cab5;
   line-height: 1.65;
 }
 @media (max-width: 650px) {

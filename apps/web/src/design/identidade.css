@@ -1,22 +1,59 @@
 /*
- * Identidade do Aftermarket. Carregada depois de todo o resto: vale para o jogo inteiro.
- * Uma família (Archivo) com duas vozes: expandida e pesada para títulos e números que importam,
- * normal para leitura. Selos têm o quadradinho de pixel no lugar da pílula; divisores lembram estrada.
+ * Identidade do Aftermarket: jogo de gestão com alma de pixel art.
+ * Geist Pixel Square dá voz a títulos, números, botões e navegação; Archivo fica com o texto corrido.
+ * Molduras de cantos retos, borda de 2 px e sombra dura, como as janelas de um jogo; botões com
+ * chanfro de luz e sombra que afundam ao clicar; barras em blocos; selos com quadradinho de pixel.
  */
+@font-face {
+  font-family: 'Geist Pixel Square';
+  src: url('../assets/fonts/GeistPixel-Square.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
 :root {
+  --pixel: 'Geist Pixel Square', 'Archivo Variable', monospace;
   --fonte: 'Archivo Variable', Archivo, 'Segoe UI', system-ui, sans-serif;
-  --largo: 118%;
-  --estrada: repeating-linear-gradient(90deg, #e9dfb8 0 10px, transparent 10px 18px);
-  /* chão das categorias, o mesmo das peças em pixel art */
-  --terra-varejo: #c96a43;
-  --terra-industria: #7f8f9a;
-  --terra-lavoura: #6f9e5c;
-  --terra-mina: #a7774a;
+  /* paleta tirada das peças em pixel art */
+  --noite: #10141c;
+  --chapa: #1a202c;
+  --chapa-2: #222a38;
+  --chapa-3: #2c3546;
+  --borda: #374256;
+  --sombra: #07090e;
+  --creme: #f3e7cc;
+  --apagado: #a49c8b;
+  --ouro: #f2bd3c;
+  --ouro-claro: #ffe08a;
+  --ouro-escuro: #a8740f;
+  --folha: #6cc152;
+  --brasa: #e85a43;
+  --ceu: #5aaee6;
+  --estrada: repeating-linear-gradient(90deg, #e9dfb8 0 8px, transparent 8px 16px);
+  --terra-varejo: #d0682f;
+  --terra-industria: #7f8fa6;
+  --terra-lavoura: #5f9e43;
+  --terra-mina: #a7714a;
   --terra-armazem: #9c7fa6;
-  --terra-logistica: #4f8db3;
+  --terra-logistica: #3f7fc0;
+  /* variáveis antigas apontam para a paleta nova */
+  --base: var(--noite);
+  --panel: var(--chapa);
+  --panel-deep: #161b26;
+  --line: var(--borda);
+  --muted: var(--apagado);
+  --gold: var(--ouro);
+  --green: var(--folha);
+  --red: #ef7a66;
+  --blue: var(--ceu);
+  color: var(--creme);
+  background: var(--noite);
   font-family: var(--fonte);
   font-stretch: 100%;
   font-variant-numeric: tabular-nums;
+}
+body {
+  background: var(--noite);
 }
 button,
 input,
@@ -25,62 +62,213 @@ textarea {
   font-family: inherit;
 }
 
-/* Títulos */
+/* Voz pixel: títulos, números que importam, botões e navegação */
 .page-heading h1,
+.panel-heading h2,
 .marca strong,
-.secao-nome {
-  font-stretch: var(--largo);
-  font-weight: 800;
-  letter-spacing: -0.005em;
+.secao-nome,
+.secao-abas button,
+.tabs button,
+.sidebar nav button,
+button.primary,
+button.secondary,
+.stat strong,
+.neg-figuras strong,
+.vit-lucro b,
+.vit-titulo h3,
+.ed-valor b,
+.ed-caixa b,
+.edital h3,
+.carga-cab h3,
+.carga-numeros b,
+.cena-km,
+.carga-valor strong,
+.total-row strong,
+.empate-texto h2,
+.cot-preco b,
+.cot-topo b,
+.cot-movimento h2,
+.prat-resumo b,
+.prat-produto h3,
+.neg-topo h3,
+.loja-cab h1,
+.loja-num b,
+.pr-num b,
+.pr-preco input,
+.pr-produto h3 {
+  font-family: var(--pixel);
+  font-stretch: 100%;
+  letter-spacing: 0;
 }
 .page-heading h1 {
-  font-size: 29px;
-  line-height: 1.1;
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1.05;
 }
-.page-heading p {
-  max-width: 72ch;
+.panel-heading h2 {
+  font-size: 18px;
+  font-weight: 600;
 }
-.panel-heading h2,
-.vit-titulo h3,
-.edital h3,
-.neg-topo h3,
-.carga-cab h3,
-.empate-texto h2 {
-  font-weight: 700;
-  letter-spacing: -0.005em;
-}
-.eyebrow {
-  font-family: inherit;
-  text-transform: none;
-  letter-spacing: 0;
-  font-size: 12px;
-  font-weight: 650;
-  color: var(--gold);
-}
-
-/* Números que importam: largos, como placa de estrada */
 .stat strong,
 .neg-figuras strong,
 .vit-lucro b,
 .ed-valor b,
-.ed-caixa b,
-.carga-numeros b,
-.cena-km,
-.carga-valor strong,
-.total-row strong:last-child,
-.empate-texto h2,
 .cot-preco b,
-.cot-topo b {
-  font-stretch: var(--largo);
-  font-weight: 800;
-  letter-spacing: -0.01em;
+.prat-resumo b,
+.carga-numeros b,
+.empate-texto h2 {
+  font-weight: 600;
+}
+.eyebrow {
+  font-family: var(--pixel);
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ouro);
 }
 
-/* Selos: fundo leve, cantos retos e o quadradinho de pixel na cor do estado */
+/* Molduras */
+.panel,
+.stat,
+.neg-resumo,
+.neg-card,
+.vit-card,
+.edital,
+.ed-caixa > div,
+.ed-regra,
+.carga,
+.empate,
+.cot-movimento,
+.comprar-para button,
+.purchase-summary {
+  border-radius: 0 !important;
+  border: 2px solid var(--borda) !important;
+  box-shadow: 4px 4px 0 var(--sombra);
+}
+.panel .panel,
+.panel .stat,
+.panel .carga {
+  box-shadow: none;
+}
+.panel-heading,
+.page-heading {
+  border-bottom: 2px solid var(--borda);
+}
+
+/* Botões com chanfro */
+button.primary,
+button.secondary {
+  border-radius: 0;
+  font-weight: 600;
+  font-size: 14px;
+  transition: transform 0.06s;
+}
+button.primary {
+  border: 2px solid var(--sombra);
+  background: var(--ouro);
+  color: #1d1406;
+  box-shadow:
+    inset 3px 3px 0 var(--ouro-claro),
+    inset -3px -3px 0 var(--ouro-escuro);
+}
+button.primary:hover:not(:disabled) {
+  background: #ffcb52;
+}
+button.secondary {
+  border: 2px solid var(--sombra);
+  background: var(--chapa-3);
+  color: var(--creme);
+  box-shadow:
+    inset 3px 3px 0 #3d4960,
+    inset -3px -3px 0 #1b2230;
+}
+button.secondary:hover:not(:disabled) {
+  background: #344056;
+}
+button.primary:active:not(:disabled),
+button.secondary:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+button.primary:disabled,
+button.secondary:disabled {
+  filter: saturate(0.3) brightness(0.7);
+}
+
+/* Campos */
+input,
+select,
+textarea {
+  border-radius: 0 !important;
+  border: 2px solid var(--borda) !important;
+  background: #0c1017 !important;
+  color: var(--creme);
+}
+input:focus,
+select:focus {
+  border-color: var(--ouro) !important;
+  outline: none;
+}
+
+/* Navegação */
+.sidebar {
+  background: #0c1017;
+  border-right: 2px solid var(--borda);
+}
+.sidebar nav button {
+  border-radius: 0;
+  font-size: 15px;
+  font-weight: 500;
+  color: #c9bfa9;
+  border-left: 4px solid transparent;
+}
+.sidebar nav button.active {
+  background: var(--chapa-2);
+  color: var(--ouro);
+  border-left-color: var(--ouro);
+}
+.topbar {
+  background: #0c1017;
+  border-bottom: 2px solid var(--borda);
+}
+.tabs button,
+.secao-abas button {
+  font-size: 15px;
+  font-weight: 500;
+}
+.tabs button.active {
+  border-bottom: 4px solid var(--ouro);
+  color: var(--ouro);
+}
+.secao-abas button.on::after {
+  height: 4px;
+  border-radius: 0;
+}
+.secao-nome {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ouro);
+}
+
+/* Barras em blocos */
+.progress,
+.fita-g,
+.empate-medidor {
+  border-radius: 0 !important;
+}
+.progress > i,
+.empate-barra {
+  border-radius: 0 !important;
+  -webkit-mask: repeating-linear-gradient(90deg, #000 0 6px, transparent 6px 8px);
+  mask: repeating-linear-gradient(90deg, #000 0 6px, transparent 6px 8px);
+}
+
+/* Selos: fundo leve, cantos retos e quadradinho de pixel */
 .badge {
   gap: 6px;
   border: 0;
-  border-radius: 2px;
+  border-radius: 0;
   padding: 4px 8px 4px 7px;
   font-size: 11px;
   font-weight: 600;
@@ -94,24 +282,24 @@ textarea {
   background: currentColor;
 }
 .badge.green {
-  background: #62c89e1f;
-  color: #84d6ab;
+  background: #6cc15224;
+  color: #93d97d;
 }
 .badge.gold {
-  background: #d9b16b1f;
-  color: #eac079;
+  background: #f2bd3c24;
+  color: #f7d27a;
 }
 .badge.blue {
-  background: #72b2d11f;
-  color: #9dcce6;
+  background: #5aaee624;
+  color: #9ccdf0;
 }
 .badge.red {
-  background: #ef867a1f;
-  color: #ffa89c;
+  background: #e85a4324;
+  color: #ff9f8f;
 }
 .badge.muted {
-  background: #93a8b21a;
-  color: #c0ced4;
+  background: #a49c8b1f;
+  color: #cfc6b4;
 }
 .ed-status,
 .carga-veredito,
@@ -119,7 +307,7 @@ textarea {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  border-radius: 2px !important;
+  border-radius: 0 !important;
 }
 .ed-status::before,
 .carga-veredito::before,
@@ -144,39 +332,40 @@ textarea {
   display: flex;
   align-items: center;
   gap: 12px;
-  color: #eef3f4;
+  color: var(--creme);
 }
 .marca img {
   width: 52px;
   height: 30px;
   image-rendering: pixelated;
-  filter: drop-shadow(0 2px 1px rgb(0 0 0 / 0.45));
+  filter: drop-shadow(2px 2px 0 var(--sombra));
 }
 .marca strong {
   display: block;
-  font-size: 19px;
+  font-size: 22px;
+  font-weight: 700;
   line-height: 1;
-  letter-spacing: 0.01em;
 }
 .marca small {
   display: block;
   margin-top: 4px;
   font-size: 10.5px;
-  color: #a5b8c1;
-  letter-spacing: 0;
+  color: var(--apagado);
 }
 
-/* Cartões com chão: a base na cor da terra, como as peças */
+/* Cartões com chão na cor da terra, como a base das peças */
 .vit-card,
 .edital,
 .neg-card {
-  box-shadow: inset 0 -3px 0 var(--chao, transparent);
+  box-shadow:
+    inset 0 -4px 0 var(--chao, transparent),
+    4px 4px 0 var(--sombra);
 }
 .vit-card {
   --chao: var(--terra-varejo);
 }
 .edital.open {
-  --chao: #b98b3c;
+  --chao: #c98f1d;
 }
 .edital.delivering {
   --chao: var(--terra-logistica);

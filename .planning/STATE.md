@@ -10,6 +10,12 @@ O jogo roda localmente: mapa real de SP–MG, compra de imóveis, produção, es
 
 ## O que funciona
 
+Tipografia revisada a pedido do Pedro: Geist Pixel Square local em títulos, valores e controles;
+Archivo em textos corridos e legendas pequenas. Indicadores da loja empilhados no celular.
+Build e revisão de dez telas em desktop/celular, incluindo salvar preço pelo teclado em fixture,
+registrados em [TIPOGRAFIA](../docs/design/TIPOGRAFIA.md). O coletor geral do laboratório ainda
+precisa ajustar esperas de títulos e interferência do modal de primeiros passos.
+
 - Mapa, estradas reais (OSRM), caminhões animados sobre a rota.
 - Comprar imóvel, instalar equipamento, contratar equipe, produzir, vender.
 - Pedidos e contrapropostas entre empresas, editais do governo.

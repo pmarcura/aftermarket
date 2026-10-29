@@ -1,16 +1,14 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { ShoppingCart, Sparkles } from 'lucide-react';
-import { useGame, cr, num } from '../../lib/game';
+import { useGame, cr } from '../../lib/game';
 import { Empty } from '../../components/ui';
-import { ProdutoArte } from '../economy/Vitrine';
-import { unidade } from '../economy/Carga';
 import {
   products,
   type Establishment,
   type ProductId,
 } from '../../../../../packages/simulation/src/model';
-import { inventoryQuality } from '../../../../../packages/simulation/src/operations';
 import { mercadoDaCidade } from './precificacao';
+import { LinhaPreco } from './LinhaPreco';
 
 /**
  * A prateleira da loja: cada produto com a régua de preço (custo, concorrência, preço justo e o
@@ -94,183 +92,5 @@ export function Prateleira({ loja }: { loja: Establishment }) {
         venda real.
       </p>
     </div>
-  );
-}
-
-function LinhaPreco({
-  loja,
-  product,
-  m,
-}: {
-  loja: Establishment;
-  product: ProductId;
-  m: ReturnType<typeof mercadoDaCidade>;
-}) {
-  const { run, pending, openMarket } = useGame();
-  const salvo = loja.prices[product] ?? m.justo;
-  const [preco, setPreco] = useState(salvo);
-  useEffect(() => setPreco(salvo), [salvo]);
-  const estoque = loja.inventory[product] ?? 0;
-  const vende = m.vendas(preco);
-  const lucro = m.lucro(preco);
-  const dias = vende > 0.01 ? estoque / vende : Infinity;
-  const menorCidade = m.concorrentes[0]?.preco;
-  // Régua de 50% do custo a 220% do preço justo; preço fora dela fica preso na ponta.
-  const inicio = Math.round(Math.min(m.custo || m.justo, m.justo) * 0.5);
-  const fim = Math.round(m.justo * 2.2);
-  const pos = (v: number) =>
-    `${Math.max(0, Math.min(100, ((v - inicio) / (fim - inicio)) * 100))}%`;
-  const passo = Math.max(1, Math.round(m.justo / 200));
-  // Curva de lucro por dia ao longo da régua.
-  const pontos = Array.from({ length: 60 }, (_, i) => {
-    const v = inicio + ((fim - inicio) * i) / 59;
-    return { v, l: m.lucro(v) };
-  });
-  const topo = Math.max(1, ...pontos.map((p) => p.l));
-  const curva = pontos
-    .map((p, i) => `${(i / 59) * 100},${40 - Math.max(0, p.l / topo) * 36}`)
-    .join(' ');
-  const u1 = unidade(product, 1);
-  const caro = vende < 0.5 && preco > m.justo;
-  const prejuizo = m.custo > 0 && preco < m.custo;
-  return (
-    <article className="prat-item">
-      <div className="prat-produto">
-        <ProdutoArte product={product} escala={1} />
-        <div>
-          <h3>{products[product].name}</h3>
-          <small>
-            {num(estoque)} {unidade(product, estoque)} · qualidade{' '}
-            {num(inventoryQuality(loja, product))}
-          </small>
-          <small>
-            {estoque <= 0
-              ? 'Acabou'
-              : dias === Infinity
-                ? 'Não está vendendo'
-                : `Dura ~${num(Math.min(dias, 999))} dias`}
-          </small>
-          {estoque <= 0 || dias < 2 ? (
-            <button
-              className="text-button"
-              onClick={() => openMarket({ destinationId: loja.id, product })}
-            >
-              <ShoppingCart size={13} /> Repor
-            </button>
-          ) : null}
-        </div>
-      </div>
-      <div className="prat-regua-bloco">
-        <svg
-          className="prat-curva"
-          viewBox="0 0 100 40"
-          preserveAspectRatio="none"
-          aria-hidden="true"
-        >
-          <polyline points={`0,40 ${curva} 100,40`} className="area" />
-          <polyline points={curva} className="linha" />
-        </svg>
-        <div className="prat-regua">
-          {m.custo > 0 && (
-            <span className="marco custo" style={{ left: pos(m.custo) }}>
-              <i />
-            </span>
-          )}
-          {menorCidade !== undefined && (
-            <span className="marco rival" style={{ left: pos(menorCidade) }}>
-              <i />
-            </span>
-          )}
-          <span className="marco justo" style={{ left: pos(m.justo) }}>
-            <i />
-          </span>
-          <span className="marco melhor" style={{ left: pos(m.melhor) }}>
-            <i />
-          </span>
-          <input
-            type="range"
-            min={inicio}
-            max={fim}
-            step={passo}
-            value={Math.min(fim, Math.max(inicio, preco))}
-            onChange={(e) => setPreco(Number(e.target.value))}
-            aria-label={`Preço de ${products[product].name}`}
-          />
-        </div>
-        <p className="prat-legenda">
-          {m.custo > 0 && (
-            <span className="custo">
-              custo <b>{cr(m.custo)}</b>
-            </span>
-          )}
-          {menorCidade !== undefined && (
-            <span className="rival">
-              menor na cidade <b>{cr(menorCidade)}</b>
-            </span>
-          )}
-          <span className="justo">
-            justo <b>{cr(m.justo)}</b>
-          </span>
-          <span className="melhor">
-            mais lucro <b>{cr(m.melhor)}</b>
-          </span>
-        </p>
-        <p className="prat-rivais">
-          {m.concorrentes.length
-            ? `Em ${m.cidade}: ${m.concorrentes
-                .slice(0, 3)
-                .map((c) => `${c.loja.name} ${cr(c.preco)}`)
-                .join(
-                  ' · ',
-                )}${m.concorrentes.length > 3 ? ` e mais ${m.concorrentes.length - 3}` : ''}`
-            : `Nenhuma outra loja vende ${products[product].name} em ${m.cidade}.`}
-          {m.menorDoPais !== undefined && ` Menor preço do mapa: ${cr(m.menorDoPais)}.`}
-        </p>
-      </div>
-      <div className="prat-decisao">
-        <label className="prat-preco">
-          <span>Seu preço</span>
-          <input
-            type="number"
-            min="0.01"
-            step="0.01"
-            value={(preco / 100).toFixed(2)}
-            onChange={(e) => setPreco(Math.max(1, Math.round(Number(e.target.value) * 100)))}
-            aria-label={`Preço de venda de ${products[product].name} em reais`}
-          />
-        </label>
-        <div className="prat-efeito">
-          <div>
-            <b>~{num(vende)}</b>
-            <span>vendidos por dia</span>
-          </div>
-          <div className={lucro >= 0 ? 'bom' : 'ruim'}>
-            <b>{cr(lucro, 0)}</b>
-            <span>de lucro por dia</span>
-          </div>
-        </div>
-        {caro && <p className="prat-aviso">Caro demais: as famílias compram nas outras lojas.</p>}
-        {prejuizo && <p className="prat-aviso">Abaixo do custo: cada {u1} vendido dá prejuízo.</p>}
-        <div className="prat-botoes">
-          {Math.abs(preco - m.melhor) > passo && (
-            <button className="text-button" onClick={() => setPreco(m.melhor)}>
-              Usar {cr(m.melhor)}
-            </button>
-          )}
-          <button
-            className="primary"
-            disabled={pending || preco === salvo}
-            onClick={() =>
-              void run(
-                { type: 'setPrice', establishmentId: loja.id, product, price: preco },
-                `Preço de ${products[product].name} ajustado para ${cr(preco)}.`,
-              )
-            }
-          >
-            {preco === salvo ? 'Preço salvo' : `Salvar ${cr(preco)}`}
-          </button>
-        </div>
-      </div>
-    </article>
   );
 }

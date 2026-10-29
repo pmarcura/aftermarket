@@ -48,6 +48,10 @@ Estados: **Implementado** = demonstrado no laboratório; **Parcial** = há base 
 
 ## Complemento · Economia explicável
 
+Tipografia de UX-03 revisada com Geist Pixel Square local: dez telas em 1440/390 px,
+fonte carregada e fluxo de salvar preço pelo teclado em fixture. Evidências e limites em
+[TIPOGRAFIA](../docs/design/TIPOGRAFIA.md).
+
 | ID     | Requisito                                                               | Estado       | Evidência                                                                                                                    |
 | ------ | ----------------------------------------------------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------- |
 | ECO-08 | Configuração congelada por temporada, sem cotações externas em execução | Implementado | `season.config`, regressão de imutabilidade e ausência de fetch                                                              |

@@ -44,9 +44,9 @@ export function mercadoDaCidade(world: World, loja: Establishment, product: Prod
   };
   const custo = loja.unitCosts[product] ?? 0;
   const lucro = (preco: number) => vendas(preco) * (preco - custo);
-  // Melhor preço: varre de 50% a 200% do preço justo em passos de 1%.
+  // Melhor preço: varre de 50% a 300% do preço justo em passos de 1%.
   let melhor = justo;
-  for (let f = 0.5; f <= 2.0001; f += 0.01) {
+  for (let f = 0.5; f <= 3.0001; f += 0.01) {
     const preco = Math.round(justo * f);
     if (lucro(preco) > lucro(melhor)) melhor = preco;
   }
@@ -62,5 +62,18 @@ export function mercadoDaCidade(world: World, loja: Establishment, product: Prod
       (n, e) => (n === undefined || e.prices[product]! < n ? e.prices[product]! : n),
       undefined,
     );
-  return { cidade, concorrentes, procuraDia, justo, custo, vendas, lucro, melhor, menorDoPais };
+  // No teto da busca, o pico real pode estar ainda acima (concorrência muito cara).
+  const melhorNoTeto = melhor >= Math.round(justo * 2.95);
+  return {
+    cidade,
+    concorrentes,
+    procuraDia,
+    justo,
+    custo,
+    vendas,
+    lucro,
+    melhor,
+    melhorNoTeto,
+    menorDoPais,
+  };
 }

@@ -3,9 +3,13 @@ import { ArrowDownRight, ArrowUpRight, Minus } from 'lucide-react';
 import { useGame, cr, num } from '../../lib/game';
 import { PageHeading } from '../../components/ui';
 import { SecaoAbas } from '../../components/SecaoAbas';
-import { ProductAnalysisModal } from '../../components/ProductAnalysis';
+import { IconePixel } from '../../components/IconePixel';
+import { BotaoProduto } from '../../components/BotaoProduto';
+import { matizDoProduto } from '../../design/arte';
+import { Faisca } from '../mercado/Faisca';
 import { ProdutoArte } from './Vitrine';
 import { unidade } from './Carga';
+import { BusinessIdeas, useNegocios } from './BusinessIdeas';
 import {
   products,
   seasonProducts,
@@ -15,7 +19,7 @@ import {
 } from '../../../../../packages/simulation/src/model';
 import { seasonPrice } from '../../../../../packages/simulation/src/metrics';
 import { GAME_DAY } from '../../../../../packages/simulation/src/operations';
-import '../../economy.css';
+import '../../design/cotacoes.css';
 
 interface Negocio {
   at: number;
@@ -27,7 +31,7 @@ interface Negocio {
 }
 type Historico = Partial<Record<ProductId, { samples: MarketSample[]; trades: Negocio[] }>>;
 
-/** Histórico nacional de todos os produtos, pelo mesmo endereço que a análise de mercadoria usa. */
+/** Histórico nacional de todos os produtos, pelo mesmo endereço que a ficha do produto usa. */
 function useHistorico(ids: ProductId[]) {
   const [h, setH] = useState<Historico>({});
   const chave = ids.join(',');
@@ -67,33 +71,11 @@ function haQuanto(at: number) {
   return `há ${Math.round(horas / 24)} d`;
 }
 
-function Faisca({ valores }: { valores: number[] }) {
-  if (valores.length < 2) return <svg className="cot-faisca" aria-hidden="true" />;
-  const min = Math.min(...valores),
-    max = Math.max(...valores),
-    w = 120,
-    h = 34;
-  const pts = valores.map(
-    (v, i) =>
-      `${((i / (valores.length - 1)) * w).toFixed(1)},${(h - 3 - ((v - min) / Math.max(1, max - min)) * (h - 6)).toFixed(1)}`,
-  );
-  const sobe = valores[valores.length - 1] >= valores[0];
-  return (
-    <svg className="cot-faisca" viewBox={`0 0 ${w} ${h}`} aria-hidden="true">
-      <polyline
-        points={`0,${h} ${pts.join(' ')} ${w},${h}`}
-        className={sobe ? 'area sobe' : 'area desce'}
-      />
-      <polyline points={pts.join(' ')} className={sobe ? 'linha sobe' : 'linha desce'} />
-    </svg>
-  );
-}
-
 export function CotacoesPage() {
-  const { world } = useGame();
+  const { world, openMarket, navigate } = useGame();
   const ids = seasonProducts(world);
   const historico = useHistorico(ids);
-  const [analise, setAnalise] = useState<ProductId>();
+  const negocios = useNegocios();
   const [grupo, setGrupo] = useState('');
   const nome = (id: string) => world.companies.find((c) => c.id === id)?.name ?? 'Empresa';
 
@@ -102,16 +84,15 @@ export function CotacoesPage() {
     const ultima = amostras[amostras.length - 1];
     const ofertas = world.offers.filter((o) => {
       const e = world.establishments.find((x) => x.id === o.establishmentId);
-      return o.product === id && (e?.inventory[id] ?? 0) > 0;
+      return o.product === id && e?.enabled && (e.inventory[id] ?? 0) > 0;
     });
     const menor = ofertas.reduce<number | undefined>(
       (n, o) => (n === undefined || o.price < n ? o.price : n),
       undefined,
     );
     const preco = ultima?.price ?? menor;
-    const umDia = amostras.filter((s) => s.at <= Date.now() - GAME_DAY).pop() ?? amostras[0];
+    const umDia = amostras.filter((s) => s.at <= world.updatedAt - GAME_DAY).pop();
     const variacao = preco && umDia?.price ? preco / umDia.price - 1 : 0;
-    const referencia = seasonPrice(world, id);
     const estoque = ofertas.reduce((n, o) => {
       const e = world.establishments.find((x) => x.id === o.establishmentId);
       return n + (e?.inventory[id] ?? 0);
@@ -120,10 +101,12 @@ export function CotacoesPage() {
       id,
       preco,
       variacao,
-      referencia,
+      temComparacao: Boolean(preco && umDia?.price),
+      referencia: seasonPrice(world, id),
       estoque,
       vendedores: ofertas.length,
       faisca: amostras.slice(-40).map((s) => s.price!),
+      ideia: negocios.itens.find((i) => i.saidas.includes(id)),
     };
   });
   const grupos = [...new Set(ids.map((id) => products[id].category))];
@@ -131,7 +114,7 @@ export function CotacoesPage() {
 
   // Movimento: negócios entre empresas e ações dos bots, do mais recente para trás.
   const movimento = useMemo(() => {
-    const negocios = Object.values(historico)
+    const trocas = Object.values(historico)
       .flatMap((h) => h?.trades ?? [])
       .map((t) => ({
         at: t.at,
@@ -149,12 +132,12 @@ export function CotacoesPage() {
       texto: a.text.charAt(0).toLowerCase() + a.text.slice(1),
       valor: undefined as number | undefined,
     }));
-    return [...negocios, ...acoes].sort((a, b) => b.at - a.at).slice(0, 40);
+    return [...trocas, ...acoes].sort((a, b) => b.at - a.at).slice(0, 30);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [historico, world.revision]);
 
   const faltando = linhas.filter((l) => l.vendedores === 0).length;
-  const maisCaro = [...linhas].filter((l) => l.preco).sort((a, b) => b.variacao - a.variacao)[0];
+  const maisAlta = [...linhas].filter((l) => l.preco).sort((a, b) => b.variacao - a.variacao)[0];
   return (
     <>
       <SecaoAbas secao="comercio" />
@@ -162,104 +145,142 @@ export function CotacoesPage() {
         title="Cotações"
         description="O preço de tudo o que se negocia agora, como ele andou e o que as outras empresas estão fazendo."
       />
-      <div className="page-body">
-        <div className="cot-topo">
-          <div>
-            <b>{ids.length - faltando}</b>
-            <span>produtos com quem venda</span>
-          </div>
-          <div className={faltando ? 'alerta' : ''}>
-            <b>{faltando}</b>
+      <div className="page-body cotacoes">
+        <div className="cot-resumo">
+          <div className="cot-fato">
+            <IconePixel nome="grafico" tamanho={40} />
             <span>
-              {faltando === 1 ? 'esgotado em todo o mercado' : 'esgotados em todo o mercado'}
+              <b>{ids.length - faltando}</b>
+              <small>produtos com quem venda</small>
             </span>
           </div>
-          {maisCaro && maisCaro.variacao > 0.005 && (
-            <div>
-              <b>
-                {products[maisCaro.id].name.split(' ')[0]} +{num(maisCaro.variacao * 100)}%
-              </b>
-              <span>maior alta em um dia de jogo</span>
+          <div className={`cot-fato ${faltando ? 'alerta' : ''}`}>
+            <IconePixel nome="alerta" tamanho={40} />
+            <span>
+              <b>{faltando}</b>
+              <small>{faltando === 1 ? 'esgotado em todo o mercado' : 'esgotados em todo o mercado'}</small>
+            </span>
+          </div>
+          {maisAlta && maisAlta.variacao > 0.005 && (
+            <div className="cot-fato">
+              <IconePixel nome="moeda" tamanho={40} />
+              <span>
+                <b>
+                  {products[maisAlta.id].name.split(' ')[0]} +{num(maisAlta.variacao * 100)}%
+                </b>
+                <small>maior alta em um dia de jogo</small>
+              </span>
             </div>
           )}
         </div>
-        <div className="cot-grupos" role="group" aria-label="Categoria">
+
+        <div className="cot-grupos" role="radiogroup" aria-label="Categoria">
           {['', ...grupos].map((g) => (
             <button
               key={g || 'todos'}
+              role="radio"
+              aria-checked={grupo === g}
               className={grupo === g ? 'on' : ''}
-              aria-pressed={grupo === g}
               onClick={() => setGrupo(g)}
             >
               {g || 'Tudo'}
             </button>
           ))}
         </div>
+
         <div className="cot-layout">
-          <section className="cot-quadro" aria-label="Quadro de cotações">
+          <ul className="cot-quadro" aria-label="Quadro de cotações">
             {visiveis.map((l) => {
               const u = products[l.id].unit;
               const ref = l.preco ? l.preco / l.referencia - 1 : 0;
+              const sobe = l.variacao > 0.005;
+              const desce = l.variacao < -0.005;
               return (
-                <button
-                  key={l.id}
-                  className={`cot-item ${l.vendedores ? '' : 'esgotado'}`}
-                  onClick={() => setAnalise(l.id)}
-                  aria-label={`${products[l.id].name}: ver preço ao longo do tempo`}
-                >
-                  <span className="cot-arte">
-                    <ProdutoArte product={l.id} escala={1} />
-                  </span>
-                  <span className="cot-nome">
-                    <b>{products[l.id].name}</b>
-                    <small>{products[l.id].category}</small>
-                  </span>
-                  <span className="cot-preco">
-                    <b>{l.preco ? cr(l.preco) : '—'}</b>
-                    <small>por {u}</small>
-                  </span>
-                  <span
-                    className={`cot-var ${l.variacao > 0.005 ? 'sobe' : l.variacao < -0.005 ? 'desce' : ''}`}
+                <li key={l.id}>
+                  <article
+                    className={`cot-card ${l.vendedores ? '' : 'esgotado'}`}
+                    style={{ ['--h' as string]: matizDoProduto(l.id) }}
                   >
-                    {l.variacao > 0.005 ? (
-                      <ArrowUpRight size={14} aria-hidden="true" />
-                    ) : l.variacao < -0.005 ? (
-                      <ArrowDownRight size={14} aria-hidden="true" />
-                    ) : (
-                      <Minus size={14} aria-hidden="true" />
-                    )}
-                    {num(Math.abs(l.variacao) * 100, 1)}%
-                  </span>
-                  <Faisca valores={l.faisca} />
-                  <span className="cot-oferta">
-                    {l.vendedores ? (
-                      <>
-                        <b>
-                          {num(l.estoque)} {u}
-                        </b>
-                        <small>
-                          à venda por {l.vendedores} {l.vendedores === 1 ? 'empresa' : 'empresas'}
+                    <header className="cot-topo">
+                      <BotaoProduto product={l.id} className="cot-arte">
+                        <ProdutoArte product={l.id} escala={2} />
+                      </BotaoProduto>
+                      <div className="cot-ident">
+                        <h3>
+                          <BotaoProduto product={l.id}>{products[l.id].name}</BotaoProduto>
+                        </h3>
+                        <small>{products[l.id].category}</small>
+                        {l.vendedores === 0 && (
+                          <span className="cot-estado tom-brasa">Esgotado no mercado</span>
+                        )}
+                      </div>
+                    </header>
+                    <div className="cot-corpo">
+                      <div className="cot-preco">
+                        <b>{l.preco ? cr(l.preco) : '—'}</b>
+                        <span>por {unidade(l.id, 1)}</span>
+                        <span className={`cot-var ${sobe ? 'sobe' : desce ? 'desce' : ''}`}>
+                          {sobe ? (
+                            <ArrowUpRight size={16} aria-hidden="true" />
+                          ) : desce ? (
+                            <ArrowDownRight size={16} aria-hidden="true" />
+                          ) : (
+                            <Minus size={16} aria-hidden="true" />
+                          )}
+                          {l.temComparacao ? `${sobe ? 'Subiu' : desce ? 'Caiu' : 'Estável'} ${num(Math.abs(l.variacao) * 100, 1)}%` : 'Sem histórico de um dia'}
+                        </span>
+                      </div>
+                      <Faisca valores={l.faisca} sobe={l.variacao >= 0} />
+                      <ul className="cot-fatos">
+                        <li>
+                          <IconePixel nome="caixa" tamanho={22} />
+                          {l.vendedores ? (
+                            <span>
+                              <b>
+                                {num(l.estoque)} {u}
+                              </b>{' '}
+                              à venda por {l.vendedores} {l.vendedores === 1 ? 'empresa' : 'empresas'}
+                            </span>
+                          ) : (
+                            <span>Ninguém vende agora</span>
+                          )}
+                        </li>
+                        <li>
+                          <IconePixel nome="justo" tamanho={22} />
+                          <span>
+                            {!l.preco ? 'Sem preço observado' : Math.abs(ref) < 0.03
+                              ? 'No preço justo'
+                              : `${num(Math.abs(ref) * 100)}% ${ref > 0 ? 'acima' : 'abaixo'} do preço justo`}
+                          </span>
+                        </li>
+                      </ul>
+                      {l.vendedores === 0 && l.ideia ? (
+                        <button className="primary cot-acao" onClick={() => navigate('opportunities')}>
+                          <IconePixel nome="fabrica" tamanho={24} /> Falta no mercado: abrir negócio
+                        </button>
+                      ) : (
+                        <button
+                          className="secondary cot-acao"
+                          disabled={!l.vendedores}
+                          onClick={() => openMarket({ product: l.id })}
+                        >
+                          <IconePixel nome="caminhao" tamanho={24} /> Comprar
+                        </button>
+                      )}
+                      {l.vendedores === 0 && l.ideia && (
+                        <small className="cot-ideia">
+                          Rende {cr(l.ideia.line.profit, 0)} por dia e se paga em {num(l.ideia.retorno)} dias.
                         </small>
-                      </>
-                    ) : (
-                      <b className="cot-falta">Esgotado</b>
-                    )}
-                  </span>
-                  <span
-                    className={`cot-ref ${Math.abs(ref) < 0.03 ? '' : ref > 0 ? 'acima' : 'abaixo'}`}
-                  >
-                    {Math.abs(ref) < 0.03
-                      ? 'no preço justo'
-                      : `${num(Math.abs(ref) * 100)}% ${ref > 0 ? 'acima' : 'abaixo'} do justo`}
-                  </span>
-                </button>
+                      )}
+                    </div>
+                  </article>
+                </li>
               );
             })}
-          </section>
+          </ul>
           <aside className="cot-movimento" aria-label="Movimento do mercado">
             <h2>Movimento do mercado</h2>
             <p>O que as outras empresas acabaram de fazer.</p>
-            <hr className="divisor-estrada" />
             <ol>
               {movimento.map((m, i) => (
                 <li key={i} className={`mov-${m.tipo}`}>
@@ -279,14 +300,23 @@ export function CotacoesPage() {
                   <small>{haQuanto(m.at)}</small>
                 </li>
               ))}
-              {!movimento.length && (
-                <li className="mov-vazio">Ainda nada aconteceu neste mundo.</li>
-              )}
+              {!movimento.length && <li className="mov-vazio">Ainda nada aconteceu neste mundo.</li>}
             </ol>
           </aside>
         </div>
+
+        {negocios.itens.some((i) => i.falta) && (
+          <section className="cot-ideias" aria-labelledby="cot-ideias">
+            <div className="cot-ideias-titulo">
+              <h2 id="cot-ideias">Onde falta, dá para ganhar</h2>
+              <button className="text-button" onClick={() => navigate('opportunities')}>
+                Ver todos os negócios para abrir
+              </button>
+            </div>
+            <BusinessIdeas limite={3} filtro="falta" />
+          </section>
+        )}
       </div>
-      {analise && <ProductAnalysisModal product={analise} onClose={() => setAnalise(undefined)} />}
     </>
   );
 }

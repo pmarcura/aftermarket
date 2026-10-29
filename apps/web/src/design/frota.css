@@ -1,0 +1,130 @@
+/* Complemento da gaveta comum; regras do recibo restritas à compra de caminhão. */
+.fro-modelos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.fro-modelos button {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-width: 0;
+  min-height: 150px;
+  padding: 16px;
+  border: 2px solid var(--borda-forte);
+  background: var(--chapa);
+  box-shadow: 4px 4px 0 var(--sombra);
+  color: var(--creme);
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  font: 600 14px/1.5 var(--fonte);
+  cursor: pointer;
+}
+.fro-modelos strong {
+  font: 400 22px/1.3 var(--pixel);
+}
+.fro-modelos span {
+  color: var(--ceu);
+}
+.fro-modelos small,
+.fro-nota {
+  color: var(--apagado);
+  font: 600 13px/1.5 var(--fonte);
+}
+.fro-modelos button.on {
+  border-color: var(--lavoura);
+  background: color-mix(in srgb, var(--lavoura) 12%, var(--chapa));
+  box-shadow: 4px 4px 0 var(--lavoura-escura);
+}
+.fro-modelos button.on strong {
+  color: var(--lavoura);
+}
+.fro-modelos button:focus-visible {
+  outline: 3px solid var(--lavoura);
+  outline-offset: 3px;
+}
+.fro-nota {
+  margin: 0;
+  padding: 12px 14px;
+  border-left: 3px solid var(--ceu);
+  background: var(--chapa);
+}
+.gaveta[aria-label='Comprar caminhão'] .gaveta-painel {
+  scroll-padding-block: 20px 180px;
+}
+.gaveta[aria-label='Comprar caminhão'] :is(.gaveta-cab, .gaveta-bloco, .gaveta-rodape) {
+  flex-shrink: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.gaveta[aria-label='Comprar caminhão'] .gaveta-opcao {
+  grid-template-columns: minmax(0, 1fr);
+  font: 600 14px/1.5 var(--fonte);
+}
+.gaveta[aria-label='Comprar caminhão'] .gaveta-opcao > * {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.gaveta[aria-label='Comprar caminhão'] .gaveta-preco {
+  grid-column: 1;
+  grid-row: auto;
+  justify-self: start;
+  justify-items: start;
+  grid-template-columns: auto minmax(0, 1fr);
+  margin-block: 6px;
+}
+.gaveta[aria-label='Comprar caminhão']
+  :is(.gaveta-preco small, .gaveta-conta span, .gaveta-conta small) {
+  font: 600 13px/1.5 var(--fonte);
+}
+.gaveta[aria-label='Comprar caminhão'] .gaveta-selos .sem {
+  background: var(--noite);
+  color: var(--brasa);
+}
+.gaveta[aria-label='Comprar caminhão'] button:disabled {
+  opacity: 1;
+  color: var(--apagado);
+  background: var(--chapa);
+  border-color: var(--borda);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+.gaveta[aria-label='Comprar caminhão'] button:focus-visible {
+  outline: 3px solid var(--lavoura);
+  outline-offset: 3px;
+}
+.gaveta[aria-label='Comprar caminhão'] .gaveta-rodape {
+  grid-template-columns: minmax(0, 1fr);
+  z-index: 1;
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+}
+.gaveta[aria-label='Comprar caminhão'] .gaveta-despachar {
+  width: 100%;
+  white-space: normal;
+  font: 600 16px/1.4 var(--fonte);
+}
+.gaveta[aria-label='Comprar caminhão'] .gaveta-fechar {
+  width: 44px;
+  height: 44px;
+}
+@media (hover: hover) {
+  .fro-modelos button:not(:disabled):hover {
+    border-color: var(--lavoura);
+  }
+}
+@media (max-width: 380px) {
+  .fro-modelos {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .fro-modelos button {
+    min-height: 0;
+  }
+}
+/* Em janela baixa ou com zoom, o recibo segue no fluxo e não encobre as escolhas. */
+@media (max-height: 600px) {
+  .gaveta[aria-label='Comprar caminhão'] .gaveta-rodape {
+    position: static;
+  }
+}

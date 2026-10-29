@@ -1,265 +1,183 @@
-import { useState } from 'react';
-import {
-  Search,
-  SlidersHorizontal,
-  Plus,
-  ChevronRight,
-  Map,
-  TriangleAlert,
-  LayoutGrid,
-  List,
-} from 'lucide-react';
-import { useGame, CategoryIcon, cr, num } from '../lib/game';
-import { PageHeading, Panel, Badge, Select, Rows, Empty } from '../components/ui';
+import { useMemo, useState } from 'react';
+import { Plus, Search } from 'lucide-react';
+import { useGame, cr, num } from '../lib/game';
+import { PageHeading } from '../components/ui';
 import { SecaoAbas } from '../components/SecaoAbas';
 import { PixelArt } from '../components/PixelArt';
-import { WorldMap } from '../components/WorldMap';
+import { IconePixel } from '../components/IconePixel';
+import { BarrasPixel } from '../components/BarrasPixel';
 import { categoryInfo } from '../../../../packages/simulation/src/model';
-import { Orders } from '../features/business/Orders';
 import { SupplyNetwork } from '../features/business/SupplyNetwork';
-import { BusinessCard, ResultadoPorUnidade, estadoDe } from '../features/business/BusinessCards';
-import '../negocios.css';
+import { BusinessCard, urgenciaDe } from '../features/business/BusinessCards';
+import { usePendencias } from '../features/inicio/pendencias';
+import { comecoDoDia, useResumoDoCaixa } from '../features/inicio/tempo';
+import '../design/negocios-novo.css';
 
-type Visao = 'cards' | 'lista';
-const guardada = (): Visao =>
-  localStorage.getItem('aftermarket.businessesView') === 'lista' ? 'lista' : 'cards';
+/** Busca e filtro só aparecem a partir deste número de negócios: com poucos, atrapalham. */
+const MUITOS = 8;
 
 export function BusinessesPage() {
-  const { world, actor, navigate, openBusiness } = useGame();
-  const [search, setSearch] = useState(''),
-    [showFilter, setShowFilter] = useState(false),
-    [category, setCategory] = useState('all'),
-    [visao, setVisao] = useState<Visao>(guardada);
-  const escolher = (v: Visao) => {
-    setVisao(v);
-    localStorage.setItem('aftermarket.businessesView', v);
-  };
-  const mine = world.establishments.filter((e) => e.companyId === actor),
-    visible = mine.filter(
+  const { world, actor, navigate } = useGame();
+  const [busca, setBusca] = useState(''),
+    [tipo, setTipo] = useState('all');
+  const pendencias = usePendencias();
+  const { vendasHoje, porNegocioHoje } = useResumoDoCaixa(comecoDoDia(world));
+  const meus = world.establishments.filter((e) => e.companyId === actor);
+  const pedidosEsperando = world.orders.filter(
+    (o) => o.status === 'pending' && (o.buyerId === actor || o.sellerId === actor),
+  ).length;
+
+  const alertaDe = useMemo(() => {
+    const m = new Map<string, (typeof pendencias)[number]>();
+    for (const p of pendencias) if (p.negocioId && !m.has(p.negocioId)) m.set(p.negocioId, p);
+    return m;
+  }, [pendencias]);
+
+  const ordenados = [...meus]
+    .filter(
       (e) =>
-        e.name.toLowerCase().includes(search.toLowerCase()) &&
-        (category === 'all' || e.category === category),
+        meus.length < MUITOS ||
+        (e.name.toLowerCase().includes(busca.toLowerCase()) && (tipo === 'all' || e.category === tipo)),
+    )
+    .sort(
+      (a, b) =>
+        urgenciaDe(a, alertaDe.get(a.id)) - urgenciaDe(b, alertaDe.get(b.id)) ||
+        (porNegocioHoje.get(b.id) ?? 0) - (porNegocioHoje.get(a.id) ?? 0),
     );
-  const revenue = mine.reduce((n, e) => n + e.revenue, 0),
-    result = revenue - mine.reduce((n, e) => n + e.expenses, 0),
-    pausadas = mine.filter((e) => !e.enabled).length;
-  const countStates = new Set(
-    mine.map((e) => world.properties.find((p) => p.id === e.propertyId)!.state),
-  );
+  const tipos = [...new Set(meus.map((e) => e.category))];
+  const precisam = meus.filter(
+    (e) => alertaDe.has(e.id) || !e.enabled || e.installed === false || e.mothballed,
+  ).length;
+  const rank = [...meus]
+    .map((e) => ({ rotulo: e.name, valor: porNegocioHoje.get(e.id) ?? 0, tom: 'ouro' as const }))
+    .filter((i) => i.valor > 0)
+    .sort((a, b) => b.valor - a.valor)
+    .slice(0, 5);
+
   return (
     <>
       <SecaoAbas secao="negocios" />
       <PageHeading
-        title="Meus Negócios"
-        description="Acompanhe e administre seus estabelecimentos em diferentes regiões do Brasil."
+        title="Meus negócios"
+        description="Cada cartão é um negócio seu. O que precisa de você aparece primeiro."
       />
-      <div className="page-body">
-        {mine.length > 0 && (
-          <section className="neg-resumo" aria-label="Resumo dos negócios">
-            <div className="neg-figuras">
-              <div>
-                <span>Estabelecimentos</span>
-                <strong>{mine.length}</strong>
-                <small>{new Set(mine.map((e) => e.category)).size} tipos de negócio</small>
-              </div>
-              <div>
-                <span>Receita do período</span>
-                <strong>{cr(revenue)}</strong>
-                <small>desde a abertura deste mundo</small>
-              </div>
-              <div>
-                <span>Resultado operacional</span>
-                <strong className={result >= 0 ? 'positive' : 'negative'}>
-                  {result >= 0 ? '+' : '−'}
-                  {cr(Math.abs(result))}
-                </strong>
-                <small>receitas menos custos registrados</small>
-              </div>
-              <div>
-                <span>Unidades pausadas</span>
-                <strong className={pausadas ? 'gold-text' : ''}>{pausadas}</strong>
-                <small>{pausadas ? 'podem exigir atenção' : 'tudo em operação'}</small>
-              </div>
+      <div className="page-body neg-pagina">
+        {meus.length > 0 && (
+          <section className="neg-faixa" aria-label="Resumo">
+            <div>
+              <IconePixel nome="predio" tamanho={32} />
+              <b>{num(meus.length)}</b>
+              <span>{meus.length === 1 ? 'negócio' : 'negócios'}</span>
             </div>
-            <ResultadoPorUnidade itens={mine} />
+            <div>
+              <IconePixel nome="moeda" tamanho={32} />
+              <b>{cr(vendasHoje, 0)}</b>
+              <span>vendidos hoje</span>
+            </div>
+            <div className={precisam ? 'atencao' : ''}>
+              <IconePixel nome={precisam ? 'alerta' : 'estrela'} tamanho={32} />
+              <b>{num(precisam)}</b>
+              <span>
+                {precisam
+                  ? precisam === 1
+                    ? 'precisa de você'
+                    : 'precisam de você'
+                  : 'tudo em dia'}
+              </span>
+            </div>
           </section>
         )}
-        <div className="businesses-grid">
-          <Panel
-            title="Meus estabelecimentos"
-            action={
-              <div className="inline-actions">
-                <label className="search-input">
-                  <Search size={16} />
-                  <input
-                    aria-label="Buscar estabelecimento"
-                    placeholder="Buscar estabelecimento…"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                  />
-                </label>
-                <div className="neg-visao" role="group" aria-label="Forma de exibição">
-                  <button
-                    className={visao === 'cards' ? 'on' : ''}
-                    aria-pressed={visao === 'cards'}
-                    onClick={() => escolher('cards')}
-                  >
-                    <LayoutGrid size={14} /> Cartões
-                  </button>
-                  <button
-                    className={visao === 'lista' ? 'on' : ''}
-                    aria-pressed={visao === 'lista'}
-                    onClick={() => escolher('lista')}
-                  >
-                    <List size={14} /> Lista
-                  </button>
-                </div>
-                <button className="secondary" onClick={() => setShowFilter(!showFilter)}>
-                  <SlidersHorizontal size={15} /> Filtros
-                </button>
-                <button className="primary" onClick={() => navigate('map')}>
-                  <Plus size={17} /> Novo estabelecimento
-                </button>
-              </div>
-            }
-          >
-            {showFilter && (
-              <div className="inline-filter">
-                <Select
-                  label="Filtrar categoria"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                >
-                  <option value="all">Todas as categorias</option>
-                  {Object.entries(categoryInfo).map(([key, c]) => (
-                    <option value={key} key={key}>
-                      {c.label}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-            )}
-            {visible.length && visao === 'cards' ? (
-              <div className="neg-grade">
-                {visible.map((e, i) => (
-                  <BusinessCard e={e} indice={i} key={e.id} />
-                ))}
-              </div>
-            ) : visible.length ? (
-              <div className="table-scroll">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Estabelecimento</th>
-                      <th>Categoria</th>
-                      <th>Localização</th>
-                      <th className="numeric">Resultado / período</th>
-                      <th>Estado</th>
-                      <th aria-label="Ações" />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {visible.map((e, i) => {
-                      const p = world.properties.find((p) => p.id === e.propertyId)!;
-                      const balance = e.revenue - e.expenses;
-                      const estado = estadoDe(e);
-                      return (
-                        <tr key={e.id}>
-                          <td>
-                            <div className="table-name">
-                              <i className="table-icon">
-                                <CategoryIcon category={e.category} />
-                              </i>
-                              <div>
-                                <strong>{e.name}</strong>
-                                <small>Unidade #{105 + i}</small>
-                              </div>
-                            </div>
-                          </td>
-                          <td>{categoryInfo[e.category].label}</td>
-                          <td>
-                            {p.city} — {p.state}
-                          </td>
-                          <td className={`numeric ${balance >= 0 ? 'positive' : 'negative'}`}>
-                            {balance >= 0 ? '+' : '−'}
-                            {cr(Math.abs(balance))}
-                          </td>
-                          <td>
-                            <Badge tone={estado.tone}>{estado.label}</Badge>
-                          </td>
-                          <td>
-                            <button className="secondary" onClick={() => openBusiness(e.id)}>
-                              <ChevronRight size={16} /> Gerenciar
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className="neg-vazio">
-                {!mine.length && <PixelArt name="loja" scale={3} />}
-                <Empty
-                  title={mine.length ? 'Nenhuma unidade encontrada' : 'Sua empresa começa aqui'}
-                  description={
-                    mine.length
-                      ? 'Experimente outro nome ou categoria.'
-                      : 'Explore o mapa, encontre uma propriedade e abra seu primeiro negócio.'
-                  }
-                  action={
-                    !mine.length && (
-                      <button className="primary" onClick={() => navigate('map')}>
-                        Explorar propriedades
-                      </button>
-                    )
-                  }
-                />
-              </div>
-            )}
-            <p className="panel-footnote">
-              Exibindo {visible.length} de {mine.length} estabelecimentos · Estado compartilhado
-              entre as empresas de teste.
-            </p>
-          </Panel>
-          <Panel title="Resumo da operação" className="operation-summary">
-            <div className="business-mini-map">
-              <WorldMap mini />
-            </div>
-            <div className="panel-content">
-              <h3>Distribuição territorial</h3>
-              <Rows
-                rows={[...countStates].map((state) => ({
-                  label: state === 'SP' ? 'São Paulo' : state === 'MG' ? 'Minas Gerais' : 'Paraná',
-                  value: `${num(mine.filter((e) => world.properties.find((p) => p.id === e.propertyId)!.state === state).length)} unidades`,
-                }))}
+
+        {meus.length >= MUITOS && (
+          <div className="neg-filtros">
+            <label className="neg-busca">
+              <Search size={16} aria-hidden="true" />
+              <input
+                aria-label="Buscar negócio"
+                placeholder="Buscar pelo nome"
+                value={busca}
+                onChange={(ev) => setBusca(ev.target.value)}
               />
-              <h3>Ação necessária</h3>
-              {mine.some((e) => !e.enabled) ? (
-                mine
-                  .filter((e) => !e.enabled)
-                  .map((e) => (
-                    <p className="warning-line" key={e.id}>
-                      <TriangleAlert size={16} />
-                      <button onClick={() => openBusiness(e.id)}>
-                        {e.name} está com a operação pausada.
-                      </button>
-                    </p>
-                  ))
-              ) : (
-                <p className="muted small">Nenhuma unidade pausada no momento.</p>
-              )}
-              <button className="secondary full" onClick={() => navigate('map')}>
-                <Map size={16} /> Ver unidades no mapa
+            </label>
+            <div className="neg-chips" role="group" aria-label="Tipo de negócio">
+              <button
+                type="button"
+                aria-pressed={tipo === 'all'}
+                className={tipo === 'all' ? 'on' : ''}
+                onClick={() => setTipo('all')}
+              >
+                Todos
               </button>
+              {tipos.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  aria-pressed={tipo === t}
+                  className={tipo === t ? 'on' : ''}
+                  onClick={() => setTipo(t)}
+                >
+                  {categoryInfo[t].label}
+                </button>
+              ))}
             </div>
-          </Panel>
-        </div>
+          </div>
+        )}
+
+        <ul className="neg-grade">
+          {ordenados.map((e) => (
+            <li key={e.id}>
+              <BusinessCard
+                e={e}
+                vendasHoje={porNegocioHoje.get(e.id) ?? 0}
+                alerta={alertaDe.get(e.id)}
+              />
+            </li>
+          ))}
+          <li>
+            <button type="button" className="neg-novo" onClick={() => navigate('map')}>
+              {meus.length === 0 ? (
+                <PixelArt name="loja" scale={2} />
+              ) : (
+                <Plus size={40} aria-hidden="true" />
+              )}
+              <strong>{meus.length === 0 ? 'Abra o seu primeiro negócio' : 'Abrir um negócio'}</strong>
+              <small>Escolha um imóvel no mapa</small>
+            </button>
+          </li>
+        </ul>
+        {!ordenados.length && meus.length > 0 && (
+          <p className="neg-vazio-mini">Nenhum negócio com esse nome ou tipo.</p>
+        )}
+
+        {rank.length > 1 && (
+          <section className="neg-bloco" aria-labelledby="neg-rank">
+            <header className="neg-bloco-cab">
+              <h2 id="neg-rank">Quem vendeu mais hoje</h2>
+            </header>
+            <BarrasPixel
+              titulo="Vendas de hoje por negócio"
+              itens={rank}
+              formato={(v) => cr(v, 0)}
+            />
+          </section>
+        )}
+
         <SupplyNetwork />
-        <Panel title="Central de pedidos" subtitle="Compras e vendas de todas as suas unidades">
-          <Orders />
-        </Panel>
+
+        {pedidosEsperando > 0 && (
+          <section className="neg-pedidos" aria-label="Pedidos">
+            <IconePixel nome="pedido" tamanho={40} />
+            <p>
+              <b>
+                {pedidosEsperando} {pedidosEsperando === 1 ? 'pedido espera' : 'pedidos esperam'}
+              </b>{' '}
+              uma resposta.
+            </p>
+            <button type="button" className="secondary" onClick={() => navigate('orders')}>
+              Ver pedidos
+            </button>
+          </section>
+        )}
       </div>
     </>
   );

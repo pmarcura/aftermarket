@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { MapPin, Sparkles } from 'lucide-react';
 import { useGame, cr, num, ProductIcon } from '../../lib/game';
+import { IconePixel } from '../../components/IconePixel';
+import { BotaoProduto } from '../../components/BotaoProduto';
+import { matizDoProduto } from '../../design/arte';
 import {
   products,
   type Establishment,
@@ -10,6 +12,7 @@ import {
 import { seasonPrice } from '../../../../../packages/simulation/src/metrics';
 import { procuraDiaria, type Avaliacao } from './compra';
 import { unidade } from './Carga';
+import '../../design/comprar.css';
 
 // Ilustrações em pixel art dos produtos (apps/web/public/arte/produto-*.png).
 // Sem arte própria, o produto usa a peça do negócio que o produz.
@@ -76,25 +79,28 @@ interface Item {
 }
 
 /**
- * A compra como vitrine: um cartão por produto que o destino usa, com a melhor oferta já posta na
- * porta. O olho lê a ilustração, o lucro e a barra; o texto é só confirmação.
+ * A loja de mercadorias: um cartão por produto que o destino usa, com a melhor oferta já posta na
+ * porta. O cartão tem uma única ação, Mandar buscar, que abre a gaveta de reposição.
  */
 export function Vitrine({
   destino,
   ofertas,
   avaliacoes,
   relevantes,
-  escolhida,
-  onComprar,
+  foco,
+  onMandar,
+  onProduzir,
 }: {
   destino: Establishment;
   ofertas: Offer[];
   avaliacoes: Map<string, Avaliacao>;
   relevantes?: Set<string>;
-  escolhida?: string;
-  onComprar: (o: Offer) => void;
+  /** Produto que o jogador estava procurando: sobe para o começo e ganha destaque. */
+  foco?: ProductId;
+  onMandar: (product: ProductId) => void;
+  onProduzir: () => void;
 }) {
-  const { world, navigate } = useGame();
+  const { world } = useGame();
   const loja = destino.category === 'retail';
   const ids = new Set<ProductId>([
     ...ofertas.map((o) => o.product),
@@ -105,6 +111,7 @@ export function Vitrine({
     const melhor = dele.sort((a, b) => {
       const x = avaliacoes.get(a.id)!,
         y = avaliacoes.get(b.id)!;
+      if (Boolean(x.frete) !== Boolean(y.frete)) return Number(Boolean(y.frete)) - Number(Boolean(x.frete));
       return loja ? (y.margem ?? 0) - (x.margem ?? 0) : x.naPorta - y.naPorta;
     })[0];
     return {
@@ -115,118 +122,141 @@ export function Vitrine({
     };
   });
   itens.sort((a, b) => {
+    if (a.product === foco || b.product === foco)
+      return Number(b.product === foco) - Number(a.product === foco);
     if (!a.aval || !b.aval) return Number(Boolean(b.aval)) - Number(Boolean(a.aval));
     return loja ? (b.aval.margem ?? 0) - (a.aval.margem ?? 0) : a.aval.naPorta - b.aval.naPorta;
   });
   return (
-    <div className="vitrine">
-      {itens.map(({ product, melhor, aval, outros }, i) => {
-        const venda = seasonPrice(world, product);
-        const porDia = loja ? procuraDiaria(world, destino, product) : 0;
+    <ul className="vitrine-lista">
+      {itens.map(({ product, melhor, aval, outros }) => {
+        const nome = products[product].name;
+        const estilo = { ['--h' as string]: matizDoProduto(product) };
+        const emFoco = product === foco;
         if (!melhor || !aval)
           return (
-            <article className="vit-card esgotado" key={product}>
-              <div className="vit-palco">
-                <ProdutoArte product={product} />
-              </div>
-              <h3>{products[product].name}</h3>
-              <p className="vit-esgotado">
-                <Sparkles size={14} aria-hidden="true" /> Esgotado em todo o mercado
-              </p>
-              <p className="vit-nota">Ninguém tem para vender. Quem produzir, vende tudo.</p>
-              <button className="secondary full" onClick={() => navigate('opportunities')}>
-                Ver como produzir
-              </button>
-            </article>
+            <li key={product}>
+              <article className="prod-card esgotado" style={estilo}>
+                <header className="prod-topo">
+                  <div className="prod-arte">
+                    <BotaoProduto product={product}>
+                      <ProdutoArte product={product} escala={2} />
+                    </BotaoProduto>
+                  </div>
+                  <div className="prod-ident">
+                    <h3>
+                      <BotaoProduto product={product}>{nome}</BotaoProduto>
+                    </h3>
+                    <span className="prod-estado tom-brasa">Esgotado no mercado</span>
+                  </div>
+                </header>
+                <div className="prod-corpo">
+                  <p className="prod-nota">
+                    <IconePixel nome="alerta" tamanho={22} />
+                    Não há oferta disponível nesta seleção. Consulte a procura antes de produzir.
+                  </p>
+                  <button className="secondary prod-acao" onClick={onProduzir}>
+                    <IconePixel nome="fabrica" tamanho={22} /> Ver como produzir
+                  </button>
+                </div>
+              </article>
+            </li>
           );
         const vendedor = world.establishments.find((e) => e.id === melhor.establishmentId)!;
         const lugar = world.properties.find((p) => p.id === vendedor.propertyId)!;
+        const venda = seasonPrice(world, product);
+        const porDia = loja ? procuraDiaria(world, destino, product) : 0;
         const fretePorUn = aval.frete ? aval.frete.price / aval.quantidade : 0;
         const custoUn = aval.mercadoria / aval.quantidade;
         const lucroUn = venda - aval.naPorta;
-        const escala = Math.max(venda, aval.naPorta);
-        const u1 = unidade(product, 1);
         const empata = Math.round(Math.abs(aval.margem ?? 0) * 100) === 0;
+        const escala = Math.max(venda, aval.naPorta);
+        const estado = !aval.frete
+          ? { tom: 'ouro', texto: 'Frete a consultar' }
+          : !loja
+          ? { tom: 'ceu', texto: 'Insumo da produção' }
+          : empata
+            ? { tom: 'ouro', texto: 'Empata' }
+            : lucroUn > 0
+              ? { tom: 'lavoura', texto: `Margem estimada de ${num((aval.margem ?? 0) * 100)}%` }
+              : { tom: 'brasa', texto: `Margem estimada de −${num(Math.abs(aval.margem ?? 0) * 100)}%` };
         return (
-          <article
-            className={`vit-card ${escolhida === melhor.id ? 'on' : ''}`}
-            key={product}
-            style={{ animationDelay: `${i * 40}ms` }}
-          >
-            <div className="vit-palco">
-              <ProdutoArte product={product} />
-            </div>
-            <div className="vit-titulo">
-              <h3>{products[product].name}</h3>
-              {loja && (
-                <small>
-                  Você vende a {cr(venda)}
-                  {porDia > 0 && ` · ~${num(porDia)} ${unidade(product)} por dia`}
-                </small>
-              )}
-            </div>
-            {loja ? (
-              <div className={`vit-lucro ${empata ? 'zero' : lucroUn > 0 ? 'bom' : 'ruim'}`}>
-                <b>
-                  {empata
-                    ? '0%'
-                    : `${lucroUn > 0 ? '+' : '−'}${num(Math.abs(aval.margem ?? 0) * 100)}%`}
-                </b>
-                <span>
-                  {empata ? 'empata' : lucroUn > 0 ? 'de lucro' : 'de prejuízo'}
-                  <small>
-                    {cr(Math.abs(lucroUn))} por {u1}
-                  </small>
-                </span>
-              </div>
-            ) : (
-              <div className="vit-lucro">
-                <b>{cr(aval.naPorta)}</b>
-                <span>
-                  na sua porta
-                  <small>por {u1}, frete incluído</small>
-                </span>
-              </div>
-            )}
-            {loja && (
-              <div
-                className="vit-barra"
-                role="img"
-                aria-label={`Vende a ${cr(venda)}: ${cr(custoUn)} de mercadoria, ${cr(fretePorUn)} de frete e ${cr(lucroUn)} de lucro`}
-              >
-                <i className="merc" style={{ width: `${(custoUn / escala) * 100}%` }} />
-                <i className="frete" style={{ width: `${(fretePorUn / escala) * 100}%` }} />
-                {lucroUn > 0 && (
-                  <i className="lucro" style={{ width: `${(lucroUn / escala) * 100}%` }} />
+          <li key={product}>
+            <article className={`prod-card ${emFoco ? 'em-foco' : ''}`} style={estilo}>
+              {emFoco && <span className="prod-foco">Você procurava este</span>}
+              <header className="prod-topo">
+                <div className="prod-arte">
+                  <BotaoProduto product={product}>
+                    <ProdutoArte product={product} escala={2} />
+                  </BotaoProduto>
+                </div>
+                <div className="prod-ident">
+                  <h3>
+                    <BotaoProduto product={product}>{nome}</BotaoProduto>
+                  </h3>
+                  <span className={`prod-estado tom-${estado.tom}`}>{estado.texto}</span>
+                </div>
+              </header>
+              <div className="prod-corpo">
+                <div className="prod-preco">
+                  <IconePixel nome="moeda" tamanho={32} />
+                  <b>{cr(aval.naPorta)}</b>
+                  <span>
+                    por {unidade(product, 1)}, {aval.frete ? 'na sua porta' : 'na origem'}
+                    <small>{aval.frete ? 'frete já incluído' : 'transporte ainda não cotado'}</small>
+                  </span>
+                </div>
+                {loja && aval.frete && (
+                  <div className="prod-conta">
+                    <div
+                      className="prod-faixa"
+                      role="img"
+                      aria-label={`Você vende a ${cr(venda)}: ${cr(custoUn)} de mercadoria, ${cr(fretePorUn)} de frete e ${cr(Math.max(0, lucroUn))} de lucro por ${unidade(product, 1)}`}
+                    >
+                      <i className="merc" style={{ width: `${(custoUn / escala) * 100}%` }} />
+                      <i className="frete" style={{ width: `${(fretePorUn / escala) * 100}%` }} />
+                      {lucroUn > 0 && (
+                        <i className="lucro" style={{ width: `${(lucroUn / escala) * 100}%` }} />
+                      )}
+                    </div>
+                    <ul className="prod-chave">
+                      <li>
+                        <IconePixel nome="caixa" tamanho={22} /> mercadoria <b>{cr(custoUn)}</b>
+                      </li>
+                      <li>
+                        <IconePixel nome="caminhao" tamanho={22} /> frete <b>{cr(fretePorUn)}</b>
+                      </li>
+                      <li>
+                        <IconePixel nome="moeda" tamanho={22} />{' '}
+                        {lucroUn > 0 ? 'lucro' : 'prejuízo'} <b>{cr(Math.abs(lucroUn))}</b>
+                      </li>
+                    </ul>
+                    <p className="prod-ritmo">
+                      Estimativa ao vender pelo preço de referência de {cr(venda)}
+                      {porDia > 0 && `, cerca de ${num(porDia)} ${unidade(product)} por dia`}. Antes dos custos de operação.
+                    </p>
+                  </div>
                 )}
-                <span className="vit-venda" style={{ left: `${(venda / escala) * 100}%` }} />
+                <p className="prod-fornecedor">
+                  <IconePixel nome="mapa" tamanho={22} />
+                  <span>
+                    {vendedor.name}, {lugar.city}
+                    {outros > 0 && (
+                      <em>
+                        {' '}
+                        · mais {outros} {outros === 1 ? 'opção' : 'opções'}
+                      </em>
+                    )}
+                  </span>
+                </p>
+                <button className="primary prod-acao" onClick={() => onMandar(product)}>
+                  <IconePixel nome="caminhao" tamanho={24} /> Mandar buscar
+                </button>
               </div>
-            )}
-            {loja && (
-              <div className="vit-legenda" aria-hidden="true">
-                <span className="merc">mercadoria</span>
-                <span className="frete">frete</span>
-                <span className="lucro">lucro</span>
-              </div>
-            )}
-            <p className="vit-fornecedor">
-              <MapPin size={12} aria-hidden="true" /> {vendedor.name}, {lugar.city}
-              {outros > 0 && (
-                <em>
-                  {' '}
-                  · +{outros} {outros === 1 ? 'opção' : 'opções'}
-                </em>
-              )}
-            </p>
-            <button
-              className={escolhida === melhor.id ? 'primary full' : 'secondary full'}
-              onClick={() => onComprar(melhor)}
-            >
-              {escolhida === melhor.id ? 'Escolhido' : 'Comprar'}
-            </button>
-          </article>
+            </article>
+          </li>
         );
       })}
-    </div>
+    </ul>
   );
 }

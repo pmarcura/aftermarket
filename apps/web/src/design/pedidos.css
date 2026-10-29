@@ -1,0 +1,327 @@
+/* Negociação e entregas: decisões legíveis, recibos e logística na paleta comum. */
+.ped,
+.ped-lista,
+.ped-modal,
+.ped-secao {
+  display: grid;
+  gap: 24px;
+  min-width: 0;
+}
+.ped-topo,
+.ped-abas,
+.ped-rodape,
+.ped-chips,
+.ped-oferta-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.ped-topo,
+.ped-rodape {
+  justify-content: space-between;
+}
+.ped-abas button,
+.ped-chips button,
+.ped-cartas button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border: 2px solid var(--borda-forte);
+  background: var(--chapa);
+  color: var(--creme);
+  font: 600 14px var(--fonte);
+  cursor: pointer;
+}
+.ped-abas button.on,
+.ped-chips button.on,
+.ped-cartas button.on {
+  border-color: var(--lavoura);
+  background: var(--chapa-2);
+}
+.ped :is(button, input):focus-visible,
+.ped-modal :is(button, input):focus-visible {
+  outline: 3px solid var(--lavoura);
+  outline-offset: 3px;
+}
+.ped-conta,
+.ped-abas b,
+.ped-selo {
+  padding: 3px 8px;
+  background: var(--chapa-3);
+  color: var(--creme);
+  font: 600 14px var(--fonte);
+}
+.ped-abas b.chama {
+  background: var(--ouro);
+  color: var(--noite);
+}
+.ped-secao h2 {
+  margin: 0;
+  font-size: 20px;
+}
+.ped-nota,
+.ped-frase {
+  margin: 0;
+  color: var(--apagado);
+  font: 400 14px/1.6 var(--fonte);
+}
+.ped-corpo {
+  grid-template-columns: minmax(0, 1fr);
+}
+.ped-valores,
+.ped-ofertas,
+.ped-caminhoes {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 14px;
+}
+.ped-valores {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.ped-valores li {
+  display: grid;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--apagado);
+}
+.ped-valores b {
+  color: var(--ouro);
+  font-size: 18px;
+  overflow-wrap: anywhere;
+}
+.ped-oferta,
+.ped-caminhoes li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: var(--chapa-2);
+  border: 2px solid var(--borda);
+}
+.ped-oferta.pede {
+  border-color: var(--serie-4);
+}
+.ped-oferta-quem,
+.ped-oferta-numeros,
+.ped-caminhoes li > div {
+  flex: 1;
+  min-width: 140px;
+  display: grid;
+  gap: 6px;
+  overflow-wrap: anywhere;
+}
+.ped-oferta small,
+.ped-caminhoes small {
+  color: var(--apagado);
+  font-size: 13px;
+}
+.ped-progresso {
+  height: 12px;
+  border-radius: 8px;
+  background: var(--chapa-3);
+  overflow: hidden;
+}
+.ped-progresso i {
+  display: block;
+  height: 100%;
+  background: var(--ceu);
+  border-radius: inherit;
+}
+.ped-vazio {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: 32px 20px;
+  text-align: center;
+  background: var(--chapa);
+  border: 2px solid var(--borda);
+}
+.ped-vazio h3,
+.ped-vazio p {
+  margin: 0;
+}
+.ped-vazio p {
+  max-width: 560px;
+  color: var(--apagado);
+  line-height: 1.6;
+}
+.ped-mais {
+  justify-self: start;
+}
+.ped-mapa {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+.ped-mapa-quadro {
+  position: relative;
+  height: 320px;
+  overflow: hidden;
+  border: 2px solid var(--borda);
+}
+.ped-mapa-quadro > div {
+  height: 100%;
+}
+.ped-recibo {
+  padding: 20px;
+  background: var(--chapa-2);
+  border: 2px solid var(--borda);
+}
+.ped-recibo header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.ped-recibo h3 {
+  margin: 0;
+  font-size: 20px;
+}
+.ped-recibo dl {
+  display: grid;
+  gap: 14px;
+  margin: 18px 0 0;
+}
+.ped-recibo dl > div {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+.ped-recibo dt {
+  color: var(--apagado);
+  font-size: 14px;
+}
+.ped-recibo dd {
+  margin: 0;
+  color: var(--ouro);
+  font-size: 16px;
+}
+.ped-recibo-total {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 2px solid var(--borda);
+  padding-top: 16px;
+  margin-bottom: 0;
+}
+.ped-recibo-total b {
+  font: 400 24px var(--pixel);
+  color: var(--ouro);
+}
+.ped-escolha,
+.ped-campo {
+  display: grid;
+  gap: 10px;
+}
+.ped-escolha > span,
+.ped-campo label {
+  font: 600 15px var(--fonte);
+}
+.ped-cartas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+  gap: 10px;
+}
+.ped-cartas button {
+  flex-direction: column;
+  align-items: start;
+  text-align: left;
+}
+.ped-cartas small {
+  color: var(--apagado);
+  font-size: 13px;
+}
+.ped-campos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+  gap: 18px;
+}
+.ped-campo > div {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ped-campo input {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+}
+.ped-campo button {
+  flex-shrink: 0;
+  min-height: 44px;
+}
+.ped-campo em {
+  font-style: normal;
+  font-size: 13px;
+}
+.ped-campo small {
+  color: var(--apagado);
+  font-size: 13px;
+}
+.ped-aviso {
+  padding: 14px;
+  color: var(--brasa);
+  background: var(--chapa-2);
+  border-left: 3px solid var(--brasa);
+  line-height: 1.6;
+}
+.ped-grande {
+  min-height: 48px;
+  width: 100%;
+}
+.ped-marca {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.ped-marca input {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+@media (max-width: 650px) {
+  .ped-topo,
+  .ped-abas {
+    align-items: stretch;
+  }
+  .ped-abas {
+    width: 100%;
+  }
+  .ped-abas button {
+    flex: 1;
+    justify-content: center;
+    padding: 10px 6px;
+    gap: 6px;
+  }
+  .ped-abas svg {
+    display: none;
+  }
+  .ped-valores {
+    grid-template-columns: 1fr;
+  }
+  .ped-valores li {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .ped-recibo {
+    padding: 14px;
+  }
+  .ped-recibo dl > div {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .ped-recibo dd {
+    grid-column: 2;
+  }
+  .ped-oferta-acoes {
+    width: 100%;
+  }
+}

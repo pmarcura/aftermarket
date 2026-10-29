@@ -1,46 +1,43 @@
 import { useEffect, useState } from 'react';
-import { Plus, Search, ArrowRight, Pause, Play, Box, Settings2 } from 'lucide-react';
-import { useGame, CategoryIcon, cr, num } from '../lib/game';
-import {
-  Badge,
-  PageHeading,
-  Panel,
-  Tabs,
-  Rows,
-  Progress,
-  Modal,
-  Select,
-  Empty,
-} from '../components/ui';
-import { products, TIME_SCALE, type ProductId } from '../../../../packages/simulation/src/model';
-import { loadOf } from '../../../../packages/simulation/src/engine';
+import { BotaoProduto } from '../components/BotaoProduto';
+import { Minus, Plus, ShoppingCart } from 'lucide-react';
+import { useGame, cr, num } from '../lib/game';
+import { Tabs, Modal, Empty } from '../components/ui';
+import { IconePixel } from '../components/IconePixel';
+import { ProdutoArte } from '../features/economy/Vitrine';
+import { matizDoProduto } from '../design/arte';
+import { products, type ProductId } from '../../../../packages/simulation/src/model';
 import { useClock } from '../lib/clock';
+import { horasDeJogo } from '../features/inicio/tempo';
 import { operatingCosts, productionCharges } from '../../../../packages/simulation/src/metrics';
+import { freeCash } from '../../../../packages/simulation/src/design';
 import { InfrastructureDetails } from '../components/InfrastructureDetails';
 import { Abastecimento } from '../features/business/Abastecimento';
 import { Stock } from '../features/business/Stock';
-import { SalesCatalog } from '../features/business/SalesCatalog';
-import { OfferModal } from '../features/business/OfferModal';
 import { Workforce } from '../features/business/Workforce';
 import { Installation } from '../features/business/Installation';
-import { Orders } from '../features/business/Orders';
 import { BusinessFinance } from '../features/business/Analytics';
+import { Cabeca, Unidades } from '../features/business/producao/Cabeca';
+import { Fluxo } from '../features/business/producao/Fluxo';
+import { Fila } from '../features/business/producao/Fila';
+import { Vendas } from '../features/business/producao/Vendas';
+import { estadoDaUnidade, matizDaCategoria } from '../features/business/producao/pecas';
 import {
   productionCapacity,
   productionQuality,
 } from '../../../../packages/simulation/src/operations';
+import '../design/producao.css';
 
 export function OperationPage() {
   const now = useClock();
-  const { world, actor, businessId, openBusiness, run, pending, navigate, openMarket } = useGame();
+  const { world, actor, businessId, run, pending, navigate, openRepor } = useGame();
   const e =
     world.establishments.find((x) => x.id === businessId && x.companyId === actor) ??
-    world.establishments.find((x) => x.companyId === actor && x.category === 'industry');
+    world.establishments.find((x) => x.companyId === actor && ['industry', 'farm', 'mine', 'warehouse'].includes(x.category));
   const [tab, setTab] = useState('Produção'),
     [recipeId, setRecipe] = useState('steel-bars'),
     [queue, setQueue] = useState(false),
-    [cycles, setCycles] = useState(1),
-    [offerProduct, setOfferProduct] = useState<ProductId>();
+    [cycles, setCycles] = useState(1);
   const [showCosts, setShowCosts] = useState(false);
   const [auto, setAuto] = useState(false),
     [autoCycles, setAutoCycles] = useState('1'),
@@ -49,15 +46,19 @@ export function OperationPage() {
     recipe = options.find((r) => r.id === recipeId) ?? options[0];
   useEffect(() => {
     setTab(e?.category === 'warehouse' ? 'Estoque' : 'Produção');
-    if (e?.specialization) setRecipe(e.specialization);
+    setRecipe(e?.specialization ?? '');
+    setQueue(false);
+    setAuto(false);
+    setShowCosts(false);
+    setCycles(1);
     setAutoCycles(String(e?.automationCycles ?? 1));
     setBudget(String((e?.automationDailyBudget ?? 1000000) / 100));
   }, [e?.id]);
   if (!e)
     return (
       <Empty
-        title="Nenhuma operação produtiva"
-        description="Adquira uma propriedade industrial, rural ou extrativa para iniciar."
+        title="Nenhuma unidade de produção"
+        description="Compre um imóvel industrial, rural ou de mineração no mapa para começar."
         action={
           <button className="primary" onClick={() => navigate('map')}>
             Explorar o mapa
@@ -65,496 +66,347 @@ export function OperationPage() {
         }
       />
     );
+  const p = world.properties.find((x) => x.id === e.propertyId)!;
   if (e.installed === false)
     return (
-      <>
-        <PageHeading
-          eyebrow="Meus Negócios › Instalação"
-          title={e.name}
-          description="Imóvel adquirido. Instale equipamentos, depois contrate e abasteça."
-        />
-        <div className="page-body">
-          <Panel>
-            <Installation establishment={e} onInstalled={() => setTab('Funcionários')} />
-          </Panel>
-        </div>
-      </>
-    );
-  const p = world.properties.find((p) => p.id === e.propertyId)!,
-    jobs = world.jobs.filter((j) => j.establishmentId === e.id && !j.completed),
-    load = loadOf(e.inventory);
-  const producers = world.establishments.filter(
-    (x) => x.companyId === actor && x.category !== 'retail' && x.category !== 'logistics',
-  );
-  const charges = recipe ? productionCharges(world, e, recipe.id, cycles) : null;
-  const line = recipe ? productionCapacity(world, e, recipe, cycles) : null;
-  const daily = operatingCosts(world, e);
-  return (
-    <>
-      <PageHeading
-        eyebrow={`Meus Negócios › ${e.name}`}
-        title={
-          e.category === 'industry'
-            ? 'Operação industrial'
-            : e.category === 'mine'
-              ? 'Operação extrativa'
-              : e.category === 'farm'
-                ? 'Operação agrícola'
-                : 'Armazenagem e distribuição'
-        }
-        description="Gerencie insumos, estoques e capacidade de seus estabelecimentos."
-      />
-      <div className="page-body operation-grid">
-        <Panel
-          title="Estabelecimentos"
-          action={<Badge tone="muted">{producers.length} unidades</Badge>}
-          className="producer-list"
+      <div className="prod">
+        <Unidades atual={e.id} />
+        <section
+          className="prod-instalar"
+          style={{ ['--h' as string]: matizDaCategoria[e.category] ?? 120 }}
         >
-          {producers.map((item) => {
-            const location = world.properties.find((x) => x.id === item.propertyId)!;
-            return (
-              <button
-                className={`producer-item ${item.id === e.id ? 'selected' : ''}`}
-                key={item.id}
-                onClick={() => openBusiness(item.id)}
-              >
-                <div className="table-name">
-                  <i className="table-icon">
-                    <CategoryIcon category={item.category} />
-                  </i>
-                  <div>
-                    <strong>{item.name}</strong>
-                    <small>
-                      {location.city} — {location.state}
-                    </small>
-                  </div>
-                </div>
-                <p>
-                  {item.enabled ? 'Operação ativa' : 'Operação pausada'} ·{' '}
-                  {num(loadOf(item.inventory).mass, 1)} t em estoque
-                </p>
-              </button>
-            );
-          })}
-          <div className="panel-content">
-            <button className="secondary full" onClick={() => navigate('businesses')}>
-              Ver todos os negócios
-            </button>
-          </div>
-        </Panel>
-        <Panel
-          title={e.name}
-          subtitle={`${p.city} — ${p.state} · ${e.category === 'industry' ? 'Produção e transformação' : 'Operação empresarial'}`}
-          action={
-            <Badge tone={e.enabled ? 'green' : 'gold'}>
-              {e.enabled ? (jobs.length ? 'Produzindo' : 'Operacional') : 'Pausado'}
-            </Badge>
-          }
-          className="operation-main"
-        >
-          <Tabs
-            values={
-              e.category === 'warehouse'
-                ? ['Estoque', 'Abastecimento', 'Vendas', 'Pedidos', 'Finanças', 'Funcionários']
-                : [
-                    'Produção',
-                    'Insumos',
-                    'Estoque',
-                    'Abastecimento',
-                    'Vendas',
-                    'Pedidos',
-                    'Finanças',
-                    'Funcionários',
-                  ]
-            }
-            value={tab}
-            onChange={setTab}
-          />
-          {tab === 'Abastecimento' && <Abastecimento key={e.id} establishment={e} />}
-          {tab === 'Produção' && recipe && (
-            <div className="panel-content production-content">
-              {line && (
-                <div className="capacity-banner">
-                  <div>
-                    <strong>{line.lines} linhas produtivas</strong>
-                    <span>
-                      {e.employees} funcionários · {num(p.area)} m²
-                    </span>
-                  </div>
-                  <div>
-                    <strong>
-                      {line.workers} pessoas + {num(line.areaM2)} m²
-                    </strong>
-                    <span>por linha · {line.bottleneck.toLowerCase()}</span>
-                  </div>
-                  <button className="text-button" onClick={() => setTab('Funcionários')}>
-                    Ver régua e ajustar equipe
-                  </button>
-                </div>
-              )}
-              <div className="section-title">
-                <h3>Receita ativa</h3>
-                <Select
-                  label="Receita de produção"
-                  value={recipe.id}
-                  onChange={(event) => setRecipe(event.target.value)}
-                >
-                  {options.map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {r.name}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-              <div className="recipe-diagram">
-                <div>
-                  <i className="large-table-icon">
-                    <CategoryIcon category={e.category} size={28} />
-                  </i>
-                  <h3>
-                    {Object.keys(recipe.input).length
-                      ? Object.entries(recipe.input)
-                          .map(
-                            ([id, q]) =>
-                              `${num(q!, 2)} ${products[id as ProductId].unit} ${products[id as ProductId].name}`,
-                          )
-                          .join(' + ')
-                      : 'Depósito mineral virtual'}
-                  </h3>
-                  <p>
-                    {e.category === 'mine'
-                      ? `Reserva remanescente: ${num(e.reserve ?? 0)} t`
-                      : 'Materiais consumidos por ciclo'}
-                  </p>
-                  <small>
-                    Consumo: {num(recipe.energyKwh)} kWh + {num(recipe.waterM3, 1)} m³ por ciclo
-                  </small>
-                  {Object.entries(recipe.requires ?? {}).map(([id, q]) => (
-                    <small key={id} className="block">
-                      Rebanho por linha: {products[id as ProductId].name} × {num(q!)} (não
-                      consumido) · você tem {num(e.inventory[id as ProductId] ?? 0)}
-                    </small>
-                  ))}
-                </div>
-                <div className="recipe-arrow">
-                  <ArrowRight size={32} />
-                  <small>{num((recipe.duration * TIME_SCALE) / 3600000, 1)} h / ciclo</small>
-                </div>
-                <div>
-                  <i className="large-table-icon gold">
-                    <Box size={28} />
-                  </i>
-                  <h3>{recipe.name}</h3>
-                  <p>Saída por ciclo · qualidade {productionQuality(world, e, recipe)}/100</p>
-                  <strong>
-                    {Object.entries(recipe.output)
-                      .map(
-                        ([id, q]) =>
-                          `${num(q!, 2)} ${products[id as ProductId].unit} ${products[id as ProductId].name}`,
-                      )
-                      .join(' + ')}
-                  </strong>
-                  <small>por ciclo concluído</small>
-                </div>
-              </div>
-              <div className="section-title">
-                <h3>Fila de produção</h3>
-                <button className="primary" disabled={!e.enabled} onClick={() => setQueue(true)}>
-                  <Plus size={17} /> Adicionar produção
-                </button>
-              </div>
-              {jobs.length ? (
-                jobs.map((j) => {
-                  const r = world.season.config.recipes.find((r) => r.id === j.recipeId)!,
-                    progress = ((now - j.startedAt) / (j.finishesAt - j.startedAt)) * 100;
-                  return (
-                    <div className="job-row" key={j.id}>
-                      <i className="table-icon">
-                        <Box size={16} />
-                      </i>
-                      <div>
-                        <div className="job-label">
-                          <strong>
-                            {r.name} ·{' '}
-                            {Object.entries(r.output)
-                              .map(
-                                ([id, q]) =>
-                                  `${num(q! * j.cycles)} ${products[id as ProductId].unit}`,
-                              )
-                              .join(', ')}
-                          </strong>
-                          <small>
-                            {now < j.startedAt
-                              ? 'Na fila'
-                              : `${Math.max(0, Math.ceil((j.finishesAt - now) / 1000))} s reais restantes`}
-                          </small>
-                        </div>
-                        <Progress value={progress} color="blue" />
-                      </div>
-                      <Badge tone={now < j.startedAt ? 'gold' : 'green'}>
-                        {now < j.startedAt ? 'Pendente' : 'Ativo'}
-                      </Badge>
-                    </div>
-                  );
-                })
-              ) : (
-                <Empty
-                  title="Sua linha está pronta"
-                  description="Adicione uma produção. Os materiais e custos serão reservados antes do início do ciclo."
-                />
-              )}
-              <div className="operation-bottom">
-                <button className="secondary" onClick={() => setAuto(true)}>
-                  <Settings2 size={16} />{' '}
-                  {e.category === 'mine' ? 'Extração passiva' : 'Produção automática'}
-                </button>
-                <button
-                  className="secondary"
-                  disabled={pending}
-                  onClick={() =>
-                    void run(
-                      { type: 'toggleOperation', establishmentId: e.id },
-                      e.enabled
-                        ? 'Novos ciclos pausados. Os ciclos em andamento serão concluídos.'
-                        : 'Operação retomada.',
-                    )
-                  }
-                >
-                  {e.enabled ? <Pause size={16} /> : <Play size={16} />}
-                  {e.enabled ? 'Pausar novos ciclos' : 'Retomar operação'}
-                </button>
-              </div>
-              <div className="business-advice">
-                <strong>{e.automation ? 'Automação ativada' : 'Produção manual'}</strong>
-                <p>
-                  {e.automation
-                    ? `${e.automationStatus ?? 'Aguardando a próxima rodada'} · limite ${cr(e.automationDailyBudget ?? 10000000)} / dia do jogo. Avaliação a cada rodada; lotes seguem mesmo com a página fechada.`
-                    : 'Ative a automação para iniciar lotes nas rodadas econômicas, respeitando equipe, área, insumos, reserva, espaço, caixa e orçamento diário.'}
-                </p>
-              </div>
-            </div>
-          )}
-          {(tab === 'Estoque' || tab === 'Insumos') && (
-            <Stock establishment={e} inputsOnly={tab === 'Insumos'} />
-          )}
-          {tab === 'Vendas' && <SalesCatalog establishment={e} onEdit={setOfferProduct} />}
-          {tab === 'Pedidos' && <Orders establishment={e} />}
-          {tab === 'Finanças' && <BusinessFinance establishment={e} />}
-          {tab === 'Funcionários' && <Workforce key={e.id} establishment={e} />}
-        </Panel>
-        <div className="right-stack">
-          <Panel title="Indicadores operacionais">
-            <div className="panel-content">
-              <Rows
-                rows={[
-                  { label: 'Armazenamento', value: `${num(load.mass, 1)} / ${num(e.capacityT)} t` },
-                  {
-                    label: 'Volume ocupado',
-                    value: `${num(load.volume, 1)} / ${num(e.capacityM3)} m³`,
-                  },
-                  { label: 'Ciclos na fila', value: jobs.reduce((n, j) => n + j.cycles, 0) },
-                  { label: 'Funcionários', value: e.employees },
-                  { label: 'Custos / dia do jogo', value: cr(daily.total) },
-                  {
-                    label: 'Resultado registrado',
-                    value: cr(e.revenue - e.expenses),
-                    className: e.revenue >= e.expenses ? 'positive' : 'negative',
-                  },
-                ]}
-              />
-              {e.reserve !== undefined && (
-                <Rows rows={[{ label: 'Reserva mineral virtual', value: `${num(e.reserve)} t` }]} />
-              )}
-              <button className="text-button" onClick={() => setShowCosts(true)}>
-                Ver custos e tarifas
-              </button>
-            </div>
-          </Panel>
-          <Panel title="Insumos e abastecimento">
-            <div className="panel-content">
-              {recipe &&
-                Object.entries(recipe.input).map(([id, qty]) => (
-                  <div className="simple-entry" key={id}>
-                    <span>{products[id as ProductId].name}</span>
-                    <strong
-                      className={(e.inventory[id as ProductId] ?? 0) < qty! * 2 ? 'gold-text' : ''}
-                    >
-                      {num(e.inventory[id as ProductId] ?? 0)} {products[id as ProductId].unit}
-                    </strong>
-                  </div>
-                ))}
-              <p className="muted small">
-                A produção depende de insumos, saldo e capacidade. Materiais em trânsito ficam
-                disponíveis somente após a entrega.
-              </p>
-              <button
-                className="primary"
-                onClick={() =>
-                  openMarket({
-                    product: recipe
-                      ? ((Object.keys(recipe.input)[0] as ProductId) ?? 'iron')
-                      : 'oil',
-                    destinationId: e.id,
-                    quantity: 24,
-                  })
-                }
-              >
-                <Search size={16} /> Buscar fornecedores
-              </button>
-            </div>
-          </Panel>
+          <h1>{e.name}</h1>
+          <p>
+            O imóvel em {p.city} já é seu. Falta instalar os equipamentos, contratar a equipe e
+            abastecer.
+          </p>
+        </section>
+        <div className="prod-painel">
+          <Installation establishment={e} onInstalled={() => setTab('Equipe')} />
         </div>
       </div>
-      {queue && recipe && (
-        <Modal title="Adicionar produção" onClose={() => setQueue(false)}>
-          <label className="field">
-            Receita
-            <Select
-              label="Selecionar receita"
-              value={recipe.id}
-              onChange={(event) => setRecipe(event.target.value)}
-            >
-              {options.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.name}
-                </option>
-              ))}
-            </Select>
-          </label>
-          <label className="field">
-            Quantidade de ciclos
-            <input
-              type="number"
-              min="1"
-              max="100"
-              value={cycles}
-              onChange={(event) =>
-                setCycles(Math.max(1, Math.min(100, Math.floor(Number(event.target.value)))))
-              }
+    );
+
+  const jobs = world.jobs.filter((j) => j.establishmentId === e.id && !j.completed);
+  const charges = recipe ? productionCharges(world, e, recipe.id, cycles) : null;
+  const line = recipe ? productionCapacity(world, e, recipe, cycles) : null;
+  const line1 = recipe ? productionCapacity(world, e, recipe, 1) : null;
+  const daily = operatingCosts(world, e);
+  const estado = estadoDaUnidade(e, recipe, jobs, now, (id) => products[id as ProductId].name);
+  const armazem = e.category === 'warehouse';
+  const abas = armazem
+    ? ['Estoque', 'Vendas', 'Equipe', 'Finanças', 'Abastecimento']
+    : ['Produção', 'Vendas', 'Equipe', 'Finanças', 'Abastecimento'];
+  const faltando = recipe
+    ? (Object.entries(recipe.input) as [ProductId, number][]).filter(
+        ([id, q]) => (e.inventory[id] ?? 0) < q * cycles,
+      )
+    : [];
+  const ligarAuto = (ligar: boolean) =>
+    run(
+      {
+        type: 'configureProduction',
+        establishmentId: e.id,
+        recipeId: e.specialization ?? recipe!.id,
+        cycles: e.automationCycles ?? 1,
+        dailyBudget: e.automationDailyBudget ?? 10000000,
+        enabled: ligar,
+      },
+      ligar
+        ? 'Produção automática ligada.'
+        : 'Produção automática desligada. Lotes em andamento serão concluídos.',
+    );
+  const ciclosAuto = Number(autoCycles);
+  const orcamentoAuto = Math.round(Number(budget) * 100);
+  const espera = Math.max(0, ...jobs.map((j) => j.finishesAt - now));
+  return (
+    <div className="prod">
+      <Unidades atual={e.id} />
+      <Cabeca
+        e={e}
+        estado={estado}
+        custoDia={daily.total}
+        resultado={e.revenue - e.expenses}
+        podeProduzir={!!recipe && (line1?.lines ?? 0) > 0}
+        semLinha={!!recipe && (line1?.lines ?? 0) === 0}
+        temReceita={!!recipe}
+        onProduzir={() => setQueue(true)}
+        onCustos={() => setShowCosts(true)}
+      />
+      <Tabs values={abas} value={tab} onChange={setTab} />
+      <div className="prod-conteudo">
+        {tab === 'Produção' && recipe && (
+          <>
+            <Fluxo
+              e={e}
+              receita={recipe}
+              receitas={options}
+              onReceita={setRecipe}
+              linha={line1}
+              onEquipe={() => setTab('Equipe')}
             />
-          </label>
-          <Rows
-            rows={[
-              {
-                label: 'Capacidade disponível',
-                value: `${line!.lines} linhas · ${line!.workers} funcionários por linha`,
-              },
-              {
-                label: 'Qualidade esperada da saída',
-                value: `${productionQuality(world, e, recipe)}/100 · baseada nos insumos e no local`,
-              },
-              ...Object.entries(recipe.input).map(([id, q]) => ({
-                label: products[id as ProductId].name,
-                value: `${num(q! * cycles)} ${products[id as ProductId].unit} necessários · ${num(e.inventory[id as ProductId] ?? 0)} em estoque`,
-              })),
-              { label: 'Processamento e consumíveis', value: cr(charges!.processing) },
-              { label: `Energia · ${num(charges!.energyKwh)} kWh`, value: cr(charges!.energy) },
-              {
-                label: `Água e esgoto · ${num(charges!.waterM3, 2)} m³`,
-                value: cr(charges!.water),
-              },
-              { label: 'Pagamento total do lote', value: cr(charges!.total) },
-              {
-                label: 'Processamento do lote (tempo real)',
-                value: Number.isFinite(line!.durationMs)
-                  ? `${num(line!.durationMs / 1000)} s`
-                  : line!.bottleneck,
-              },
-            ]}
-          />
-          <p className="muted small">
-            Os insumos saem do estoque agora e as saídas são recebidas quando cada lote for
-            concluído. Os ciclos deste lote usam as linhas disponíveis em paralelo; novos lotes
-            aguardam a fila. A equipe permanece comprometida até terminar.
-          </p>
-          <button
-            className="primary full"
-            disabled={pending || !e.enabled || !line?.lines}
-            onClick={async () => {
-              if (
-                await run(
-                  { type: 'produce', establishmentId: e.id, recipeId: recipe.id, cycles },
-                  'Produção adicionada. Insumos e custo reservados.',
-                )
-              )
-                setQueue(false);
-            }}
+            <Fila
+              e={e}
+              jobs={jobs}
+              agora={now}
+              podeProduzir={(line1?.lines ?? 0) > 0}
+              onProduzir={() => setQueue(true)}
+              onConfigurarAuto={() => setAuto(true)}
+              onLigarAuto={(ligar) => void ligarAuto(ligar)}
+            />
+            <section className="prod-bloco" aria-labelledby="armazem-titulo">
+              <h2 id="armazem-titulo">No armazém</h2>
+              <Stock key={e.id} establishment={e} saidasOnly />
+            </section>
+          </>
+        )}
+        {tab === 'Estoque' && (
+          <section className="prod-bloco" aria-labelledby="estoque-titulo">
+            <h2 id="estoque-titulo">No armazém</h2>
+            <Stock key={e.id} establishment={e} />
+          </section>
+        )}
+        {tab === 'Vendas' && <Vendas key={e.id} establishment={e} />}
+        {tab === 'Equipe' && (
+          <div className="prod-painel">
+            <Workforce key={e.id} establishment={e} />
+          </div>
+        )}
+        {tab === 'Finanças' && (
+          <div className="prod-painel">
+            <BusinessFinance establishment={e} />
+          </div>
+        )}
+        {tab === 'Abastecimento' && (
+          <div className="prod-painel">
+            <Abastecimento key={e.id} establishment={e} />
+          </div>
+        )}
+      </div>
+
+      {queue && recipe && line && charges && (
+        <Modal title="Começar a produzir" onClose={() => setQueue(false)}>
+          <div
+            className="recibo"
+            style={{ ['--h' as string]: matizDoProduto(Object.keys(recipe.output)[0]) }}
           >
-            {pending ? 'Reservando…' : 'Confirmar produção'}
-          </button>
+            <header className="recibo-cab">
+              <BotaoProduto product={Object.keys(recipe.output)[0] as ProductId}>
+                <ProdutoArte product={Object.keys(recipe.output)[0] as ProductId} escala={2} />
+              </BotaoProduto>
+              <div>
+                <h3>{recipe.name}</h3>
+                <p>
+                  {line.lines} {line.lines === 1 ? 'linha disponível' : 'linhas disponíveis'} de capacidade
+                </p>
+              </div>
+            </header>
+
+            <div className="recibo-ciclos" role="group" aria-label="Quantidade de ciclos">
+              <span>Quantos ciclos?</span>
+              <div>
+                <button
+                  type="button"
+                  className="secondary"
+                  aria-label="Menos um ciclo"
+                  onClick={() => setCycles(Math.max(1, cycles - 1))}
+                >
+                  <Minus size={18} />
+                </button>
+                <input
+                  aria-label="Ciclos"
+                  type="number"
+                  min="1"
+                  max="100"
+                  value={cycles}
+                  onChange={(ev) =>
+                    setCycles(Math.max(1, Math.min(100, Math.floor(Number(ev.target.value)) || 1)))
+                  }
+                />
+                <button
+                  type="button"
+                  className="secondary"
+                  aria-label="Mais um ciclo"
+                  onClick={() => setCycles(Math.min(100, cycles + 1))}
+                >
+                  <Plus size={18} />
+                </button>
+              </div>
+              <div className="recibo-atalhos">
+                {[1, 5, 10, 25].map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    className={cycles === n ? 'on' : ''}
+                    onClick={() => setCycles(n)}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="recibo-grade">
+              <section>
+                <h4>
+                  <IconePixel nome="caixa" tamanho={22} /> Gasta
+                </h4>
+                {Object.keys(recipe.input).length ? (
+                  <ul>
+                    {(Object.entries(recipe.input) as [ProductId, number][]).map(([id, q]) => {
+                      const tem = e.inventory[id] ?? 0;
+                      const falta = tem < q * cycles;
+                      return (
+                        <li key={id} className={falta ? 'falta' : ''}>
+                          <span>{products[id].name}</span>
+                          <b>
+                            {num(q * cycles, 1)} {products[id].unit}
+                          </b>
+                          <small>
+                            {falta ? `faltam ${num(q * cycles - tem, 1)}` : `tem ${num(tem, 1)}`}
+                          </small>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ) : (
+                  <p className="recibo-nota">Nada: a mina tira da própria reserva.</p>
+                )}
+              </section>
+              <section>
+                <h4>
+                  <IconePixel nome="moeda" tamanho={22} /> Custa
+                </h4>
+                <b className="recibo-grande dinheiro">{cr(charges.total, 0)}</b>
+                <small>
+                  processamento {cr(charges.processing, 0)} · energia {cr(charges.energy, 0)} · água{' '}
+                  {cr(charges.water, 0)}
+                </small>
+              </section>
+              <section>
+                <h4>
+                  <IconePixel nome="prazo" tamanho={22} /> Leva
+                </h4>
+                <b className="recibo-grande">
+                  {Number.isFinite(line.durationMs)
+                    ? `~${num(Math.max(1, horasDeJogo(line.durationMs)))} h`
+                    : '—'}
+                </b>
+                <small>{Number.isFinite(line.durationMs) ? 'de jogo' : line.bottleneck}</small>
+                {espera > 0 && <small>Mais ~{num(Math.max(1, horasDeJogo(espera)))} h de jogo aguardando os lotes anteriores.</small>}
+              </section>
+              <section>
+                <h4>
+                  <IconePixel nome="estrela" tamanho={22} /> Rende
+                </h4>
+                {(Object.entries(recipe.output) as [ProductId, number][]).map(([id, q]) => (
+                  <b key={id} className="recibo-grande bom">
+                    {num(q * cycles, 1)} {products[id].unit}
+                    <small> de {products[id].name}</small>
+                  </b>
+                ))}
+                <small>qualidade {productionQuality(world, e, recipe)}</small>
+              </section>
+            </div>
+
+            {faltando.length > 0 && (
+              <p className="recibo-aviso">
+                Faltam{' '}
+                {faltando.map(([id]) => products[id].name.toLocaleLowerCase('pt-BR')).join(', ')}{' '}
+                para este lote.
+                <button
+                  type="button"
+                  className="secondary"
+                  onClick={() => {
+                    setQueue(false);
+                    openRepor({ destinationId: e.id, product: faltando[0][0] });
+                  }}
+                >
+                  <ShoppingCart size={16} /> Mandar buscar
+                </button>
+              </p>
+            )}
+            <button
+              className="primary full recibo-confirmar"
+              disabled={pending || !e.enabled || !line.lines || faltando.length > 0 || freeCash(world, actor) < charges.total || (e.category === 'mine' && (e.reserve ?? 0) < cycles)}
+              onClick={async () => {
+                if (
+                  await run(
+                    { type: 'produce', establishmentId: e.id, recipeId: recipe.id, cycles },
+                    'Produção começou. Insumos e custo já foram separados.',
+                  )
+                )
+                  setQueue(false);
+              }}
+            >
+              {pending ? 'Separando…' : 'Começar a produzir'}
+            </button>
+            <p className="recibo-nota">
+              {freeCash(world, actor) < charges.total && 'Caixa livre insuficiente para este lote. '}
+              {e.category === 'mine' && (e.reserve ?? 0) < cycles && 'Reserva mineral insuficiente para este lote. '}
+              Os insumos saem do armazém agora e a produção chega quando o lote termina. A equipe
+              fica ocupada até lá.
+            </p>
+          </div>
         </Modal>
       )}
+
       {auto && recipe && (
         <Modal
-          title={
-            e.category === 'mine' ? 'Configurar extração passiva' : 'Configurar produção automática'
-          }
+          title={e.category === 'mine' ? 'Extração passiva' : 'Produção automática'}
           onClose={() => setAuto(false)}
         >
-          <p>
-            <strong>{recipe.name}</strong> · {line?.lines ?? 0} linhas disponíveis. A receita
-            selecionada será a especialidade da automação.
-          </p>
-          <label className="field">
-            Ciclos por lote automático
-            <input
-              aria-label="Ciclos automáticos"
-              type="number"
-              min="1"
-              max="100"
-              value={autoCycles}
-              onChange={(event) => setAutoCycles(event.target.value)}
-            />
-          </label>
-          <label className="field">
-            Orçamento por dia do jogo (R$)
-            <input
-              aria-label="Orçamento diário de produção"
-              type="number"
-              min="0.01"
-              step="0.01"
-              value={budget}
-              onChange={(event) => setBudget(event.target.value)}
-            />
-          </label>
-          <p className="muted small">
-            O orçamento cobre processamento, energia e água dos novos lotes. Insumos podem ser
-            repostos pelas regras da aba Abastecimento. O orçamento de compra é separado. Folha e
-            manutenção são despesas fixas separadas. Ao faltar recurso, a automação aguarda sem
-            criar estoque nem dinheiro.
-          </p>
-          <button
-            className="primary full"
-            disabled={
-              pending ||
-              !Number.isInteger(Number(autoCycles)) ||
-              Number(autoCycles) < 1 ||
-              Number(autoCycles) > 100 ||
-              Number(budget) <= 0
-            }
-            onClick={async () => {
-              if (
-                await run(
-                  {
-                    type: 'configureProduction',
-                    establishmentId: e.id,
-                    recipeId: recipe.id,
-                    cycles: Number(autoCycles),
-                    dailyBudget: Math.round(Number(budget) * 100),
-                    enabled: true,
-                  },
-                  'Automação configurada com orçamento diário.',
-                )
-              )
-                setAuto(false);
-            }}
+          <div
+            className="recibo"
+            style={{ ['--h' as string]: matizDoProduto(Object.keys(recipe.output)[0]) }}
           >
-            Salvar e ativar automação
-          </button>
-          {e.automation && (
+            <header className="recibo-cab">
+              <BotaoProduto product={Object.keys(recipe.output)[0] as ProductId}>
+                <ProdutoArte product={Object.keys(recipe.output)[0] as ProductId} escala={2} />
+              </BotaoProduto>
+              <div>
+                <h3>{recipe.name}</h3>
+                <p>A unidade repete este lote sozinha a cada rodada.</p>
+              </div>
+            </header>
+            <label className="recibo-campo">
+              <span>Ciclos por lote</span>
+              <input
+                aria-label="Ciclos automáticos"
+                type="number"
+                min="1"
+                max="100"
+                value={autoCycles}
+                onChange={(ev) => setAutoCycles(ev.target.value)}
+              />
+            </label>
+            <label className="recibo-campo">
+              <span>Quanto pode gastar por dia de jogo (R$)</span>
+              <input
+                aria-label="Orçamento diário de produção"
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={budget}
+                onChange={(ev) => setBudget(ev.target.value)}
+              />
+            </label>
+            <p className="recibo-nota">
+              Esse limite cobre processamento, energia e água. Os insumos vêm do Abastecimento, que
+              tem orçamento próprio. Se faltar insumo, caixa ou equipe, a unidade espera.
+            </p>
             <button
-              className="secondary full"
-              disabled={pending}
+              className="primary full recibo-confirmar"
+              disabled={
+                pending ||
+                !Number.isInteger(ciclosAuto) ||
+                ciclosAuto < 1 ||
+                ciclosAuto > 100 ||
+                !Number.isSafeInteger(orcamentoAuto) ||
+                orcamentoAuto < 1 ||
+                orcamentoAuto > 1000000000 ||
+                !!e.mothballed
+              }
               onClick={async () => {
                 if (
                   await run(
@@ -562,29 +414,33 @@ export function OperationPage() {
                       type: 'configureProduction',
                       establishmentId: e.id,
                       recipeId: recipe.id,
-                      cycles: e.automationCycles ?? 1,
-                      dailyBudget: e.automationDailyBudget ?? 10000000,
-                      enabled: false,
+                      cycles: ciclosAuto,
+                      dailyBudget: orcamentoAuto,
+                      enabled: true,
                     },
-                    'Automação desativada. Lotes em andamento serão concluídos.',
+                    'Automação ligada com o limite diário.',
                   )
                 )
                   setAuto(false);
               }}
             >
-              Desativar automação
+              Salvar e ligar
             </button>
-          )}
+            {e.automation && (
+              <button
+                className="secondary full"
+                disabled={pending}
+                onClick={async () => {
+                  if (await ligarAuto(false)) setAuto(false);
+                }}
+              >
+                Desligar automação
+              </button>
+            )}
+          </div>
         </Modal>
       )}
-      {offerProduct && (
-        <OfferModal
-          establishment={e}
-          product={offerProduct}
-          onClose={() => setOfferProduct(undefined)}
-        />
-      )}
       {showCosts && <InfrastructureDetails property={p} onClose={() => setShowCosts(false)} />}
-    </>
+    </div>
   );
 }

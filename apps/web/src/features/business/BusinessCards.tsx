@@ -1,17 +1,26 @@
-import { MapPin, Users } from 'lucide-react';
-import { useGame, cr, num } from '../../lib/game';
-import { Badge } from '../../components/ui';
+import { IconePixel } from '../../components/IconePixel';
 import { PixelArt, Fumaca } from '../../components/PixelArt';
+import { cr, num, useGame } from '../../lib/game';
 import { spriteDoNegocio, type Sprite } from '../../design/arte';
-import { categoryInfo, type Establishment } from '../../../../../packages/simulation/src/model';
-import { loadOf } from '../../../../../packages/simulation/src/engine';
+import type { Pendencia } from '../inicio/pendencias';
+import type { Category, Establishment } from '../../../../../packages/simulation/src/model';
 
-// Onde sai a fumaça, em % da ilustração. Só as chamines.
+// Onde sai a fumaça, em % da ilustração. Só as chaminés.
 const chamines: Partial<Record<Sprite, [number, number][]>> = {
   siderurgica: [
     [32, 8],
     [47, 2],
   ],
+};
+
+/** Matiz de fundo de cada tipo de negócio: o jogador reconhece o tipo pela cor do cartão. */
+const MATIZ: Record<Category, number> = {
+  retail: 14,
+  farm: 112,
+  industry: 212,
+  mine: 32,
+  warehouse: 272,
+  logistics: 188,
 };
 
 export function estadoDe(e: Establishment): { label: string; tone: 'green' | 'gold' } {
@@ -20,160 +29,104 @@ export function estadoDe(e: Establishment): { label: string; tone: 'green' | 'go
   return e.enabled ? { label: 'Ativo', tone: 'green' } : { label: 'Pausado', tone: 'gold' };
 }
 
-/** Ocupação do armazém: o que estiver mais cheio, massa ou volume. */
-function ocupacao(e: Establishment) {
-  const { mass, volume } = loadOf(e.inventory);
-  const f = Math.max(
-    e.capacityT ? mass / e.capacityT : 0,
-    e.capacityM3 ? volume / e.capacityM3 : 0,
-  );
-  return Math.min(1, Math.max(0, f));
+/** Quanto o cartão pede atenção: parado e com alerta vem primeiro na lista. */
+export function urgenciaDe(e: Establishment, alerta?: Pendencia) {
+  if (alerta?.tom === 'brasa') return 0;
+  if (alerta) return 1;
+  if (!e.enabled || e.installed === false || e.mothballed) return 2;
+  return 3;
 }
 
-function Anel({ fracao }: { fracao: number }) {
-  const r = 15,
-    c = 2 * Math.PI * r,
-    cor = fracao > 0.9 ? 'var(--red)' : fracao > 0.7 ? 'var(--gold)' : 'var(--green)';
-  return (
-    <span
-      className="neg-anel"
-      role="img"
-      aria-label={`Armazém ocupado em ${Math.round(fracao * 100)}%`}
-    >
-      <svg viewBox="0 0 40 40" aria-hidden="true">
-        <circle cx="20" cy="20" r={r} className="neg-anel-trilho" />
-        <circle
-          cx="20"
-          cy="20"
-          r={r}
-          className="neg-anel-barra"
-          style={{ stroke: cor, strokeDasharray: c, strokeDashoffset: c * (1 - fracao) }}
-        />
-      </svg>
-      <b>{Math.round(fracao * 100)}%</b>
-    </span>
-  );
-}
-
-export function BusinessCard({ e, indice }: { e: Establishment; indice: number }) {
+/**
+ * Um negócio como cartão de jogo: a cena grande com o fundo da cor do tipo, o nome, uma palavra de
+ * estado e um botão só. Se algo precisa de você, o botão é o que resolve; senão, abre o negócio.
+ */
+export function BusinessCard({
+  e,
+  vendasHoje,
+  alerta,
+}: {
+  e: Establishment;
+  vendasHoje: number;
+  alerta?: Pendencia;
+}) {
   const { world, openBusiness } = useGame();
   const p = world.properties.find((p) => p.id === e.propertyId)!;
   const arte = spriteDoNegocio(e, world);
   const estado = estadoDe(e);
-  const saldo = e.revenue - e.expenses;
-  const maior = Math.max(e.revenue, e.expenses, 1);
-  const itens = Object.values(e.inventory).filter((q) => (q ?? 0) > 0).length;
   const parado = !e.enabled || e.installed === false || e.mothballed;
+  const palavra = alerta?.tom === 'brasa' ? 'Precisa de você' : estado.label;
+  const tom = alerta?.tom === 'brasa' ? 'brasa' : estado.tone === 'green' ? 'lavoura' : 'ouro';
   return (
     <article
-      className={`neg-card ${parado ? 'parado' : ''}`}
-      style={
-        {
-          '--cat': categoryInfo[e.category].color,
-          animationDelay: `${indice * 45}ms`,
-        } as React.CSSProperties
-      }
-      onClick={() => openBusiness(e.id)}
+      className={`item neg-item ${alerta?.tom === 'brasa' ? 'alerta' : ''} ${parado ? 'parado' : ''}`}
+      style={{ ['--h' as string]: MATIZ[e.category] }}
     >
-      <div className="neg-arte">
-        <div className="neg-sprite">
-          <PixelArt name={arte} />
+      <header className="item-hero">
+        <div className="item-arte neg-cena">
+          <PixelArt name={arte} scale={2} />
           {chamines[arte] && !parado && <Fumaca pontos={chamines[arte]!} />}
         </div>
-      </div>
-      <div className="neg-topo">
-        <div>
+        <div className="item-ident">
           <h3>{e.name}</h3>
-          <span className="neg-local">
-            <MapPin size={12} aria-hidden="true" /> {p.city} — {p.state}
-          </span>
+          <span className={`item-estado tom-${tom}`}>{palavra}</span>
+          <dl className="item-fatos">
+            <div>
+              <IconePixel nome="mapa" tamanho={22} />
+              <dt>Onde</dt>
+              <dd>
+                {p.city}, {p.state}
+              </dd>
+            </div>
+            <div>
+              <IconePixel nome="moeda" tamanho={22} />
+              <dt>Vendeu hoje</dt>
+              <dd>{cr(vendasHoje, 0)}</dd>
+            </div>
+            <div>
+              <dt>Equipe</dt>
+              <dd>{num(e.employees)}</dd>
+            </div>
+          </dl>
         </div>
-        <Anel fracao={ocupacao(e)} />
+      </header>
+      <div className="item-corpo neg-corpo">
+        {alerta ? (
+          <p className={`neg-aviso tom-${alerta.tom}`}>
+            <IconePixel nome="alerta" tamanho={28} />
+            <span>
+              <b>{alerta.titulo.replace(`${e.name} `, '')}</b>
+              <small>{alerta.detalhe}</small>
+            </span>
+          </p>
+        ) : (
+          <p className="neg-aviso ok">
+            <span>
+              <b>{parado ? 'Parado no momento' : 'Tudo certo por aqui'}</b>
+              <small>
+                {parado
+                  ? 'Abra o negócio para colocar em operação.'
+                  : 'Nada esperando por você neste negócio.'}
+              </small>
+            </span>
+          </p>
+        )}
+        <div className="neg-botoes">
+          {alerta && (
+            <button type="button" className="primary" onClick={alerta.acao.executar}>
+              {alerta.acao.rotulo}
+            </button>
+          )}
+          <button
+            type="button"
+            className={alerta ? 'secondary' : 'primary'}
+            onClick={() => openBusiness(e.id)}
+            aria-label={`Abrir ${e.name}`}
+          >
+            Abrir
+          </button>
+        </div>
       </div>
-      <div className="neg-estado">
-        <Badge tone={estado.tone}>{estado.label}</Badge>
-        <span className="neg-cat">{categoryInfo[e.category].label}</span>
-      </div>
-      <dl className="neg-numeros">
-        <div>
-          <dt>Resultado</dt>
-          <dd className={saldo >= 0 ? 'positive' : 'negative'}>
-            {saldo >= 0 ? '+' : '−'}
-            {cr(Math.abs(saldo))}
-          </dd>
-        </div>
-        <div>
-          <dt>
-            <Users size={12} aria-hidden="true" /> Equipe
-          </dt>
-          <dd>{num(e.employees)}</dd>
-        </div>
-        <div>
-          <dt>No estoque</dt>
-          <dd>{itens ? `${itens} ${itens === 1 ? 'produto' : 'produtos'}` : 'Vazio'}</dd>
-        </div>
-      </dl>
-      <div
-        className="neg-fluxo"
-        role="img"
-        aria-label={`Receita ${cr(e.revenue)} e custos ${cr(e.expenses)}`}
-      >
-        <span className="neg-fluxo-l">Receita</span>
-        <span className="neg-fluxo-b">
-          <i className="rec" style={{ width: `${(e.revenue / maior) * 100}%` }} />
-        </span>
-        <span className="neg-fluxo-l">Custos</span>
-        <span className="neg-fluxo-b">
-          <i className="cus" style={{ width: `${(e.expenses / maior) * 100}%` }} />
-        </span>
-      </div>
-      <button
-        className="secondary full"
-        onClick={(ev) => {
-          ev.stopPropagation();
-          openBusiness(e.id);
-        }}
-      >
-        Gerenciar
-      </button>
     </article>
-  );
-}
-
-/** Resultado de cada unidade, partindo do zero: barras verdes à direita, vermelhas à esquerda. */
-export function ResultadoPorUnidade({ itens }: { itens: Establishment[] }) {
-  const linhas = itens
-    .map((e) => ({ e, v: e.revenue - e.expenses }))
-    .sort((a, b) => Math.abs(b.v) - Math.abs(a.v))
-    .slice(0, 5);
-  const teto = Math.max(1, ...linhas.map((l) => Math.abs(l.v)));
-  if (!linhas.length) return null;
-  return (
-    <figure className="neg-div" aria-label="Resultado por unidade">
-      <figcaption>Resultado por unidade</figcaption>
-      {linhas.map(({ e, v }) => (
-        <div className="neg-div-linha" key={e.id}>
-          <span className="neg-div-nome" title={e.name}>
-            {e.name}
-          </span>
-          <span className="neg-div-trilho">
-            <i
-              className={v >= 0 ? 'pos' : 'neg'}
-              style={{
-                width: `${(Math.abs(v) / teto) * 50}%`,
-                [v >= 0 ? 'left' : 'right']: '50%',
-              }}
-            />
-          </span>
-          <span className={`neg-div-valor ${v >= 0 ? 'positive' : 'negative'}`}>
-            {v >= 0 ? '+' : '−'}
-            {cr(Math.abs(v), 0)}
-          </span>
-        </div>
-      ))}
-      {itens.length > linhas.length && (
-        <small className="muted">e mais {itens.length - linhas.length} unidades</small>
-      )}
-    </figure>
   );
 }

@@ -1,0 +1,541 @@
+/* Comprar: loja de mercadorias em cartões, com destino, produtos e lista de todas as ofertas. */
+.comprar {
+  display: grid;
+  gap: 32px;
+  align-content: start;
+}
+.comprar-bloco {
+  display: grid;
+  gap: 18px;
+}
+.comprar-bloco > h2,
+.comprar-titulo h2 {
+  margin: 0;
+  font-family: var(--pixel);
+  font-size: 24px;
+  font-weight: 400;
+  color: var(--creme);
+  text-shadow: 3px 3px 0 var(--sombra);
+}
+.comprar-titulo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.comprar-caixa {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 14px;
+  color: var(--apagado);
+}
+.comprar-caixa b {
+  font-family: var(--pixel);
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--ouro);
+}
+.comprar-fornecedor {
+  margin: 0;
+  padding: 12px 16px;
+  background: var(--chapa-2);
+  border-left: 6px solid var(--ceu);
+  font-size: 14px;
+}
+
+/* Destino: cada imóvel é um cartão grande com o que falta nele. */
+.destinos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+.destino {
+  position: relative;
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  grid-template-areas: 'arte nome' 'arte estado';
+  align-items: center;
+  gap: 6px 16px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, var(--chapa-2), var(--chapa));
+  border: 2px solid var(--borda);
+  box-shadow: 4px 4px 0 var(--sombra);
+  color: var(--creme);
+  text-align: left;
+  cursor: pointer;
+}
+.destino:hover {
+  border-color: var(--borda-forte);
+}
+.destino.on {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--lavoura) 18%, var(--chapa-2)),
+    var(--chapa)
+  );
+  border-color: var(--lavoura);
+  box-shadow: 4px 4px 0 var(--lavoura-escura);
+}
+.destino.on::after {
+  content: 'Recebe a carga';
+  position: absolute;
+  top: -12px;
+  right: 14px;
+  padding: 2px 10px;
+  background: var(--lavoura);
+  color: var(--noite);
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 2px 2px 0 var(--sombra);
+}
+.destino:focus-visible {
+  outline: 3px solid var(--lavoura);
+  outline-offset: 3px;
+}
+.destino-arte {
+  grid-area: arte;
+  display: grid;
+  place-items: center;
+  min-height: 80px;
+  background: var(--noite-funda);
+}
+.destino-nome {
+  grid-area: nome;
+  display: grid;
+  gap: 4px;
+}
+.destino-nome b {
+  font-family: var(--pixel);
+  font-size: 20px;
+  font-weight: 400;
+}
+.destino-nome small {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--apagado);
+}
+.destino-estado {
+  grid-area: estado;
+  justify-self: start;
+  padding: 3px 10px;
+  background: var(--tom, var(--lavoura));
+  color: var(--noite);
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 2px 2px 0 var(--sombra);
+}
+
+/* Vitrine: um cartão por produto, com o fundo na cor dele. */
+.vitrine-lista {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: 22px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.prod-card {
+  position: relative;
+  display: grid;
+  height: 100%;
+  background: var(--chapa);
+  border: 2px solid var(--borda);
+  box-shadow: 6px 6px 0 var(--sombra);
+  overflow: hidden;
+}
+.prod-topo {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 18px;
+  padding: 18px 20px;
+  background:
+    radial-gradient(circle at 14% 45%, hsl(var(--h, 40) 55% 32%), transparent 60%),
+    linear-gradient(100deg, hsl(var(--h, 40) 32% 18%), var(--chapa) 90%);
+  border-bottom: 2px solid var(--borda);
+}
+.prod-arte {
+  display: grid;
+  place-items: center;
+  min-width: 90px;
+  min-height: 100px;
+  filter: drop-shadow(4px 6px 0 var(--sombra));
+}
+.prod-arte .vit-arte {
+  max-height: none;
+  max-width: none;
+}
+.prod-arte .vit-icone svg {
+  width: 56px;
+  height: 56px;
+}
+.prod-ident {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+.prod-ident h3 {
+  margin: 0;
+  font-family: var(--pixel);
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1.15;
+  text-shadow: 3px 3px 0 var(--sombra);
+}
+.prod-estado {
+  justify-self: start;
+  padding: 4px 12px;
+  background: var(--tom, var(--lavoura));
+  color: var(--noite);
+  font-size: 15px;
+  font-weight: 600;
+  box-shadow: 3px 3px 0 var(--sombra);
+}
+.prod-corpo {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+  padding: 18px 20px 20px;
+}
+.prod-preco {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: center;
+  gap: 4px 12px;
+}
+.prod-preco b {
+  font-family: var(--pixel);
+  font-size: 32px;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--ouro);
+}
+.prod-preco span {
+  display: grid;
+  font-size: 14px;
+  color: var(--creme);
+}
+.prod-preco small {
+  font-size: 13px;
+  color: var(--apagado);
+}
+.prod-conta {
+  display: grid;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--noite-funda);
+  border: 2px solid var(--borda);
+}
+.prod-faixa {
+  display: flex;
+  height: 16px;
+  background: var(--chapa-3);
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 2px var(--sombra);
+  overflow: hidden;
+}
+.prod-faixa i {
+  display: block;
+  height: 100%;
+  box-shadow: inset 0 3px 0 rgb(255 255 255 / 0.3);
+}
+.prod-faixa .merc {
+  background: var(--serie-3);
+}
+.prod-faixa .frete {
+  background: var(--serie-2);
+}
+.prod-faixa .lucro {
+  background: var(--lavoura);
+}
+.prod-chave {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.prod-chave li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--apagado);
+}
+.prod-chave b {
+  font-family: var(--fonte);
+  font-weight: 600;
+  color: var(--creme);
+}
+.prod-ritmo {
+  margin: 0;
+  font-size: 13px;
+  color: var(--apagado);
+}
+.prod-fornecedor {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 14px;
+  color: var(--creme);
+}
+.prod-fornecedor em {
+  font-style: normal;
+  color: var(--apagado);
+}
+.prod-acao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 54px;
+  font-size: 16px;
+}
+.prod-nota {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 14px;
+  color: var(--creme);
+}
+.prod-card.esgotado {
+  background: color-mix(in srgb, var(--chapa) 80%, var(--noite-funda));
+}
+.prod-card.esgotado .prod-topo {
+  filter: saturate(0.5);
+}
+.prod-card.em-foco {
+  border-color: var(--lavoura);
+  box-shadow: 6px 6px 0 var(--lavoura-escura);
+}
+.prod-foco {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  z-index: 1;
+  padding: 2px 10px;
+  background: var(--ceu);
+  color: var(--noite);
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 2px 2px 0 var(--sombra);
+}
+
+/* Todas as ofertas: recolhida, com cartões pequenos. */
+.of-bloco {
+  background: var(--chapa);
+  border: 2px dashed var(--borda-forte);
+}
+.of-bloco > summary {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  list-style: none;
+  cursor: pointer;
+}
+.of-bloco > summary:focus-visible {
+  outline: 3px solid var(--lavoura);
+  outline-offset: 2px;
+}
+.of-bloco > summary span {
+  display: grid;
+  gap: 2px;
+}
+.of-bloco > summary b {
+  font-family: var(--pixel);
+  font-size: 20px;
+  font-weight: 400;
+}
+.of-bloco > summary small {
+  font-size: 13px;
+  color: var(--apagado);
+}
+.of-conteudo {
+  display: grid;
+  gap: 16px;
+  padding: 4px 20px 20px;
+}
+.of-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px 16px;
+}
+.of-busca,
+.of-campo {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--apagado);
+}
+.of-busca input,
+.of-campo input {
+  min-height: 42px;
+  padding: 0 12px;
+  font-size: 15px;
+}
+.of-busca {
+  flex: 1 1 240px;
+}
+.of-ordem {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.of-ordem button {
+  min-height: 42px;
+  padding: 0 14px;
+  background: var(--chapa-2);
+  border: 2px solid var(--borda);
+  color: var(--creme);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.of-ordem button.on {
+  border-color: var(--lavoura);
+  color: var(--lavoura-clara);
+  box-shadow: inset 0 -4px 0 var(--lavoura);
+}
+.of-ordem button:focus-visible {
+  outline: 3px solid var(--lavoura);
+  outline-offset: 2px;
+}
+.of-mais summary {
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--apagado);
+}
+.of-mais summary:hover {
+  color: var(--lavoura);
+}
+.of-mais-grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px 16px;
+  margin-top: 12px;
+}
+.of-marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+.of-lista {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.of-linha {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) auto auto auto;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  background: linear-gradient(100deg, hsl(var(--h, 40) 28% 17%), var(--chapa-2) 70%);
+  border: 2px solid var(--borda);
+}
+.of-arte {
+  display: grid;
+  place-items: center;
+  min-height: 56px;
+}
+.of-arte .vit-arte {
+  max-height: 64px;
+}
+.of-quem {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.of-quem strong {
+  font-family: var(--pixel);
+  font-size: 18px;
+  font-weight: 400;
+}
+.of-quem small {
+  font-size: 13px;
+  color: var(--apagado);
+}
+.of-preco {
+  display: grid;
+  justify-items: end;
+}
+.of-preco b {
+  font-family: var(--pixel);
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--ouro);
+}
+.of-preco small {
+  font-size: 13px;
+  color: var(--apagado);
+}
+.of-estoque {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--creme);
+}
+.of-vazio,
+.of-nota {
+  margin: 0;
+  font-size: 13px;
+  color: var(--apagado);
+}
+.of-mais-botao {
+  justify-self: center;
+}
+
+@media (max-width: 900px) {
+  .of-linha {
+    grid-template-columns: 56px minmax(0, 1fr) auto;
+  }
+  .of-estoque,
+  .of-linha > button {
+    grid-column: 2 / -1;
+  }
+}
+@media (max-width: 600px) {
+  .comprar {
+    gap: 24px;
+  }
+  .comprar-bloco > h2,
+  .comprar-titulo h2 {
+    font-size: 20px;
+  }
+  .destinos,
+  .vitrine-lista {
+    grid-template-columns: 1fr;
+  }
+  .destino {
+    grid-template-columns: 72px 1fr;
+  }
+  .prod-topo {
+    padding: 14px 16px;
+    gap: 14px;
+  }
+  .prod-ident h3 {
+    font-size: 20px;
+  }
+  .prod-preco b {
+    font-size: 26px;
+  }
+  .of-conteudo {
+    padding: 4px 14px 16px;
+  }
+}

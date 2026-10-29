@@ -10,3 +10,10 @@ test-results/
 *.tsbuildinfo
 .DS_Store
 Thumbs.db
+
+# AI tool configs (session-local)
+.codex/
+.claude/
+
+# Generated output
+output/

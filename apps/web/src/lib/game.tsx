@@ -134,6 +134,9 @@ interface GameContextValue {
   /** Abre a gaveta de reposição (Mandar buscar) por cima da tela atual. */
   repor: { destinationId: string; product: ProductId } | null;
   openRepor: (alvo: { destinationId: string; product: ProductId } | null) => void;
+  /** Produto aberto na ficha (gráfico de preço, quem produz e quem vende). */
+  produtoAberto: ProductId | null;
+  openProduto: (id: ProductId | null) => void;
   notice: (message: string, error?: boolean) => void;
 }
 const GameContext = createContext<GameContextValue | null>(null);
@@ -161,6 +164,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [focus, setFocus] = useState<[number, number]>();
   const consumeFocus = useCallback(() => setFocus(undefined), []);
   const [intent, setIntent] = useState<MarketIntent>({});
+  const [produtoAberto, openProduto] = useState<ProductId | null>(null);
   const [repor, openRepor] = useState<{ destinationId: string; product: ProductId } | null>(null);
   const [pending, setPending] = useState(false),
     [toast, setToast] = useState<{ message: string; error: boolean; id: number }>();
@@ -307,6 +311,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
         },
         repor,
         openRepor,
+        produtoAberto,
+        openProduto,
         openMarket: (next) => {
           setIntent(next);
           changePage('market');

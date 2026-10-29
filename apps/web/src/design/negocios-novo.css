@@ -1,0 +1,336 @@
+/* Meus negócios: cartões grandes com a cena de cada negócio e o que precisa de você. */
+.neg-pagina {
+  display: grid;
+  gap: 24px;
+  align-content: start;
+}
+
+/* Faixa de resumo: três números grandes, cada um com a sua figura. */
+.neg-faixa {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  background: var(--chapa);
+  border: 2px solid var(--borda);
+  box-shadow: 6px 6px 0 var(--lavoura-escura);
+}
+.neg-faixa > div {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  align-items: center;
+  column-gap: 14px;
+  padding: 16px 22px;
+}
+.neg-faixa > div + div {
+  border-left: 2px dashed var(--borda);
+}
+.neg-faixa svg {
+  grid-row: 1 / span 2;
+}
+.neg-faixa b {
+  font-family: var(--pixel);
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 1.1;
+  color: var(--creme);
+}
+.neg-faixa span {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--apagado);
+}
+.neg-faixa .atencao b {
+  color: var(--brasa);
+}
+
+/* Filtros (só a partir de 8 negócios). */
+.neg-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+}
+.neg-busca {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 240px;
+  padding: 0 12px;
+  background: var(--noite-funda);
+  border: 2px solid var(--borda-forte);
+  color: var(--apagado);
+}
+.neg-busca input {
+  flex: 1;
+  min-height: 42px;
+  border: 0 !important;
+  background: transparent !important;
+  font-size: 15px;
+}
+.neg-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.neg-chips button {
+  min-height: 40px;
+  padding: 0 16px;
+  background: var(--chapa-2);
+  border: 2px solid var(--borda-forte);
+  color: var(--creme);
+  font-family: var(--fonte);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.neg-chips button.on {
+  background: var(--lavoura);
+  border-color: var(--lavoura);
+  color: var(--noite);
+}
+.neg-chips button:focus-visible,
+.neg-novo:focus-visible {
+  outline: 3px solid var(--lavoura);
+  outline-offset: 2px;
+}
+
+/* Grade de cartões. */
+.neg-grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 460px), 1fr));
+  gap: 24px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.neg-grade > li {
+  display: grid;
+}
+.neg-item {
+  height: 100%;
+  grid-template-rows: auto 1fr;
+}
+.neg-item .item-hero {
+  grid-template-columns: auto 1fr;
+  gap: 22px;
+  padding: 20px 24px;
+}
+.neg-item.alerta {
+  border-color: var(--brasa);
+  box-shadow: 6px 6px 0 color-mix(in srgb, var(--brasa) 45%, var(--sombra));
+}
+.neg-item.parado .item-hero {
+  filter: saturate(0.5);
+}
+.neg-cena {
+  position: relative;
+  min-width: 170px;
+  min-height: 124px;
+}
+.neg-item .item-ident h3 {
+  font-size: 26px;
+}
+.neg-item .item-fatos {
+  gap: 4px 20px;
+}
+.neg-corpo {
+  grid-template-columns: 1fr;
+  align-content: space-between;
+  gap: 16px;
+  padding: 18px 24px 22px;
+}
+.neg-aviso {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0;
+  padding: 12px 16px;
+  background: var(--noite-funda);
+  border-left: 6px solid var(--tom, var(--lavoura));
+}
+.neg-aviso.ok {
+  --tom: var(--borda-forte);
+}
+.neg-aviso span {
+  display: grid;
+  gap: 3px;
+}
+.neg-aviso b {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--creme);
+}
+.neg-aviso small {
+  font-size: 14px;
+  color: var(--apagado);
+}
+.neg-botoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.neg-botoes button {
+  flex: 1;
+  min-width: 140px;
+  min-height: 50px;
+  font-size: 16px;
+}
+
+/* Cartão de abrir negócio. */
+.neg-novo {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 100%;
+  padding: 24px;
+  background: transparent;
+  border: 3px dashed var(--borda-forte);
+  color: var(--lavoura);
+  text-align: center;
+  cursor: pointer;
+}
+.neg-novo strong {
+  font-family: var(--pixel);
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--creme);
+}
+.neg-novo small {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--apagado);
+}
+.neg-novo:hover {
+  border-color: var(--lavoura);
+}
+
+/* Blocos secundários. */
+.neg-bloco {
+  display: grid;
+  gap: 14px;
+  padding: 18px 22px 20px;
+  background: var(--chapa);
+  border: 2px solid var(--borda);
+  box-shadow: 4px 4px 0 var(--sombra);
+}
+.neg-bloco-cab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+.neg-bloco h2 {
+  margin: 0;
+  font-family: var(--pixel);
+  font-size: 20px;
+  font-weight: 400;
+}
+.neg-rotas {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.neg-rotas li {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-rows: auto auto;
+  align-items: center;
+  gap: 2px 16px;
+  padding: 12px 16px;
+  background: var(--chapa-2);
+  border-left: 6px solid var(--lavoura);
+}
+.neg-rotas li.pausada {
+  border-left-color: var(--ouro);
+}
+.neg-rotas li > .abre-produto {
+  grid-row: 1 / span 2;
+}
+.neg-rota-produto {
+  font-size: 14px;
+  font-weight: 700;
+}
+.neg-rotas li > button {
+  grid-row: 1 / span 2;
+  grid-column: 3;
+}
+.neg-rota-caminho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.neg-rota-caminho strong {
+  font-size: 16px;
+  font-weight: 700;
+}
+.neg-rotas small {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--apagado);
+}
+.neg-vazio-mini {
+  margin: 0;
+  padding: 14px 16px;
+  border: 2px dashed var(--borda-forte);
+  font-size: 15px;
+  color: var(--apagado);
+}
+.neg-pedidos {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px;
+  background: var(--chapa-2);
+  border-left: 6px solid var(--serie-4);
+}
+.neg-pedidos p {
+  flex: 1;
+  margin: 0;
+  font-size: 16px;
+}
+
+@media (max-width: 900px) {
+  .neg-faixa {
+    grid-template-columns: 1fr;
+  }
+  .neg-faixa > div + div {
+    border-left: 0;
+    border-top: 2px dashed var(--borda);
+  }
+}
+@media (max-width: 600px) {
+  .neg-item .item-hero {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 18px 16px;
+  }
+  .neg-cena {
+    min-width: 0;
+    min-height: 0;
+    justify-self: start;
+  }
+  .neg-item .item-ident h3 {
+    font-size: 22px;
+  }
+  .neg-corpo {
+    padding: 16px;
+  }
+  .neg-rotas li {
+    grid-template-columns: auto 1fr;
+  }
+  .neg-rotas li > button {
+    grid-column: 1 / -1;
+    grid-row: auto;
+  }
+  .neg-pedidos {
+    flex-wrap: wrap;
+  }
+}

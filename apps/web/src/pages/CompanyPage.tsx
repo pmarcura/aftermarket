@@ -1,316 +1,315 @@
-import { useState } from 'react';
-import { FileText, ChartNoAxesCombined, Box, Truck, Factory, Download } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Download } from 'lucide-react';
 import { useGame, cr, num } from '../lib/game';
-import { PageHeading, Stat, Panel, Rows, Badge, Select, Modal } from '../components/ui';
-import { operatingCosts } from '../../../../packages/simulation/src/metrics';
+import { PageHeading, Rows } from '../components/ui';
+import { IconePixel, type NomeIcone } from '../components/IconePixel';
 import { GraficoPixel } from '../components/GraficoPixel';
+import { BarraEmpilhada, type ParteEmpilhada } from '../components/BarrasPixel';
 import { Recovery } from '../features/business/Recovery';
-import { arrears, outstandingLoans } from '../../../../packages/simulation/src/design';
-import { gameCalendar } from '../../../../packages/simulation/src/operations';
+import { Transacoes, momentoDoJogo } from '../features/empresa/Transacoes';
+import { GRUPOS, porteDe, resumoDaEmpresa, type GrupoSaida } from '../features/empresa/resumo';
+import { operatingCosts } from '../../../../packages/simulation/src/metrics';
+import { arrears, freeCash, outstandingLoans } from '../../../../packages/simulation/src/design';
 import type { ProductId } from '../../../../packages/simulation/src/model';
+import '../design/empresa.css';
+
+const PERIODOS = [7, 30] as const;
+
 export function CompanyPage() {
   const { world, actor, notice } = useGame();
-  const [period, setPeriod] = useState(''),
-    [details, setDetails] = useState(false);
+  const [dias, setDias] = useState<(typeof PERIODOS)[number]>(7);
   const company = world.companies.find((c) => c.id === actor)!,
     units = world.establishments.filter((e) => e.companyId === actor),
     fleet = world.vehicles.filter((v) => v.companyId === actor);
-  const ledger = world.ledger.filter((e) => e.from === actor || e.to === actor),
-    filtered = !period ? ledger : ledger.filter((e) => e.at >= Date.now() - Number(period) * 60000);
-  const revenue = units.reduce((n, e) => n + e.revenue, 0),
-    expenses = units.reduce((n, e) => n + e.expenses, 0) + (company.financingExpense ?? 0),
-    profit = revenue - expenses;
+
+  // Patrimônio: o que a empresa tem menos o que deve (mesmas contas de antes).
   const propertyAssets = world.properties
-      .filter((p) => p.ownerId === actor)
-      .reduce((n, p) => n + p.price, 0),
-    inventory = units.reduce(
-      (n, e) =>
-        n +
-        Object.entries(e.inventory).reduce(
-          (sum, [id, q]) => sum + (e.unitCosts[id as ProductId] ?? 0) * q!,
-          0,
-        ),
-      0,
-    );
+    .filter((p) => p.ownerId === actor)
+    .reduce((n, p) => n + p.price, 0);
+  const inventory = units.reduce(
+    (n, e) =>
+      n +
+      Object.entries(e.inventory).reduce(
+        (sum, [id, q]) => sum + (e.unitCosts[id as ProductId] ?? 0) * q!,
+        0,
+      ),
+    0,
+  );
   const wip = world.jobs
-      .filter((j) => !j.completed && units.some((e) => e.id === j.establishmentId))
-      .reduce((n, j) => n + j.cost, 0),
-    inTransit = world.shipments
-      .filter((s) => s.buyerId === actor && !s.delivered)
-      .reduce((n, s) => n + s.cost + s.freight, 0),
-    vehicles = fleet.reduce((n, v) => n + (v.purchasePrice ?? 28000000), 0);
+    .filter((j) => !j.completed && units.some((e) => e.id === j.establishmentId))
+    .reduce((n, j) => n + j.cost, 0);
+  const inTransit = world.shipments
+    .filter((s) => s.buyerId === actor && !s.delivered)
+    .reduce((n, s) => n + s.cost + s.freight, 0);
+  const vehicles = fleet.reduce((n, v) => n + (v.purchasePrice ?? 28000000), 0);
+  const equipment = units.reduce((n, e) => n + (e.installationValue ?? 0), 0);
   const assets = company.balance + propertyAssets + inventory + wip + inTransit + vehicles;
   const liabilities = arrears(world, actor) + outstandingLoans(world, actor);
-  const equipment = units.reduce((n, e) => n + (e.installationValue ?? 0), 0);
   const netWorth = assets + equipment - liabilities;
-  const ordered = [...filtered].sort((a, b) => a.at - b.at);
-  const first = ordered[0]?.at ?? world.updatedAt,
-    last = ordered.at(-1)?.at ?? first;
-  const bucketWidth = Math.max(1, Math.ceil((last - first) / 200));
-  const buckets = new Map<number, number>();
-  for (const l of ordered) {
-    const at = first + Math.floor((l.at - first) / bucketWidth) * bucketWidth;
-    buckets.set(at, (buckets.get(at) ?? 0) + (l.to === actor ? l.amount : -l.amount));
-  }
-  let cumulative = 0;
-  const timeline = [...buckets].map(([at, change]) => {
-    cumulative += change;
-    return { at, value: cumulative };
-  });
-  const points = timeline.map((p) => p.value);
-  const composition = [
-    { label: 'Imóveis e equipamentos', amount: propertyAssets + equipment, color: '#78a9c5' },
-    { label: 'Frota de veículos', amount: vehicles, color: '#c5a16b' },
-    { label: 'Estoques e produção', amount: inventory + wip + inTransit, color: '#75b593' },
-    { label: 'Caixa disponível', amount: company.balance, color: '#7e929d' },
-  ];
-  const cashCosts = [
-    ['Folha de pagamento', 'payroll'],
-    ['Energia', 'energy'],
-    ['Água e esgoto', 'water'],
-    ['Manutenção', 'maintenance'],
-    ['Processamento e serviços', 'operation'],
-    ['Fretes contratados', 'freight'],
-  ].map(([label, kind]) => ({
-    label,
-    value: cr(
-      filtered
-        .filter((e) => e.from === actor && e.to !== actor && e.kind === kind)
-        .reduce((n, e) => n + e.amount, 0),
-    ),
-  }));
+  const porte = porteDe(netWorth);
+  const totalBens = Math.max(assets + equipment, 1);
+
+  const revenue = units.reduce((n, e) => n + e.revenue, 0);
+  const expenses = units.reduce((n, e) => n + e.expenses, 0) + (company.financingExpense ?? 0);
   const forecast = units.reduce((n, e) => n + operatingCosts(world, e).total, 0);
-  const exportLedger = () => {
+
+  const resumo = useMemo(
+    () => resumoDaEmpresa(world, actor, dias),
+    // O mundo muda por revisão; o resto são as escolhas do jogador.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [world.revision, actor, dias],
+  );
+  const sobrou = resumo.entrou - resumo.saiu;
+  const semInvestir = sobrou + resumo.porGrupo.mercadoria + resumo.porGrupo.imoveis;
+  const partes: ParteEmpilhada[] = (Object.keys(GRUPOS) as GrupoSaida[]).map((g) => ({
+    id: g,
+    valor: resumo.porGrupo[g],
+    ...GRUPOS[g],
+  }));
+  const rotulo = (at: number) => {
+    const m = momentoDoJogo(world, at);
+    return `Dia ${m.dia}, ${String(m.hora).padStart(2, '0')}h`;
+  };
+
+  const bens: { id: string; nome: string; icone: NomeIcone; valor: number; matiz: number }[] = [
+    { id: 'caixa', nome: 'Dinheiro em caixa', icone: 'moeda', valor: company.balance, matiz: 46 },
+    {
+      id: 'imoveis',
+      nome: 'Imóveis e equipamentos',
+      icone: 'predio',
+      valor: propertyAssets + equipment,
+      matiz: 212,
+    },
+    { id: 'frota', nome: 'Caminhões', icone: 'caminhao', valor: vehicles, matiz: 190 },
+    {
+      id: 'estoque',
+      nome: 'Estoques e produção',
+      icone: 'caixa',
+      valor: inventory + wip + inTransit,
+      matiz: 112,
+    },
+  ];
+
+  const baixarExtrato = () => {
+    const linhas = world.ledger.filter((e) => e.from === actor || e.to === actor);
     const csv =
-      '\uFEFFData;Descrição;Tipo;Entrada (R$);Saída (R$)\r\n' +
-      filtered
-        .map((e) =>
-          [
-            new Date(e.at).toISOString(),
+      '﻿Dia do jogo;Hora do jogo;Descrição;Tipo;Entrada (R$);Saída (R$)\r\n' +
+      linhas
+        .map((e) => {
+          const m = momentoDoJogo(world, e.at);
+          return [
+            m.dia,
+            m.hora,
             `"${e.description.replaceAll('"', '""')}"`,
             e.kind,
             e.to === actor ? (e.amount / 100).toFixed(2) : '',
             e.from === actor ? (e.amount / 100).toFixed(2) : '',
-          ].join(';'),
-        )
+          ].join(';');
+        })
         .join('\r\n');
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'aftermarket-transacoes.csv';
+    a.download = 'aftermarket-extrato.csv';
     a.click();
     URL.revokeObjectURL(url);
-    notice('Relatório financeiro exportado.');
+    notice('Extrato baixado.');
   };
+
   return (
     <>
       <PageHeading
-        eyebrow="Empresa / Visão geral"
-        title="Empresa e Finanças"
-        description="Avalie patrimônio, rentabilidade, ativos e desempenho da operação."
+        title="Minha empresa"
+        description="Quanto vale, de onde vem o dinheiro e para onde ele vai."
       />
-      <div className="page-body">
-        <div className="stats-grid">
-          <Stat
-            label="Patrimônio líquido"
-            value={cr(netWorth)}
-            note="ativos menos obrigações e crédito pendente"
-          />
-          <Stat
-            label="Receita registrada"
-            value={cr(revenue)}
-            note="vendas desde a abertura do mundo"
-          />
-          <Stat
-            label="Custos reconhecidos"
-            value={cr(expenses)}
-            note="mercadorias vendidas e operação"
-          />
-          <Stat
-            label="Resultado operacional"
-            value={`${profit >= 0 ? '+' : '−'}${cr(Math.abs(profit))}`}
-            note="receita menos custos reconhecidos"
-            positive={profit >= 0}
-          />
-        </div>
-        <div className="company-grid">
-          <div className="left-stack">
-            <Panel
-              title={`Fluxo de caixa · últimos ${world.view?.ledgerDays ?? 7} dias`}
-              action={
-                <div className="inline-actions">
-                  <Badge tone="green">Acumulado</Badge>
-                  <Select
-                    label="Período do gráfico"
-                    value={period}
-                    onChange={(e) => setPeriod(e.target.value)}
-                  >
-                    <option value="">Período (opcional)</option>
-                    <option value="5">Últimos 5 min reais</option>
-                    <option value="30">Últimos 30 min reais</option>
-                  </Select>
-                </div>
+      <div className="page-body emp-pagina">
+        <section className="emp-hero" aria-labelledby="emp-nome">
+          <div className="emp-hero-id">
+            <IconePixel nome="predio" tamanho={64} />
+            <div>
+              <h2 id="emp-nome">{company.name}</h2>
+              <span className="emp-porte">Empresa {porte.atual.nome.toLocaleLowerCase('pt-BR')}</span>
+            </div>
+          </div>
+          <div className="emp-hero-valor">
+            <span>Patrimônio</span>
+            <b className={netWorth < 0 ? 'ruim' : ''}>{cr(netWorth, 0)}</b>
+            <small>tudo o que a empresa tem, menos o que deve</small>
+          </div>
+          <div className="emp-hero-porte">
+            <div
+              className="emp-meter"
+              role="img"
+              aria-label={
+                porte.proximo
+                  ? `${Math.round(porte.avanco * 100)}% do caminho para empresa ${porte.proximo.nome.toLocaleLowerCase('pt-BR')}`
+                  : 'Porte máximo'
               }
             >
-              <div className="panel-content">
-                <GraficoPixel
-                  titulo="Fluxo de caixa acumulado observado, em reais"
-                  altura={320}
-                  rotulos={timeline.map((p) =>
-                    gameCalendar(world, p.at).date.toLocaleString('pt-BR', {
-                      timeZone: 'UTC',
-                      day: '2-digit',
-                      month: '2-digit',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    }),
-                  )}
-                  series={[{ nome: 'Caixa acumulado', valores: points }]}
-                  formato={(v) => cr(v)}
-                  formatoEixo={(v) => cr(v, 0)}
-                />
+              <i style={{ width: `${porte.avanco * 100}%` }} />
+            </div>
+            <small>
+              {porte.proximo
+                ? `Faltam ${cr(porte.falta, 0)} para virar empresa ${porte.proximo.nome.toLocaleLowerCase('pt-BR')}.`
+                : 'Você chegou ao maior porte.'}
+            </small>
+          </div>
+          <dl className="emp-hero-fatos">
+            <div>
+              <dt>Caixa livre</dt>
+              <dd>{cr(freeCash(world, actor), 0)}</dd>
+            </div>
+            <div>
+              <dt>Custos fixos por dia</dt>
+              <dd>{cr(forecast, 0)}</dd>
+            </div>
+            <div>
+              <dt>Negócios</dt>
+              <dd>{num(units.length)}</dd>
+            </div>
+            <div>
+              <dt>Funcionários</dt>
+              <dd>{num(units.reduce((n, e) => n + e.employees, 0))}</dd>
+            </div>
+          </dl>
+        </section>
 
-                <p className="muted small">
-                  Movimentação efetiva de caixa em reais. Aquisições e produção capitalizada alteram
-                  o caixa antes do resultado operacional.
-                </p>
-              </div>
-            </Panel>
-            <Panel
-              title="Transações recentes"
-              action={
-                <button className="secondary" onClick={exportLedger}>
-                  <FileText size={16} /> Exportar relatório
+        <section className="emp-bloco" aria-labelledby="emp-fluxo">
+          <header className="emp-bloco-cab">
+            <h2 id="emp-fluxo">O dinheiro dos últimos dias</h2>
+            <div className="emp-chips" role="group" aria-label="Período">
+              {PERIODOS.filter((p) => p <= (world.view?.ledgerDays ?? 30)).map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  aria-pressed={dias === p}
+                  className={dias === p ? 'on' : ''}
+                  onClick={() => setDias(p)}
+                >
+                  {p} dias
                 </button>
-              }
-            >
-              {filtered.length ? (
-                filtered
-                  .slice(-8)
-                  .reverse()
-                  .map((e) => {
-                    const Icon =
-                      e.kind === 'freight'
-                        ? Truck
-                        : e.kind === 'retail'
-                          ? ChartNoAxesCombined
-                          : e.kind === 'operation'
-                            ? Factory
-                            : Box;
-                    return (
-                      <div className="transaction-row" key={e.id}>
-                        <i className="table-icon">
-                          <Icon size={16} />
-                        </i>
-                        <div>
-                          <span>{e.description}</span>
-                          <small>{new Date(e.at).toLocaleTimeString('pt-BR')}</small>
-                        </div>
-                        <strong className={e.to === actor ? 'positive' : 'negative'}>
-                          {e.to === actor ? '+' : '−'}
-                          {cr(e.amount)}
-                        </strong>
-                      </div>
-                    );
-                  })
-              ) : (
-                <div className="panel-content">
-                  <p className="muted">Suas transações aparecerão aqui após a primeira operação.</p>
-                </div>
-              )}
-            </Panel>
+              ))}
+            </div>
+          </header>
+          <p className="emp-vazio">
+            Movimentações disponíveis dos últimos {resumo.dias} dias de jogo, até agora.
+            {world.view && ' O servidor envia um extrato recente limitado; os totais podem ser parciais.'}
+          </p>
+          <div className="emp-tres">
+            <div className="entrou">
+              <IconePixel nome="moeda" tamanho={32} />
+              <span>Entrou</span>
+              <b>{cr(resumo.entrou, 0)}</b>
+              <small>em vendas e recebimentos</small>
+            </div>
+            <div className="saiu">
+              <IconePixel nome="caixa" tamanho={32} />
+              <span>Saiu</span>
+              <b>{cr(resumo.saiu, 0)}</b>
+              <small>
+                {resumo.porGrupo.mercadoria + resumo.porGrupo.imoveis > 0
+                  ? `${cr(resumo.porGrupo.mercadoria + resumo.porGrupo.imoveis, 0)} viraram estoque e bens`
+                  : 'em compras e custos'}
+              </small>
+            </div>
+            <div className={sobrou >= 0 ? 'sobrou' : 'faltou'}>
+              <IconePixel nome={sobrou >= 0 ? 'estrela' : 'alerta'} tamanho={32} />
+              <span>{sobrou >= 0 ? 'Sobrou' : 'O caixa caiu'}</span>
+              <b>
+                {sobrou >= 0 ? '+' : '−'}
+                {cr(Math.abs(sobrou), 0)}
+              </b>
+              <small>
+                fluxo excluindo compras de estoque e bens: {semInvestir >= 0 ? '+' : '−'}
+                {cr(Math.abs(semInvestir), 0)}
+              </small>
+            </div>
           </div>
-          <div className="right-stack">
-            <Panel title="Composição do patrimônio">
-              <div className="panel-content">
-                <div className="composition-bar">
-                  {composition.map((c) => (
-                    <i
-                      key={c.label}
-                      style={{
-                        width: `${(c.amount / Math.max(assets + equipment, 1)) * 100}%`,
-                        background: c.color,
-                      }}
-                    />
-                  ))}
-                </div>
-                {composition.map((c) => (
-                  <div className="composition-row" key={c.label}>
-                    <i style={{ background: c.color }} />
-                    <span>{c.label}</span>
-                    <strong>{num((c.amount / Math.max(assets + equipment, 1)) * 100)}%</strong>
-                  </div>
-                ))}
-              </div>
-            </Panel>
-            <Panel title="Pagamentos operacionais em caixa">
-              <div className="panel-content">
-                <Rows rows={cashCosts} />
-                <p className="muted small">
-                  Pagamentos efetivos do período selecionado. Energia e água incluem consumo de
-                  produção e manutenção da operação; produção em andamento fica no ativo até a
-                  venda.
-                </p>
-                <Rows
-                  rows={[{ label: 'Custos fixos estimados / dia do jogo', value: cr(forecast) }]}
-                />
-              </div>
-            </Panel>
-            <Panel title="Situação da empresa">
-              <div className="panel-content">
-                <Rows
-                  rows={[
-                    { label: 'Estabelecimentos', value: units.length },
-                    { label: 'Funcionários', value: units.reduce((n, e) => n + e.employees, 0) },
-                    {
-                      label: 'Estados atendidos',
-                      value: new Set(
-                        units.map(
-                          (e) => world.properties.find((p) => p.id === e.propertyId)!.state,
-                        ),
-                      ).size,
-                    },
-                    { label: 'Saldo disponível', value: cr(company.balance) },
-                    {
-                      label: 'Remessas em trânsito',
-                      value: world.shipments.filter((s) => s.buyerId === actor && !s.delivered)
-                        .length,
-                    },
-                  ]}
-                />
-                <p className="muted small">
-                  Estoques e materiais em produção usam custo médio. Imóveis e veículos usam o valor
-                  de aquisição do cenário.
-                </p>
-                <button className="primary" onClick={() => setDetails(true)}>
-                  <ChartNoAxesCombined size={16} /> Abrir finanças detalhadas
-                </button>
-              </div>
-            </Panel>
-          </div>
-        </div>
-        <Recovery />
-      </div>
-      {details && (
-        <Modal title="Balanço patrimonial" onClose={() => setDetails(false)}>
-          <Rows
-            rows={[
-              { label: 'Caixa', value: cr(company.balance) },
-              { label: 'Imóveis e instalações', value: cr(propertyAssets) },
-              { label: 'Equipamentos capitalizados', value: cr(equipment) },
-              { label: 'Frota de veículos', value: cr(vehicles) },
-              { label: 'Estoque disponível', value: cr(inventory) },
-              { label: 'Materiais em produção', value: cr(wip) },
-              { label: 'Mercadoria em trânsito', value: cr(inTransit) },
-              { label: 'Passivos', value: cr(liabilities) },
-              { label: 'Patrimônio líquido', value: cr(netWorth) },
-            ]}
+          <GraficoPixel
+            titulo="Variação do caixa nas movimentações disponíveis do período"
+            altura={280}
+            rotulos={resumo.caixa.map((p) => rotulo(p.at))}
+            series={[{ nome: 'Variação do caixa', valores: resumo.caixa.map((p) => p.valor) }]}
+            formato={(v) => cr(v)}
+            formatoEixo={(v) => cr(v, 0)}
           />
-          <button className="secondary full" onClick={exportLedger}>
-            <Download size={16} /> Exportar transações em CSV
-          </button>
-        </Modal>
-      )}
+        </section>
+
+        <section className="emp-bloco" aria-labelledby="emp-saidas">
+          <header className="emp-bloco-cab">
+            <h2 id="emp-saidas">Para onde foi o dinheiro</h2>
+          </header>
+          <BarraEmpilhada
+            titulo={`Saídas dos últimos ${resumo.dias} dias por assunto`}
+            partes={partes}
+            formato={(v) => cr(v, 0)}
+          />
+        </section>
+
+        <section className="emp-bloco" aria-labelledby="emp-bens">
+          <header className="emp-bloco-cab">
+            <h2 id="emp-bens">O que a empresa tem</h2>
+          </header>
+          <ul className="emp-bens">
+            {bens.map((b) => {
+              const parte = Math.max(0, b.valor) / totalBens;
+              return (
+                <li key={b.id} className="item" style={{ ['--h' as string]: b.matiz }}>
+                  <div className="emp-bem">
+                    <IconePixel nome={b.icone} tamanho={48} />
+                    <span>{b.nome}</span>
+                    <b>{cr(b.valor, 0)}</b>
+                    <div className="emp-meter peq" role="img" aria-label={`${Math.round(parte * 100)}% dos bens`}>
+                      <i style={{ width: `${parte * 100}%` }} />
+                    </div>
+                    <small>{Math.round(parte * 100)}% dos bens</small>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+
+        <Recovery />
+
+        <section className="emp-bloco" aria-labelledby="emp-trans">
+          <header className="emp-bloco-cab">
+            <h2 id="emp-trans">Últimas movimentações</h2>
+            <button type="button" className="secondary" onClick={baixarExtrato}>
+              <Download size={16} aria-hidden="true" /> Baixar extrato disponível
+            </button>
+          </header>
+          <Transacoes />
+        </section>
+
+        <details className="emp-lab">
+          <summary>
+            <span>Balanço completo</span>
+            <small>cada parte do patrimônio, em números</small>
+          </summary>
+          <div className="emp-lab-corpo">
+            <Rows
+              rows={[
+                { label: 'Caixa', value: cr(company.balance) },
+                { label: 'Imóveis e instalações', value: cr(propertyAssets) },
+                { label: 'Equipamentos', value: cr(equipment) },
+                { label: 'Caminhões', value: cr(vehicles) },
+                { label: 'Estoque disponível', value: cr(inventory) },
+                { label: 'Materiais em produção', value: cr(wip) },
+                { label: 'Mercadoria a caminho', value: cr(inTransit) },
+                { label: 'O que a empresa deve', value: cr(liabilities) },
+                { label: 'Patrimônio', value: cr(netWorth) },
+                { label: 'Vendas desde o início', value: cr(revenue) },
+                { label: 'Custos desde o início', value: cr(expenses) },
+              ]}
+            />
+            <p className="emp-nota">
+              Estoques e materiais em produção usam o custo médio. Imóveis e caminhões valem o que
+              foi pago por eles.
+            </p>
+          </div>
+        </details>
+      </div>
     </>
   );
 }

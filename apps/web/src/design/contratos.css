@@ -1,0 +1,175 @@
+/* Contratos públicos compartilham cartões e recibos com Pedidos. */
+.ctr {
+  display: grid;
+  gap: 28px;
+  min-width: 0;
+}
+.ctr-caixa,
+.ctr-regra {
+  padding: 24px;
+  background: var(--chapa);
+  border: 2px solid var(--borda);
+}
+.ctr-caixa-titulo {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.ctr h2 {
+  font-size: 20px;
+  margin: 0 0 10px;
+}
+.ctr-caixa-titulo p {
+  margin: 0;
+  color: var(--apagado);
+}
+.ctr-caixa dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+.ctr-caixa dt {
+  color: var(--apagado);
+  font-size: 14px;
+}
+.ctr-caixa dd {
+  margin: 8px 0 0;
+  color: var(--ouro);
+  font: 400 24px var(--pixel);
+  overflow-wrap: anywhere;
+}
+.ctr-caixa .livre dd {
+  color: var(--lavoura);
+}
+.ctr-regra {
+  display: grid;
+  gap: 16px;
+}
+.ctr-filtros {
+  display: grid;
+  gap: 12px;
+}
+.ctr-filtros > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ctr-filtros button {
+  padding: 10px 14px;
+  border: 2px solid var(--borda-forte);
+  background: var(--chapa);
+  color: var(--creme);
+  font: 600 14px var(--fonte);
+  cursor: pointer;
+}
+.ctr-filtros button.on {
+  border-color: var(--lavoura);
+  color: var(--lavoura);
+}
+.ctr button:focus-visible {
+  outline: 3px solid var(--lavoura);
+  outline-offset: 3px;
+}
+.ctr-podio {
+  margin: 0;
+  padding: 18px;
+  background: var(--chapa-2);
+}
+.ctr-podio-colunas {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+}
+.ctr-coluna {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+.ctr-nota {
+  font: 400 20px var(--pixel);
+}
+.ctr-barra {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  border-radius: 6px 6px 0 0;
+  background: var(--ceu);
+  color: var(--noite);
+}
+.ctr-coluna.eu .ctr-barra {
+  background: var(--lavoura);
+}
+.ctr-coluna.vazia .ctr-barra {
+  background: var(--chapa-3);
+  color: var(--apagado);
+}
+.ctr-nome {
+  font: 600 13px var(--fonte);
+  overflow-wrap: anywhere;
+}
+.ctr-podio figcaption {
+  margin-top: 16px;
+  font-size: 14px;
+  color: var(--apagado);
+}
+.ctr-entrega {
+  display: grid;
+  gap: 12px;
+}
+.ctr-entrega small {
+  font-size: 14px;
+  color: var(--apagado);
+}
+.ctr-jogada-titulo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ctr-jogada-titulo span {
+  display: grid;
+  gap: 8px;
+}
+.ctr-jogada-titulo small {
+  color: var(--apagado);
+  font-size: 13px;
+}
+.ctr-selos {
+  list-style: none;
+  display: grid;
+  gap: 14px;
+  padding: 0;
+  margin: 18px 0;
+}
+.ctr-selos li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+.ctr-todas summary {
+  cursor: pointer;
+  padding: 12px 0;
+}
+@media (max-width: 900px) {
+  .ctr-corpo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 650px) {
+  .ctr-caixa,
+  .ctr-regra {
+    padding: 16px;
+  }
+  .ctr-caixa dl {
+    grid-template-columns: 1fr;
+  }
+  .ctr-podio {
+    padding: 12px;
+  }
+}

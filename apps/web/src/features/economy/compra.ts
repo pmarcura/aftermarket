@@ -106,3 +106,19 @@ export function avaliar(
     margem: destino.category === 'retail' ? 1 - total / receita : undefined,
   };
 }
+
+/**
+ * Quantidade inicial sugerida para encher um destino com um produto: para loja, os dias de
+ * procura; para produção, quatro ciclos do insumo da receita. Nunca acima do estoque do fornecedor.
+ */
+export function quantidadeParaDestino(
+  world: World,
+  destino: Establishment,
+  product: ProductId,
+  estoque: number,
+) {
+  if (destino.category === 'retail') return quantidadeSugerida(world, destino, product, estoque);
+  const receita = world.season.config.recipes.find((r) => r.id === destino.specialization);
+  const base = (receita?.input[product] ?? receita?.requires?.[product] ?? 1) * 4;
+  return Math.max(0, Math.min(Math.floor(estoque), Math.ceil(base)));
+}

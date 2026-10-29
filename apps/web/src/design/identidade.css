@@ -5,6 +5,13 @@
  * chanfro de luz e sombra que afundam ao clicar; barras em blocos; selos com quadradinho de pixel.
  */
 @font-face {
+  font-family: 'Press Start 2P';
+  src: url('../assets/fonts/PressStart2P-Regular.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
   font-family: 'Geist Pixel Square';
   src: url('../assets/fonts/GeistPixel-Square.woff2') format('woff2');
   font-style: normal;
@@ -14,24 +21,39 @@
 :root {
   --pixel: 'Geist Pixel Square', 'Archivo Variable', monospace;
   --fonte: 'Archivo Variable', Archivo, 'Segoe UI', system-ui, sans-serif;
-  /* paleta tirada das peças em pixel art */
-  --noite: #10141c;
-  --chapa: #1a202c;
-  --chapa-2: #222a38;
-  --chapa-3: #2c3546;
-  --borda: #374256;
-  --sombra: #07090e;
+  --titulo: 'Press Start 2P', 'Geist Pixel Square', monospace;
+  /* Paleta única do jogo e da landing: grafite esverdeado, lavoura para agir, ouro para dinheiro.
+     Lavoura = ação principal e resultado bom; ouro = dinheiro e preço; brasa = prejuízo e
+     alerta; céu = logística e informação. Nada de azul-marinho. */
+  --noite: #121410;
+  --noite-funda: #0c0e0a;
+  --chapa: #1a1d17;
+  --chapa-2: #242820;
+  --chapa-3: #2e3329;
+  --borda: #3a3f31;
+  --borda-forte: #4d5342;
+  --grade: #22261d;
+  --sombra: #050604;
   --creme: #f3e7cc;
-  --apagado: #a49c8b;
+  --apagado: #aaa48f;
+  --lavoura: #a6e05a;
+  --lavoura-clara: #d6f7a4;
+  --lavoura-escura: #5d8f2b;
   --ouro: #f2bd3c;
   --ouro-claro: #ffe08a;
   --ouro-escuro: #a8740f;
-  --folha: #6cc152;
-  --brasa: #e85a43;
-  --ceu: #5aaee6;
+  --folha: #8fd14f;
+  --brasa: #ef6a4c;
+  --ceu: #6cb8e8;
+  /* Séries de gráfico em ordem fixa, validadas para daltonismo sobre --chapa. */
+  --serie-1: #6aa832;
+  --serie-2: #3f8fd0;
+  --serie-3: #bf8710;
+  --serie-4: #a774d6;
+  --serie-5: #e0523a;
   --estrada: repeating-linear-gradient(90deg, #e9dfb8 0 8px, transparent 8px 16px);
   --terra-varejo: #d0682f;
-  --terra-industria: #7f8fa6;
+  --terra-industria: #8b9085;
   --terra-lavoura: #5f9e43;
   --terra-mina: #a7714a;
   --terra-armazem: #9c7fa6;
@@ -39,12 +61,12 @@
   /* variáveis antigas apontam para a paleta nova */
   --base: var(--noite);
   --panel: var(--chapa);
-  --panel-deep: #161b26;
+  --panel-deep: #1a1c16;
   --line: var(--borda);
   --muted: var(--apagado);
   --gold: var(--ouro);
   --green: var(--folha);
-  --red: #ef7a66;
+  --red: var(--brasa);
   --blue: var(--ceu);
   color: var(--creme);
   background: var(--noite);
@@ -101,9 +123,11 @@ button.secondary,
   letter-spacing: 0;
 }
 .page-heading h1 {
-  font-size: 32px;
-  font-weight: 600;
-  line-height: 1.05;
+  font-family: var(--titulo);
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1.35;
+  text-shadow: 3px 3px 0 var(--sombra);
 }
 .panel-heading h2 {
   font-size: 18px;
@@ -125,7 +149,7 @@ button.secondary,
   letter-spacing: 0;
   font-size: 13px;
   font-weight: 500;
-  color: var(--ouro);
+  color: var(--lavoura);
 }
 
 /* Molduras */
@@ -164,27 +188,28 @@ button.secondary {
   font-size: 14px;
   transition: transform 0.06s;
 }
+/* Ação principal em lavoura, como o botão de entrar da landing; ouro fica para dinheiro. */
 button.primary {
   border: 2px solid var(--sombra);
-  background: var(--ouro);
-  color: #1d1406;
+  background: var(--lavoura);
+  color: var(--noite);
   box-shadow:
-    inset 3px 3px 0 var(--ouro-claro),
-    inset -3px -3px 0 var(--ouro-escuro);
+    inset 3px 3px 0 var(--lavoura-clara),
+    inset -3px -3px 0 var(--lavoura-escura);
 }
 button.primary:hover:not(:disabled) {
-  background: #ffcb52;
+  background: #b9ec74;
 }
 button.secondary {
   border: 2px solid var(--sombra);
   background: var(--chapa-3);
   color: var(--creme);
   box-shadow:
-    inset 3px 3px 0 #3d4960,
-    inset -3px -3px 0 #1b2230;
+    inset 3px 3px 0 #474b41,
+    inset -3px -3px 0 #20231c;
 }
 button.secondary:hover:not(:disabled) {
-  background: #344056;
+  background: #3e4138;
 }
 button.primary:active:not(:disabled),
 button.secondary:active:not(:disabled) {
@@ -202,18 +227,18 @@ select,
 textarea {
   border-radius: 0 !important;
   border: 2px solid var(--borda) !important;
-  background: #0c1017 !important;
+  background: var(--noite-funda) !important;
   color: var(--creme);
 }
 input:focus,
 select:focus {
-  border-color: var(--ouro) !important;
+  border-color: var(--lavoura) !important;
   outline: none;
 }
 
 /* Navegação */
 .sidebar {
-  background: #0c1017;
+  background: var(--noite-funda);
   border-right: 2px solid var(--borda);
 }
 .sidebar nav button {
@@ -225,11 +250,11 @@ select:focus {
 }
 .sidebar nav button.active {
   background: var(--chapa-2);
-  color: var(--ouro);
-  border-left-color: var(--ouro);
+  color: var(--lavoura);
+  border-left-color: var(--lavoura);
 }
 .topbar {
-  background: #0c1017;
+  background: var(--noite-funda);
   border-bottom: 2px solid var(--borda);
 }
 .tabs button,
@@ -238,17 +263,31 @@ select:focus {
   font-weight: 500;
 }
 .tabs button.active {
-  border-bottom: 4px solid var(--ouro);
-  color: var(--ouro);
+  border-bottom: 4px solid var(--lavoura);
+  color: var(--lavoura);
 }
 .secao-abas button.on::after {
   height: 4px;
   border-radius: 0;
+  background: var(--lavoura);
+}
+.secao-abas button.on {
+  color: var(--lavoura);
 }
 .secao-nome {
   font-size: 15px;
   font-weight: 600;
-  color: var(--ouro);
+  color: var(--lavoura);
+}
+
+/* Chão quadriculado da landing atrás de todas as telas, para o jogo e a apresentação
+   parecerem o mesmo lugar. */
+.content-main {
+  background-color: var(--noite);
+  background-image:
+    linear-gradient(var(--grade) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grade) 1px, transparent 1px);
+  background-size: 48px 48px;
 }
 
 /* Barras em blocos */

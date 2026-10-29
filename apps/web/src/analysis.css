@@ -7,7 +7,7 @@
   width: 100%;
 }
 .chart-frame:fullscreen {
-  background: #181d2c;
+  background: #1c1f17;
   padding: 24px;
   overflow: auto;
 }
@@ -15,7 +15,7 @@
   height: calc(100vh - 180px) !important;
 }
 .chart-tools {
-  border-top: 1px solid #353f5b;
+  border-top: 1px solid #3e4239;
   margin-top: 10px;
   padding-top: 10px;
   color: #d8ceba;
@@ -52,7 +52,7 @@
   position: sticky;
   top: 0;
   z-index: 1;
-  background: #1d2334;
+  background: #22251d;
 }
 .chart-data td:not(:first-child),
 .chart-data th:not(:first-child) {
@@ -74,8 +74,8 @@
   gap: 10px;
   flex-wrap: wrap;
   padding: 14px 18px;
-  background: #142b3d;
-  border-bottom: 1px solid #3b4767;
+  background: #272a22;
+  border-bottom: 1px solid #464a40;
   font-size: 13px;
 }
 .road-status strong {
@@ -93,7 +93,7 @@
   justify-content: space-between;
   gap: 20px;
   padding: 10px 0;
-  border-bottom: 1px solid #333e59;
+  border-bottom: 1px solid #3d4037;
 }
 .route-steps span {
   color: #d5cab5;
@@ -105,7 +105,7 @@
 }
 .shipment-truck.focused {
   border-color: #ffdb88;
-  outline: 3px solid #183b56;
+  outline: 3px solid #363a31;
   z-index: 20 !important;
 }
 .shipment-truck:focus-visible {
@@ -125,7 +125,7 @@
   margin: 22px 0;
 }
 .opening-steps li {
-  border-bottom: 2px solid #4e576e;
+  border-bottom: 2px solid #555950;
   padding: 12px;
   color: #cfc6b3;
 }
@@ -187,11 +187,11 @@
   color: #cbc0ab;
 }
 .fleet-picker {
-  border: 1px solid #45506d;
+  border: 1px solid #4f5349;
   border-radius: 10px;
   padding: 16px;
   margin: 18px 0;
-  background: #102230;
+  background: #1e2219;
 }
 .fleet-picker h3,
 .supply-connection h3 {
@@ -230,15 +230,15 @@
   padding-right: 5px;
 }
 .fleet-card {
-  border: 1px solid #37415c;
+  border: 1px solid #40443a;
   border-radius: 8px;
   padding: 15px;
-  background: #1c2232;
+  background: #21241c;
   margin: 0 0 10px;
 }
 .fleet-card.selected {
   border-color: #eebe4f;
-  background: #22293c;
+  background: #282b23;
   box-shadow: inset 3px 0 #eebe4f;
 }
 .fleet-card small {
@@ -265,7 +265,7 @@
 }
 .fleet-card details {
   margin-top: 12px;
-  border-top: 1px solid #37415c;
+  border-top: 1px solid #40443a;
   padding-top: 12px;
 }
 .fleet-warning {
@@ -279,8 +279,8 @@
 }
 .fleet-empty {
   padding: 16px;
-  background: #191e2d;
-  border: 1px dashed #505a73;
+  background: #1d2018;
+  border: 1px dashed #585c53;
   border-radius: 8px;
   color: #d3c9b6;
 }
@@ -294,15 +294,15 @@
   justify-content: space-between;
   align-items: center;
   padding: 16px;
-  border: 1px solid #47526f;
+  border: 1px solid #51554b;
   border-radius: 8px;
-  background: #1e2436;
+  background: #23261e;
 }
 .supply-connection {
   padding: 18px;
   margin: 16px 0;
-  background: #102230;
-  border: 1px solid #465271;
+  background: #1e2219;
+  border: 1px solid #51554b;
   border-radius: 10px;
 }
 .connection-flow {
@@ -367,7 +367,7 @@
   justify-content: flex-start;
   text-align: left;
   gap: 12px;
-  border-bottom: 1px solid #37415c;
+  border-bottom: 1px solid #40443a;
   border-radius: 0;
   padding: 14px 6px;
 }
@@ -383,7 +383,7 @@
 }
 .notification-section {
   padding: 14px 4px 8px;
-  border-top: 1px solid #37415c;
+  border-top: 1px solid #40443a;
 }
 .form-modal[open] {
   display: flex;

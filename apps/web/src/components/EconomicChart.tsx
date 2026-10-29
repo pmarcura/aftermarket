@@ -29,15 +29,16 @@ echarts.use([
   AriaComponent,
   CanvasRenderer,
 ]);
-const ink = '#dce8ee',
-  muted = '#abc1cd',
-  grid = '#334d5b';
+// Mesmas cores da identidade (design/identidade.css) e da paleta de séries do GraficoPixel.
+const ink = '#f3e7cc',
+  muted = '#aaa48f',
+  grid = '#3a3f31';
 const theme = {
-  color: ['#72c4eb', '#e7bd70', '#72d6b0', '#e69d88', '#aab7f3', '#c9da82'],
+  color: ['#6aa832', '#3f8fd0', '#bf8710', '#a774d6', '#e0523a'],
   backgroundColor: 'transparent',
-  textStyle: { fontFamily: 'Inter Variable, sans-serif', fontSize: 12, color: ink },
+  textStyle: { fontFamily: 'Geist Pixel Square, monospace', fontSize: 12, color: ink },
   categoryAxis: {
-    axisLine: { lineStyle: { color: '#67818e' } },
+    axisLine: { lineStyle: { color: '#4d5342' } },
     axisTick: { show: false },
     axisLabel: { color: muted, fontSize: 12, hideOverlap: true },
     splitLine: { show: false },
@@ -70,7 +71,7 @@ const theme = {
     top: 0,
     textStyle: { color: ink, fontSize: 12 },
     pageTextStyle: { color: ink },
-    inactiveColor: '#627786',
+    inactiveColor: '#5c6056',
   },
 };
 echarts.registerTheme('aftermarket', theme);
@@ -152,14 +153,14 @@ export function EconomicChart({
         trigger: 'axis',
         confine: true,
         valueFormatter: format,
-        backgroundColor: '#102732',
-        borderColor: '#617d8c',
+        backgroundColor: '#1a1d17',
+        borderColor: '#4d5342',
         padding: [10, 14],
-        textStyle: { color: '#eef5f8', fontSize: 13 },
+        textStyle: { color: '#f3e7cc', fontSize: 13 },
         axisPointer: {
           type: 'cross',
-          lineStyle: { color: '#a4c5d6' },
-          label: { backgroundColor: '#375d70' },
+          lineStyle: { color: '#a6e05a' },
+          label: { backgroundColor: '#2e3329' },
         },
         ...(option.tooltip ?? {}),
       },
@@ -191,7 +192,7 @@ export function EconomicChart({
   }, [option, zoom]);
   function download() {
     const a = document.createElement('a');
-    a.href = chart.current!.getDataURL({ type: 'png', pixelRatio: 2, backgroundColor: '#142732' });
+    a.href = chart.current!.getDataURL({ type: 'png', pixelRatio: 2, backgroundColor: '#121410' });
     a.download = 'aftermarket-grafico.png';
     a.click();
   }

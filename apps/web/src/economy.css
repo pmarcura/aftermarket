@@ -32,8 +32,8 @@
   gap: 10px;
   flex-wrap: wrap;
   padding: 15px;
-  border: 1px solid #333e5b;
-  background: #191e2d;
+  border: 1px solid #3d4138;
+  background: #1d2018;
   border-radius: 8px;
   margin-bottom: 16px;
 }
@@ -59,16 +59,16 @@
 }
 .filter-count {
   font-style: normal;
-  background: #404d71;
+  background: #4c5047;
   border-radius: 12px;
   padding: 1px 6px;
   font-size: 9px;
 }
 .economic-summary {
   display: flex;
-  border: 1px solid #313a55;
+  border: 1px solid #393d34;
   border-radius: 7px;
-  background: #1a202f;
+  background: #1f221a;
   margin-bottom: 18px;
 }
 .economic-summary > div {
@@ -77,7 +77,7 @@
   gap: 10px;
   flex: 1;
   padding: 18px 20px;
-  border-right: 1px solid #313a55;
+  border-right: 1px solid #393d34;
 }
 .economic-summary > div:last-child {
   border-right: 0;
@@ -114,7 +114,7 @@
   left: 16px;
   z-index: 2;
   padding: 9px 13px;
-  background: #102934ed;
+  background: #24271fed;
   border-radius: 5px;
   color: #ebe3d2;
   font-size: 12px;
@@ -131,8 +131,8 @@
   bottom: 30px;
   left: 16px;
   right: 16px;
-  background: #102934ed;
-  border: 1px solid #3e4b6f;
+  background: #24271fed;
+  border: 1px solid #4a4e45;
   border-radius: 5px;
   padding: 10px 13px;
   display: flex;
@@ -155,7 +155,7 @@
   width: 68px;
   height: 6px;
   border-radius: 4px;
-  background: linear-gradient(90deg, #7faaaa33, #5a6da2);
+  background: linear-gradient(90deg, #9ea29833, #5a6da2);
 }
 .economic-map-footer {
   display: flex;
@@ -164,7 +164,7 @@
   padding: 13px 17px;
   font-size: 10px;
   color: #bcae91;
-  border-top: 1px solid #303a55;
+  border-top: 1px solid #393d34;
   line-height: 1.6;
 }
 .economic-map-footer svg {
@@ -176,9 +176,9 @@
   border-radius: 6px;
   position: absolute;
   border: 1px solid #dad0bb;
-  box-shadow: 0 4px 10px #12313d22;
+  box-shadow: 0 4px 10px #2b2e2622;
   color: #f4f0e8;
-  background: color-mix(in srgb, #2f3955 calc(var(--intensity) * 100%), #1b343de8);
+  background: color-mix(in srgb, #383c33 calc(var(--intensity) * 100%), #2e3229e8);
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -196,7 +196,7 @@
 }
 .economic-bubble:hover {
   z-index: 3;
-  background: #3c496c;
+  background: #484c43;
   border-color: #fff;
 }
 .economic-playbook {
@@ -217,7 +217,7 @@
   width: 23px;
   display: grid;
   place-items: center;
-  border: 1px solid #414d6d;
+  border: 1px solid #4c5046;
   color: #f0c767;
   border-radius: 5px;
   font-size: 11px;
@@ -249,8 +249,8 @@
   gap: 14px;
 }
 .commodity-card {
-  border: 1px solid #333e5b;
-  background: #1b2030;
+  border: 1px solid #3d4138;
+  background: #1f221a;
   border-radius: 8px;
   overflow: hidden;
   padding: 18px;
@@ -281,7 +281,7 @@
   white-space: nowrap;
   padding: 3px 5px;
   border-radius: 3px;
-  background: #273046;
+  background: #2f3229;
   font-variant-numeric: tabular-nums;
 }
 .price-change.up {
@@ -310,7 +310,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  border-top: 1px solid #2e3852;
+  border-top: 1px solid #373a31;
   padding-top: 15px;
 }
 .commodity-facts > span {
@@ -328,7 +328,7 @@
   font-size: 10px;
   margin-top: 18px;
   min-height: 33px;
-  background: #252d42;
+  background: #2c2f27;
 }
 .economic-disclaimer {
   display: flex;
@@ -392,13 +392,13 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0;
-  border-top: 1px solid #333e5c;
-  border-bottom: 1px solid #333e5c;
+  border-top: 1px solid #3d4138;
+  border-bottom: 1px solid #3d4138;
   margin-bottom: 20px;
 }
 .analysis-stats > div {
   padding: 19px 17px 18px;
-  border-right: 1px solid #333e5c;
+  border-right: 1px solid #3d4138;
   min-width: 0;
 }
 .analysis-stats > div:first-child {
@@ -497,7 +497,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  border-top: 1px solid #2e3853;
+  border-top: 1px solid #373b32;
   padding-top: 20px;
   margin-top: 22px;
 }
@@ -514,7 +514,7 @@
 }
 .analysis-data-table {
   max-height: 300px;
-  border: 1px solid #353f5a;
+  border: 1px solid #3e4238;
   border-radius: 6px;
   margin: 14px 0;
 }
@@ -542,7 +542,7 @@
 }
 .formula-note {
   font-size: 11px;
-  background: #102433;
+  background: #20231b;
   border-left: 2px solid #aa9978;
   padding: 13px;
   color: #daceb6;
@@ -579,7 +579,7 @@
   align-items: center;
   gap: 12px;
   padding: 14px 0;
-  border-bottom: 1px solid #313b57;
+  border-bottom: 1px solid #3a3e35;
   font-size: 10px;
 }
 .index-component > span {
@@ -606,18 +606,18 @@
   min-height: 35px;
   padding: 8px 12px;
   font-size: 10px;
-  box-shadow: 0 2px 8px #09213133;
+  box-shadow: 0 2px 8px #1d201833;
 }
 .map-owner-controls > select {
   min-height: 35px;
   font-size: 10px;
   width: 175px;
-  background: #112b36ed;
-  border-color: #424e6e;
+  background: #262920ed;
+  border-color: #4d5147;
   padding: 8px;
 }
 .map-owner-controls .secondary {
-  background: #112b36ed;
+  background: #262920ed;
 }
 .shipment-truck {
   position: absolute;
@@ -627,9 +627,9 @@
   display: grid;
   place-items: center;
   background: #f0c562;
-  color: #1f2638;
+  color: #252820;
   border: 3px solid #fff;
-  box-shadow: 0 3px 14px #16354466;
+  box-shadow: 0 3px 14px #2f332a66;
   z-index: 5;
   pointer-events: auto;
 }
@@ -642,8 +642,8 @@
   align-items: center;
   margin: 0 0 18px;
   padding: 14px 17px;
-  background: #191f2d;
-  border: 1px solid #343e5c;
+  background: #1e2119;
+  border: 1px solid #3d4138;
   border-radius: 7px;
 }
 .purchase-context > span {
@@ -679,10 +679,10 @@
   margin-bottom: 20px;
 }
 .logistics-toolbar > .tabs {
-  border: 1px solid #364161;
+  border: 1px solid #40443b;
   border-radius: 6px;
   overflow: hidden;
-  background: #1c2233;
+  background: #21241c;
 }
 .logistics-toolbar > .tabs button {
   font-size: 11px;
@@ -736,9 +736,9 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #647090;
+  color: #6f7369;
   font-size: 10px;
-  border-top: 2px solid #2e3853;
+  border-top: 2px solid #373b32;
   padding-top: 12px;
   position: relative;
 }
@@ -749,7 +749,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #2e3853;
+  background: #373b32;
 }
 .delivery-timeline .done {
   color: #a1cb97;
@@ -818,7 +818,7 @@
   }
   .economic-summary > div {
     flex-basis: 50%;
-    border-bottom: 1px solid #313a55;
+    border-bottom: 1px solid #393d34;
   }
   .commodity-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1026,7 +1026,7 @@
   }
   .analysis-stats > div {
     padding: 14px 11px;
-    border-bottom: 1px solid #333e5c;
+    border-bottom: 1px solid #3d4138;
   }
   .analysis-stats > div:first-child {
     padding-left: 11px;
@@ -1210,7 +1210,7 @@
   }
   .page-heading > .tabs {
     width: 100%;
-    border: 1px solid #35405f;
+    border: 1px solid #3f433a;
     border-radius: 5px;
   }
   .page-heading > .tabs button {
@@ -1234,9 +1234,9 @@
   gap: 2px;
   min-height: 62px;
   padding: 7px 4px;
-  border: 1px solid #3f465a;
+  border: 1px solid #45483f;
   border-radius: 8px;
-  background: #161a27;
+  background: #191c15;
   color: #eae7e1;
 }
 .compra-dias button b {
@@ -1278,9 +1278,9 @@
   gap: 10px;
   min-height: 52px;
   padding: 4px 14px 4px 6px;
-  border: 1px solid #3f465a;
+  border: 1px solid #45483f;
   border-radius: 10px;
-  background: #171c2a;
+  background: #1b1e17;
   color: #eae7e1;
   text-align: left;
 }
@@ -1319,9 +1319,9 @@
   gap: 12px;
   margin: 4px 0 14px;
   padding: 14px;
-  border: 1px solid #323d58;
+  border: 1px solid #3c3f36;
   border-radius: 10px;
-  background: #161a27;
+  background: #191c15;
 }
 .carga-rota {
   display: grid;
@@ -1345,7 +1345,7 @@
 .carga-estrada {
   position: relative;
   height: 2px;
-  border-top: 2px dashed #545d76;
+  border-top: 2px dashed #5b5f56;
 }
 .carga-estrada i {
   position: absolute;
@@ -1382,7 +1382,7 @@
   width: 100%;
   height: 7px;
   border-radius: 4px;
-  background: #0e1119;
+  background: #10120e;
   overflow: hidden;
 }
 .carga-cheio i {
@@ -1563,7 +1563,7 @@
   margin: 0;
   padding: 9px 12px;
   border-radius: 6px;
-  background: #121520;
+  background: #141711;
   font-size: 12.5px;
 }
 .carga-traducao b {
@@ -1582,7 +1582,7 @@
   gap: 1px;
   padding: 8px 10px;
   border-radius: 6px;
-  background: #121520;
+  background: #141711;
 }
 .carga-comparar > div.melhor {
   box-shadow: inset 0 0 0 1px #39732a;
@@ -1633,9 +1633,9 @@
   flex-direction: column;
   gap: 10px;
   padding: 16px;
-  border: 1px solid #2f3952;
+  border: 1px solid #383b32;
   border-radius: 12px;
-  background: linear-gradient(180deg, #1d2435 0, #171c2a 120px);
+  background: linear-gradient(180deg, #23261d 0, #1b1e17 120px);
   transition:
     transform 0.18s,
     border-color 0.18s;
@@ -1643,7 +1643,7 @@
 }
 .vit-card:hover {
   transform: translateY(-2px);
-  border-color: #5b678a;
+  border-color: #666a60;
 }
 .vit-card.on {
   border-color: var(--gold);
@@ -1662,7 +1662,7 @@
   width: 110px;
   height: 22px;
   border-radius: 50%;
-  background: radial-gradient(closest-side, #0e1119 0, transparent 100%);
+  background: radial-gradient(closest-side, #10120e 0, transparent 100%);
 }
 .vit-arte {
   position: relative;
@@ -1681,7 +1681,7 @@
   width: 72px;
   height: 72px;
   border-radius: 50%;
-  background: #22394366;
+  background: #33372e66;
   color: #dad5ca;
 }
 .vit-titulo h3 {
@@ -1726,7 +1726,7 @@
   display: flex;
   height: 12px;
   border-radius: 6px;
-  background: #121520;
+  background: #141711;
 }
 .vit-barra i {
   display: block;
@@ -1742,7 +1742,7 @@
 }
 .vit-barra .merc,
 .vit-legenda .merc::before {
-  background: #5b6581;
+  background: #64685e;
 }
 .vit-barra .frete,
 .vit-legenda .frete::before {
@@ -1802,7 +1802,7 @@
 }
 .vit-card.esgotado {
   border-style: dashed;
-  background: #171c2a;
+  background: #1b1e17;
 }
 .vit-card.esgotado .vit-arte,
 .vit-card.esgotado .vit-icone {
@@ -1838,9 +1838,9 @@
   grid-template-columns: 1fr auto;
   gap: 0 10px;
   padding: 8px 10px;
-  border: 1px solid #3f465a;
+  border: 1px solid #45483f;
   border-radius: 8px;
-  background: #161a27;
+  background: #191c15;
   color: #eae7e1;
   text-align: left;
 }
@@ -1906,7 +1906,7 @@
   border-radius: 10px;
   background:
     radial-gradient(120% 90% at 50% 120%, #2c4a37 0, transparent 60%),
-    linear-gradient(180deg, #1d2334, #161a27);
+    linear-gradient(180deg, #22251d, #191c15);
 }
 .cena-ponta {
   display: grid;
@@ -1948,10 +1948,10 @@
   width: 100%;
   height: 16px;
   border-radius: 3px;
-  background: #393e4d;
+  background: #3d4038;
   box-shadow:
-    inset 0 2px 0 #4a505f,
-    inset 0 -2px 0 #292d39;
+    inset 0 2px 0 #4e524a,
+    inset 0 -2px 0 #2c2e28;
 }
 .cena-pista::after {
   content: '';
@@ -2003,7 +2003,7 @@
   gap: 2px;
   padding: 10px 10px 12px;
   border-radius: 8px;
-  background: #121520;
+  background: #141711;
 }
 .carga-numeros b {
   font-size: 17px;
@@ -2030,7 +2030,7 @@
   bottom: 6px;
   height: 3px;
   border-radius: 2px;
-  background: #232a3c;
+  background: #292c23;
   overflow: hidden;
 }
 .carga-mini i {
@@ -2075,9 +2075,9 @@
   align-content: start;
   margin: 0;
   padding: 14px;
-  border: 1px solid #2f3952;
+  border: 1px solid #383b32;
   border-radius: 10px;
-  background: #1b2131;
+  background: #20231b;
 }
 .ed-caixa b {
   font-size: 19px;
@@ -2102,7 +2102,7 @@
   overflow: hidden;
   font-size: 10.5px;
   font-weight: 650;
-  color: #0f121b;
+  color: #11130f;
 }
 .ed-regra-barra i {
   display: grid;
@@ -2138,9 +2138,9 @@
 .ed-filtros button {
   min-height: 32px;
   padding: 0 12px;
-  border: 1px solid #3f465a;
+  border: 1px solid #45483f;
   border-radius: 99px;
-  background: #161a27;
+  background: #191c15;
   color: #dad5ca;
   font-size: 12px;
 }
@@ -2159,9 +2159,9 @@
   grid-template-columns: 96px minmax(0, 1fr);
   gap: 14px;
   padding: 16px;
-  border: 1px solid #2f3952;
+  border: 1px solid #383b32;
   border-radius: 12px;
-  background: linear-gradient(135deg, #1d2435, #171c2a 60%);
+  background: linear-gradient(135deg, #23261d, #1b1e17 60%);
 }
 .edital.open {
   border-color: #936b0e;
@@ -2176,7 +2176,7 @@
   align-self: start;
   height: 104px;
   border-radius: 10px;
-  background: radial-gradient(closest-side, #23394399, transparent);
+  background: radial-gradient(closest-side, #34372e99, transparent);
 }
 .ed-arte .vit-arte {
   max-height: 88px;
@@ -2187,7 +2187,7 @@
   left: 0;
   padding: 2px 7px;
   border-radius: 6px;
-  background: #0f121b;
+  background: #11130f;
   color: var(--gold);
   font-size: 11px;
   font-weight: 700;
@@ -2214,15 +2214,15 @@
   color: #f1cb72;
 }
 .ed-status.delivering {
-  background: #232a3e;
-  color: #9dc6e6;
+  background: #292c24;
+  color: #bec2b7;
 }
 .ed-status.completed {
   background: #1a3a12;
   color: #94d684;
 }
 .ed-status.expired {
-  background: #2a2e39;
+  background: #2d2f2a;
   color: #b0a795;
 }
 .ed-relogio {
@@ -2269,7 +2269,7 @@
   gap: 4px;
   padding: 3px 8px;
   border-radius: 6px;
-  background: #121520;
+  background: #141711;
   font-size: 11px;
   color: #dad5ca;
 }
@@ -2338,7 +2338,7 @@
   min-width: 180px;
   padding: 12px 16px;
   border-left: 3px solid var(--green);
-  background: #1b2131;
+  background: #20231b;
 }
 .cot-topo > div.alerta {
   border-left-color: var(--gold);
@@ -2359,9 +2359,9 @@
 .cot-grupos button {
   min-height: 32px;
   padding: 0 12px;
-  border: 1px solid #3f465a;
+  border: 1px solid #45483f;
   border-radius: 2px;
-  background: #161a27;
+  background: #191c15;
   color: #dad5ca;
   font-size: 12px;
 }
@@ -2379,7 +2379,7 @@
 .cot-quadro {
   display: grid;
   gap: 2px;
-  border-top: 2px solid #2a3147;
+  border-top: 2px solid #30342b;
 }
 .cot-item {
   display: grid;
@@ -2391,7 +2391,7 @@
   min-height: 72px;
   padding: 6px 12px 6px 6px;
   border: 0;
-  border-bottom: 1px solid #22293b;
+  border-bottom: 1px solid #282b22;
   border-radius: 0;
   background: transparent;
   color: inherit;
@@ -2399,7 +2399,7 @@
   transition: background 0.15s;
 }
 .cot-item:hover {
-  background: #1b2131;
+  background: #20231b;
 }
 .cot-item.esgotado {
   background: repeating-linear-gradient(135deg, transparent 0 10px, #d9b16b08 10px 20px);
@@ -2509,8 +2509,8 @@
   max-height: calc(100vh - 100px);
   overflow-y: auto;
   padding: 16px;
-  border: 1px solid #2f3952;
-  background: #171c2a;
+  border: 1px solid #383b32;
+  background: #1b1e17;
 }
 .cot-movimento h2 {
   margin: 0;
@@ -2536,7 +2536,7 @@
   gap: 10px;
   align-items: start;
   padding: 9px 0;
-  border-bottom: 1px solid #22293b;
+  border-bottom: 1px solid #282b22;
   font-size: 12px;
   line-height: 1.4;
 }

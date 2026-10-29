@@ -1,0 +1,189 @@
+/* Gráfico próprio (GraficoPixel): grade de 4 px, degraus, xadrez, estrada e mira de GPS. */
+.gpx {
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+.gpx-legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--pixel);
+  font-size: 13px;
+  color: var(--creme);
+}
+.gpx-legenda li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.gpx-legenda i,
+.gpx-leitura i {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  box-shadow: 2px 2px 0 var(--sombra);
+}
+.gpx-quadro {
+  position: relative;
+  height: var(--gpx-altura);
+  background:
+    linear-gradient(var(--grade) 1px, transparent 1px) 0 0 / 8px 8px,
+    linear-gradient(90deg, var(--grade) 1px, transparent 1px) 0 0 / 8px 8px,
+    var(--noite-funda);
+  border: 2px solid var(--borda);
+  box-shadow: inset 0 0 0 2px var(--sombra);
+  overflow: hidden;
+  cursor: crosshair;
+  touch-action: pan-y;
+}
+.gpx-quadro:focus-visible {
+  outline: 3px solid var(--lavoura);
+  outline-offset: 3px;
+}
+.gpx-quadro svg {
+  display: block;
+}
+.gpx-marca line {
+  stroke: var(--borda);
+  stroke-width: 1;
+  stroke-dasharray: 2 6;
+}
+.gpx-marca text,
+.gpx-rotulo {
+  fill: var(--apagado);
+  font-family: var(--pixel);
+  font-size: 11px;
+}
+.gpx-linha {
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+}
+/* O zero é uma faixa de estrada: abaixo dela, o dinheiro está saindo. */
+.gpx-estrada {
+  stroke: var(--creme);
+  stroke-width: 2;
+  stroke-dasharray: 8 8;
+  opacity: 0.55;
+}
+.gpx-guia {
+  stroke: var(--lavoura);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+  opacity: 0.6;
+}
+.gpx-cantos {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: square;
+}
+/* A mira trava no ponto: abre um pouco e fecha, como na landing. */
+.gpx-mira .gpx-cantos {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: gpx-travar 0.18s steps(3) both;
+}
+@keyframes gpx-travar {
+  from {
+    transform: scale(1.6);
+    opacity: 0.4;
+  }
+}
+.gpx-ponto {
+  animation: gpx-piscar 1.2s steps(2) infinite;
+}
+@keyframes gpx-piscar {
+  50% {
+    opacity: 0.35;
+  }
+}
+/* Entrada única: o desenho aparece da esquerda para a direita em passos de pixel. */
+.gpx-desenho {
+  animation: gpx-revelar 0.7s steps(14) both;
+}
+@keyframes gpx-revelar {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+.gpx-leitura,
+.gpx-agora {
+  position: absolute;
+  display: grid;
+  gap: 4px;
+  padding: 8px 10px;
+  background: var(--chapa);
+  border: 2px solid var(--borda);
+  box-shadow: 4px 4px 0 var(--sombra);
+  pointer-events: none;
+  font-family: var(--pixel);
+}
+.gpx-leitura {
+  min-width: 150px;
+  max-width: 220px;
+}
+.gpx-leitura span,
+.gpx-agora span {
+  font-size: 11px;
+  color: var(--apagado);
+}
+.gpx-leitura b,
+.gpx-agora b {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--creme);
+}
+.gpx-leitura small {
+  flex: 1;
+  font-size: 11px;
+  color: var(--apagado);
+}
+.gpx-leitura b.neg,
+.gpx-agora.neg b {
+  color: var(--brasa);
+}
+.gpx-agora {
+  top: 12px;
+  right: 12px;
+  text-align: right;
+}
+.gpx-rodape {
+  display: flex;
+  justify-content: flex-end;
+}
+.gpx-tabela-botao {
+  border: 0;
+  background: none;
+  padding: 4px 0;
+  color: var(--apagado);
+  font-family: var(--pixel);
+  font-size: 12px;
+  text-decoration: underline dotted;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+.gpx-tabela-botao:hover,
+.gpx-tabela-botao:focus-visible {
+  color: var(--lavoura);
+}
+.gpx-tabela {
+  max-height: 260px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .gpx-desenho,
+  .gpx-ponto,
+  .gpx-mira .gpx-cantos {
+    animation: none;
+  }
+}

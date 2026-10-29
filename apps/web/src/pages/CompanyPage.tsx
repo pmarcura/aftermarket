@@ -3,7 +3,7 @@ import { FileText, ChartNoAxesCombined, Box, Truck, Factory, Download } from 'lu
 import { useGame, cr, num } from '../lib/game';
 import { PageHeading, Stat, Panel, Rows, Badge, Select, Modal } from '../components/ui';
 import { operatingCosts } from '../../../../packages/simulation/src/metrics';
-import { EconomicChart } from '../components/EconomicChart';
+import { GraficoPixel } from '../components/GraficoPixel';
 import { Recovery } from '../features/business/Recovery';
 import { arrears, outstandingLoans } from '../../../../packages/simulation/src/design';
 import { gameCalendar } from '../../../../packages/simulation/src/operations';
@@ -153,39 +153,21 @@ export function CompanyPage() {
               }
             >
               <div className="panel-content">
-                <EconomicChart
-                  label="Fluxo de caixa acumulado observado, em reais"
-                  height={340}
-                  option={{
-                    tooltip: {
-                      trigger: 'axis',
-                      valueFormatter: (v: unknown) => cr(Number(v) * 100),
-                    },
-                    xAxis: {
-                      type: 'category',
-                      data: timeline.map((p) =>
-                        gameCalendar(world, p.at).date.toLocaleString('pt-BR', {
-                          timeZone: 'UTC',
-                          day: '2-digit',
-                          month: '2-digit',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                          second: '2-digit',
-                        }),
-                      ),
-                    },
-                    yAxis: { type: 'value', name: 'R$ acumulados' },
-                    series: [
-                      {
-                        name: 'Fluxo líquido acumulado (R$)',
-                        type: 'line',
-                        showSymbol: points.length < 20,
-                        data: points.map((v) => v / 100),
-                        areaStyle: { opacity: 0.12 },
-                        markLine: { silent: true, data: [{ yAxis: 0 }] },
-                      },
-                    ],
-                  }}
+                <GraficoPixel
+                  titulo="Fluxo de caixa acumulado observado, em reais"
+                  altura={320}
+                  rotulos={timeline.map((p) =>
+                    gameCalendar(world, p.at).date.toLocaleString('pt-BR', {
+                      timeZone: 'UTC',
+                      day: '2-digit',
+                      month: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    }),
+                  )}
+                  series={[{ nome: 'Caixa acumulado', valores: points }]}
+                  formato={(v) => cr(v)}
+                  formatoEixo={(v) => cr(v, 0)}
                 />
 
                 <p className="muted small">

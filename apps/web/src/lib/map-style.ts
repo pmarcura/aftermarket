@@ -95,10 +95,10 @@ function roads(kind: 'tunnel' | 'surface' | 'bridge'): LayerSpecification[] {
           'match',
           ['get', 'class'],
           ['motorway', 'trunk'],
-          '#b9aa86',
+          '#0c0e0a',
           'track',
-          '#c3bba6',
-          '#b8c0ae',
+          '#0c0e0a',
+          '#11130e',
         ],
         'line-width': roadWidth(true),
         'line-opacity': kind === 'tunnel' ? 0.45 : 0.85,
@@ -112,12 +112,12 @@ function roads(kind: 'tunnel' | 'surface' | 'bridge'): LayerSpecification[] {
           'match',
           ['get', 'class'],
           ['motorway', 'trunk'],
-          '#efd29b',
+          '#c99a3a',
           ['primary', 'secondary'],
-          '#f4edda',
+          '#8f8a72',
           'track',
-          '#e9e3d3',
-          '#fcfbf5',
+          '#46483a',
+          '#5c5e4d',
         ],
         'line-width': roadWidth(),
         'line-opacity': kind === 'tunnel' ? 0.7 : 1,
@@ -126,7 +126,8 @@ function roads(kind: 'tunnel' | 'surface' | 'bridge'): LayerSpecification[] {
   ];
 }
 
-/** Local, deliberately small basemap. No remote style, labels, sprites or glyphs. */
+/** GPS noturno na paleta grafite da identidade: rodovias em ouro, demais vias em creme apagado.
+ * Local, deliberately small basemap. No remote style, labels, sprites or glyphs. */
 export function createMapStyle(): StyleSpecification {
   return {
     version: 8,
@@ -142,7 +143,7 @@ export function createMapStyle(): StyleSpecification {
       },
     },
     layers: [
-      { id: 'background', type: 'background', paint: { 'background-color': '#e6ebdd' } },
+      { id: 'background', type: 'background', paint: { 'background-color': '#1a1d17' } },
       {
         id: 'natural-landcover',
         type: 'fill',
@@ -156,10 +157,10 @@ export function createMapStyle(): StyleSpecification {
             'match',
             ['get', 'class'],
             'wood',
-            '#c5d3b9',
+            '#212b1a',
             'sand',
-            '#e9dfc5',
-            '#edf1ee',
+            '#29291d',
+            '#1f221b',
           ],
           'fill-opacity': 0.65,
           'fill-antialias': false,
@@ -171,7 +172,7 @@ export function createMapStyle(): StyleSpecification {
         source: 'openmaptiles',
         'source-layer': 'water',
         filter: ['!=', ['get', 'brunnel'], 'tunnel'],
-        paint: { 'fill-color': '#9fc6d7' },
+        paint: { 'fill-color': '#15303a' },
       },
       {
         id: 'waterways',
@@ -185,7 +186,7 @@ export function createMapStyle(): StyleSpecification {
         ],
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
-          'line-color': '#9fc6d7',
+          'line-color': '#24505f',
           'line-width': ['interpolate', ['exponential', 1.2], ['zoom'], 6, 0.5, 12, 1.2, 17, 3],
         },
       },

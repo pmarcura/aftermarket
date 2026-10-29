@@ -38,7 +38,7 @@
   margin-top: 22px;
   padding: 16px 18px;
   border-left: 3px solid var(--gold);
-  background: #20273a;
+  background: #262921;
   border-radius: 0 6px 6px 0;
 }
 .business-advice strong {
@@ -67,7 +67,7 @@
   min-width: 180px;
 }
 .capacity-banner strong {
-  color: #b8d5eb;
+  color: #ced3c7;
 }
 .capacity-banner span {
   color: var(--muted);
@@ -95,7 +95,7 @@
 .cost-track {
   display: block;
   height: 6px;
-  background: #2f374d;
+  background: #363930;
   border-radius: 3px;
   overflow: hidden;
 }
@@ -130,10 +130,10 @@
 .owner-card {
   display: grid;
   gap: 9px;
-  background: #232a3e;
+  background: #292c24;
   padding: 17px 20px;
   margin: 0 20px 18px;
-  border: 1px solid #444f6d;
+  border: 1px solid #4e5248;
   border-radius: 7px;
 }
 .owner-card > span {
@@ -165,7 +165,7 @@
   padding: 6px 9px;
 }
 .infrastructure-market {
-  background: #1d2334;
+  background: #22251d;
   border: 1px solid #596052;
   border-radius: 8px;
   margin-bottom: 22px;
@@ -201,7 +201,7 @@
 .treasury-strip {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  background: #171c2a;
+  background: #1b1e17;
   border-bottom: 1px solid var(--line);
 }
 .treasury-strip > div {
@@ -412,7 +412,7 @@ summary:focus-visible {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  border: 1px solid #4d5671;
+  border: 1px solid #55594f;
 }
 .first-steps li.done {
   color: #9fc9b5;
@@ -441,9 +441,9 @@ summary:focus-visible {
   gap: 12px;
   margin-bottom: 18px;
   padding: 18px 21px;
-  border: 1px solid #2f3952;
+  border: 1px solid #383b32;
   border-radius: 9px;
-  background: #1b2131;
+  background: #20231b;
 }
 .empate-texto h2 {
   margin: 0 0 4px;
@@ -467,7 +467,7 @@ summary:focus-visible {
   height: 14px;
   margin: 6px 0 12px;
   border-radius: 7px;
-  background: #121520;
+  background: #141711;
 }
 .empate-barra {
   position: absolute;
@@ -522,7 +522,7 @@ summary:focus-visible {
   align-items: center;
   gap: 4px;
   padding: 14px 36px 0;
-  border-bottom: 1px solid #232a3c;
+  border-bottom: 1px solid #292c23;
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -588,8 +588,8 @@ summary:focus-visible {
   gap: 2px;
   min-width: 200px;
   padding: 12px 16px;
-  border-left: 3px solid #545d76;
-  background: #161a27;
+  border-left: 3px solid #5b5f56;
+  background: #191c15;
 }
 .prat-resumo > div.melhor {
   border-left-color: var(--green);
@@ -617,7 +617,7 @@ summary:focus-visible {
   gap: 18px;
   align-items: center;
   padding: 16px 0;
-  border-top: 1px solid #22293b;
+  border-top: 1px solid #282b22;
 }
 .prat-produto {
   display: flex;
@@ -707,7 +707,7 @@ summary:focus-visible {
   -webkit-appearance: none;
   width: 14px;
   height: 24px;
-  border: 2px solid #0f121b;
+  border: 2px solid #11130f;
   border-radius: 2px;
   background: var(--gold);
   box-shadow: 0 0 0 2px var(--gold);
@@ -715,7 +715,7 @@ summary:focus-visible {
 .prat-regua input[type='range']::-moz-range-thumb {
   width: 12px;
   height: 22px;
-  border: 2px solid #0f121b;
+  border: 2px solid #11130f;
   border-radius: 2px;
   background: var(--gold);
 }
@@ -752,7 +752,7 @@ summary:focus-visible {
   background: var(--blue);
 }
 .marco.rival small {
-  color: #9dc6e6;
+  color: #bec2b7;
   transform: translateY(12px);
 }
 .marco.melhor i {
@@ -796,7 +796,7 @@ summary:focus-visible {
   display: grid;
   gap: 1px;
   padding: 8px 10px;
-  background: #121520;
+  background: #141711;
 }
 .prat-efeito b {
   font-size: 17px;
@@ -910,8 +910,8 @@ summary:focus-visible {
 .prat-plano {
   position: relative;
   height: 156px;
-  border-bottom: 1px solid #394259;
-  background: linear-gradient(180deg, #161a27, #121520);
+  border-bottom: 1px solid #41443b;
+  background: linear-gradient(180deg, #191c15, #141711);
 }
 .prat-plano svg {
   position: absolute;
@@ -923,7 +923,7 @@ summary:focus-visible {
   fill: #d4766b14;
 }
 .prat-plano .eixo {
-  stroke: #394259;
+  stroke: #41443b;
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
 }
@@ -949,7 +949,7 @@ summary:focus-visible {
   top: 18px;
   bottom: 0;
   left: -0.5px;
-  border-left: 1px dashed #e7edef66;
+  border-left: 1px dashed #ebecea66;
 }
 .pm small {
   position: absolute;
@@ -970,7 +970,7 @@ summary:focus-visible {
   border-left-color: #72b2d1aa;
 }
 .pm.rival small {
-  color: #9dc6e6;
+  color: #bec2b7;
 }
 .pm.melhor {
   top: auto;
@@ -985,7 +985,7 @@ summary:focus-visible {
   height: 10px;
   margin: 17px 0 0 -5px;
   background: var(--green);
-  box-shadow: 0 0 0 3px #121520;
+  box-shadow: 0 0 0 3px #141711;
 }
 .pm.voce::before {
   top: 20px;
@@ -999,7 +999,7 @@ summary:focus-visible {
   transform: translateX(-50%);
   padding: 1px 7px;
   background: var(--gold);
-  color: #181c26;
+  color: #1b1d18;
   font-size: 11px;
   font-weight: 800;
   white-space: nowrap;
@@ -1010,7 +1010,7 @@ summary:focus-visible {
   bottom: 6px;
   padding: 2px 6px;
   background: #72b2d11f;
-  color: #9dc6e6;
+  color: #bec2b7;
   font-size: 10.5px;
   pointer-events: none;
 }
@@ -1045,7 +1045,7 @@ summary:focus-visible {
   gap: 8px;
   margin: 0;
   padding: 10px 12px;
-  background: #121520;
+  background: #141711;
   font-size: 13px;
   font-weight: 600;
   line-height: 1.4;
@@ -1203,7 +1203,7 @@ summary:focus-visible {
   display: grid;
   gap: 2px;
   padding: 8px 10px;
-  background: #0c1017;
+  background: #0f110d;
   border: 2px solid var(--borda);
 }
 .loja-nums b {
@@ -1231,8 +1231,8 @@ summary:focus-visible {
   margin-bottom: 14px;
 }
 .loja-barra i {
-  background: #0c1017;
-  border: 1px solid #2a3344;
+  background: #0f110d;
+  border: 1px solid #31342c;
 }
 .loja-barra i.abaixo {
   background: var(--ouro);

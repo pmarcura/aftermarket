@@ -4,9 +4,9 @@
   display: grid;
   grid-template-columns: minmax(0, 1.55fr) minmax(260px, 1fr);
   margin-bottom: 18px;
-  border: 1px solid #2f3952;
+  border: 1px solid #383b32;
   border-radius: 9px;
-  background: #1b2131;
+  background: #20231b;
   overflow: hidden;
 }
 .neg-figuras {
@@ -18,7 +18,7 @@
   flex-direction: column;
   gap: 6px;
   padding: 19px 21px;
-  border-right: 1px solid #2a3147;
+  border-right: 1px solid #30342b;
   min-width: 0;
 }
 .neg-figuras > div:last-child {
@@ -46,8 +46,8 @@
   display: grid;
   gap: 9px;
   align-content: start;
-  background: #171c2a;
-  border-left: 1px solid #2a3147;
+  background: #1b1e17;
+  border-left: 1px solid #30342b;
 }
 .neg-div figcaption {
   font-size: 11px;
@@ -70,7 +70,7 @@
   position: relative;
   height: 9px;
   border-radius: 3px;
-  background: #121520;
+  background: #141711;
 }
 .neg-div-trilho::before {
   content: '';
@@ -79,7 +79,7 @@
   top: -3px;
   bottom: -3px;
   width: 1px;
-  background: #545d76;
+  background: #5b5f56;
 }
 .neg-div-trilho i {
   position: absolute;
@@ -116,9 +116,9 @@
   flex-direction: column;
   gap: 11px;
   padding: 0 16px 16px;
-  border: 1px solid #323d58;
+  border: 1px solid #3c3f36;
   border-radius: 10px;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--cat) 16%, #171c2a) 0, #171c2a 96px);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--cat) 16%, #1b1e17) 0, #1b1e17 96px);
   cursor: pointer;
   transition:
     transform 0.18s,
@@ -127,7 +127,7 @@
 }
 .neg-card:hover {
   transform: translateY(-2px);
-  border-color: #5b678a;
+  border-color: #666a60;
 }
 .neg-card.parado {
   border-color: #936b0e;
@@ -218,7 +218,7 @@
   stroke-width: 4.5;
 }
 .neg-anel-trilho {
-  stroke: #121520;
+  stroke: #141711;
 }
 .neg-anel-barra {
   stroke-linecap: round;
@@ -239,8 +239,8 @@
   display: grid;
   grid-template-columns: 1.5fr 0.7fr 1fr;
   gap: 8px;
-  border-top: 1px solid #2a3147;
-  border-bottom: 1px solid #2a3147;
+  border-top: 1px solid #30342b;
+  border-bottom: 1px solid #30342b;
 }
 .neg-numeros dt {
   display: flex;
@@ -269,7 +269,7 @@
   display: block;
   height: 5px;
   border-radius: 2px;
-  background: #121520;
+  background: #141711;
 }
 .neg-fluxo-b i {
   display: block;
@@ -291,10 +291,10 @@
 /* Alternador cartões e lista */
 .neg-visao {
   display: inline-flex;
-  border: 1px solid #3f465a;
+  border: 1px solid #45483f;
   border-radius: 6px;
   overflow: hidden;
-  background: #161a27;
+  background: #191c15;
 }
 .neg-visao button {
   border: 0;
@@ -309,7 +309,7 @@
   color: #eae7e1;
 }
 .neg-visao button.on {
-  background: #2b334a;
+  background: #32352d;
   color: #f5f3f0;
 }
 .neg-vazio {
@@ -355,7 +355,7 @@
   }
   .neg-div {
     border-left: 0;
-    border-top: 1px solid #2a3147;
+    border-top: 1px solid #30342b;
   }
 }
 @media (max-width: 760px) {
@@ -366,7 +366,7 @@
     border-right: 0;
   }
   .neg-figuras > div:nth-child(-n + 2) {
-    border-bottom: 1px solid #2a3147;
+    border-bottom: 1px solid #30342b;
   }
   .neg-grade {
     grid-template-columns: 1fr;

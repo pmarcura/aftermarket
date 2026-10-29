@@ -41,7 +41,7 @@ test('edital estadual mostra referência, disputa e todos os caminhões indo à 
     }
   });
   await page.addInitScript(() => localStorage.setItem('aftermarket.page', 'market'));
-  await page.goto('/');
+  await page.goto('/jogar');
   await page.locator('summary').filter({ hasText: 'Contratos de infraestrutura' }).click();
   await page.getByLabel('Estado dos contratos públicos', { exact: true }).selectOption('SP');
   const card = page.locator('.commercial-order').filter({ hasText: `#${contract.id.slice(0, 6)}` });

@@ -44,7 +44,7 @@ test('recuperação explica atrasados, crédito, quitação e suspensão; gráfi
     }
   });
   await page.addInitScript(() => localStorage.setItem('aftermarket.page', 'company'));
-  await page.goto('/');
+  await page.goto('/jogar');
   await expect(
     page.getByRole('heading', { name: 'Caixa, compromissos e recuperação', exact: true }),
   ).toBeVisible();
@@ -116,7 +116,7 @@ test('servidor contrata rota curva, caminhão segue geometria e preserva contrat
   expect(s.routeKey).toBeTruthy();
   expect(shipmentRoute(after, s)).toEqual(route.coordinates);
   await page.addInitScript(() => localStorage.setItem('aftermarket.page', 'logistics'));
-  await page.goto('/');
+  await page.goto('/jogar');
   await page.getByLabel('Buscar pedidos logísticos', { exact: true }).fill(s.batchId!.slice(0, 6));
   await page.locator('.shipment-item').first().click();
   const marker = page.locator('[data-shipment-id="' + s.id + '"]');

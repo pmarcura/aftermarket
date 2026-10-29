@@ -9,7 +9,7 @@ page.on('requestfailed', (r) => {
     issues.push(`${r.url()}: ${r.failure()?.errorText}`);
 });
 await mkdir('.runtime/review', { recursive: true });
-await page.goto('http://127.0.0.1:5173/');
+await page.goto('http://127.0.0.1:5173/jogar');
 await page.getByRole('navigation').getByRole('button', { name: 'Mapa', exact: true }).click();
 await page
   .locator('.main-map [data-map-ready="true"]')

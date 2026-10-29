@@ -29,7 +29,7 @@ test('caminhão avança com o relógio contratado e mantém progresso após reca
   page.on('pageerror', (e) => errors.push(e.message));
   await page.route('**/api/world', (route) => route.fulfill({ json: world }));
   await page.addInitScript(() => localStorage.setItem('aftermarket.page', 'logistics'));
-  await page.goto('/');
+  await page.goto('/jogar');
   const marker = page.locator(`[data-shipment-id="${s.id}"]`);
   await expect(marker).toBeVisible({ timeout: 25000 });
   await expect(marker).toHaveAttribute('title', /Em trânsito/);

@@ -49,7 +49,7 @@ test('frota mostra limite, ajusta quantidade; erro fica no modal e conexão pers
     localStorage.setItem('aftermarket.page', 'industry');
     localStorage.setItem('aftermarket.business', 'e-industry');
   });
-  await page.goto('/');
+  await page.goto('/jogar');
   await page.getByRole('tab', { name: 'Estoque', exact: true }).click();
   await page.getByRole('button', { name: 'Trazer de outro estoque', exact: true }).click();
   const dialog = page.getByRole('dialog');
@@ -138,7 +138,7 @@ test('central agrupa caminhões por pedido e mantém leitura após recarga', asy
     s.arrivesAt = now - 1;
   }
   await page.route('**/api/world', (r) => r.fulfill({ json: w }));
-  await page.goto('/');
+  await page.goto('/jogar');
   await page.getByRole('button', { name: 'Abrir notificações', exact: true }).click();
   const center = page.getByRole('region', { name: 'Central de notificações', exact: true });
   await expect(center.getByText('Recebimentos não lidos · 1', { exact: true })).toBeVisible();

@@ -1526,7 +1526,7 @@ try {
         { id: screen.id, business: 'business' in screen ? screen.business : undefined },
       );
       try {
-        await page.goto(`http://127.0.0.1:${port}/`, { waitUntil: 'domcontentloaded' });
+        await page.goto(`http://127.0.0.1:${port}/jogar`, { waitUntil: 'domcontentloaded' });
         await page.locator('#main-content').waitFor({ timeout: 15000 });
         await page
           .locator('#main-content')
@@ -1625,7 +1625,7 @@ try {
         .fulfill({ status: 503, json: { error: 'Falha controlada' } })
         .catch(() => undefined);
     });
-    await page.goto(`http://127.0.0.1:${port}/`);
+    await page.goto(`http://127.0.0.1:${port}/jogar`);
     await page
       .getByText(
         state === 'carregamento'

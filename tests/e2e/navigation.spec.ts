@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 test('as dez telas carregam, navegam e mantêm o estado do mundo', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  await page.goto('/');
+  await page.goto('/jogar');
   await expect(page.getByRole('navigation', { name: 'Menu principal' })).toBeVisible();
   await page.locator('.main-map [data-map-ready="true"]').waitFor({ timeout: 25000 });
   // O mapa abre sem terreno escolhido; escolhe um disponível pelo teclado.
@@ -79,7 +79,7 @@ test('as dez telas carregam, navegam e mantêm o estado do mundo', async ({ page
 });
 test('a busca e a navegação funcionam em viewport móvel sem rolagem lateral', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('/');
+  await page.goto('/jogar');
   await page.getByRole('navigation').getByRole('button', { name: 'Oportunidades' }).click();
   await expect(page.getByRole('heading', { name: 'Análise de oportunidades' })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);

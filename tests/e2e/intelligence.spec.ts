@@ -5,7 +5,7 @@ test('titularidade, filtros vazios e análise profissional usam dados internos',
 }) => {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  await page.goto('/');
+  await page.goto('/jogar');
   await page.locator('.main-map [data-map-ready="true"]').waitFor();
   await page.getByRole('button', { name: 'Minhas propriedades', exact: true }).click();
   await expect

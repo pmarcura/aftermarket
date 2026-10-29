@@ -7,10 +7,13 @@ import './economy.css';
 import './competition.css';
 import './analysis.css';
 import './design/identidade.css';
+const path = location.pathname.replace(/\/$/, '');
 const Root =
-  location.pathname.replace(/\/$/, '') === '/lab'
-    ? lazy(() => import('./devlab/LabPage').then((m) => ({ default: m.LabPage })))
-    : lazy(() => import('./App').then((m) => ({ default: m.App })));
+  path === '' || path === '/landing'
+    ? lazy(() => import('./pages/LandingPage').then((m) => ({ default: m.LandingPage })))
+    : path === '/lab'
+      ? lazy(() => import('./devlab/LabPage').then((m) => ({ default: m.LabPage })))
+      : lazy(() => import('./App').then((m) => ({ default: m.App })));
 
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

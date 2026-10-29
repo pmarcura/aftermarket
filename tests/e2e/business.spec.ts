@@ -33,7 +33,7 @@ test('negocia pedido real, agrupa caminhões e configura abastecimento e educaç
     },
   });
   expect(install.ok(), await install.text()).toBe(true);
-  await page.goto('/');
+  await page.goto('/jogar');
   await actor(page, 'player2');
   await orders(page);
   await page.getByRole('button', { name: 'Publicar pedido de compra', exact: true }).click();

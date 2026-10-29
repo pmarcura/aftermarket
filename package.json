@@ -43,7 +43,8 @@
     "economy:report": "npm run resources:catalog && npm run mathematics:audit -- --write-doc && npm run mechanics:report -- --world=.runtime/world.sqlite --write-doc",
     "economy:design": "tsx scripts/economy-design.ts",
     "economy:proof": "tsx scripts/economy-proof.ts",
-    "capture:ui": "tsx scripts/capture-ui.ts"
+    "capture:ui": "tsx scripts/capture-ui.ts",
+    "landing:telas": "tsx scripts/capture-landing.ts"
   },
   "dependencies": {
     "@fontsource-variable/archivo": "^5.3.0",

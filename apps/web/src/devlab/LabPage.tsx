@@ -61,7 +61,7 @@ export function LabPage() {
             <span>Laboratório de desenvolvimento</span>
           </div>
         </div>
-        <a className="secondary lab-back" href="/">
+        <a className="secondary lab-back" href="/jogar">
           <ArrowLeft size={15} /> Abrir jogo
         </a>
       </header>

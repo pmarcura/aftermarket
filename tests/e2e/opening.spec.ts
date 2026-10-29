@@ -8,7 +8,7 @@ test('nova unidade separa imóvel, equipamento e equipe sem contratar automatica
     localStorage.setItem('aftermarket.company', 'player');
     localStorage.setItem('aftermarket.page', 'map');
   });
-  await page.goto('/');
+  await page.goto('/jogar');
   await page.getByRole('button', { name: 'Comprar propriedade', exact: true }).click();
   await page.getByRole('button', { name: 'Confirmar compra', exact: false }).click();
   const dialog = page.getByRole('dialog');

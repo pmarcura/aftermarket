@@ -8,7 +8,7 @@ test('compra, frete, entrega e produção alteram o estado real e persistem apó
   test.setTimeout(180000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  await page.goto('/');
+  await page.goto('/jogar');
   await page
     .getByRole('navigation', { name: 'Menu principal' })
     .getByRole('button', { name: 'Comércio', exact: true })

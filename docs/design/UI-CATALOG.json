@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "fixtureFingerprint": "96193ca442be8ff4453bf39a1e1c417b18665b98fa8c1cc11bbbdb3045aef789",
+  "fixtureFingerprint": "a95f3369b4b6a19469680d01456e97403758f682317be740f824d7fc52800b4c",
   "note": "Inventário estático alcançável por tela; inclui componentes compartilhados e ramos condicionais. Textos dinâmicos e estados visíveis precisam da evidência de navegador. Comandos type são candidatos, não prova de execução.",
   "screens": [
     {
@@ -9,7 +9,7 @@
       "source": "pages/MapPage.tsx",
       "purpose": "Encontrar e inspecionar propriedades.",
       "task": "Localizar uma propriedade e entender titularidade e acesso.",
-      "fingerprint": "6360f8814c754bb504b676dabd8e77a13b17281d42b6776aa7fe39eae76e8234",
+      "fingerprint": "2d3804621b02d7a73d16a5636a3f5700901d95725274462318fb37ecf95dae66",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -37,7 +37,7 @@
       "source": "pages/MapPage.tsx",
       "purpose": "Revisar imóvel, instalação e capital necessário.",
       "task": "Entender o custo antes de confirmar a aquisição.",
-      "fingerprint": "6360f8814c754bb504b676dabd8e77a13b17281d42b6776aa7fe39eae76e8234",
+      "fingerprint": "2d3804621b02d7a73d16a5636a3f5700901d95725274462318fb37ecf95dae66",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -65,7 +65,7 @@
       "source": "pages/OpportunitiesPage.tsx",
       "purpose": "Comparar mercados e oportunidades por item e região.",
       "task": "Filtrar um produto e explicar demanda, preço e oferta.",
-      "fingerprint": "6c00f6308ad747a3f8764f841e6be6d013e7d87612620f17f70fa93c77dd5555",
+      "fingerprint": "1bf82d2cb24d16d19d3a0f09b1be1a83ca3bc61079393c0ee1c1bd3ffde92b1d",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -99,7 +99,7 @@
       "source": "pages/BusinessesPage.tsx",
       "purpose": "Gerenciar estruturas e conexões de abastecimento.",
       "task": "Identificar uma estrutura parada e abrir sua operação.",
-      "fingerprint": "2b51c3af0dae18d19ab32ff8ce117c11ee8d7f92c1c788f474bf0f36edadcfb8",
+      "fingerprint": "fcf5c734df061bb1a25450390c17c2ff63698c5c5f42fe0be3ecd7b43203ca5f",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -138,7 +138,7 @@
       "business": "e-industry",
       "purpose": "Produzir, abastecer, contratar e vender.",
       "task": "Revisar insumos, capacidade e custo antes de iniciar produção.",
-      "fingerprint": "53a7ffdc3b7a0c47bdc33a1347c6ab31464c02d5a7b9a9160b887c20ae26163b",
+      "fingerprint": "57f6af4c0c147bbdb0af6e125f11d8bf00556637c64c9eec373d7d59c32ffc51",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -180,7 +180,7 @@
       "business": "e-retail",
       "purpose": "Acompanhar estoque, preços e reposição da loja.",
       "task": "Reconhecer ruptura e configurar uma reposição viável.",
-      "fingerprint": "5ffbbdca5d70fc8fe7e6829406cceaa8fc352fcb093eeb57732897366611aea5",
+      "fingerprint": "3b7de6e86603296f8ffbf1dcbdca59f7380385ecf5409c0d8ecfc27f47e9a8b0",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -200,6 +200,7 @@
         "apps/web/src/features/business/Analytics.tsx",
         "apps/web/src/features/business/Empate.tsx",
         "apps/web/src/features/business/Installation.tsx",
+        "apps/web/src/features/business/LinhaPreco.tsx",
         "apps/web/src/features/business/Orders.tsx",
         "apps/web/src/features/business/Prateleira.tsx",
         "apps/web/src/features/business/Stock.tsx",
@@ -226,7 +227,7 @@
       "source": "pages/MarketPage.tsx",
       "purpose": "Comprar, negociar e observar concorrentes e editais.",
       "task": "Comparar custo posto e escolher uma compra compatível.",
-      "fingerprint": "a2030ffadb093ea62d162dabfe2a04c40ab3ac6a49679457390c84c1c44498bb",
+      "fingerprint": "13866d9378e169aa355b3d04f38af14caa0738c757e6a81154c7a3f3297e452e",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -261,7 +262,7 @@
       "source": "pages/LogisticsPage.tsx",
       "purpose": "Contratar e acompanhar transporte.",
       "task": "Entender disponibilidade, limite, custo e prazo de uma carga.",
-      "fingerprint": "1c98004d1cd6405ff3073602a39dfca232f2a7fb9512bf926658de6b291e7660",
+      "fingerprint": "9580136bf540304fc485c1a4cfe4439b9ab5fcac378dd242d4e8b387baeb8471",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -296,7 +297,7 @@
       "business": "e-logistics",
       "purpose": "Gerenciar veículos, disponibilidade e capacidade.",
       "task": "Encontrar um veículo livre e comparar sua capacidade.",
-      "fingerprint": "7af5a6c5a9dcf26535f1c6ee6a15ea470e1b6972413ac97ebf284b3c9fa0574b",
+      "fingerprint": "236db0dcf9198a04e939e4bd3f9a44b9a8d214f871a2195c6bb63341ab7ba902",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -331,7 +332,7 @@
       "source": "features/economy/Cotacoes.tsx",
       "purpose": "Consultar o preço de todos os itens e o movimento das outras empresas.",
       "task": "Achar o produto que mais subiu e quem está vendendo.",
-      "fingerprint": "396a47f3cad9222e8331277a4cdbf8d80d15bbacb9f9a586ab0fee66b1508a40",
+      "fingerprint": "d69dc8c8e7bb55161bac27ad61fdd6c626f52ff1bac3810cef841b0f43941c03",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -364,7 +365,7 @@
       "source": "pages/ComercioPages.tsx",
       "purpose": "Acompanhar compras e vendas combinadas com outras empresas.",
       "task": "Encontrar um pedido aberto e responder à contraproposta.",
-      "fingerprint": "8552e7287f5f65750215dc09edb17f15af33a672c99a3ca73ad336866e26af9f",
+      "fingerprint": "c7589ef3d3cc635afdd0c2afed347d33b013d91615a6905ee0e808ebc35f8790",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -402,7 +403,7 @@
       "source": "pages/ComercioPages.tsx",
       "purpose": "Disputar editais de prefeituras e acompanhar entregas públicas.",
       "task": "Entender quanto um edital paga e como a vencedora é escolhida.",
-      "fingerprint": "8552e7287f5f65750215dc09edb17f15af33a672c99a3ca73ad336866e26af9f",
+      "fingerprint": "c7589ef3d3cc635afdd0c2afed347d33b013d91615a6905ee0e808ebc35f8790",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -440,7 +441,7 @@
       "source": "pages/CompanyPage.tsx",
       "purpose": "Explicar caixa, resultado, compromissos e recuperação.",
       "task": "Distinguir saldo, caixa livre, dívida e resultado operacional.",
-      "fingerprint": "1458e61d5060d732607a5393bd4a7f48b4e3626349b46350b3f38900d5be7758",
+      "fingerprint": "3c46b0edc6bf4f4b22cef723242f91b239d12aa6deb262c81e708dffd021d1e0",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -465,7 +466,7 @@
   "files": [
     {
       "path": "apps/web/src/analysis.css",
-      "hash": "7b997202db0a7b3f32515b43e5296d55cb3d3b538d474b83cc37c624344e955a",
+      "hash": "43172cfd86c48e928fe3d6d3b56de5f2a5e41b33cdb862e274ff2fe649bfb842",
       "components": [],
       "literals": [],
       "commands": []
@@ -571,14 +572,14 @@
     },
     {
       "path": "apps/web/src/business.css",
-      "hash": "a0d8dbd927de8de68c2b34aa4f639e06557c1cdbc1aa4c4ed2cb4bf53ae85be9",
+      "hash": "03a69c66abbcb1eabd230528c347f22eeba70f28db633bddaf52326a5a9cfdf9",
       "components": [],
       "literals": [],
       "commands": []
     },
     {
       "path": "apps/web/src/competition.css",
-      "hash": "f912dbd00aace0079d90df1db9aa54b259dd8b79797db0025cb460c23551678b",
+      "hash": "952e491a09611ade25c8b77e9a48401e1069152e6a762a4d5060e63dd8b65ce1",
       "components": [],
       "literals": [],
       "commands": []
@@ -1199,7 +1200,7 @@
     },
     {
       "path": "apps/web/src/economy.css",
-      "hash": "de2d8a86139b1d953f76b88e8fedb0549ae24f4f653b1a37ca4996b042d399c0",
+      "hash": "28736fc10c461afc972f9df1c2f7ac9e1b189b5bca4743a5b4ff3b40a0cbc1d4",
       "components": [],
       "literals": [],
       "commands": []
@@ -1398,37 +1399,48 @@
     },
     {
       "path": "apps/web/src/features/business/Empate.tsx",
-      "hash": "5b16104fe8538e9bd734eb58889954068c355397fda7d4986429f188c3f74f8a",
+      "hash": "3d5056cba528ef6abefeb0a8a43a6ff6db17c8f97534232e35a58731069ace04",
       "components": [
+        "PixelArt",
         "ProductIcon",
         "ShoppingCart",
         "Truck"
       ],
       "literals": [
         {
-          "kind": "aria-label",
-          "text": "Quanto falta para a loja empatar",
-          "line": 56
+          "kind": "h1",
+          "text": "{dinâmico}",
+          "line": 74
         },
         {
-          "kind": "h2",
+          "kind": "aria-label",
+          "text": "Trocar de loja",
+          "line": 81
+        },
+        {
+          "kind": "option",
           "text": "{dinâmico}",
-          "line": 58
+          "line": 86
         },
         {
           "kind": "role",
           "text": "meter",
-          "line": 77
+          "line": 113
         },
         {
           "kind": "aria-label",
-          "text": "Margem por dia comparada ao custo fixo",
-          "line": 81
+          "text": "Margem por dia comparada ao custo de manter a loja",
+          "line": 117
+        },
+        {
+          "kind": "button",
+          "text": "Comprar mercadorias",
+          "line": 142
         },
         {
           "kind": "button",
           "text": "{dinâmico}",
-          "line": 95
+          "line": 150
         }
       ],
       "commands": []
@@ -1648,6 +1660,67 @@
         {
           "type": "installBusiness",
           "line": 132
+        }
+      ]
+    },
+    {
+      "path": "apps/web/src/features/business/LinhaPreco.tsx",
+      "hash": "b35eb000154218288cae6a89e3b611dc5b4d3937efc2d58f9901bd14dab7c4aa",
+      "components": [
+        "ProdutoArte",
+        "ShoppingCart"
+      ],
+      "literals": [
+        {
+          "kind": "h3",
+          "text": "{dinâmico}",
+          "line": 105
+        },
+        {
+          "kind": "button",
+          "text": "Repor",
+          "line": 119
+        },
+        {
+          "kind": "button",
+          "text": "{dinâmico}",
+          "line": 168
+        },
+        {
+          "kind": "button",
+          "text": "−",
+          "line": 264
+        },
+        {
+          "kind": "aria-label",
+          "text": "Baixar o preço",
+          "line": 266
+        },
+        {
+          "kind": "button",
+          "text": "+",
+          "line": 282
+        },
+        {
+          "kind": "aria-label",
+          "text": "Subir o preço",
+          "line": 284
+        },
+        {
+          "kind": "button",
+          "text": "Testar {dinâmico}",
+          "line": 302
+        },
+        {
+          "kind": "button",
+          "text": "{dinâmico}",
+          "line": 306
+        }
+      ],
+      "commands": [
+        {
+          "type": "setPrice",
+          "line": 311
         }
       ]
     },
@@ -2054,11 +2127,10 @@
     },
     {
       "path": "apps/web/src/features/business/Prateleira.tsx",
-      "hash": "730201d8a9687c9cd96c4aa3a7d857dac495d19b31ec0c5f884c72059ce6b250",
+      "hash": "12e44a15b1fa8ce59cdf8e92318a60f0b5135acd2f4987af3bbc7d47ea756b89",
       "components": [
         "Empty",
         "LinhaPreco",
-        "ProdutoArte",
         "ShoppingCart",
         "Sparkles"
       ],
@@ -2066,53 +2138,29 @@
         {
           "kind": "title",
           "text": "A prateleira está vazia",
-          "line": 32
+          "line": 30
         },
         {
           "kind": "button",
           "text": "Comprar mercadorias",
-          "line": 35
+          "line": 33
         },
         {
           "kind": "button",
           "text": "Usar os melhores preços",
-          "line": 68
-        },
-        {
-          "kind": "h3",
-          "text": "{dinâmico}",
-          "line": 141
-        },
-        {
-          "kind": "button",
-          "text": "Repor",
-          "line": 154
-        },
-        {
-          "kind": "button",
-          "text": "Usar {dinâmico}",
-          "line": 256
-        },
-        {
-          "kind": "button",
-          "text": "{dinâmico}",
-          "line": 260
+          "line": 66
         }
       ],
       "commands": [
         {
           "type": "setPrice",
-          "line": 75
-        },
-        {
-          "type": "setPrice",
-          "line": 265
+          "line": 73
         }
       ]
     },
     {
       "path": "apps/web/src/features/business/precificacao.ts",
-      "hash": "db501e0bf77d926112c6e86d956d04a5a894f6af063773b876421f73a690ec58",
+      "hash": "b083788696f9b5f1713cf6cccbc45d0c98e30a2b9079640ca25e06395b2b5496",
       "components": [],
       "literals": [],
       "commands": []
@@ -3936,7 +3984,7 @@
     },
     {
       "path": "apps/web/src/main.tsx",
-      "hash": "dba1ed6a2798c3567f4ca32df30ce12dd4f6a31a4a3ba437c2fa7c312baf9a74",
+      "hash": "5d1df9758551b95c77976501aa7083afba2f923c2548999c426d6d87d9432b8c",
       "components": [
         "React.StrictMode",
         "Root",
@@ -3947,7 +3995,7 @@
     },
     {
       "path": "apps/web/src/negocios.css",
-      "hash": "49dc93d99b3ef19ae1b1f41d59e93207325da32bf161acbbd59bf5370f6da0d7",
+      "hash": "6adfbc0e92c8876405336b39d94030349c6cf6e33f17f70e08d53852c3d88ea4",
       "components": [],
       "literals": [],
       "commands": []
@@ -4817,121 +4865,74 @@
     },
     {
       "path": "apps/web/src/pages/RetailPage.tsx",
-      "hash": "8a53d3f61ee7b114041a0559fb0b052503e748d2d0b0b172549d7c28907e5f22",
+      "hash": "28e428bc21b9828d53aa7e9e55eba01ee29dccc7a441df43286aac74d0ec5aa9",
       "components": [
         "BusinessFinance",
         "Consumption",
-        "Empate",
         "Empty",
         "Installation",
+        "LojaCabecalho",
         "Orders",
         "PageHeading",
         "Panel",
-        "Plus",
         "Prateleira",
-        "Progress",
-        "Search",
-        "Select",
-        "ShoppingCart",
-        "Stat",
         "Stock",
         "SupplyPlanner",
         "Tabs",
-        "TriangleAlert",
         "Workforce"
       ],
       "literals": [
         {
           "kind": "title",
           "text": "Você ainda não possui uma loja",
-          "line": 27
+          "line": 25
         },
         {
           "kind": "button",
           "text": "Explorar propriedades",
-          "line": 30
-        },
-        {
-          "kind": "option",
-          "text": "{dinâmico}",
-          "line": 84
-        },
-        {
-          "kind": "button",
-          "text": "Consultar fornecedores",
-          "line": 125
-        },
-        {
-          "kind": "button",
-          "text": "Adicionar produto",
-          "line": 128
+          "line": 28
         },
         {
           "kind": "h3",
           "text": "Últimas vendas às famílias",
-          "line": 143
+          "line": 65
         },
         {
           "kind": "th",
           "text": "Quando no jogo",
-          "line": 154
+          "line": 76
         },
         {
           "kind": "th",
           "text": "Produto",
-          "line": 155
+          "line": 77
         },
         {
           "kind": "th",
           "text": "Quantidade",
-          "line": 156
+          "line": 78
         },
         {
           "kind": "th",
           "text": "Preço / un.",
-          "line": 157
+          "line": 79
         },
         {
           "kind": "th",
           "text": "Receita",
-          "line": 158
+          "line": 80
         },
         {
           "kind": "title",
           "text": "Aguardando a próxima rodada de vendas",
-          "line": 183
-        },
-        {
-          "kind": "title",
-          "text": "Reposição e cobertura",
-          "line": 205
-        },
-        {
-          "kind": "button",
-          "text": "Configurar abastecimento automático",
-          "line": 222
-        },
-        {
-          "kind": "title",
-          "text": "Atenção na operação",
-          "line": 232
-        },
-        {
-          "kind": "button",
-          "text": "Reabastecer estoque",
-          "line": 247
-        },
-        {
-          "kind": "button",
-          "text": "Ver consumo e gargalos",
-          "line": 255
+          "line": 105
         }
       ],
       "commands": []
     },
     {
       "path": "apps/web/src/styles.css",
-      "hash": "c1ff056bf78acd06186a387e4111cb88b2c4a2c2353a745633fa8352d45c4b79",
+      "hash": "00fe99f7385588ce4c89f1b60909d4beeded3b9a235fcda2ee0fa222932d71f3",
       "components": [],
       "literals": [],
       "commands": []
@@ -4940,21 +4941,21 @@
   "tests": [
     {
       "path": "tests/e2e/animation.spec.ts",
-      "hash": "ff72cbc14efc61bbb8bc8435d0eb626f2846c43892c58601024d1ff6a27f4d77",
+      "hash": "5952052ca92e4e3faa5b092c1a918d89188e9afe3fc8d13e13f0af6746ebce35",
       "cases": [
         "caminhão avança com o relógio contratado e mantém progresso após recarga"
       ]
     },
     {
       "path": "tests/e2e/business.spec.ts",
-      "hash": "8319fccd8a492af26a0baf4d31ae4eabe062fa2e4d3a6f7657264f5c789af263",
+      "hash": "35d359abcfc3eced94ec9428c0ab692fae298e7a3039bc19b096f76f2871cbb6",
       "cases": [
         "negocia pedido real, agrupa caminhões e configura abastecimento e educação"
       ]
     },
     {
       "path": "tests/e2e/design.spec.ts",
-      "hash": "6380f8cf14c85104fb01f139287758adc1b44333ded89f67fb386d114711f22e",
+      "hash": "39d9fd96b27ee1d9520a3868ac6800021ab05f917cf5b932d501b12db966941c",
       "cases": [
         "recuperação explica atrasados, crédito, quitação e suspensão; gráfico exporta dados legíveis",
         "servidor contrata rota curva, caminhão segue geometria e preserva contrato na recarga"
@@ -4962,14 +4963,14 @@
     },
     {
       "path": "tests/e2e/economic-flow.spec.ts",
-      "hash": "55d2fa67a8a5620ac8b1692f7cfe1f3e211e8d6f795fb0ef23ae3e4c18232e88",
+      "hash": "e83a33e413defbe7f5a381af0822240edaf228af3221137d7bb95fb6a3a15d98",
       "cases": [
         "compra, frete, entrega e produção alteram o estado real e persistem após recarregar"
       ]
     },
     {
       "path": "tests/e2e/intelligence.spec.ts",
-      "hash": "70f64e08aff9043fa1c9c940631bfbf84afc6d1bfa102ca36f66d4cbd7815914",
+      "hash": "8f8336ffe943337f56ebb8f7d74db6de46142fa4ee299fbae7dd4f4b65ad13f8",
       "cases": [
         "titularidade, filtros vazios e análise profissional usam dados internos"
       ]
@@ -4986,8 +4987,18 @@
       ]
     },
     {
+      "path": "tests/e2e/landing.spec.ts",
+      "hash": "f851c7a9194ed402e89393a47579fc671980bc9729dac65ad7b00c5515e22d59",
+      "cases": [
+        "entrar abre o mundo de teste e preserva o destino do jogador",
+        "teclado abre o jogo e uma API indisponível oferece nova tentativa",
+        "atalho Como jogar e respostas da apresentação funcionam",
+        "laboratório mantém sua rota e abre sem consultar a API do mundo"
+      ]
+    },
+    {
       "path": "tests/e2e/navigation.spec.ts",
-      "hash": "cbce0afc415f9cc571def742f442116b54bd870c8b2f9359d0db124f9aa229b1",
+      "hash": "348d434fb3736cb9b4d8badfeb23ebafb53be24ebb6c52313873b064e2d693b9",
       "cases": [
         "as dez telas carregam, navegam e mantêm o estado do mundo",
         "a busca e a navegação funcionam em viewport móvel sem rolagem lateral"
@@ -4995,21 +5006,21 @@
     },
     {
       "path": "tests/e2e/opening.spec.ts",
-      "hash": "8d0dc31e0be4a2eea389ca3f99b144625aabcab586d30ace6a1e4d0712403780",
+      "hash": "2983e602420fb426c760fe64910c82c26d6ae5ecaa1121361cb78aa6112b3f8b",
       "cases": [
         "nova unidade separa imóvel, equipamento e equipe sem contratar automaticamente"
       ]
     },
     {
       "path": "tests/e2e/procurement.spec.ts",
-      "hash": "203fb9443f53f8bc2b8ef7992583f8d1c72ac4d4d8876bb8b3810398598216ee",
+      "hash": "95d4e71dd15f263803e83ab1ee113ac1f8cf0abcd00e2b9187ea1fb432a5769c",
       "cases": [
         "edital estadual mostra referência, disputa e todos os caminhões indo à prefeitura"
       ]
     },
     {
       "path": "tests/e2e/transport.spec.ts",
-      "hash": "9e41aedb927fd27a360ce7022b066da5750a594e9a566fe19a0025d37844dc6a",
+      "hash": "ed0f5d57e8b53eb9ef1fbdc23117abec50baacc44de6ec9fb9b2416156a8f28b",
       "cases": [
         "frota mostra limite, ajusta quantidade; erro fica no modal e conexão persiste",
         "central agrupa caminhões por pedido e mantém leitura após recarga"

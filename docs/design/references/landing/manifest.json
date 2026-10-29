@@ -1,0 +1,23 @@
+{
+  "requestedAt": "2026-10-28",
+  "primary": "composition.png",
+  "decision": "Reproduzir a composição inteira, incluindo os dispositivos, com conteúdo AFTERMARKET.",
+  "files": [
+    {
+      "file": "be-kind.png",
+      "sha256": "22b1159f8d9ea0b3a8cf301e3676aa0621f3ccdc28313b372fdb2e1fdca6337e",
+      "bytes": 1025386
+    },
+    {
+      "file": "composition.png",
+      "sha256": "3a7b6e98c1a015ba85d48f2a39cfc3baf99ff43519a07076b13763b0ff1169a6",
+      "bytes": 472407
+    },
+    {
+      "file": "dust-road.png",
+      "sha256": "232208d9e9a5de5aa55034bb63b06446614725469ec5904ef9043a51ad56b92f",
+      "bytes": 505995
+    }
+  ],
+  "usage": "Referências preservadas; não usadas como fundo de interface."
+}

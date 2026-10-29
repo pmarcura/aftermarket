@@ -21,6 +21,8 @@ precisa ajustar esperas de títulos e interferência do modal de primeiros passo
 - Pedidos e contrapropostas entre empresas, editais do governo.
 - Frota própria, transferências e conexões fixas de abastecimento.
 - Laboratório `/lab`: roda 30/90/365 dias de bots em 3/10/84 s e compara cenários.
+- Identidade em pixel (grafite, lavoura, ouro), menu em 4 seções, Comércio com Comprar, Cotações, Pedidos e Contratos, loja em 4 abas com régua de preço.
+- Landing em `/` (jogo em `/jogar`): planeta com mira de GPS, telas reais do jogo (`npm run landing:telas`), selo de projeto em desenvolvimento e assinatura do Pedro. Vitrine animada nativa e novas seções ficam para depois, com a interface mais estável ([LANDING](../docs/design/LANDING.md)).
 
 ## Furos conhecidos
 
@@ -31,7 +33,7 @@ precisa ajustar esperas de títulos e interferência do modal de primeiros passo
 | Economia v1 | O mundo principal salvo segue a economia antiga (aço só para o governo, farelo sobrando)                                                 | [ECONOMIA-HOJE](../docs/product/ECONOMIA-HOJE.md)                                         |
 | Desempenho  | Mundo salvo como um JSON único, regravado a cada 2 s; navegador baixa tudo a cada 3 s; ~2 s de cálculo por dia de jogo no fim de 90 dias | etapa C do roteiro                                                                        |
 | Multiplayer | Servidor só escuta `127.0.0.1`; perfis sem senha                                                                                         | etapa D do roteiro                                                                        |
-| Interface   | Loja com 9 abas; sem mural de notícias nem ranking                                                                                       | etapa E do roteiro                                                                        |
+| Interface   | Sem mural de notícias nem ranking; fábricas e fazendas ainda sem o padrão novo da loja                                                   | etapa E do roteiro                                                                        |
 
 ## Próximo passo
 

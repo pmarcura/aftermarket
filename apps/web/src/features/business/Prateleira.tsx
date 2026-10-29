@@ -1,30 +1,25 @@
 import { useMemo } from 'react';
 import { ShoppingCart, Sparkles } from 'lucide-react';
-import { useGame, cr } from '../../lib/game';
+import { useGame, cr, num } from '../../lib/game';
 import { Empty } from '../../components/ui';
-import {
-  products,
-  type Establishment,
-  type ProductId,
-} from '../../../../../packages/simulation/src/model';
-import { mercadoDaCidade } from './precificacao';
+import { products, type Establishment } from '../../../../../packages/simulation/src/model';
+import { gameCalendar } from '../../../../../packages/simulation/src/operations';
+import { unidade } from '../economy/Carga';
+import { contaDaPrateleira } from './precificacao';
 import { LinhaPreco } from './LinhaPreco';
 
 /**
- * A prateleira da loja: cada produto com a régua de preço (custo, concorrência, preço justo e o
- * preço de maior lucro) e a estimativa de venda e lucro por dia para qualquer preço testado.
+ * A prateleira da loja: o que acaba primeiro vem primeiro. Cada produto com o anel de estoque, a
+ * régua de preço e a estimativa de venda e lucro por dia para qualquer preço testado.
  */
 export function Prateleira({ loja }: { loja: Establishment }) {
   const { world, run, pending, openMarket } = useGame();
-  const itens = (Object.keys(loja.inventory) as ProductId[]).sort(
-    (a, b) => (loja.inventory[b] ?? 0) - (loja.inventory[a] ?? 0),
-  );
-  const mercados = useMemo(
-    () => Object.fromEntries(itens.map((id) => [id, mercadoDaCidade(world, loja, id)])),
+  const conta = useMemo(
+    () => contaDaPrateleira(world, loja),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [world.revision, loja.id, itens.join()],
+    [world.revision, loja.id],
   );
-  if (!itens.length)
+  if (!conta.itens.length)
     return (
       <Empty
         title="A prateleira está vazia"
@@ -36,61 +31,78 @@ export function Prateleira({ loja }: { loja: Establishment }) {
         }
       />
     );
-  const atual = itens.reduce(
-    (n, id) => n + mercados[id].lucro(loja.prices[id] ?? mercados[id].justo),
-    0,
-  );
-  const possivel = itens.reduce((n, id) => n + mercados[id].lucro(mercados[id].melhor), 0);
-  const ajustar = itens.filter((id) => {
-    const p = loja.prices[id] ?? 0;
-    return Math.abs(p - mercados[id].melhor) / mercados[id].melhor > 0.03;
-  });
+  const ganho = conta.melhor - conta.agora;
   return (
     <div className="prat">
-      <div className="prat-resumo">
-        <div>
-          <span>Com os preços de agora</span>
-          <b className={atual >= 0 ? '' : 'negative'}>{cr(atual, 0)}</b>
-          <small>de lucro bruto por dia na prateleira</small>
-        </div>
-        <div className="melhor">
-          <span>Com os melhores preços</span>
-          <b>{cr(possivel, 0)}</b>
-          <small>
-            {possivel - atual > 100
-              ? `+${cr(possivel - atual, 0)} por dia ajustando ${ajustar.length} ${ajustar.length === 1 ? 'preço' : 'preços'}`
-              : 'seus preços já estão perto do melhor'}
-          </small>
-        </div>
-        {ajustar.length > 0 && possivel - atual > 100 && (
+      {conta.ajustar.length > 0 && ganho > 100 && (
+        <div className="prat-dica">
+          <Sparkles size={18} aria-hidden="true" />
+          <p>
+            Ajustando {conta.ajustar.length} {conta.ajustar.length === 1 ? 'preço' : 'preços'}, a
+            prateleira lucra cerca de <b>+{cr(ganho, 0)}</b> a mais por dia (estimativa).
+          </p>
           <button
             className="primary"
             disabled={pending}
             onClick={async () => {
-              for (const id of ajustar)
+              for (const [i, x] of conta.ajustar.entries())
                 await run(
-                  {
-                    type: 'setPrice',
-                    establishmentId: loja.id,
-                    product: id,
-                    price: mercados[id].melhor,
-                  },
-                  `Preço de ${products[id].name} ajustado para ${cr(mercados[id].melhor)}.`,
+                  { type: 'setPrice', establishmentId: loja.id, product: x.id, price: x.m.melhor },
+                  `Preços ajustados (${i + 1} de ${conta.ajustar.length}).`,
                 );
             }}
           >
-            <Sparkles size={16} /> Usar os melhores preços
+            Usar os melhores preços
           </button>
-        )}
-      </div>
-      {itens.map((id) => (
-        <LinhaPreco key={id} loja={loja} product={id} m={mercados[id]} />
+        </div>
+      )}
+      {conta.itens.map((x) => (
+        <LinhaPreco key={x.id} loja={loja} product={x.id} m={x.m} />
       ))}
       <p className="muted small">
         Estimativa com a procura da cidade, a qualidade do estoque e os preços das lojas
         concorrentes, pela mesma regra que decide as vendas. Equipe, área e estoque podem limitar a
         venda real.
       </p>
+      <Caixa loja={loja} />
     </div>
+  );
+}
+
+/** As últimas vendas às famílias, como a fita de uma caixa registradora. */
+function Caixa({ loja }: { loja: Establishment }) {
+  const { world } = useGame();
+  const vendas = world.ledger
+    .filter((l) => l.establishmentId === loja.id && l.kind === 'retail')
+    .slice(-8)
+    .reverse();
+  return (
+    <section className="prat-caixa" aria-labelledby="prat-caixa">
+      <h3 id="prat-caixa">Últimas vendas</h3>
+      {vendas.length ? (
+        <ol>
+          {vendas.map((l, i) => {
+            const quando = gameCalendar(world, l.at).date;
+            return (
+              <li key={l.id} className={i === 0 ? 'nova' : ''}>
+                <time>
+                  {quando.getUTCHours().toString().padStart(2, '0')}h
+                  {quando.getUTCMinutes().toString().padStart(2, '0')}
+                </time>
+                <span>
+                  {num(l.quantity ?? 0)} {l.product ? unidade(l.product, l.quantity ?? 0) : ''} de{' '}
+                  {l.product ? products[l.product].name : l.description}
+                </span>
+                <b>+{cr(l.amount, 0)}</b>
+              </li>
+            );
+          })}
+        </ol>
+      ) : (
+        <p className="muted small">
+          As famílias compram a cada 2 horas de jogo. A primeira venda aparece aqui.
+        </p>
+      )}
+    </section>
   );
 }

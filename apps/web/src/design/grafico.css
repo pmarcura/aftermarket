@@ -7,35 +7,67 @@
 .gpx-legenda {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 18px;
+  gap: 8px;
   margin: 0;
   padding: 0;
   list-style: none;
-  font-family: var(--pixel);
+  font-family: var(--fonte);
   font-size: 13px;
+  font-weight: 600;
   color: var(--creme);
 }
 .gpx-legenda li {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-}
-.gpx-legenda i,
-.gpx-leitura i {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
+  gap: 10px;
+  padding: 6px 12px 6px 10px;
+  background: var(--chapa-2);
+  border: 2px solid var(--borda);
   box-shadow: 2px 2px 0 var(--sombra);
+}
+
+/* Chave: a forma separa as séries mesmo sem enxergar a cor. */
+.gpx-forma {
+  display: inline-block;
+  flex: none;
+  width: 12px;
+  height: 12px;
+}
+.gpx-f-losango {
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+.gpx-f-triangulo {
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+.gpx-f-cruz {
+  clip-path: polygon(
+    33% 0,
+    66% 0,
+    66% 33%,
+    100% 33%,
+    100% 66%,
+    66% 66%,
+    66% 100%,
+    33% 100%,
+    33% 66%,
+    0 66%,
+    0 33%,
+    33% 33%
+  );
+}
+.gpx-f-octogono {
+  clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%);
 }
 .gpx-quadro {
   position: relative;
   height: var(--gpx-altura);
-  background:
-    linear-gradient(var(--grade) 1px, transparent 1px) 0 0 / 8px 8px,
-    linear-gradient(90deg, var(--grade) 1px, transparent 1px) 0 0 / 8px 8px,
-    var(--noite-funda);
+  background: linear-gradient(
+    180deg,
+    var(--noite-funda),
+    color-mix(in srgb, var(--chapa) 70%, var(--noite-funda))
+  );
   border: 2px solid var(--borda);
-  box-shadow: inset 0 0 0 2px var(--sombra);
+  border-radius: 10px;
   overflow: hidden;
   cursor: crosshair;
   touch-action: pan-y;
@@ -52,17 +84,36 @@
   stroke-width: 1;
   stroke-dasharray: 2 6;
 }
+.gpx-referencia line {
+  stroke: var(--ouro);
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+}
+.gpx-referencia text {
+  fill: var(--ouro);
+  font-family: var(--fonte);
+  font-size: 13px;
+  font-weight: 600;
+}
+.gpx-rotulo.dest {
+  fill: var(--lavoura);
+}
+.gpx-fim {
+  stroke: var(--sombra);
+  stroke-width: 1;
+}
 .gpx-marca text,
 .gpx-rotulo {
   fill: var(--apagado);
-  font-family: var(--pixel);
-  font-size: 11px;
+  font-family: var(--fonte);
+  font-size: 13px;
+  font-weight: 600;
 }
 .gpx-linha {
   fill: none;
   stroke-width: 3;
-  stroke-linecap: square;
-  stroke-linejoin: miter;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 /* O zero é uma faixa de estrada: abaixo dela, o dinheiro está saindo. */
 .gpx-estrada {
@@ -78,15 +129,13 @@
   opacity: 0.6;
 }
 .gpx-cantos {
-  fill: none;
-  stroke-width: 2;
-  stroke-linecap: square;
+  stroke-linecap: round;
 }
 /* A mira trava no ponto: abre um pouco e fecha, como na landing. */
 .gpx-mira .gpx-cantos {
   transform-box: fill-box;
   transform-origin: center;
-  animation: gpx-travar 0.18s steps(3) both;
+  animation: gpx-travar 0.18s ease-out both;
 }
 @keyframes gpx-travar {
   from {
@@ -104,7 +153,7 @@
 }
 /* Entrada única: o desenho aparece da esquerda para a direita em passos de pixel. */
 .gpx-revelar {
-  animation: gpx-revelar 0.7s steps(14) both;
+  animation: gpx-revelar 0.8s ease-out both;
 }
 @keyframes gpx-revelar {
   from {
@@ -164,8 +213,9 @@
   background: none;
   padding: 4px 0;
   color: var(--apagado);
-  font-family: var(--pixel);
-  font-size: 12px;
+  font-family: var(--fonte);
+  font-size: 13px;
+  font-weight: 600;
   text-decoration: underline dotted;
   text-underline-offset: 4px;
   cursor: pointer;
@@ -183,4 +233,171 @@
   .gpx-mira .gpx-cantos {
     animation: none;
   }
+}
+
+/* Barras horizontais: uma linha por item, nome, blocos e valor. */
+.bpx {
+  margin: 0;
+}
+.bpx ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.bpx li {
+  display: grid;
+  grid-template-columns: minmax(96px, 168px) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 12px;
+  background: var(--chapa-2);
+  border-left: 4px solid var(--tom, var(--lavoura));
+}
+.bpx-nome {
+  overflow: hidden;
+  font-size: 13px;
+  color: var(--creme);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bpx-trilho {
+  display: block;
+  height: 16px;
+  background: var(--noite-funda);
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 2px var(--sombra);
+  overflow: hidden;
+}
+.bpx-trilho i {
+  display: block;
+  height: 100%;
+  min-width: 6px;
+  border-radius: 8px;
+}
+.bpx-trilho i.cheio {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--tom, var(--lavoura)) 65%, white),
+    var(--tom, var(--lavoura)) 55%,
+    color-mix(in srgb, var(--tom, var(--lavoura)) 70%, black)
+  );
+  transition: width 0.5s ease-out;
+}
+.bpx-valor {
+  display: grid;
+  min-width: 88px;
+  font-family: var(--fonte);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: right;
+  color: var(--creme);
+}
+.bpx-valor small {
+  font-size: 11px;
+  color: var(--apagado);
+}
+
+/* Barra empilhada com chave em cartões. */
+.bemp {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+}
+.bemp-barra {
+  display: flex;
+  gap: 3px;
+  height: 38px;
+  padding: 3px;
+  background: var(--noite-funda);
+  border: 2px solid var(--borda);
+  border-radius: 12px;
+}
+.bemp-barra span {
+  min-width: 6px;
+  border-radius: 8px;
+  box-shadow:
+    inset 0 3px 0 rgb(255 255 255 / 0.28),
+    inset 0 -4px 0 rgb(0 0 0 / 0.22);
+  transition: opacity 0.15s ease-out;
+}
+.bemp-barra span.apagada {
+  opacity: 0.3;
+}
+.bemp-chave {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.bemp-chave li {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 2px 10px;
+  padding: 10px 12px;
+  background: var(--chapa-2);
+  border: 2px solid var(--borda);
+}
+.bemp-chave li.em {
+  border-color: var(--creme);
+}
+.bemp-chave li:focus-visible {
+  outline: 3px solid var(--lavoura);
+  outline-offset: 2px;
+}
+.bemp-chave li.vazia {
+  opacity: 0.45;
+}
+.bemp-nome {
+  min-width: 0;
+  font-size: 13px;
+  color: var(--creme);
+}
+.bemp-chave b {
+  font-family: var(--fonte);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--creme);
+}
+.bemp-chave small {
+  grid-column: 3;
+  text-align: right;
+  font-family: var(--fonte);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--apagado);
+}
+.bemp-chave em {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  font-style: normal;
+  color: var(--apagado);
+}
+@media (max-width: 600px) {
+  .bpx li {
+    grid-template-columns: 1fr auto;
+    row-gap: 6px;
+  }
+  .bpx-trilho {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  .bemp-chave {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Séries sobrepostas: a primeira é mais grossa e fica por baixo, para as duas aparecerem. */
+.gpx-linha.gpx-multi-0 {
+  stroke-width: 7;
+}
+.gpx-linha.gpx-multi-1 {
+  stroke-width: 3;
+}
+.gpx-linha.gpx-multi-2 {
+  stroke-width: 2;
 }

@@ -17,7 +17,7 @@ import { loadOf } from '../../../../packages/simulation/src/engine';
 import { useClock } from '../lib/clock';
 import { operatingCosts, productionCharges } from '../../../../packages/simulation/src/metrics';
 import { InfrastructureDetails } from '../components/InfrastructureDetails';
-import { SupplyPlanner } from '../features/business/SupplyPlanner';
+import { Abastecimento } from '../features/business/Abastecimento';
 import { Stock } from '../features/business/Stock';
 import { SalesCatalog } from '../features/business/SalesCatalog';
 import { OfferModal } from '../features/business/OfferModal';
@@ -170,7 +170,7 @@ export function OperationPage() {
             value={tab}
             onChange={setTab}
           />
-          {tab === 'Abastecimento' && <SupplyPlanner key={e.id} establishment={e} />}
+          {tab === 'Abastecimento' && <Abastecimento key={e.id} establishment={e} />}
           {tab === 'Produção' && recipe && (
             <div className="panel-content production-content">
               {line && (

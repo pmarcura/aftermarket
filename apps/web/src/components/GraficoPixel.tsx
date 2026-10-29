@@ -1,4 +1,5 @@
 import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from 'react';
+import { Chave, FORMAS } from './BarrasPixel';
 import '../design/grafico.css';
 
 /**
@@ -24,10 +25,14 @@ type Props = {
   /** Formato curto para o eixo; usa `formato` quando ausente. */
   formatoEixo?: (valor: number) => string;
   altura?: number;
+  /** Barra em destaque (por exemplo, hoje). Em série única, a última; -1 não destaca nenhuma. */
+  destaque?: number;
+  /** Linha de referência horizontal com nome, como a meta do dia. */
+  referencia?: { valor: number; rotulo: string };
 };
 
 const P = 4; // tamanho do pixel da grade
-const snap = (v: number) => Math.round(v / P) * P;
+const snap = (v: number) => v;
 const MARGEM = { topo: 16, baixo: 32, esquerda: 72, direita: 16 };
 
 function passoBonito(bruto: number) {
@@ -36,8 +41,11 @@ function passoBonito(bruto: number) {
   return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * base;
 }
 
-function escala(series: SeriePixel[], empilhar: boolean) {
-  const todos = series.flatMap((s) => s.valores).filter(Number.isFinite);
+function escala(series: SeriePixel[], empilhar: boolean, extra?: number) {
+  const todos = [
+    ...series.flatMap((s) => s.valores),
+    ...(extra === undefined ? [] : [extra]),
+  ].filter(Number.isFinite);
   let min = Math.min(0, ...todos);
   let max = Math.max(0, ...todos);
   if (empilhar) max = Math.max(max, 0);
@@ -58,6 +66,8 @@ export function GraficoPixel({
   formato,
   formatoEixo = formato,
   altura = 280,
+  destaque,
+  referencia,
 }: Props) {
   const id = useId().replace(/:/g, '');
   const caixa = useRef<HTMLDivElement>(null);
@@ -75,7 +85,10 @@ export function GraficoPixel({
 
   const n = rotulos.length;
   const unica = series.length === 1;
-  const { min, max, marcas } = useMemo(() => escala(series, tipo === 'barras'), [series, tipo]);
+  const { min, max, marcas } = useMemo(
+    () => escala(series, tipo === 'barras', referencia?.valor),
+    [series, tipo, referencia?.valor],
+  );
   // Margem do eixo cabe o maior rótulo (Geist Pixel ~7 px por caractere em 11 px).
   const esquerda = Math.max(MARGEM.esquerda, ...marcas.map((m) => formatoEixo(m).length * 7 + 18));
   const plotX0 = esquerda;
@@ -88,8 +101,24 @@ export function GraficoPixel({
     snap(tipo === 'barras' ? plotX0 + passoX * (i + 0.5) : plotX0 + passoX * i);
   const zero = y(0);
 
-  const degraus = (valores: number[]) =>
-    valores.map((v, i) => (i === 0 ? `M${x(0)} ${y(v)}` : `H${x(i)} V${y(v)}`)).join(' ');
+  /** Curva suave que passa por todos os pontos sem inventar picos entre eles. */
+  const degraus = (valores: number[]) => {
+    const px = valores.map((_, i) => x(i));
+    const py = valores.map((v) => y(v));
+    const k = valores.length;
+    if (k < 2) return `M${px[0] ?? 0} ${py[0] ?? 0}`;
+    const d = px.slice(1).map((v, i) => v - px[i]);
+    const m = py.slice(1).map((v, i) => (v - py[i]) / (d[i] || 1));
+    const t = [m[0]];
+    for (let i = 1; i < k - 1; i++) t.push(m[i - 1] * m[i] <= 0 ? 0 : (m[i - 1] + m[i]) / 2);
+    t.push(m[k - 2]);
+    let path = `M${px[0]} ${py[0]}`;
+    for (let i = 0; i < k - 1; i++) {
+      const h = d[i] / 3;
+      path += ` C${px[i] + h} ${py[i] + t[i] * h} ${px[i + 1] - h} ${py[i + 1] - t[i + 1] * h} ${px[i + 1]} ${py[i + 1]}`;
+    }
+    return path;
+  };
 
   const rotulosVisiveis = useMemo(() => {
     const cabem = Math.max(2, Math.floor((plotX1 - plotX0) / (tipo === 'barras' ? 40 : 120)));
@@ -99,9 +128,13 @@ export function GraficoPixel({
       .map((v, i, a) => {
         // não deixa o penúltimo rótulo colado no último
         if (i !== n - 1 && v && n - 1 - i < salto / 2) return false;
+        // nem o rótulo vizinho ao da barra em destaque ("hoje")
+        const d = destaque ?? (series.length === 1 && tipo === 'barras' ? n - 1 : -1);
+        if (d >= 0 && i !== d && Math.abs(i - d) * passoX < 64) return false;
         return a[i];
       });
-  }, [rotulos, n, plotX0, plotX1, tipo]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rotulos, n, plotX0, plotX1, tipo, destaque]);
 
   const indiceDoPonteiro = (clientX: number) => {
     const r = caixa.current?.getBoundingClientRect();
@@ -125,6 +158,7 @@ export function GraficoPixel({
   };
 
   const ultimo = n - 1;
+  const dest = destaque ?? (unica && tipo === 'barras' ? ultimo : -1);
   const ativo = lido ?? null;
   const cor = (s: SeriePixel, i: number) => `var(--serie-${s.cor ?? i + 1})`;
   const corLinha = (s: SeriePixel, i: number) => (unica ? 'var(--lavoura)' : cor(s, i));
@@ -139,7 +173,10 @@ export function GraficoPixel({
         <ul className="gpx-legenda" aria-label="Séries">
           {series.map((s, i) => (
             <li key={s.nome}>
-              <i style={{ background: cor(s, i) }} />
+              <Chave
+                forma={FORMAS[i % FORMAS.length]}
+                cor={(s.cor ?? i + 1) as 1 | 2 | 3 | 4 | 5}
+              />
               {s.nome}
             </li>
           ))}
@@ -156,22 +193,16 @@ export function GraficoPixel({
         onKeyDown={teclas}
         onBlur={() => setLido(null)}
       >
-        <svg width={largura} height={altura} shapeRendering="crispEdges" aria-hidden="true">
+        <svg width={largura} height={altura} aria-hidden="true">
           <defs>
             {[
-              ...series.map((s, i) => ({ k: `s${i}`, c: corLinha(s, i) })),
-              { k: 'neg', c: 'var(--brasa)' },
-            ].map(({ k, c }) => (
-              <pattern
-                key={k}
-                id={`${id}-${k}`}
-                width={P * 2}
-                height={P * 2}
-                patternUnits="userSpaceOnUse"
-              >
-                <rect width={P} height={P} fill={c} />
-                <rect x={P} y={P} width={P} height={P} fill={c} />
-              </pattern>
+              ...series.map((s, i) => ({ k: `s${i}`, c: corLinha(s, i), cima: true })),
+              { k: 'neg', c: 'var(--brasa)', cima: false },
+            ].map(({ k, c, cima }) => (
+              <linearGradient key={k} id={`${id}-${k}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stopColor={c} stopOpacity={cima ? 0.5 : 0} />
+                <stop offset="1" stopColor={c} stopOpacity={cima ? 0 : 0.5} />
+              </linearGradient>
             ))}
             {/* Entrada única: um retângulo que cresce em passos revela o desenho. */}
             <clipPath id={`${id}-revelar`}>
@@ -205,18 +236,22 @@ export function GraficoPixel({
                         <path
                           d={area}
                           fill={`url(#${id}-s${i})`}
-                          opacity={0.38}
+                          opacity={1}
                           clipPath={`url(#${id}-acima)`}
                         />
                         <path
                           d={area}
                           fill={`url(#${id}-neg)`}
-                          opacity={0.45}
+                          opacity={1}
                           clipPath={`url(#${id}-abaixo)`}
                         />
                       </>
                     )}
-                    <path d={degraus(s.valores)} className="gpx-linha" stroke={corLinha(s, i)} />
+                    <path
+                      d={degraus(s.valores)}
+                      className={`gpx-linha${unica ? '' : ` gpx-multi-${Math.min(i, 2)}`}`}
+                      stroke={corLinha(s, i)}
+                    />
                     {unica && (
                       <path
                         d={degraus(s.valores)}
@@ -238,36 +273,31 @@ export function GraficoPixel({
                   const bx = snap(
                     x(i) - (largBarra + 2) * (series.length / 2) + j * (largBarra + 2),
                   );
-                  const blocos = Math.floor(alto / (P * 2));
+                  const corBarra =
+                    v < 0 && unica
+                      ? 'var(--brasa)'
+                      : unica && i === dest
+                        ? 'var(--lavoura)'
+                        : cor(s, j);
                   return (
-                    <g
-                      key={`${i}-${j}`}
-                      fill={
-                        v < 0 && unica
-                          ? 'var(--brasa)'
-                          : unica && i === ultimo
-                            ? 'var(--lavoura)'
-                            : cor(s, j)
-                      }
-                      opacity={ativo === null || ativo === i ? 1 : 0.45}
-                    >
-                      {Array.from({ length: blocos }, (_, b) => (
-                        <rect
-                          key={b}
-                          x={bx}
-                          y={v < 0 ? zero + b * P * 2 : zero - (b + 1) * P * 2}
-                          width={largBarra}
-                          height={P * 2 - 2}
-                        />
-                      ))}
-                      {alto - blocos * P * 2 >= 2 && (
-                        <rect
-                          x={bx}
-                          y={v < 0 ? zero + blocos * P * 2 : topo}
-                          width={largBarra}
-                          height={alto - blocos * P * 2}
-                        />
-                      )}
+                    <g key={`${i}-${j}`} opacity={ativo === null || ativo === i ? 1 : 0.45}>
+                      <rect
+                        x={bx}
+                        y={topo}
+                        width={largBarra}
+                        height={Math.max(alto, 2)}
+                        rx={Math.min(5, largBarra / 2)}
+                        fill={corBarra}
+                      />
+                      <rect
+                        x={bx + 2}
+                        y={topo + 2}
+                        width={Math.max(2, largBarra / 4)}
+                        height={Math.max(0, alto - 4)}
+                        rx={1.5}
+                        fill="#fff"
+                        opacity={0.28}
+                      />
                     </g>
                   );
                 }),
@@ -276,11 +306,57 @@ export function GraficoPixel({
 
           <line className="gpx-estrada" x1={plotX0} x2={plotX1} y1={zero} y2={zero} />
 
+          {referencia && (
+            <g className="gpx-referencia">
+              <line x1={plotX0} x2={plotX1} y1={y(referencia.valor)} y2={y(referencia.valor)} />
+              <text x={plotX1 - 4} y={y(referencia.valor) - 6} textAnchor="end">
+                {referencia.rotulo}
+              </text>
+            </g>
+          )}
+
+          {/* Série múltipla: o último ponto de cada linha leva a forma da sua chave. */}
+          {tipo === 'linha' &&
+            !unica &&
+            n > 0 &&
+            series.map((s, i) => {
+              const cx = x(ultimo);
+              const cy = y(s.valores[ultimo] ?? 0);
+              const f = FORMAS[i % FORMAS.length];
+              const c = cor(s, i);
+              const r = 6;
+              return (
+                <g key={s.nome} fill={c} className="gpx-fim">
+                  {f === 'quadrado' && (
+                    <rect x={cx - r + 1} y={cy - r + 1} width={r * 2 - 2} height={r * 2 - 2} />
+                  )}
+                  {f === 'losango' && (
+                    <polygon
+                      points={`${cx},${cy - r - 1} ${cx + r + 1},${cy} ${cx},${cy + r + 1} ${cx - r - 1},${cy}`}
+                    />
+                  )}
+                  {f === 'triangulo' && (
+                    <polygon
+                      points={`${cx},${cy - r} ${cx + r + 1},${cy + r} ${cx - r - 1},${cy + r}`}
+                    />
+                  )}
+                  {f === 'cruz' && (
+                    <path
+                      d={`M${cx - 2} ${cy - r}h4v${r - 2}h${r - 2}v4h-${r - 2}v${r - 2}h-4v-${r - 2}h-${r - 2}v-4h${r - 2}z`}
+                    />
+                  )}
+                  {f === 'octogono' && (
+                    <rect x={cx - r + 2} y={cy - r + 2} width={r * 2 - 4} height={r * 2 - 4} />
+                  )}
+                </g>
+              );
+            })}
+
           {rotulos.map((r, i) =>
-            rotulosVisiveis[i] ? (
+            rotulosVisiveis[i] || i === dest ? (
               <text
                 key={i}
-                className="gpx-rotulo"
+                className={i === dest ? 'gpx-rotulo dest' : 'gpx-rotulo'}
                 x={x(i)}
                 y={altura - 10}
                 textAnchor={
@@ -297,13 +373,14 @@ export function GraficoPixel({
           )}
 
           {tipo === 'linha' && ativo === null && unica && n > 0 && (
-            <rect
+            <circle
               className="gpx-ponto"
-              x={x(ultimo) - P}
-              y={y(series[0].valores[ultimo]) - P}
-              width={P * 2}
-              height={P * 2}
+              cx={x(ultimo)}
+              cy={y(series[0].valores[ultimo])}
+              r={7}
               fill={series[0].valores[ultimo] < 0 ? 'var(--brasa)' : 'var(--lavoura)'}
+              stroke="var(--noite-funda)"
+              strokeWidth={3}
             />
           )}
 
@@ -312,23 +389,17 @@ export function GraficoPixel({
               <line className="gpx-guia" x1={pontoX} x2={pontoX} y1={plotY0} y2={plotY1} />
               {series.map((s, i) => {
                 const py = y(s.valores[ativo!] ?? 0);
-                const t = 9;
-                const a = 5;
                 return (
-                  <g key={s.nome} stroke={corLinha(s, i)}>
-                    <path
-                      className="gpx-cantos"
-                      d={`M${pontoX - t} ${py - t + a}V${py - t}H${pontoX - t + a} M${pontoX + t - a} ${py - t}H${pontoX + t}V${py - t + a} M${pontoX + t} ${py + t - a}V${py + t}H${pontoX + t - a} M${pontoX - t + a} ${py + t}H${pontoX - t}V${py + t - a}`}
-                    />
-                    <rect
-                      x={pontoX - 2}
-                      y={py - 2}
-                      width={4}
-                      height={4}
-                      fill={corLinha(s, i)}
-                      stroke="none"
-                    />
-                  </g>
+                  <circle
+                    key={s.nome}
+                    className="gpx-cantos"
+                    cx={pontoX}
+                    cy={py}
+                    r={8}
+                    fill="var(--noite-funda)"
+                    stroke={corLinha(s, i)}
+                    strokeWidth={4}
+                  />
                 );
               })}
             </g>
@@ -346,7 +417,12 @@ export function GraficoPixel({
             <span>{rotulos[ativo]}</span>
             {series.map((s, i) => (
               <b key={s.nome} className={s.valores[ativo] < 0 ? 'neg' : ''}>
-                {!unica && <i style={{ background: cor(s, i) }} />}
+                {!unica && (
+                  <Chave
+                    forma={FORMAS[i % FORMAS.length]}
+                    cor={(s.cor ?? i + 1) as 1 | 2 | 3 | 4 | 5}
+                  />
+                )}
                 {!unica && <small>{s.nome}</small>}
                 {formato(s.valores[ativo] ?? 0)}
               </b>

@@ -1,15 +1,11 @@
 import { ShoppingCart, Truck } from 'lucide-react';
 import { useGame, cr, num, ProductIcon } from '../../lib/game';
 import { PixelArt } from '../../components/PixelArt';
-import {
-  products,
-  type Establishment,
-  type ProductId,
-} from '../../../../../packages/simulation/src/model';
+import { products, type Establishment } from '../../../../../packages/simulation/src/model';
 import { householdItems } from '../../../../../packages/simulation/src/channels';
 import { seasonPrice } from '../../../../../packages/simulation/src/metrics';
 import { avaliar, procuraDiaria, quantidadeSugerida } from '../economy/compra';
-import { mercadoDaCidade } from './precificacao';
+import { contaDaPrateleira } from './precificacao';
 
 /**
  * Cabeçalho da loja: a peça, quem ela é e a conta do dia. Margem estimada da prateleira (com a
@@ -19,13 +15,8 @@ export function LojaCabecalho({ loja }: { loja: Establishment }) {
   const { world, actor, openMarket, openBusiness } = useGame();
   const p = world.properties.find((x) => x.id === loja.propertyId)!;
   const fixo = loja.dailyCost;
-  const naPrateleira = (Object.entries(loja.inventory) as [ProductId, number][]).filter(
-    ([id, q]) => q > 0 && (loja.prices[id] ?? 0) > 0,
-  );
-  const ganho = naPrateleira.reduce(
-    (n, [id]) => n + mercadoDaCidade(world, loja, id).lucro(loja.prices[id]!),
-    0,
-  );
+  // Mesma conta da prateleira e do Início.
+  const ganho = contaDaPrateleira(world, loja).agora;
   const aCaminho = new Set(
     world.shipments
       .filter((s) => s.destinationId === loja.id && !s.delivered)
@@ -93,8 +84,8 @@ export function LojaCabecalho({ loja }: { loja: Establishment }) {
       <div className="loja-dia">
         <div className="loja-nums">
           <div>
-            <b>{cr(Math.max(0, ganho), 0)}</b>
-            <span>margem da prateleira por dia</span>
+            <b>{cr(ganho, 0)}</b>
+            <span>margem estimada por dia</span>
           </div>
           <div>
             <b>{cr(fixo, 0)}</b>

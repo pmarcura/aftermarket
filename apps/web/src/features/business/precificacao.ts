@@ -77,3 +77,42 @@ export function mercadoDaCidade(world: World, loja: Establishment, product: Prod
     menorDoPais,
   };
 }
+
+export type Mercado = ReturnType<typeof mercadoDaCidade>;
+
+/**
+ * A prateleira inteira numa conta só, usada pelo cabeçalho da loja, pela prateleira e pelos
+ * avisos do Início. Só produto com estoque entra no lucro: sem estoque não há venda.
+ * Ordem de atenção: o que acaba primeiro vem primeiro.
+ */
+export function contaDaPrateleira(world: World, loja: Establishment) {
+  const itens = (Object.keys(loja.inventory) as ProductId[])
+    .map((id) => {
+      const m = mercadoDaCidade(world, loja, id);
+      const preco = loja.prices[id] ?? m.justo;
+      const estoque = loja.inventory[id] ?? 0;
+      const vende = m.vendas(preco);
+      const dias = estoque <= 0 ? 0 : vende > 0.01 ? estoque / vende : Infinity;
+      return {
+        id,
+        m,
+        preco,
+        estoque,
+        vende,
+        dias,
+        // A venda do dia não passa do que há na prateleira.
+        lucro: Math.min(vende, estoque) * (preco - m.custo),
+        lucroMelhor: Math.min(m.vendas(m.melhor), estoque) * (m.melhor - m.custo),
+      };
+    })
+    .sort((a, b) => a.dias - b.dias || b.estoque - a.estoque);
+  const ajustar = itens.filter(
+    (x) => x.estoque > 0 && !x.m.melhorNoTeto && Math.abs(x.preco - x.m.melhor) / x.m.melhor > 0.03,
+  );
+  return {
+    itens,
+    agora: itens.reduce((n, x) => n + x.lucro, 0),
+    melhor: itens.reduce((n, x) => n + x.lucroMelhor, 0),
+    ajustar,
+  };
+}

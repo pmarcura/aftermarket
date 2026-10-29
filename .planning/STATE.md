@@ -22,6 +22,7 @@ precisa ajustar esperas de títulos e interferência do modal de primeiros passo
 - Frota própria, transferências e conexões fixas de abastecimento.
 - Laboratório `/lab`: roda 30/90/365 dias de bots em 3/10/84 s e compara cenários.
 - Jogo e landing com a mesma identidade (28/10): grafite com quadriculado, lavoura para agir, ouro para dinheiro, títulos em Press Start, mapa noturno e gráfico próprio em pixel (`GraficoPixel`). Regras e ordem das telas em [IDENTIDADE-JOGO](../docs/design/IDENTIDADE-JOGO.md); placar `npm run ui:cores`.
+- Telas redesenhadas (29/10): Início, Loja (prateleira em cartões com trilho de preço, Abastecimento, Equipe, Finanças) e a gaveta **Mandar buscar** para repor. Texto pequeno em Archivo (pixel só a partir de 18 px), cores com papéis e contraste conferido por `npm run ui:contraste`. Próximo projeto: mapa e adaptação da identidade (notas no fim de IDENTIDADE-JOGO).
 - Identidade em pixel (grafite, lavoura, ouro), menu em 4 seções, Comércio com Comprar, Cotações, Pedidos e Contratos, loja em 4 abas com régua de preço.
 - Landing em `/` (jogo em `/jogar`): planeta com mira de GPS, telas reais do jogo (`npm run landing:telas`), selo de projeto em desenvolvimento e assinatura do Pedro. Vitrine animada nativa e novas seções ficam para depois, com a interface mais estável ([LANDING](../docs/design/LANDING.md)).
 

@@ -36,7 +36,7 @@ const ink = '#f3e7cc',
 const theme = {
   color: ['#6aa832', '#3f8fd0', '#bf8710', '#a774d6', '#e0523a'],
   backgroundColor: 'transparent',
-  textStyle: { fontFamily: 'Geist Pixel Square, monospace', fontSize: 12, color: ink },
+  textStyle: { fontFamily: 'Archivo Variable, sans-serif', fontSize: 12, color: ink },
   categoryAxis: {
     axisLine: { lineStyle: { color: '#4d5342' } },
     axisTick: { show: false },

@@ -1295,9 +1295,9 @@ summary:focus-visible {
   padding: 1px 6px;
   background: var(--ouro);
   color: #1d1406;
-  font-family: var(--pixel);
+  font-family: var(--fonte);
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   white-space: nowrap;
   box-shadow: 2px 2px 0 var(--sombra);
 }
@@ -1379,7 +1379,7 @@ summary:focus-visible {
   font-weight: 600;
 }
 .prat-produto h3 {
-  font-family: var(--pixel);
+  font-family: var(--fonte);
   font-size: 17px;
   font-weight: 600;
 }

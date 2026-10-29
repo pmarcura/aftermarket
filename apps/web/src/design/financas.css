@@ -1,0 +1,210 @@
+/* Finanças da unidade: números grandes, gráficos próprios e blocos bem separados. */
+.fin {
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+}
+.fin + .fin {
+  border-top: 2px dashed var(--borda);
+}
+.fin-topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.fin-cab h3 {
+  margin: 0;
+  font-family: var(--fonte);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--creme);
+}
+.fin-cab p {
+  margin: 6px 0 0;
+  max-width: 64ch;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--apagado);
+}
+
+/* Período e produto: botões de escolha, nunca uma lista suspensa. */
+.fin-periodo,
+.fin-produtos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.fin-periodo button,
+.fin-produtos button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 14px;
+  background: var(--chapa-2);
+  border: 2px solid var(--borda);
+  box-shadow: 2px 2px 0 var(--sombra);
+  color: var(--creme);
+  font-family: var(--fonte);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.fin-periodo button:hover,
+.fin-produtos button:hover {
+  border-color: var(--borda-forte);
+}
+.fin-periodo button.on,
+.fin-produtos button.on {
+  background: var(--lavoura);
+  border-color: var(--sombra);
+  color: var(--noite);
+  box-shadow:
+    inset 2px 2px 0 var(--lavoura-clara),
+    inset -2px -2px 0 var(--lavoura-escura);
+}
+.fin-periodo button:focus-visible,
+.fin-produtos button:focus-visible {
+  outline: 3px solid var(--lavoura);
+  outline-offset: 2px;
+}
+
+/* Números do período: três cartões com uma faixa de cor à esquerda. */
+.fin-numeros {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.fin-num {
+  display: grid;
+  gap: 4px;
+  padding: 14px 16px;
+  background: var(--chapa-2);
+  border-left: 6px solid var(--tom, var(--lavoura));
+  box-shadow: 4px 4px 0 var(--sombra);
+}
+.fin-num span {
+  font-family: var(--fonte);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--apagado);
+}
+.fin-num b {
+  font-family: var(--pixel);
+  font-size: 26px;
+  font-weight: 400;
+  line-height: 1.1;
+  color: var(--tom, var(--creme));
+}
+.fin-num small {
+  font-size: 12px;
+  color: var(--apagado);
+}
+
+.fin-meta {
+  padding: 12px 16px;
+  background: var(--noite-funda);
+  border: 2px dashed var(--borda-forte);
+}
+.fin-meta .bpx li {
+  padding: 0;
+  background: none;
+  border-left: 0;
+}
+
+/* Cada bloco de análise é uma moldura própria, para o olho separar assuntos. */
+.fin-bloco {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  background: var(--chapa);
+  border: 2px solid var(--borda);
+  box-shadow: 4px 4px 0 var(--sombra);
+}
+
+.fin-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px;
+}
+.fin-tile {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  padding: 12px 14px;
+  background: var(--chapa-2);
+  border: 2px solid var(--borda);
+}
+.fin-tile.alerta {
+  border-color: var(--ouro);
+}
+.fin-tile span {
+  font-size: 12px;
+  color: var(--apagado);
+}
+.fin-tile b {
+  font-family: var(--pixel);
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--creme);
+}
+.fin-tile small {
+  font-size: 12px;
+  color: var(--apagado);
+}
+.fin-nota {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--apagado);
+}
+
+.fin-conselho {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 0;
+  padding: 12px 16px;
+  background: var(--chapa-2);
+  border-left: 6px solid var(--lavoura);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--creme);
+}
+.fin-conselho svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--lavoura);
+}
+.fin-conselho b {
+  margin-right: 6px;
+  font-family: var(--fonte);
+  font-weight: 600;
+  color: var(--lavoura);
+}
+
+@media (max-width: 760px) {
+  .fin {
+    padding: 14px 12px;
+  }
+  .fin-numeros {
+    grid-template-columns: 1fr;
+  }
+  .fin-bloco {
+    padding: 12px;
+  }
+}
+
+/* Grades não crescem além da tela: sem isso, o conteúdo mais largo empurra a coluna. */
+.fin,
+.fin > *,
+.fin-bloco > *,
+.fin-numeros > *,
+.fin-tiles > * {
+  min-width: 0;
+}
+.fin {
+  max-width: 100%;
+}

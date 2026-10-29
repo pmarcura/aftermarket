@@ -31,7 +31,7 @@
   --chapa-2: #242820;
   --chapa-3: #2e3329;
   --borda: #3a3f31;
-  --borda-forte: #4d5342;
+  --borda-forte: #707763;
   --grade: #22261d;
   --sombra: #050604;
   --creme: #f3e7cc;
@@ -43,7 +43,7 @@
   --ouro-claro: #ffe08a;
   --ouro-escuro: #a8740f;
   --folha: #8fd14f;
-  --brasa: #ef6a4c;
+  --brasa: #f47a5e;
   --ceu: #6cb8e8;
   /* Séries de gráfico em ordem fixa, validadas para daltonismo sobre --chapa. */
   --serie-1: #6aa832;
@@ -89,11 +89,6 @@ textarea {
 .panel-heading h2,
 .marca strong,
 .secao-nome,
-.secao-abas button,
-.tabs button,
-.sidebar nav button,
-button.primary,
-button.secondary,
 .stat strong,
 .neg-figuras strong,
 .vit-lucro b,
@@ -144,11 +139,11 @@ button.secondary,
   font-weight: 600;
 }
 .eyebrow {
-  font-family: var(--pixel);
+  font-family: var(--fonte);
   text-transform: none;
   letter-spacing: 0;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--lavoura);
 }
 
@@ -443,4 +438,34 @@ select:focus {
     font-size: 13px;
     color: var(--ouro);
   }
+}
+
+/* Tons de função, disponíveis em qualquer tela: ouro = dinheiro, brasa = alerta, céu = logística. */
+.tom-ouro {
+  --tom: var(--ouro);
+}
+.tom-ceu {
+  --tom: var(--ceu);
+}
+.tom-lavoura {
+  --tom: var(--lavoura);
+}
+.tom-brasa {
+  --tom: var(--brasa);
+}
+.tom-apagado {
+  --tom: var(--apagado);
+}
+
+/* Texto pequeno, botões, abas e menu usam Archivo semibold: a fonte pixel só vale a partir de 18 px. */
+.secao-abas button,
+.tabs button,
+.sidebar nav button,
+button.primary,
+button.secondary,
+.badge,
+.text-button {
+  font-family: var(--fonte);
+  font-weight: 600;
+  letter-spacing: 0;
 }

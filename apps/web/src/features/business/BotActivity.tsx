@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useGame, cr, num } from '../../lib/game';
 import { Badge, Select, Progress } from '../../components/ui';
-import { EconomicChart } from '../../components/EconomicChart';
+import { BarrasPixel } from '../../components/BarrasPixel';
 import { institutional } from '../../../../../packages/simulation/src/competition';
 import { Pagination, usePagination } from '../../components/Pagination';
 import { gameCalendar } from '../../../../../packages/simulation/src/operations';
@@ -108,31 +108,18 @@ export function BotActivity() {
         </div>
         <div>
           <h3>Decisões registradas por tipo</h3>
-          <EconomicChart
-            label="Atividade efetiva de negociação dos bots"
-            height={260}
-            option={{
-              color: ['#74b4c5'],
-              grid: { left: 45, right: 15, top: 20, bottom: 65 },
-              tooltip: { trigger: 'axis' },
-              xAxis: {
-                type: 'category',
-                data: ['Pedidos', 'Propostas', 'Aceites', 'Negociações', 'Licitações', 'Educação'],
-                axisLabel: { rotate: 30 },
-              },
-              yAxis: { type: 'value' },
-              series: [
-                {
-                  type: 'bar',
-                  data: kinds.map(
-                    (k) =>
-                      (world.botActivity ?? []).filter(
-                        (a) => a.kind === k && bots.some((b) => b.id === a.companyId),
-                      ).length,
-                  ),
-                },
+          <BarrasPixel
+            titulo="Atividade efetiva de negociação dos bots"
+            formato={(v) => num(v)}
+            itens={kinds.map((k, i) => ({
+              rotulo: ['Pedidos', 'Propostas', 'Aceites', 'Negociações', 'Licitações', 'Educação'][
+                i
               ],
-            }}
+              valor: (world.botActivity ?? []).filter(
+                (a) => a.kind === k && bots.some((b) => b.id === a.companyId),
+              ).length,
+              tom: 'ceu' as const,
+            }))}
           />
           <p className="small muted">
             Concorrentes negociam, produzem, contratam transporte, disputam projetos, investem na

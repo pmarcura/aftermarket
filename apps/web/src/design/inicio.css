@@ -17,8 +17,9 @@
 }
 .ini-cab p {
   margin: 10px 0 0;
-  font-family: var(--pixel);
+  font-family: var(--fonte);
   font-size: 14px;
+  font-weight: 600;
   color: var(--apagado);
 }
 
@@ -28,9 +29,9 @@
   align-items: center;
   gap: 10px;
   margin: 0 0 14px;
-  font-family: var(--pixel);
+  font-family: var(--fonte);
   font-size: 17px;
-  font-weight: 400;
+  font-weight: 600;
   color: var(--creme);
 }
 .ini-conta {
@@ -96,18 +97,6 @@
 .ini-fora li span {
   font-size: 13px;
   color: var(--apagado);
-}
-.tom-ouro {
-  --tom: var(--ouro);
-}
-.tom-ceu {
-  --tom: var(--ceu);
-}
-.tom-lavoura {
-  --tom: var(--lavoura);
-}
-.tom-brasa {
-  --tom: var(--brasa);
 }
 
 .ini-grade {
@@ -180,9 +169,9 @@
 /* Primeiros passos em blocos, como uma barra de vida. */
 .ini-passos h3 {
   margin: 16px 0 6px;
-  font-family: var(--pixel);
+  font-family: var(--fonte);
   font-size: 16px;
-  font-weight: 400;
+  font-weight: 600;
   color: var(--lavoura);
 }
 .ini-passos p {
@@ -219,8 +208,9 @@
 }
 .ini-blocos span {
   margin-left: 10px;
-  font-family: var(--pixel);
+  font-family: var(--fonte);
   font-size: 13px;
+  font-weight: 600;
   color: var(--apagado);
 }
 
@@ -267,17 +257,17 @@
     var(--noite-funda);
 }
 .ini-negocios strong {
-  font-family: var(--pixel);
+  font-family: var(--fonte);
   font-size: 14px;
-  font-weight: 400;
+  font-weight: 600;
 }
 .ini-negocios small {
   font-size: 12px;
   color: var(--apagado);
 }
 .ini-negocios small b {
-  font-family: var(--pixel);
-  font-weight: 400;
+  font-family: var(--fonte);
+  font-weight: 600;
 }
 .ini-negocios .ini-novo {
   place-content: center;
@@ -344,50 +334,9 @@
   }
 }
 
-.tom-apagado {
-  --tom: var(--apagado);
-}
 .ini-motivo.tom-brasa {
   color: var(--brasa);
 }
 .ini-motivo.tom-ouro {
   color: var(--ouro);
-}
-
-/* A caminho: cada carga é um caminhão andando sobre uma faixa de estrada. */
-.ini-cargas {
-  display: grid;
-  gap: 14px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.ini-carga-texto {
-  display: grid;
-  gap: 2px;
-  margin-bottom: 8px;
-}
-.ini-carga-texto strong {
-  font-size: 14px;
-  color: var(--creme);
-}
-.ini-carga-texto small {
-  font-size: 12px;
-  color: var(--apagado);
-}
-.ini-estrada {
-  position: relative;
-  height: 22px;
-  margin-right: 16px;
-  background:
-    var(--estrada) 0 50% / 100% 2px no-repeat,
-    var(--noite-funda);
-  box-shadow: inset 0 0 0 2px var(--borda);
-}
-.ini-estrada svg {
-  position: absolute;
-  top: 3px;
-  color: var(--ceu);
-  filter: drop-shadow(2px 2px 0 var(--sombra));
-  transition: left 1s steps(6);
 }

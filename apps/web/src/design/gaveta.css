@@ -1,0 +1,425 @@
+/* Mandar buscar: a gaveta de reposição, uma pequena cena em vez de um formulário. */
+.gaveta {
+  position: fixed;
+  inset: 0 0 0 auto;
+  width: min(580px, 100vw);
+  max-width: 100vw;
+  height: 100dvh;
+  max-height: 100dvh;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-left: 3px solid var(--borda-forte);
+  background: var(--noite);
+  color: var(--creme);
+  overflow: hidden;
+  animation: gaveta-entra 0.22s steps(6) both;
+}
+.gaveta::backdrop {
+  background: color-mix(in srgb, var(--sombra) 70%, transparent);
+}
+@keyframes gaveta-entra {
+  from {
+    transform: translateX(40px);
+    opacity: 0;
+  }
+}
+.gaveta-painel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  height: 100%;
+  padding: 0 0 20px;
+  overflow-y: auto;
+}
+.gaveta-fechar {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background: var(--chapa-2);
+  border: 2px solid var(--borda-forte);
+  color: var(--creme);
+  cursor: pointer;
+}
+.gaveta-fechar:focus-visible,
+.gaveta-opcao:focus-visible,
+.gaveta-prazos button:focus-visible {
+  outline: 3px solid var(--lavoura);
+  outline-offset: 2px;
+}
+
+/* Cabeçalho: o produto grande, com fundo da cor dele. */
+.gaveta-cab {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 22px;
+  padding: 28px 64px 24px 24px;
+  background:
+    radial-gradient(circle at 18% 30%, hsl(var(--h, 40) 55% 30%), transparent 62%),
+    linear-gradient(180deg, hsl(var(--h, 40) 30% 16%), var(--chapa));
+  border-bottom: 3px solid var(--borda-forte);
+}
+.gaveta-cena {
+  display: grid;
+  place-items: center;
+  min-width: 150px;
+  min-height: 130px;
+  padding: 10px;
+  background: color-mix(in srgb, var(--sombra) 35%, transparent);
+  filter: drop-shadow(4px 6px 0 var(--sombra));
+}
+.gaveta-cab h2 {
+  margin: 0 0 8px;
+  font-family: var(--titulo);
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1.4;
+  text-shadow: 3px 3px 0 var(--sombra);
+}
+.gaveta-cab p {
+  margin: 0 0 4px;
+  font-size: 15px;
+  color: var(--creme);
+}
+.gaveta-cab .gaveta-situacao {
+  color: var(--apagado);
+  font-size: 13.5px;
+}
+
+.gaveta-bloco {
+  display: grid;
+  gap: 14px;
+  padding: 0 24px;
+}
+.gaveta-bloco h3 {
+  margin: 0;
+  font-family: var(--pixel);
+  font-size: 20px;
+  font-weight: 400;
+}
+
+/* Quanto: três tamanhos prontos, grandes e fáceis de tocar. */
+.gaveta-prazos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.gaveta-prazos button {
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+  padding: 14px 8px;
+  background: var(--chapa-2);
+  border: 2px solid var(--borda);
+  box-shadow: 4px 4px 0 var(--sombra);
+  color: var(--creme);
+  cursor: pointer;
+}
+.gaveta-prazos strong {
+  font-family: var(--fonte);
+  font-size: 16px;
+  font-weight: 600;
+}
+.gaveta-prazos span {
+  font-family: var(--pixel);
+  font-size: 22px;
+  color: var(--ouro);
+}
+.gaveta-prazos small {
+  font-size: 12px;
+  color: var(--apagado);
+}
+.gaveta-prazos button.on {
+  background: color-mix(in srgb, var(--lavoura) 16%, var(--chapa-2));
+  border-color: var(--lavoura);
+  transform: translateY(-2px);
+}
+.gaveta-ajuste {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px 14px;
+  align-items: center;
+  font-size: 13px;
+  color: var(--apagado);
+}
+.gaveta-ajuste span {
+  grid-column: 1 / -1;
+}
+.gaveta-ajuste b {
+  font-family: var(--fonte);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--creme);
+}
+.gaveta-dura {
+  margin: 0;
+  padding: 10px 14px;
+  background: var(--chapa);
+  border-left: 6px solid var(--lavoura);
+  font-size: 14px;
+}
+.gaveta-dura b {
+  font-family: var(--fonte);
+  font-weight: 600;
+  color: var(--lavoura);
+}
+
+/* Quem leva: cada fornecedor é um cartão com fundo próprio. */
+.gaveta-opcoes {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.gaveta-opcao {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px 16px;
+  width: 100%;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, var(--chapa-2), var(--chapa));
+  border: 2px solid var(--borda);
+  box-shadow: 4px 4px 0 var(--sombra);
+  color: var(--creme);
+  text-align: left;
+  cursor: pointer;
+}
+.gaveta-opcao:hover {
+  border-color: var(--borda-forte);
+}
+.gaveta-opcao.on {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--lavoura) 20%, var(--chapa-2)),
+    var(--chapa)
+  );
+  border-color: var(--lavoura);
+  box-shadow:
+    4px 4px 0 var(--lavoura-escura),
+    0 0 0 3px color-mix(in srgb, var(--lavoura) 25%, transparent);
+}
+.gaveta-selos {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.gaveta-selos em {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  font-style: normal;
+  font-family: var(--fonte);
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--chapa-3);
+  color: var(--creme);
+}
+.gaveta-selos em.barato {
+  background: var(--ouro);
+  color: var(--noite);
+}
+.gaveta-opcao strong {
+  grid-column: 1 / -1;
+  font-family: var(--pixel);
+  font-size: 18px;
+  font-weight: 400;
+}
+.gaveta-onde,
+.gaveta-prazo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--apagado);
+}
+.gaveta-preco {
+  grid-column: 2;
+  grid-row: 3 / span 2;
+  display: grid;
+  grid-template-columns: auto auto;
+  justify-items: end;
+  align-items: center;
+  gap: 0 8px;
+  align-self: center;
+}
+.gaveta-preco b {
+  font-family: var(--pixel);
+  font-size: 24px;
+  font-weight: 400;
+  color: var(--ouro);
+}
+.gaveta-preco small {
+  grid-column: 1 / -1;
+  font-size: 11.5px;
+  color: var(--apagado);
+}
+.gaveta-vazio {
+  margin: 0;
+  padding: 16px;
+  border: 2px dashed var(--borda-forte);
+  color: var(--apagado);
+}
+
+/* Rodapé: o total grande e o botão que despacha. */
+.gaveta-rodape {
+  position: sticky;
+  bottom: -20px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 8px 18px;
+  margin-top: auto;
+  padding: 16px 24px;
+  background: var(--chapa);
+  border-top: 3px solid var(--borda-forte);
+}
+.gaveta-conta {
+  display: grid;
+  gap: 2px;
+}
+.gaveta-conta span,
+.gaveta-conta small {
+  font-size: 12.5px;
+  color: var(--apagado);
+}
+.gaveta-conta small.falta {
+  color: var(--brasa);
+}
+.gaveta-conta b {
+  font-family: var(--pixel);
+  font-size: 30px;
+  font-weight: 400;
+  color: var(--ouro);
+}
+.gaveta-despachar {
+  min-height: 56px;
+  padding: 0 26px;
+  font-size: 17px;
+}
+.gaveta-erro {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 13px;
+  color: var(--brasa);
+}
+
+/* Depois de despachar: o caminhão atravessa a estrada. */
+.gaveta-ok {
+  display: grid;
+  gap: 14px;
+  align-content: center;
+  justify-items: center;
+  min-height: 100%;
+  padding: 24px;
+  text-align: center;
+}
+.gaveta-ok h2 {
+  margin: 0;
+  font-family: var(--titulo);
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--lavoura);
+  text-shadow: 3px 3px 0 var(--sombra);
+}
+.gaveta-ok p {
+  margin: 0;
+  font-size: 16px;
+}
+.gaveta-chega {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--apagado);
+}
+.gaveta-estrada {
+  position: relative;
+  width: 100%;
+  height: 110px;
+  overflow: hidden;
+  background:
+    var(--estrada) 0 78% / 100% 3px no-repeat,
+    linear-gradient(180deg, transparent 60%, var(--chapa-2) 60%);
+}
+.gaveta-caminhao {
+  position: absolute;
+  bottom: 14px;
+  left: 0;
+  animation: gaveta-parte 1.6s steps(16) both;
+}
+@keyframes gaveta-parte {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(580px);
+  }
+}
+.gaveta-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+@media (max-width: 600px) {
+  .gaveta {
+    width: 100vw;
+    border-left: 0;
+  }
+  .gaveta-cab {
+    grid-template-columns: 1fr;
+    padding: 24px 20px 18px;
+  }
+  .gaveta-cena {
+    justify-self: start;
+    min-width: 120px;
+    min-height: 100px;
+  }
+  .gaveta-bloco {
+    padding: 0 16px;
+  }
+  .gaveta-prazos {
+    gap: 8px;
+  }
+  .gaveta-prazos span {
+    font-size: 18px;
+  }
+  .gaveta-rodape {
+    grid-template-columns: 1fr;
+    padding: 14px 16px;
+  }
+  .gaveta-despachar {
+    width: 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gaveta,
+  .gaveta-caminhao {
+    animation: none;
+  }
+}
+
+.gaveta-vazio {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  text-align: center;
+}
+.gaveta-vazio p {
+  margin: 0;
+  max-width: 38ch;
+  font-size: 14px;
+  line-height: 1.5;
+}

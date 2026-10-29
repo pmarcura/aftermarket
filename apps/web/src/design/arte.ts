@@ -48,6 +48,13 @@ const porProduto: Partial<Record<ProductId, Sprite>> = {
   truckLight: 'caminhao',
 };
 
+/** Matiz (0–360) estável por produto, para dar a cada item o seu fundo colorido. */
+export function matizDoProduto(id: string) {
+  let h = 0;
+  for (const c of id) h = (h * 31 + c.charCodeAt(0)) % 360;
+  return h;
+}
+
 /** Escolhe a ilustração pelo que o negócio produz; sem receita, pela categoria. */
 export function spriteDoNegocio(e: Establishment, world: World): Sprite {
   const recipe = world.season.config.recipes.find((r) => r.id === e.specialization);

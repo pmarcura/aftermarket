@@ -6,7 +6,7 @@ import { SecaoAbas } from '../../components/SecaoAbas';
 import { BotActivity } from '../business/BotActivity';
 import { WorldMap } from '../../components/WorldMap';
 import { ProductAnalysisModal } from '../../components/ProductAnalysis';
-import { EconomicChart } from '../../components/EconomicChart';
+import { BarrasPixel } from '../../components/BarrasPixel';
 import {
   products,
   type ProductId,
@@ -263,41 +263,14 @@ export function OpportunitiesPage() {
           >
             {mode === 'Avançada' ? (
               <>
-                <EconomicChart
-                  label="Valor dos estoques anunciados, em reais"
-                  height={300}
-                  option={{
-                    grid: { left: 105, right: 30, top: 20, bottom: 40 },
-                    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-                    xAxis: {
-                      type: 'value',
-                      name: 'R$ em estoque',
-                      axisLabel: {
-                        color: '#8fafbf',
-                        formatter: (v: number) =>
-                          v.toLocaleString('pt-BR', { notation: 'compact' }),
-                      },
-                      splitLine: { lineStyle: { color: '#2b424f' } },
-                    },
-                    yAxis: {
-                      type: 'category',
-                      data: visible.map((r) => products[r.product].name),
-                      axisLabel: {
-                        color: '#aec4ce',
-                        width: 90,
-                        overflow: 'truncate',
-                        fontSize: 10,
-                      },
-                    },
-                    series: [
-                      {
-                        type: 'bar',
-                        data: visible.map((r) => Math.round((r.stock * (r.price ?? 0)) / 100)),
-                        barMaxWidth: 14,
-                        itemStyle: { color: '#67b7ba', borderRadius: [0, 3, 3, 0] },
-                      },
-                    ],
-                  }}
+                <BarrasPixel
+                  titulo="Valor dos estoques anunciados, em reais"
+                  formato={(v) => cr(v * 100, 0)}
+                  itens={visible.slice(0, 12).map((r) => ({
+                    rotulo: products[r.product].name,
+                    valor: Math.round((r.stock * (r.price ?? 0)) / 100),
+                    tom: 'ceu',
+                  }))}
                 />
                 <p className="chart-caption">
                   Cada quantidade é convertida em reais pela própria unidade. Não somamos toneladas

@@ -40,6 +40,7 @@
     "resources:check": "tsx scripts/audit-resources.ts --check",
     "mechanics:report": "tsx scripts/report-mechanics.ts",
     "mathematics:audit": "tsx scripts/audit-mathematics.ts",
+    "ui:contraste": "tsx scripts/contraste.ts",
     "ui:cores": "tsx scripts/contar-cores.ts",
     "economy:report": "npm run resources:catalog && npm run mathematics:audit -- --write-doc && npm run mechanics:report -- --world=.runtime/world.sqlite --write-doc",
     "economy:design": "tsx scripts/economy-design.ts",

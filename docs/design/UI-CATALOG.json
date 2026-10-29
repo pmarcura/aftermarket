@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "fixtureFingerprint": "4b5c1f634187ebce96d30080794f37089862d253ef116dd5b8c85a0f7daca88b",
+  "fixtureFingerprint": "f16c31272b02e2938811d7d772a48a5f86ed97676d686e750872af1e1ee60af6",
   "note": "Inventário estático alcançável por tela; inclui componentes compartilhados e ramos condicionais. Textos dinâmicos e estados visíveis precisam da evidência de navegador. Comandos type são candidatos, não prova de execução.",
   "screens": [
     {
@@ -9,13 +9,16 @@
       "source": "pages/InicioPage.tsx",
       "purpose": "Resumir o que aconteceu e mostrar o que precisa do jogador.",
       "task": "Ver o que mudou desde a última visita e resolver uma pendência com um clique.",
-      "fingerprint": "2410adc6ecda2f2b778d8b69f1416eafdeb693473e44b2cdb9932eac1c9b7a52",
+      "fingerprint": "3da4d478ce6220a18278c87d26703285a0bc712cb81a10f698ba74fda47f691e",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
         "apps/web/src/business.css",
         "apps/web/src/competition.css",
+        "apps/web/src/components/BarrasPixel.tsx",
+        "apps/web/src/components/CargaCaminho.tsx",
         "apps/web/src/components/GraficoPixel.tsx",
+        "apps/web/src/components/IconePixel.tsx",
         "apps/web/src/components/Notice.tsx",
         "apps/web/src/components/NotificationCenter.tsx",
         "apps/web/src/components/PixelArt.tsx",
@@ -25,10 +28,15 @@
         "apps/web/src/economy.css",
         "apps/web/src/features/business/BusinessCards.tsx",
         "apps/web/src/features/business/precificacao.ts",
+        "apps/web/src/features/economy/Carga.tsx",
+        "apps/web/src/features/economy/ReporGaveta.tsx",
+        "apps/web/src/features/economy/Vitrine.tsx",
+        "apps/web/src/features/economy/compra.ts",
         "apps/web/src/features/inicio/pendencias.ts",
         "apps/web/src/features/inicio/primeirosPassos.ts",
         "apps/web/src/features/inicio/tempo.ts",
         "apps/web/src/lib/game.tsx",
+        "apps/web/src/lib/routing.ts",
         "apps/web/src/main.tsx",
         "apps/web/src/negocios.css",
         "apps/web/src/pages/InicioPage.tsx",
@@ -41,24 +49,32 @@
       "source": "pages/MapPage.tsx",
       "purpose": "Encontrar e inspecionar propriedades.",
       "task": "Localizar uma propriedade e entender titularidade e acesso.",
-      "fingerprint": "cb68fe5696603241f420bc3fcdde37e7199beaefc3aad678f8721e032359bdb6",
+      "fingerprint": "49dbb946238b55ed39fec3614049b2e66ac576e026613a8712cd5de0da5fc283",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
         "apps/web/src/business.css",
         "apps/web/src/competition.css",
+        "apps/web/src/components/IconePixel.tsx",
         "apps/web/src/components/InfrastructureDetails.tsx",
         "apps/web/src/components/Notice.tsx",
         "apps/web/src/components/NotificationCenter.tsx",
+        "apps/web/src/components/PixelArt.tsx",
         "apps/web/src/components/WorldMap.tsx",
         "apps/web/src/components/ui.tsx",
+        "apps/web/src/design/arte.ts",
         "apps/web/src/devlab/screens.ts",
         "apps/web/src/economy.css",
         "apps/web/src/features/business/precificacao.ts",
+        "apps/web/src/features/economy/Carga.tsx",
+        "apps/web/src/features/economy/ReporGaveta.tsx",
+        "apps/web/src/features/economy/Vitrine.tsx",
+        "apps/web/src/features/economy/compra.ts",
         "apps/web/src/features/inicio/pendencias.ts",
         "apps/web/src/features/inicio/tempo.ts",
         "apps/web/src/lib/game.tsx",
         "apps/web/src/lib/map-style.ts",
+        "apps/web/src/lib/routing.ts",
         "apps/web/src/main.tsx",
         "apps/web/src/negocios.css",
         "apps/web/src/pages/MapPage.tsx",
@@ -71,24 +87,32 @@
       "source": "pages/MapPage.tsx",
       "purpose": "Revisar imóvel, instalação e capital necessário.",
       "task": "Entender o custo antes de confirmar a aquisição.",
-      "fingerprint": "cb68fe5696603241f420bc3fcdde37e7199beaefc3aad678f8721e032359bdb6",
+      "fingerprint": "49dbb946238b55ed39fec3614049b2e66ac576e026613a8712cd5de0da5fc283",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
         "apps/web/src/business.css",
         "apps/web/src/competition.css",
+        "apps/web/src/components/IconePixel.tsx",
         "apps/web/src/components/InfrastructureDetails.tsx",
         "apps/web/src/components/Notice.tsx",
         "apps/web/src/components/NotificationCenter.tsx",
+        "apps/web/src/components/PixelArt.tsx",
         "apps/web/src/components/WorldMap.tsx",
         "apps/web/src/components/ui.tsx",
+        "apps/web/src/design/arte.ts",
         "apps/web/src/devlab/screens.ts",
         "apps/web/src/economy.css",
         "apps/web/src/features/business/precificacao.ts",
+        "apps/web/src/features/economy/Carga.tsx",
+        "apps/web/src/features/economy/ReporGaveta.tsx",
+        "apps/web/src/features/economy/Vitrine.tsx",
+        "apps/web/src/features/economy/compra.ts",
         "apps/web/src/features/inicio/pendencias.ts",
         "apps/web/src/features/inicio/tempo.ts",
         "apps/web/src/lib/game.tsx",
         "apps/web/src/lib/map-style.ts",
+        "apps/web/src/lib/routing.ts",
         "apps/web/src/main.tsx",
         "apps/web/src/negocios.css",
         "apps/web/src/pages/MapPage.tsx",
@@ -101,30 +125,39 @@
       "source": "pages/OpportunitiesPage.tsx",
       "purpose": "Comparar mercados e oportunidades por item e região.",
       "task": "Filtrar um produto e explicar demanda, preço e oferta.",
-      "fingerprint": "13cb777ea464091cea707fa13223f16821d34ce5866e20685f3ab6320bdcb3f5",
+      "fingerprint": "bd20ce59faa231cc5b094055c1899084ff4840ddf8347ee01093e01ca2e87edf",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
         "apps/web/src/business.css",
         "apps/web/src/competition.css",
+        "apps/web/src/components/BarrasPixel.tsx",
         "apps/web/src/components/EconomicChart.tsx",
+        "apps/web/src/components/IconePixel.tsx",
         "apps/web/src/components/Notice.tsx",
         "apps/web/src/components/NotificationCenter.tsx",
         "apps/web/src/components/Pagination.tsx",
+        "apps/web/src/components/PixelArt.tsx",
         "apps/web/src/components/ProductAnalysis.tsx",
         "apps/web/src/components/SecaoAbas.tsx",
         "apps/web/src/components/WorldMap.tsx",
         "apps/web/src/components/ui.tsx",
+        "apps/web/src/design/arte.ts",
         "apps/web/src/devlab/screens.ts",
         "apps/web/src/economy.css",
         "apps/web/src/features/business/BotActivity.tsx",
         "apps/web/src/features/business/precificacao.ts",
         "apps/web/src/features/economy/BusinessIdeas.tsx",
+        "apps/web/src/features/economy/Carga.tsx",
         "apps/web/src/features/economy/Opportunities.tsx",
+        "apps/web/src/features/economy/ReporGaveta.tsx",
+        "apps/web/src/features/economy/Vitrine.tsx",
+        "apps/web/src/features/economy/compra.ts",
         "apps/web/src/features/inicio/pendencias.ts",
         "apps/web/src/features/inicio/tempo.ts",
         "apps/web/src/lib/game.tsx",
         "apps/web/src/lib/map-style.ts",
+        "apps/web/src/lib/routing.ts",
         "apps/web/src/main.tsx",
         "apps/web/src/negocios.css",
         "apps/web/src/pages/OpportunitiesPage.tsx",
@@ -137,13 +170,14 @@
       "source": "pages/BusinessesPage.tsx",
       "purpose": "Gerenciar estruturas e conexões de abastecimento.",
       "task": "Identificar uma estrutura parada e abrir sua operação.",
-      "fingerprint": "f57aa6a6aa741a5fdeed21eba2fea478c8babc4475b50921d5e06dbc728247fe",
+      "fingerprint": "b4cc5d772b84a35b640fba83b5fe5a3424c24cb85cd4ee663b1fc1d6964d5d7d",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
         "apps/web/src/business.css",
         "apps/web/src/competition.css",
         "apps/web/src/components/FleetPicker.tsx",
+        "apps/web/src/components/IconePixel.tsx",
         "apps/web/src/components/Notice.tsx",
         "apps/web/src/components/NotificationCenter.tsx",
         "apps/web/src/components/Pagination.tsx",
@@ -159,6 +193,10 @@
         "apps/web/src/features/business/SupplyConnection.tsx",
         "apps/web/src/features/business/SupplyNetwork.tsx",
         "apps/web/src/features/business/precificacao.ts",
+        "apps/web/src/features/economy/Carga.tsx",
+        "apps/web/src/features/economy/ReporGaveta.tsx",
+        "apps/web/src/features/economy/Vitrine.tsx",
+        "apps/web/src/features/economy/compra.ts",
         "apps/web/src/features/inicio/pendencias.ts",
         "apps/web/src/features/inicio/tempo.ts",
         "apps/web/src/lib/clock.ts",
@@ -178,32 +216,45 @@
       "business": "e-industry",
       "purpose": "Produzir, abastecer, contratar e vender.",
       "task": "Revisar insumos, capacidade e custo antes de iniciar produção.",
-      "fingerprint": "1e5fa7624c74cdbaec91ad963d625c4a7d562f8905370ba0791b41e5f219c486",
+      "fingerprint": "d56aad5febe587c48c41cc431a62b7d965424283ec569d01aae5a43c79f24e10",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
         "apps/web/src/business.css",
         "apps/web/src/competition.css",
-        "apps/web/src/components/EconomicChart.tsx",
+        "apps/web/src/components/BarraEstoque.tsx",
+        "apps/web/src/components/BarrasPixel.tsx",
+        "apps/web/src/components/CargaCaminho.tsx",
+        "apps/web/src/components/EstadoEstoque.tsx",
         "apps/web/src/components/FleetPicker.tsx",
+        "apps/web/src/components/GraficoPixel.tsx",
+        "apps/web/src/components/IconePixel.tsx",
         "apps/web/src/components/InfrastructureDetails.tsx",
         "apps/web/src/components/Notice.tsx",
         "apps/web/src/components/NotificationCenter.tsx",
         "apps/web/src/components/Pagination.tsx",
+        "apps/web/src/components/PixelArt.tsx",
         "apps/web/src/components/ui.tsx",
+        "apps/web/src/design/arte.ts",
         "apps/web/src/devlab/screens.ts",
         "apps/web/src/economy.css",
+        "apps/web/src/features/business/Abastecimento.tsx",
         "apps/web/src/features/business/Analytics.tsx",
+        "apps/web/src/features/business/EquipePecas.tsx",
+        "apps/web/src/features/business/Financas.tsx",
         "apps/web/src/features/business/Installation.tsx",
         "apps/web/src/features/business/OfferModal.tsx",
         "apps/web/src/features/business/Orders.tsx",
         "apps/web/src/features/business/SalesCatalog.tsx",
         "apps/web/src/features/business/Stock.tsx",
         "apps/web/src/features/business/SupplyConnection.tsx",
-        "apps/web/src/features/business/SupplyPlanner.tsx",
         "apps/web/src/features/business/TransferStock.tsx",
         "apps/web/src/features/business/Workforce.tsx",
         "apps/web/src/features/business/precificacao.ts",
+        "apps/web/src/features/economy/Carga.tsx",
+        "apps/web/src/features/economy/ReporGaveta.tsx",
+        "apps/web/src/features/economy/Vitrine.tsx",
+        "apps/web/src/features/economy/compra.ts",
         "apps/web/src/features/inicio/pendencias.ts",
         "apps/web/src/features/inicio/tempo.ts",
         "apps/web/src/lib/clock.ts",
@@ -222,35 +273,40 @@
       "business": "e-retail",
       "purpose": "Acompanhar estoque, preços e reposição da loja.",
       "task": "Reconhecer ruptura e configurar uma reposição viável.",
-      "fingerprint": "05021087fdbdaa23a5c9533ef16122213f6aca0733b15d881878318077be2892",
+      "fingerprint": "1f3d241070bce7d2431e5d9d4fcd971de0dd5a70f47c8df95332f6369936c175",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
         "apps/web/src/business.css",
         "apps/web/src/competition.css",
-        "apps/web/src/components/EconomicChart.tsx",
+        "apps/web/src/components/BarraEstoque.tsx",
+        "apps/web/src/components/BarrasPixel.tsx",
+        "apps/web/src/components/CargaCaminho.tsx",
+        "apps/web/src/components/EstadoEstoque.tsx",
         "apps/web/src/components/FleetPicker.tsx",
+        "apps/web/src/components/GraficoPixel.tsx",
+        "apps/web/src/components/IconePixel.tsx",
         "apps/web/src/components/Notice.tsx",
         "apps/web/src/components/NotificationCenter.tsx",
-        "apps/web/src/components/Pagination.tsx",
         "apps/web/src/components/PixelArt.tsx",
         "apps/web/src/components/ui.tsx",
         "apps/web/src/design/arte.ts",
         "apps/web/src/devlab/screens.ts",
         "apps/web/src/economy.css",
+        "apps/web/src/features/business/Abastecimento.tsx",
         "apps/web/src/features/business/Analytics.tsx",
         "apps/web/src/features/business/Empate.tsx",
+        "apps/web/src/features/business/EquipePecas.tsx",
+        "apps/web/src/features/business/Financas.tsx",
         "apps/web/src/features/business/Installation.tsx",
         "apps/web/src/features/business/LinhaPreco.tsx",
-        "apps/web/src/features/business/Orders.tsx",
         "apps/web/src/features/business/Prateleira.tsx",
-        "apps/web/src/features/business/Stock.tsx",
         "apps/web/src/features/business/SupplyConnection.tsx",
-        "apps/web/src/features/business/SupplyPlanner.tsx",
         "apps/web/src/features/business/TransferStock.tsx",
         "apps/web/src/features/business/Workforce.tsx",
         "apps/web/src/features/business/precificacao.ts",
         "apps/web/src/features/economy/Carga.tsx",
+        "apps/web/src/features/economy/ReporGaveta.tsx",
         "apps/web/src/features/economy/Vitrine.tsx",
         "apps/web/src/features/economy/compra.ts",
         "apps/web/src/features/inicio/pendencias.ts",
@@ -270,13 +326,14 @@
       "source": "pages/MarketPage.tsx",
       "purpose": "Comprar, negociar e observar concorrentes e editais.",
       "task": "Comparar custo posto e escolher uma compra compatível.",
-      "fingerprint": "0c4e4d2543936b05da32f754389b1bad723c28c05de7ceb9ff863118a2094dae",
+      "fingerprint": "ccf359a6ffdbabb7ac3619e93e6d1a9bf3d22595b5f6560f45c821f48c84646a",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
         "apps/web/src/business.css",
         "apps/web/src/competition.css",
         "apps/web/src/components/EconomicChart.tsx",
+        "apps/web/src/components/IconePixel.tsx",
         "apps/web/src/components/Notice.tsx",
         "apps/web/src/components/NotificationCenter.tsx",
         "apps/web/src/components/PixelArt.tsx",
@@ -289,6 +346,7 @@
         "apps/web/src/features/business/precificacao.ts",
         "apps/web/src/features/economy/Carga.tsx",
         "apps/web/src/features/economy/Market.tsx",
+        "apps/web/src/features/economy/ReporGaveta.tsx",
         "apps/web/src/features/economy/Vitrine.tsx",
         "apps/web/src/features/economy/compra.ts",
         "apps/web/src/features/inicio/pendencias.ts",
@@ -307,24 +365,31 @@
       "source": "pages/LogisticsPage.tsx",
       "purpose": "Contratar e acompanhar transporte.",
       "task": "Entender disponibilidade, limite, custo e prazo de uma carga.",
-      "fingerprint": "5cc7c1865a11100f22a0bc98b5539896665221aeffc776095d2514aebf856d3a",
+      "fingerprint": "d339f613c757c8e6d0cf63bf93af0069bd2a4e486338f642072081dc27e19e33",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
         "apps/web/src/business.css",
         "apps/web/src/competition.css",
         "apps/web/src/components/FleetPicker.tsx",
+        "apps/web/src/components/IconePixel.tsx",
         "apps/web/src/components/Notice.tsx",
         "apps/web/src/components/NotificationCenter.tsx",
         "apps/web/src/components/Pagination.tsx",
+        "apps/web/src/components/PixelArt.tsx",
         "apps/web/src/components/SecaoAbas.tsx",
         "apps/web/src/components/WorldMap.tsx",
         "apps/web/src/components/ui.tsx",
+        "apps/web/src/design/arte.ts",
         "apps/web/src/devlab/screens.ts",
         "apps/web/src/economy.css",
         "apps/web/src/features/business/OrderLogistics.tsx",
         "apps/web/src/features/business/precificacao.ts",
+        "apps/web/src/features/economy/Carga.tsx",
         "apps/web/src/features/economy/Logistics.tsx",
+        "apps/web/src/features/economy/ReporGaveta.tsx",
+        "apps/web/src/features/economy/Vitrine.tsx",
+        "apps/web/src/features/economy/compra.ts",
         "apps/web/src/features/inicio/pendencias.ts",
         "apps/web/src/features/inicio/tempo.ts",
         "apps/web/src/lib/clock.ts",
@@ -344,19 +409,22 @@
       "business": "e-logistics",
       "purpose": "Gerenciar veículos, disponibilidade e capacidade.",
       "task": "Encontrar um veículo livre e comparar sua capacidade.",
-      "fingerprint": "63020db4badb28e0cb0033a95efdee38f3e76ce71789ef084811feed937de0cb",
+      "fingerprint": "be26dc4d166b37ed72d7fdc50bc35b0f053bccf1d6859ca45a1f05ab51183437",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
         "apps/web/src/business.css",
         "apps/web/src/competition.css",
         "apps/web/src/components/FleetPicker.tsx",
+        "apps/web/src/components/IconePixel.tsx",
         "apps/web/src/components/Notice.tsx",
         "apps/web/src/components/NotificationCenter.tsx",
+        "apps/web/src/components/PixelArt.tsx",
         "apps/web/src/components/SecaoAbas.tsx",
         "apps/web/src/components/TruckPurchase.tsx",
         "apps/web/src/components/VehicleDetails.tsx",
         "apps/web/src/components/ui.tsx",
+        "apps/web/src/design/arte.ts",
         "apps/web/src/devlab/screens.ts",
         "apps/web/src/economy.css",
         "apps/web/src/features/business/OfferModal.tsx",
@@ -365,6 +433,10 @@
         "apps/web/src/features/business/SupplyConnection.tsx",
         "apps/web/src/features/business/TransferStock.tsx",
         "apps/web/src/features/business/precificacao.ts",
+        "apps/web/src/features/economy/Carga.tsx",
+        "apps/web/src/features/economy/ReporGaveta.tsx",
+        "apps/web/src/features/economy/Vitrine.tsx",
+        "apps/web/src/features/economy/compra.ts",
         "apps/web/src/features/inicio/pendencias.ts",
         "apps/web/src/features/inicio/tempo.ts",
         "apps/web/src/lib/game.tsx",
@@ -381,13 +453,14 @@
       "source": "features/economy/Cotacoes.tsx",
       "purpose": "Consultar o preço de todos os itens e o movimento das outras empresas.",
       "task": "Achar o produto que mais subiu e quem está vendendo.",
-      "fingerprint": "b8779bbe1a504f5dc6b68c28c12b1ed114e6b7fa3c6ab9f2dd83226cd64c18ba",
+      "fingerprint": "654dfa7f521c2cd269f9566bb5c17ea0e3be37c7409546ec7a4bf5be02952965",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
         "apps/web/src/business.css",
         "apps/web/src/competition.css",
         "apps/web/src/components/EconomicChart.tsx",
+        "apps/web/src/components/IconePixel.tsx",
         "apps/web/src/components/Notice.tsx",
         "apps/web/src/components/NotificationCenter.tsx",
         "apps/web/src/components/PixelArt.tsx",
@@ -400,11 +473,13 @@
         "apps/web/src/features/business/precificacao.ts",
         "apps/web/src/features/economy/Carga.tsx",
         "apps/web/src/features/economy/Cotacoes.tsx",
+        "apps/web/src/features/economy/ReporGaveta.tsx",
         "apps/web/src/features/economy/Vitrine.tsx",
         "apps/web/src/features/economy/compra.ts",
         "apps/web/src/features/inicio/pendencias.ts",
         "apps/web/src/features/inicio/tempo.ts",
         "apps/web/src/lib/game.tsx",
+        "apps/web/src/lib/routing.ts",
         "apps/web/src/main.tsx",
         "apps/web/src/negocios.css",
         "apps/web/src/styles.css"
@@ -416,14 +491,15 @@
       "source": "pages/ComercioPages.tsx",
       "purpose": "Acompanhar compras e vendas combinadas com outras empresas.",
       "task": "Encontrar um pedido aberto e responder à contraproposta.",
-      "fingerprint": "a68287771c43f2b7d86369e912f68f41bf304fd890ee4d27e729854d61d798bf",
+      "fingerprint": "d85bb521a77b448bf34de10b23bf672f3cbd6e2d01976697fffe5d57d14773ef",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
         "apps/web/src/business.css",
         "apps/web/src/competition.css",
-        "apps/web/src/components/EconomicChart.tsx",
+        "apps/web/src/components/BarrasPixel.tsx",
         "apps/web/src/components/FleetPicker.tsx",
+        "apps/web/src/components/IconePixel.tsx",
         "apps/web/src/components/Notice.tsx",
         "apps/web/src/components/NotificationCenter.tsx",
         "apps/web/src/components/Pagination.tsx",
@@ -437,6 +513,7 @@
         "apps/web/src/features/business/Orders.tsx",
         "apps/web/src/features/business/precificacao.ts",
         "apps/web/src/features/economy/Carga.tsx",
+        "apps/web/src/features/economy/ReporGaveta.tsx",
         "apps/web/src/features/economy/Vitrine.tsx",
         "apps/web/src/features/economy/compra.ts",
         "apps/web/src/features/inicio/pendencias.ts",
@@ -456,14 +533,15 @@
       "source": "pages/ComercioPages.tsx",
       "purpose": "Disputar editais de prefeituras e acompanhar entregas públicas.",
       "task": "Entender quanto um edital paga e como a vencedora é escolhida.",
-      "fingerprint": "a68287771c43f2b7d86369e912f68f41bf304fd890ee4d27e729854d61d798bf",
+      "fingerprint": "d85bb521a77b448bf34de10b23bf672f3cbd6e2d01976697fffe5d57d14773ef",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
         "apps/web/src/business.css",
         "apps/web/src/competition.css",
-        "apps/web/src/components/EconomicChart.tsx",
+        "apps/web/src/components/BarrasPixel.tsx",
         "apps/web/src/components/FleetPicker.tsx",
+        "apps/web/src/components/IconePixel.tsx",
         "apps/web/src/components/Notice.tsx",
         "apps/web/src/components/NotificationCenter.tsx",
         "apps/web/src/components/Pagination.tsx",
@@ -477,6 +555,7 @@
         "apps/web/src/features/business/Orders.tsx",
         "apps/web/src/features/business/precificacao.ts",
         "apps/web/src/features/economy/Carga.tsx",
+        "apps/web/src/features/economy/ReporGaveta.tsx",
         "apps/web/src/features/economy/Vitrine.tsx",
         "apps/web/src/features/economy/compra.ts",
         "apps/web/src/features/inicio/pendencias.ts",
@@ -496,24 +575,32 @@
       "source": "pages/CompanyPage.tsx",
       "purpose": "Explicar caixa, resultado, compromissos e recuperação.",
       "task": "Distinguir saldo, caixa livre, dívida e resultado operacional.",
-      "fingerprint": "090af94570ab80f87ca201603d214364390ed7270fcca23cd51da125a0964667",
+      "fingerprint": "a5167c1a518adfdbfde004047e3cc1bdc19e441b3cefc1cc9d5a6b464bfd9c3b",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
         "apps/web/src/business.css",
         "apps/web/src/competition.css",
-        "apps/web/src/components/EconomicChart.tsx",
+        "apps/web/src/components/BarrasPixel.tsx",
         "apps/web/src/components/GraficoPixel.tsx",
+        "apps/web/src/components/IconePixel.tsx",
         "apps/web/src/components/Notice.tsx",
         "apps/web/src/components/NotificationCenter.tsx",
+        "apps/web/src/components/PixelArt.tsx",
         "apps/web/src/components/ui.tsx",
+        "apps/web/src/design/arte.ts",
         "apps/web/src/devlab/screens.ts",
         "apps/web/src/economy.css",
         "apps/web/src/features/business/Recovery.tsx",
         "apps/web/src/features/business/precificacao.ts",
+        "apps/web/src/features/economy/Carga.tsx",
+        "apps/web/src/features/economy/ReporGaveta.tsx",
+        "apps/web/src/features/economy/Vitrine.tsx",
+        "apps/web/src/features/economy/compra.ts",
         "apps/web/src/features/inicio/pendencias.ts",
         "apps/web/src/features/inicio/tempo.ts",
         "apps/web/src/lib/game.tsx",
+        "apps/web/src/lib/routing.ts",
         "apps/web/src/main.tsx",
         "apps/web/src/negocios.css",
         "apps/web/src/pages/CompanyPage.tsx",
@@ -531,7 +618,7 @@
     },
     {
       "path": "apps/web/src/App.tsx",
-      "hash": "3043ced31ed4ec6bcb24715cdf726a441cc6c5ee1008b3fe42cf572c508e7801",
+      "hash": "0352b0709d4c1cb055a4015843e2cc49086123c883431dcac56d94931663d83a",
       "components": [
         "ArrowUpRight",
         "Badge",
@@ -561,6 +648,7 @@
         "PanelLeftOpen",
         "PedidosPage",
         "PurchasePage",
+        "ReporGaveta",
         "RetailPage",
         "Rows",
         "Search",
@@ -573,64 +661,64 @@
         {
           "kind": "aria-label",
           "text": "AFTERMARKET · Abrir o início",
-          "line": 193
+          "line": 194
         },
         {
           "kind": "aria-label",
           "text": "Buscar cidade, empresa ou recurso",
-          "line": 200
+          "line": 201
         },
         {
           "kind": "placeholder",
           "text": "Buscar cidade, empresa, recurso ou coordenadas…",
-          "line": 201
+          "line": 202
         },
         {
           "kind": "button",
           "text": "Ver minha empresa",
-          "line": 331
+          "line": 332
         },
         {
           "kind": "button",
           "text": "Preferências e contas",
-          "line": 339
+          "line": 340
         },
         {
           "kind": "aria-label",
           "text": "Menu principal",
-          "line": 352
+          "line": 353
         },
         {
           "kind": "title",
           "text": "Preferências",
-          "line": 370
+          "line": 371
         },
         {
           "kind": "button",
           "text": "{dinâmico}",
-          "line": 375
+          "line": 376
         },
         {
           "kind": "role",
           "text": "status",
-          "line": 397
+          "line": 398
         },
         {
           "kind": "title",
           "text": "Preferências do mundo",
-          "line": 406
+          "line": 408
         },
         {
           "kind": "button",
           "text": "{dinâmico}",
-          "line": 416
+          "line": 418
         }
       ],
       "commands": []
     },
     {
       "path": "apps/web/src/business.css",
-      "hash": "bb6225bb8333a377a5cfec9ca359985dc5c1bb1cad7a29c300afe64c2dc97788",
+      "hash": "4c9343c1f338ebd458c9bcde67c52bb24dcd30d6b7d6701089ebaadc389ebd7b",
       "components": [],
       "literals": [],
       "commands": []
@@ -643,8 +731,68 @@
       "commands": []
     },
     {
+      "path": "apps/web/src/components/BarraEstoque.tsx",
+      "hash": "334da1e7480b54ff5ab180aec3f7f813dfa8f3889cb2522e2d609eb2de8ca614",
+      "components": [
+        "IconePixel"
+      ],
+      "literals": [
+        {
+          "kind": "role",
+          "text": "img",
+          "line": 31
+        },
+        {
+          "kind": "aria-label",
+          "text": "Legenda das barras de estoque",
+          "line": 67
+        }
+      ],
+      "commands": []
+    },
+    {
+      "path": "apps/web/src/components/BarrasPixel.tsx",
+      "hash": "b0734d4a6d297cd629c9762d70a1ec54a0aea7caf2fcb207ccc66d7992688ad8",
+      "components": [
+        "Chave"
+      ],
+      "literals": [
+        {
+          "kind": "role",
+          "text": "meter",
+          "line": 59
+        },
+        {
+          "kind": "role",
+          "text": "img",
+          "line": 108
+        },
+        {
+          "kind": "aria-label",
+          "text": "Chave das partes",
+          "line": 119
+        }
+      ],
+      "commands": []
+    },
+    {
+      "path": "apps/web/src/components/CargaCaminho.tsx",
+      "hash": "f58d43398437ae6d1f213abf17053874654351fb178eb9870da9b0fe04044ae1",
+      "components": [
+        "Truck"
+      ],
+      "literals": [
+        {
+          "kind": "role",
+          "text": "progressbar",
+          "line": 26
+        }
+      ],
+      "commands": []
+    },
+    {
       "path": "apps/web/src/components/EconomicChart.tsx",
-      "hash": "3c22ea83292f22b21714ea583200b022d00e45a8091d46f85db7f23eaf0bfec0",
+      "hash": "3a7ae70ded97669cbc20fbda912ed80fa1ae113d9248819ffa3668477ebcfa61",
       "components": [
         "Download",
         "Maximize2",
@@ -702,6 +850,19 @@
       "commands": []
     },
     {
+      "path": "apps/web/src/components/EstadoEstoque.tsx",
+      "hash": "739da1cdac11a3a6b9a464ceafa5c0e8999f4f4af75b521731767086a735c3d5",
+      "components": [],
+      "literals": [
+        {
+          "kind": "role",
+          "text": "img",
+          "line": 30
+        }
+      ],
+      "commands": []
+    },
+    {
       "path": "apps/web/src/components/FleetPicker.tsx",
       "hash": "8046e83bdd9a7c8ba117c1a2f7564e68654e6e2faf7c23647b12cc4d6fc32ced",
       "components": [
@@ -752,40 +913,49 @@
     },
     {
       "path": "apps/web/src/components/GraficoPixel.tsx",
-      "hash": "fa0a54c1111e3c312175b3d2a46b97afe3b0497459c4f0fbda6c5d63a5b90267",
-      "components": [],
+      "hash": "f390801220ceef29a9581801dd668cc11246aa5ce461a1014ab3e837d2cee0a9",
+      "components": [
+        "Chave"
+      ],
       "literals": [
         {
           "kind": "aria-label",
           "text": "Séries",
-          "line": 139
+          "line": 173
         },
         {
           "kind": "role",
           "text": "img",
-          "line": 152
+          "line": 189
         },
         {
           "kind": "button",
           "text": "{dinâmico}",
-          "line": 364
+          "line": 440
         },
         {
           "kind": "th",
           "text": "Momento",
-          "line": 379
+          "line": 455
         },
         {
           "kind": "th",
           "text": "{dinâmico}",
-          "line": 381
+          "line": 457
         },
         {
           "kind": "th",
           "text": "{dinâmico}",
-          "line": 390
+          "line": 466
         }
       ],
+      "commands": []
+    },
+    {
+      "path": "apps/web/src/components/IconePixel.tsx",
+      "hash": "2a2fcdd0be66b52ce771224c1b55e60bae1e5a938cee19fcb16057aa8d368d04",
+      "components": [],
+      "literals": [],
       "commands": []
     },
     {
@@ -1253,7 +1423,7 @@
     },
     {
       "path": "apps/web/src/design/arte.ts",
-      "hash": "774942964a9eafdd53e6f6402d7e9b2f26ef609d2e70c2e527217124f823a158",
+      "hash": "4a96187cff7c5e366ac0ab0c1130e2a6eb0239ebf8c9c20afc9fcc86a6ee9262",
       "components": [],
       "literals": [],
       "commands": []
@@ -1273,99 +1443,263 @@
       "commands": []
     },
     {
-      "path": "apps/web/src/features/business/Analytics.tsx",
-      "hash": "126a781b6a31544540fc19299580f58991a0882a647634f82dc418af6fabbb04",
+      "path": "apps/web/src/features/business/Abastecimento.tsx",
+      "hash": "0d91ae8d660f289dd9ff5139b869189ed45210376984302d1c81286583284e8d",
       "components": [
-        "EconomicChart",
-        "Empty",
-        "Rows",
-        "Select"
+        "BarraEstoque",
+        "CargaCaminho",
+        "CartaoAutomatico",
+        "ChaveEstoque",
+        "EstadoEstoque",
+        "FleetPicker",
+        "IconePixel",
+        "Interruptor",
+        "Minus",
+        "Passo",
+        "Plus",
+        "ProdutoArte",
+        "Repeat",
+        "ShoppingCart",
+        "TransferStock",
+        "Truck"
       ],
       "literals": [
         {
-          "kind": "h3",
-          "text": "Entradas e pagamentos",
-          "line": 58
+          "kind": "label",
+          "text": "{dinâmico}",
+          "line": 54
         },
         {
-          "kind": "option",
-          "text": "Período (opcional)",
-          "line": 68
-        },
-        {
-          "kind": "option",
-          "text": "1 dia do jogo",
-          "line": 69
-        },
-        {
-          "kind": "option",
-          "text": "7 dias do jogo",
-          "line": 70
-        },
-        {
-          "kind": "option",
-          "text": "30 dias do jogo",
-          "line": 71
+          "kind": "role",
+          "text": "switch",
+          "line": 103
         },
         {
           "kind": "h3",
-          "text": "Onde o dinheiro foi gasto",
-          "line": 113
+          "text": "{dinâmico}",
+          "line": 159
         },
         {
-          "kind": "h3",
-          "text": "Resultado e capital",
-          "line": 133
+          "kind": "button",
+          "text": "Mandar buscar",
+          "line": 177
+        },
+        {
+          "kind": "option",
+          "text": "Melhor oferta (segue as regras gerais)",
+          "line": 224
+        },
+        {
+          "kind": "option",
+          "text": "Minha unidade: {dinâmico} ( {dinâmico} {dinâmico} )",
+          "line": 226
         },
         {
           "kind": "summary",
-          "text": "Ver valores do gráfico",
-          "line": 157
+          "text": "Limites deste produto",
+          "line": 243
         },
         {
-          "kind": "th",
-          "text": "Período",
-          "line": 162
+          "kind": "button",
+          "text": "Parar de automatizar",
+          "line": 266
         },
         {
-          "kind": "th",
-          "text": "Receitas",
-          "line": 163
+          "kind": "button",
+          "text": "{dinâmico}",
+          "line": 269
         },
         {
-          "kind": "th",
-          "text": "Pagamentos",
-          "line": 164
+          "kind": "h2",
+          "text": "Abastecimento automático",
+          "line": 373
+        },
+        {
+          "kind": "role",
+          "text": "img",
+          "line": 409
+        },
+        {
+          "kind": "role",
+          "text": "img",
+          "line": 426
+        },
+        {
+          "kind": "h2",
+          "text": "Repostos sozinhos",
+          "line": 441
+        },
+        {
+          "kind": "h2",
+          "text": "Repor você mesmo",
+          "line": 482
         },
         {
           "kind": "h3",
-          "text": "Consumo e oportunidades de melhoria",
-          "line": 217
+          "text": "{dinâmico}",
+          "line": 503
+        },
+        {
+          "kind": "button",
+          "text": "Mandar buscar",
+          "line": 516
+        },
+        {
+          "kind": "button",
+          "text": "Trazer de outra unidade",
+          "line": 524
+        },
+        {
+          "kind": "button",
+          "text": "Automatizar",
+          "line": 528
+        },
+        {
+          "kind": "option",
+          "text": "Escolher um produto",
+          "line": 548
         },
         {
           "kind": "option",
           "text": "{dinâmico}",
-          "line": 228
+          "line": 550
         },
         {
-          "kind": "h3",
-          "text": "Perfil semanal modelado",
-          "line": 259
+          "kind": "button",
+          "text": "Automatizar",
+          "line": 555
         },
         {
-          "kind": "title",
-          "text": "O histórico começa com a próxima rodada",
-          "line": 307
+          "kind": "h2",
+          "text": "A caminho",
+          "line": 571
+        },
+        {
+          "kind": "button",
+          "text": "Ver pedidos",
+          "line": 591
+        },
+        {
+          "kind": "role",
+          "text": "radiogroup",
+          "line": 622
+        },
+        {
+          "kind": "aria-label",
+          "text": "Origem do abastecimento",
+          "line": 622
+        },
+        {
+          "kind": "button",
+          "text": "{dinâmico}",
+          "line": 624
+        },
+        {
+          "kind": "role",
+          "text": "radio",
+          "line": 627
+        },
+        {
+          "kind": "role",
+          "text": "radiogroup",
+          "line": 654
+        },
+        {
+          "kind": "aria-label",
+          "text": "Transporte",
+          "line": 654
+        },
+        {
+          "kind": "button",
+          "text": "Melhor frete disponível",
+          "line": 655
+        },
+        {
+          "kind": "role",
+          "text": "radio",
+          "line": 657
+        },
+        {
+          "kind": "button",
+          "text": "Só a minha frota",
+          "line": 664
+        },
+        {
+          "kind": "role",
+          "text": "radio",
+          "line": 666
+        },
+        {
+          "kind": "button",
+          "text": "{dinâmico} frotas para {dinâmico} {dinâmico}",
+          "line": 682
+        },
+        {
+          "kind": "role",
+          "text": "radiogroup",
+          "line": 702
+        },
+        {
+          "kind": "aria-label",
+          "text": "Forma de compra",
+          "line": 702
+        },
+        {
+          "kind": "button",
+          "text": "Comprar a oferta na hora",
+          "line": 703
+        },
+        {
+          "kind": "role",
+          "text": "radio",
+          "line": 705
+        },
+        {
+          "kind": "button",
+          "text": "Enviar pedido para o fornecedor aceitar",
+          "line": 712
+        },
+        {
+          "kind": "role",
+          "text": "radio",
+          "line": 714
+        },
+        {
+          "kind": "label",
+          "text": "Separar o dinheiro dos pedidos até o aceite ou o vencimento",
+          "line": 722
+        },
+        {
+          "kind": "button",
+          "text": "Descartar",
+          "line": 733
+        },
+        {
+          "kind": "button",
+          "text": "Salvar regras gerais",
+          "line": 741
         }
       ],
+      "commands": [
+        {
+          "type": "configureSupply",
+          "line": 318
+        }
+      ]
+    },
+    {
+      "path": "apps/web/src/features/business/Analytics.tsx",
+      "hash": "d24e4befd4f991861230bb13b8b3feb5d4fd32ecf7c71e0f352fbe733b2a451c",
+      "components": [],
+      "literals": [],
       "commands": []
     },
     {
       "path": "apps/web/src/features/business/BotActivity.tsx",
-      "hash": "8664f3b7cfbd0813b8a890f7de846cb32da35fd7aaf91ba46dc0e4ca4a083d5b",
+      "hash": "67fa78130bb049a8f779aea90878c8f0fee2cb7efc2e81f85c374c19849f0368",
       "components": [
         "Badge",
-        "EconomicChart",
+        "BarrasPixel",
         "Pagination",
         "Progress",
         "Select"
@@ -1399,27 +1733,27 @@
         {
           "kind": "summary",
           "text": "Ver empresas, caixa e operação",
-          "line": 145
+          "line": 132
         },
         {
           "kind": "th",
           "text": "Empresa",
-          "line": 150
+          "line": 137
         },
         {
           "kind": "th",
           "text": "Perfil",
-          "line": 151
+          "line": 138
         },
         {
           "kind": "th",
           "text": "Caixa real",
-          "line": 152
+          "line": 139
         },
         {
           "kind": "th",
           "text": "Operação",
-          "line": 153
+          "line": 140
         }
       ],
       "commands": []
@@ -1466,7 +1800,7 @@
     },
     {
       "path": "apps/web/src/features/business/Empate.tsx",
-      "hash": "3d5056cba528ef6abefeb0a8a43a6ff6db17c8f97534232e35a58731069ace04",
+      "hash": "98873a6aec48c92f77cf4a7a4b19e3a99229afafac64528ebecc42977b67a662",
       "components": [
         "PixelArt",
         "ProductIcon",
@@ -1477,46 +1811,140 @@
         {
           "kind": "h1",
           "text": "{dinâmico}",
-          "line": 74
+          "line": 65
         },
         {
           "kind": "aria-label",
           "text": "Trocar de loja",
-          "line": 81
+          "line": 72
         },
         {
           "kind": "option",
           "text": "{dinâmico}",
-          "line": 86
+          "line": 77
         },
         {
           "kind": "role",
           "text": "meter",
-          "line": 113
+          "line": 104
         },
         {
           "kind": "aria-label",
           "text": "Margem por dia comparada ao custo de manter a loja",
-          "line": 117
+          "line": 108
         },
         {
           "kind": "button",
           "text": "Comprar mercadorias",
-          "line": 142
+          "line": 133
         },
         {
           "kind": "button",
           "text": "{dinâmico}",
-          "line": 150
+          "line": 141
+        }
+      ],
+      "commands": []
+    },
+    {
+      "path": "apps/web/src/features/business/EquipePecas.tsx",
+      "hash": "90072d1774542374e991d323b9659aa51314d97cceeac6b48d0bf9010af2b853",
+      "components": [],
+      "literals": [
+        {
+          "kind": "aria-label",
+          "text": "Legenda",
+          "line": 34
+        },
+        {
+          "kind": "role",
+          "text": "img",
+          "line": 72
+        },
+        {
+          "kind": "role",
+          "text": "img",
+          "line": 142
+        }
+      ],
+      "commands": []
+    },
+    {
+      "path": "apps/web/src/features/business/Financas.tsx",
+      "hash": "7c855ccb899cde7277d73e70360afcc1bed6e1687fbb7dee448ed184ff41dc5e",
+      "components": [
+        "BarraEmpilhada",
+        "BarrasPixel",
+        "Cabecalho",
+        "Empty",
+        "GraficoPixel",
+        "Lightbulb",
+        "ProductIcon"
+      ],
+      "literals": [
+        {
+          "kind": "h3",
+          "text": "{dinâmico}",
+          "line": 97
+        },
+        {
+          "kind": "role",
+          "text": "group",
+          "line": 142
+        },
+        {
+          "kind": "aria-label",
+          "text": "Período",
+          "line": 142
+        },
+        {
+          "kind": "button",
+          "text": "{dinâmico} dias",
+          "line": 144
+        },
+        {
+          "kind": "aria-label",
+          "text": "Resumo do período",
+          "line": 157
+        },
+        {
+          "kind": "aria-label",
+          "text": "Meta do dia",
+          "line": 189
+        },
+        {
+          "kind": "title",
+          "text": "Nada na prateleira ainda",
+          "line": 281
+        },
+        {
+          "kind": "role",
+          "text": "group",
+          "line": 327
+        },
+        {
+          "kind": "aria-label",
+          "text": "Produto",
+          "line": 327
+        },
+        {
+          "kind": "button",
+          "text": "{dinâmico}",
+          "line": 329
+        },
+        {
+          "kind": "title",
+          "text": "O histórico começa na próxima rodada",
+          "line": 386
         }
       ],
       "commands": []
     },
     {
       "path": "apps/web/src/features/business/InfrastructureContracts.tsx",
-      "hash": "462e9f6fd4e1ce96988b8fd58b753d8d9eed8dce0d7c866cca5a257aa359812b",
+      "hash": "70c63a55d2a9c497ad5a22db1a7a47a77b7c370c7e1327bc0d901bf9f31da19f",
       "components": [
-        "EconomicChart",
+        "BarrasPixel",
         "Empty",
         "FleetPicker",
         "Modal",
@@ -1732,8 +2160,10 @@
     },
     {
       "path": "apps/web/src/features/business/LinhaPreco.tsx",
-      "hash": "b35eb000154218288cae6a89e3b611dc5b4d3937efc2d58f9901bd14dab7c4aa",
+      "hash": "0d50e8fbabb63c91c12da97e882c702b35160eee376f1a6023427e521ca25c93",
       "components": [
+        "EstadoEstoque",
+        "IconePixel",
         "ProdutoArte",
         "ShoppingCart"
       ],
@@ -1741,53 +2171,63 @@
         {
           "kind": "h3",
           "text": "{dinâmico}",
-          "line": 105
-        },
-        {
-          "kind": "button",
-          "text": "Repor",
-          "line": 119
+          "line": 179
         },
         {
           "kind": "button",
           "text": "{dinâmico}",
-          "line": 168
+          "line": 196
+        },
+        {
+          "kind": "aria-label",
+          "text": "Trilho de preço",
+          "line": 208
+        },
+        {
+          "kind": "aria-label",
+          "text": "Referências de preço",
+          "line": 253
+        },
+        {
+          "kind": "button",
+          "text": "{dinâmico}",
+          "line": 264
         },
         {
           "kind": "button",
           "text": "−",
-          "line": 264
+          "line": 300
         },
         {
           "kind": "aria-label",
           "text": "Baixar o preço",
-          "line": 266
-        },
-        {
-          "kind": "button",
-          "text": "+",
-          "line": 282
-        },
-        {
-          "kind": "aria-label",
-          "text": "Subir o preço",
-          "line": 284
-        },
-        {
-          "kind": "button",
-          "text": "Testar {dinâmico}",
           "line": 302
         },
         {
           "kind": "button",
+          "text": "+",
+          "line": 315
+        },
+        {
+          "kind": "aria-label",
+          "text": "Subir o preço",
+          "line": 317
+        },
+        {
+          "kind": "button",
+          "text": "Testar {dinâmico}",
+          "line": 336
+        },
+        {
+          "kind": "button",
           "text": "{dinâmico}",
-          "line": 306
+          "line": 340
         }
       ],
       "commands": [
         {
           "type": "setPrice",
-          "line": 311
+          "line": 345
         }
       ]
     },
@@ -2194,8 +2634,9 @@
     },
     {
       "path": "apps/web/src/features/business/Prateleira.tsx",
-      "hash": "12e44a15b1fa8ce59cdf8e92318a60f0b5135acd2f4987af3bbc7d47ea756b89",
+      "hash": "735cfc99f67e2972ddf31e7b6936867eb20374f4377099862587d124e255aa60",
       "components": [
+        "Caixa",
         "Empty",
         "LinhaPreco",
         "ShoppingCart",
@@ -2205,39 +2646,44 @@
         {
           "kind": "title",
           "text": "A prateleira está vazia",
-          "line": 30
+          "line": 25
         },
         {
           "kind": "button",
           "text": "Comprar mercadorias",
-          "line": 33
+          "line": 28
         },
         {
           "kind": "button",
           "text": "Usar os melhores preços",
-          "line": 66
+          "line": 44
+        },
+        {
+          "kind": "h3",
+          "text": "Últimas vendas",
+          "line": 81
         }
       ],
       "commands": [
         {
           "type": "setPrice",
-          "line": 73
+          "line": 50
         }
       ]
     },
     {
       "path": "apps/web/src/features/business/precificacao.ts",
-      "hash": "b083788696f9b5f1713cf6cccbc45d0c98e30a2b9079640ca25e06395b2b5496",
+      "hash": "1275488ad50dcca0492c3ff96aa49e2209bebc2c4e98439745d0761f38759864",
       "components": [],
       "literals": [],
       "commands": []
     },
     {
       "path": "apps/web/src/features/business/Recovery.tsx",
-      "hash": "b1b71ed27544970aabfa711aa0705ac699a6e777a47725b78f66f8c9d39941fb",
+      "hash": "9ce2f21898958aae1e0a97e0cf9ad362d4c4492992a186edcfaad14b19c7e527",
       "components": [
         "Badge",
-        "EconomicChart",
+        "BarrasPixel",
         "Modal",
         "Panel",
         "Rows",
@@ -2377,7 +2823,7 @@
         {
           "kind": "button",
           "text": "Confirmar operação",
-          "line": 393
+          "line": 384
         }
       ],
       "commands": [
@@ -2687,231 +3133,6 @@
       "commands": []
     },
     {
-      "path": "apps/web/src/features/business/SupplyPlanner.tsx",
-      "hash": "53cc1f761510bd6bcf5f89e10bd24da9333e1537acb18e63e4ccf079de1d5dfa",
-      "components": [
-        "Badge",
-        "EconomicChart",
-        "FleetPicker",
-        "Plus",
-        "Rows",
-        "Save",
-        "Select",
-        "SlidersHorizontal",
-        "SupplyConnection",
-        "Tabs",
-        "Trash2"
-      ],
-      "literals": [
-        {
-          "kind": "h3",
-          "text": "Abastecimento automático",
-          "line": 56
-        },
-        {
-          "kind": "button",
-          "text": "{dinâmico}",
-          "line": 70
-        },
-        {
-          "kind": "label",
-          "text": "{dinâmico} Ativar abastecimento",
-          "line": 103
-        },
-        {
-          "kind": "aria-label",
-          "text": "Ativar abastecimento automático",
-          "line": 105
-        },
-        {
-          "kind": "label",
-          "text": "Orçamento de reposição / dia (R$)",
-          "line": 112
-        },
-        {
-          "kind": "aria-label",
-          "text": "Orçamento de abastecimento",
-          "line": 115
-        },
-        {
-          "kind": "option",
-          "text": "Priorizar minhas unidades",
-          "line": 128
-        },
-        {
-          "kind": "option",
-          "text": "Somente minhas unidades",
-          "line": 129
-        },
-        {
-          "kind": "option",
-          "text": "Fornecedores do mercado",
-          "line": 130
-        },
-        {
-          "kind": "h3",
-          "text": "Réguas por mercadoria",
-          "line": 134
-        },
-        {
-          "kind": "option",
-          "text": "Escolher mercadoria",
-          "line": 141
-        },
-        {
-          "kind": "option",
-          "text": "{dinâmico}",
-          "line": 146
-        },
-        {
-          "kind": "button",
-          "text": "Adicionar",
-          "line": 151
-        },
-        {
-          "kind": "button",
-          "text": "· simular cobertura",
-          "line": 182
-        },
-        {
-          "kind": "option",
-          "text": "Usar política de origem geral",
-          "line": 226
-        },
-        {
-          "kind": "option",
-          "text": "{dinâmico} · {dinâmico} {dinâmico} em estoque",
-          "line": 230
-        },
-        {
-          "kind": "label",
-          "text": "Repor ao atingir ( {dinâmico} )",
-          "line": 236
-        },
-        {
-          "kind": "label",
-          "text": "Estoque alvo ( {dinâmico} )",
-          "line": 255
-        },
-        {
-          "kind": "label",
-          "text": "Máximo por compra ( {dinâmico} )",
-          "line": 275
-        },
-        {
-          "kind": "label",
-          "text": "Preço máximo / {dinâmico} (R$)",
-          "line": 285
-        },
-        {
-          "kind": "h3",
-          "text": "Limites e forma de compra",
-          "line": 340
-        },
-        {
-          "kind": "label",
-          "text": "Preservar caixa (R$)",
-          "line": 344
-        },
-        {
-          "kind": "aria-label",
-          "text": "Reserva de caixa",
-          "line": 347
-        },
-        {
-          "kind": "label",
-          "text": "Distância máxima (km)",
-          "line": 354
-        },
-        {
-          "kind": "aria-label",
-          "text": "Distância máxima do fornecedor",
-          "line": 357
-        },
-        {
-          "kind": "label",
-          "text": "Qualidade mínima ( {dinâmico} /100)",
-          "line": 365
-        },
-        {
-          "kind": "aria-label",
-          "text": "Qualidade mínima de abastecimento",
-          "line": 368
-        },
-        {
-          "kind": "label",
-          "text": "Frete máximo / unidade (R$)",
-          "line": 376
-        },
-        {
-          "kind": "aria-label",
-          "text": "Teto unitário de frete",
-          "line": 379
-        },
-        {
-          "kind": "button",
-          "text": "Melhor frete disponível",
-          "line": 392
-        },
-        {
-          "kind": "button",
-          "text": "Somente minha frota",
-          "line": 398
-        },
-        {
-          "kind": "option",
-          "text": "Comprar ofertas e transferir",
-          "line": 416
-        },
-        {
-          "kind": "option",
-          "text": "Enviar pedidos para aceitação",
-          "line": 417
-        },
-        {
-          "kind": "summary",
-          "text": "Comparar frotas para {dinâmico}",
-          "line": 422
-        },
-        {
-          "kind": "label",
-          "text": "{dinâmico} Vincular caixa de pedidos automáticos até aceite ou expiração",
-          "line": 442
-        },
-        {
-          "kind": "aria-label",
-          "text": "Vincular caixa de pedidos automáticos",
-          "line": 445
-        },
-        {
-          "kind": "h3",
-          "text": "Simulação de cobertura",
-          "line": 454
-        },
-        {
-          "kind": "option",
-          "text": "Escolher item para o gráfico",
-          "line": 460
-        },
-        {
-          "kind": "option",
-          "text": "{dinâmico}",
-          "line": 462
-        },
-        {
-          "kind": "button",
-          "text": "Salvar regras de abastecimento",
-          "line": 582
-        }
-      ],
-      "commands": [
-        {
-          "type": "configureSupply",
-          "line": 587
-        }
-      ]
-    },
-    {
       "path": "apps/web/src/features/business/TransferStock.tsx",
       "hash": "402e3f68396997d4d944f971debec3db6abf2ca75e6e59f18a575c186989ede1",
       "components": [
@@ -3002,87 +3223,138 @@
     },
     {
       "path": "apps/web/src/features/business/Workforce.tsx",
-      "hash": "ae045f3fae02f881538ac92817df78e43dcdaadbf275607bdcd7246c5d75710e",
+      "hash": "ec79ed81768c02820ed1e54de2d570a4166e232b3891060ee8956d8c1f41d597",
       "components": [
-        "Badge",
-        "EconomicChart",
+        "Cracha",
+        "EvolucaoSalarial",
         "GraduationCap",
         "Installation",
-        "Progress",
-        "Rows",
-        "Save",
-        "Users"
+        "Legenda",
+        "Medidor",
+        "Minus",
+        "OutrasReceitas",
+        "Plus"
       ],
       "literals": [
         {
           "kind": "h3",
-          "text": "Equipe, remuneração e educação",
-          "line": 37
+          "text": "Sua equipe",
+          "line": 215
         },
         {
-          "kind": "h3",
-          "text": "Planejar contratações",
-          "line": 49
+          "kind": "h4",
+          "text": "{dinâmico} {dinâmico} {dinâmico}",
+          "line": 226
         },
         {
-          "kind": "label",
-          "text": "Funcionários desejados",
-          "line": 50
+          "kind": "role",
+          "text": "img",
+          "line": 233
+        },
+        {
+          "kind": "h4",
+          "text": "{dinâmico}",
+          "line": 249
+        },
+        {
+          "kind": "h4",
+          "text": "Quantas pessoas?",
+          "line": 257
+        },
+        {
+          "kind": "aria-label",
+          "text": "Uma pessoa a menos",
+          "line": 261
         },
         {
           "kind": "aria-label",
           "text": "Funcionários desejados",
-          "line": 53
+          "line": 268
+        },
+        {
+          "kind": "aria-label",
+          "text": "Uma pessoa a mais",
+          "line": 278
         },
         {
           "kind": "aria-label",
           "text": "Régua de funcionários",
-          "line": 61
+          "line": 286
         },
         {
           "kind": "button",
-          "text": "Aplicar equipe",
-          "line": 77
+          "text": "Usar a equipe ideal ( {dinâmico} )",
+          "line": 295
         },
         {
-          "kind": "h3",
-          "text": "Remuneração em {dinâmico}",
-          "line": 92
+          "kind": "button",
+          "text": "Voltar para {dinâmico}",
+          "line": 300
+        },
+        {
+          "kind": "button",
+          "text": "{dinâmico}",
+          "line": 329
+        },
+        {
+          "kind": "h4",
+          "text": "Quanto custa",
+          "line": 357
         },
         {
           "kind": "summary",
-          "text": "Revisar equipamentos e capacidade",
-          "line": 147
+          "text": "Como o salário é calculado",
+          "line": 385
         },
         {
-          "kind": "h3",
-          "text": "Educação da equipe",
-          "line": 155
+          "kind": "h5",
+          "text": "Índice salarial em {dinâmico}",
+          "line": 408
+        },
+        {
+          "kind": "h4",
+          "text": "Formação da equipe",
+          "line": 415
+        },
+        {
+          "kind": "role",
+          "text": "img",
+          "line": 420
         },
         {
           "kind": "button",
-          "text": "Planejar investimento em educação",
-          "line": 195
+          "text": "Treinar equipe · {dinâmico}",
+          "line": 477
         },
         {
           "kind": "button",
-          "text": "Pagar educação e iniciar",
-          "line": 209
+          "text": "Cancelar",
+          "line": 491
         },
         {
-          "kind": "h3",
-          "text": "Histórico do índice salarial de {dinâmico}",
-          "line": 230
+          "kind": "button",
+          "text": "Pagar e iniciar",
+          "line": 494
+        },
+        {
+          "kind": "summary",
+          "text": "Equipamentos e capacidade",
+          "line": 524
+        },
+        {
+          "kind": "summary",
+          "text": "{dinâmico} ( {dinâmico} )",
+          "line": 549
         }
       ],
       "commands": [
         {
           "type": "setWorkforce",
-          "line": 82
+          "line": 334
         },
         {
           "type": "trainWorkforce",
-          "line": 215
+          "line": 500
         }
       ]
     },
@@ -3691,14 +3963,14 @@
     },
     {
       "path": "apps/web/src/features/economy/Opportunities.tsx",
-      "hash": "5643fb6e5672e9e2bb9fcf333e9d977ba3e18174ceb9308336220bf920df568a",
+      "hash": "9ae51e2182b4193d01119df6d94454a8bfe44c249ca21c892ac6bcd42d1b644c",
       "components": [
         "ArrowUpRight",
         "Badge",
+        "BarrasPixel",
         "BotActivity",
         "Box",
         "BusinessIdeas",
-        "EconomicChart",
         "Empty",
         "Globe2",
         "Info",
@@ -3808,160 +4080,239 @@
         {
           "kind": "h3",
           "text": "Compare o custo no destino",
-          "line": 311
+          "line": 284
         },
         {
           "kind": "h3",
           "text": "Observe a disponibilidade",
-          "line": 316
+          "line": 289
         },
         {
           "kind": "h3",
           "text": "Confira as premissas",
-          "line": 321
+          "line": 294
         },
         {
           "kind": "h2",
           "text": "Mercadorias da temporada",
-          "line": 330
+          "line": 303
         },
         {
           "kind": "h3",
           "text": "{dinâmico}",
-          "line": 350
+          "line": 323
         },
         {
           "kind": "button",
           "text": "Ver mais",
-          "line": 380
+          "line": 353
         },
         {
           "kind": "th",
           "text": "Mercadoria / unidade",
-          "line": 397
+          "line": 370
         },
         {
           "kind": "th",
           "text": "Oferta média",
-          "line": 398
+          "line": 371
         },
         {
           "kind": "th",
           "text": "Menor / maior",
-          "line": 399
+          "line": 372
         },
         {
           "kind": "th",
           "text": "Abertura",
-          "line": 400
+          "line": 373
         },
         {
           "kind": "th",
           "text": "Estoque",
-          "line": 401
+          "line": 374
         },
         {
           "kind": "th",
           "text": "Demanda / dia",
-          "line": 402
+          "line": 375
         },
         {
           "kind": "th",
           "text": "Negociado",
-          "line": 403
+          "line": 376
         },
         {
           "kind": "aria-label",
           "text": "Análise",
-          "line": 404
+          "line": 377
         },
         {
           "kind": "button",
           "text": "Analisar",
-          "line": 431
+          "line": 404
         },
         {
           "kind": "title",
           "text": "Nenhuma mercadoria atende aos filtros",
-          "line": 444
+          "line": 417
         },
         {
           "kind": "button",
           "text": "Limpar filtros",
-          "line": 447
+          "line": 420
         },
         {
           "kind": "title",
           "text": "Concorrentes e movimento do mundo",
-          "line": 458
+          "line": 431
         },
         {
           "kind": "title",
           "text": "Filtros avançados de mercado",
-          "line": 465
+          "line": 438
         },
         {
           "kind": "label",
           "text": "Estoque mínimo",
-          "line": 467
+          "line": 440
         },
         {
           "kind": "aria-label",
           "text": "Estoque mínimo",
-          "line": 470
+          "line": 443
         },
         {
           "kind": "placeholder",
           "text": "Sem mínimo",
-          "line": 473
+          "line": 446
         },
         {
           "kind": "label",
           "text": "Preço máximo por unidade (R$)",
-          "line": 478
+          "line": 451
         },
         {
           "kind": "aria-label",
           "text": "Preço máximo por unidade",
-          "line": 481
+          "line": 454
         },
         {
           "kind": "placeholder",
           "text": "Sem limite",
-          "line": 485
+          "line": 458
         },
         {
           "kind": "label",
           "text": "Raio econômico da praça (km)",
-          "line": 490
+          "line": 463
         },
         {
           "kind": "aria-label",
           "text": "Raio econômico",
-          "line": 493
+          "line": 466
         },
         {
           "kind": "placeholder",
           "text": "Padrão do modelo: 120 km",
-          "line": 497
+          "line": 470
         },
         {
           "kind": "label",
           "text": "{dinâmico} Apenas itens com ofertas disponíveis",
-          "line": 502
+          "line": 475
         },
         {
           "kind": "button",
           "text": "Limpar todos",
-          "line": 511
+          "line": 484
         },
         {
           "kind": "button",
           "text": "Aplicar filtros",
-          "line": 514
+          "line": 487
         }
       ],
       "commands": []
+    },
+    {
+      "path": "apps/web/src/features/economy/ReporGaveta.tsx",
+      "hash": "abdd96504652036c7fb45b126b234b477b0e211969cc09fdfc049ef8f5bfafdd",
+      "components": [
+        "Gaveta",
+        "IconePixel",
+        "PixelArt",
+        "ProdutoArte",
+        "X"
+      ],
+      "literals": [
+        {
+          "kind": "aria-label",
+          "text": "Fechar",
+          "line": 189
+        },
+        {
+          "kind": "h2",
+          "text": "O caminhão saiu!",
+          "line": 198
+        },
+        {
+          "kind": "button",
+          "text": "Continuar jogando",
+          "line": 210
+        },
+        {
+          "kind": "button",
+          "text": "Acompanhar no Início",
+          "line": 213
+        },
+        {
+          "kind": "h2",
+          "text": "Mandar buscar {dinâmico}",
+          "line": 231
+        },
+        {
+          "kind": "h3",
+          "text": "Quanto você quer?",
+          "line": 249
+        },
+        {
+          "kind": "role",
+          "text": "radiogroup",
+          "line": 250
+        },
+        {
+          "kind": "aria-label",
+          "text": "Quantidade",
+          "line": 250
+        },
+        {
+          "kind": "role",
+          "text": "radio",
+          "line": 254
+        },
+        {
+          "kind": "h3",
+          "text": "Quem leva?",
+          "line": 297
+        },
+        {
+          "kind": "button",
+          "text": "Ver o mercado",
+          "line": 306
+        },
+        {
+          "kind": "button",
+          "text": "{dinâmico}",
+          "line": 372
+        }
+      ],
+      "commands": [
+        {
+          "type": "trade",
+          "line": 157
+        }
+      ]
     },
     {
       "path": "apps/web/src/features/economy/Vitrine.tsx",
@@ -4003,7 +4354,7 @@
     },
     {
       "path": "apps/web/src/features/inicio/pendencias.ts",
-      "hash": "c3a16bd09e521f7766e9fe8e6b961d262ba87c8a3a851a31ff5f860737740d2f",
+      "hash": "e262501fbfb95aff1811bc1706a5bdbbb9e16f3b8d3f70f18dead10b2cdac89d",
       "components": [],
       "literals": [],
       "commands": []
@@ -4031,7 +4382,7 @@
     },
     {
       "path": "apps/web/src/lib/game.tsx",
-      "hash": "8b2a4f67e1ff4083112afef512f5ff5159f8140b78e9778c8dc88a20ec872132",
+      "hash": "456b9d1afd17c518b8b73a2b6dd8e0487eef7b60eadf5eb3095820bb4783711d",
       "components": [
         "GameContext.Provider",
         "Icon",
@@ -4041,17 +4392,17 @@
         {
           "kind": "h1",
           "text": "AFTERMARKET",
-          "line": 251
+          "line": 255
         },
         {
           "kind": "button",
           "text": "Tentar novamente",
-          "line": 254
+          "line": 258
         },
         {
           "kind": "role",
           "text": "status",
-          "line": 313
+          "line": 319
         }
       ],
       "commands": []
@@ -4516,11 +4867,12 @@
     },
     {
       "path": "apps/web/src/pages/InicioPage.tsx",
-      "hash": "f96533d4e13a7f93ced98ecc7ef558d493e907c27cb6a3df2cb65954f0707b7c",
+      "hash": "c20838f0c66d78efd84fd7d54a369289d6567771524248d420dc78238a8de742",
       "components": [
         "ACaminho",
         "Ausencia",
         "Badge",
+        "CargaCaminho",
         "Check",
         "Contador",
         "GraficoPixel",
@@ -4529,7 +4881,6 @@
         "PrecisaDeVoce",
         "PrimeirosPassos",
         "SeusNegocios",
-        "Truck",
         "VendasDaSemana"
       ],
       "literals": [
@@ -4576,37 +4927,32 @@
         {
           "kind": "h2",
           "text": "A caminho",
-          "line": 234
-        },
-        {
-          "kind": "role",
-          "text": "progressbar",
-          "line": 253
+          "line": 233
         },
         {
           "kind": "button",
           "text": "Ver as {dinâmico} cargas",
-          "line": 266
+          "line": 240
         },
         {
           "kind": "h2",
           "text": "Vendas por dia",
-          "line": 288
+          "line": 262
         },
         {
           "kind": "h2",
           "text": "Seus negócios",
-          "line": 314
+          "line": 288
         },
         {
           "kind": "button",
           "text": "{dinâmico}",
-          "line": 330
+          "line": 304
         },
         {
           "kind": "h1",
           "text": "{dinâmico}",
-          "line": 368
+          "line": 342
         }
       ],
       "commands": []
@@ -4841,8 +5187,9 @@
     },
     {
       "path": "apps/web/src/pages/OperationPage.tsx",
-      "hash": "ea54fc5050f61b82f8f5733b4c88160c035ae2aadca4851dd8a097e7b47be847",
+      "hash": "22c93d6e1dbe34365645a14355cdee77c25dcfa6cd60e11c559b9e8db9bb32ef",
       "components": [
+        "Abastecimento",
         "ArrowRight",
         "Badge",
         "Box",
@@ -4866,7 +5213,6 @@
         "Select",
         "Settings2",
         "Stock",
-        "SupplyPlanner",
         "Tabs",
         "Workforce"
       ],
@@ -5050,19 +5396,17 @@
     },
     {
       "path": "apps/web/src/pages/RetailPage.tsx",
-      "hash": "28e428bc21b9828d53aa7e9e55eba01ee29dccc7a441df43286aac74d0ec5aa9",
+      "hash": "b2e1e16ad0971c4964c141ace4cd4c67f8b417126a482e7a2f5bd68f1d03594f",
       "components": [
+        "Abastecimento",
         "BusinessFinance",
         "Consumption",
         "Empty",
         "Installation",
         "LojaCabecalho",
-        "Orders",
         "PageHeading",
         "Panel",
         "Prateleira",
-        "Stock",
-        "SupplyPlanner",
         "Tabs",
         "Workforce"
       ],
@@ -5070,47 +5414,12 @@
         {
           "kind": "title",
           "text": "Você ainda não possui uma loja",
-          "line": 25
+          "line": 22
         },
         {
           "kind": "button",
           "text": "Explorar propriedades",
-          "line": 28
-        },
-        {
-          "kind": "h3",
-          "text": "Últimas vendas às famílias",
-          "line": 65
-        },
-        {
-          "kind": "th",
-          "text": "Quando no jogo",
-          "line": 76
-        },
-        {
-          "kind": "th",
-          "text": "Produto",
-          "line": 77
-        },
-        {
-          "kind": "th",
-          "text": "Quantidade",
-          "line": 78
-        },
-        {
-          "kind": "th",
-          "text": "Preço / un.",
-          "line": 79
-        },
-        {
-          "kind": "th",
-          "text": "Receita",
-          "line": 80
-        },
-        {
-          "kind": "title",
-          "text": "Aguardando a próxima rodada de vendas",
-          "line": 105
+          "line": 25
         }
       ],
       "commands": []

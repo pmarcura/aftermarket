@@ -1,0 +1,419 @@
+/* Cartão de produto: faixa colorida com a imagem grande, estado do estoque e trilho de preço. */
+.item {
+  display: grid;
+  background: var(--chapa);
+  border: 2px solid var(--borda);
+  box-shadow: 6px 6px 0 var(--sombra);
+  overflow: hidden;
+}
+.item-hero {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 28px;
+  padding: 22px 28px;
+  background:
+    radial-gradient(circle at 12% 40%, hsl(var(--h, 40) 55% 32%), transparent 58%),
+    linear-gradient(100deg, hsl(var(--h, 40) 32% 18%), var(--chapa) 85%);
+  border-bottom: 2px solid var(--borda);
+}
+.item-arte {
+  display: grid;
+  place-items: center;
+  min-width: 140px;
+  min-height: 120px;
+  filter: drop-shadow(5px 7px 0 var(--sombra));
+}
+.item-ident {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+.item-ident h3 {
+  margin: 0;
+  font-family: var(--pixel);
+  font-size: 30px;
+  font-weight: 400;
+  line-height: 1.15;
+  color: var(--creme);
+  text-shadow: 3px 3px 0 var(--sombra);
+}
+.item-estado {
+  justify-self: start;
+  padding: 5px 12px;
+  font-family: var(--fonte);
+  font-size: 15px;
+  font-weight: 600;
+  background: var(--tom, var(--lavoura));
+  color: var(--noite);
+  box-shadow: 3px 3px 0 var(--sombra);
+}
+.item-medidor {
+  height: 12px;
+  max-width: 360px;
+  background: color-mix(in srgb, var(--sombra) 55%, transparent);
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 2px var(--sombra);
+  overflow: hidden;
+}
+.item-medidor i {
+  display: block;
+  height: 100%;
+  min-width: 4px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--tom) 70%, white), var(--tom));
+  border-radius: 6px;
+}
+.item-fatos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 26px;
+  margin: 0;
+}
+.item-fatos > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.item-fatos dt {
+  font-size: 13px;
+  color: var(--apagado);
+}
+.item-fatos dd {
+  margin: 0;
+  font-family: var(--fonte);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--creme);
+}
+.item-repor {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 54px;
+  padding: 0 24px;
+  font-size: 16px;
+}
+
+.item-corpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 28px;
+  padding: 22px 28px 24px;
+}
+.item-pista {
+  display: grid;
+  gap: 18px;
+  align-content: start;
+  min-width: 0;
+}
+.item-veredito {
+  margin: 0;
+  padding: 12px 16px;
+  background: var(--noite-funda);
+  border-left: 6px solid var(--lavoura);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.item-veredito.ruim {
+  border-left-color: var(--brasa);
+}
+.item-veredito.meio {
+  border-left-color: var(--ouro);
+}
+
+/* Trilho de preço: marcos ilustrados em cima, moeda sobre a pista. */
+.pista {
+  display: grid;
+  gap: 10px;
+  padding: 0 18px;
+}
+.pista-marcos {
+  position: relative;
+  height: 46px;
+}
+.pista-marco {
+  position: absolute;
+  bottom: calc(12px + var(--n, 0) * 34px);
+  transform: translateX(-50%);
+  filter: drop-shadow(2px 3px 0 var(--sombra));
+}
+.pista-marco::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  width: 2px;
+  height: calc(12px + var(--n, 0) * 34px);
+  background: var(--creme);
+  opacity: 0.55;
+}
+.pista-trilho {
+  position: relative;
+  height: 22px;
+  border-radius: 11px;
+  box-shadow:
+    inset 0 3px 0 rgb(255 255 255 / 0.22),
+    inset 0 -3px 0 rgb(0 0 0 / 0.28),
+    0 0 0 3px var(--sombra);
+}
+.pista-voce {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  filter: drop-shadow(2px 4px 0 var(--sombra));
+}
+.pista-trilho input[type='range'] {
+  position: absolute;
+  inset: -14px 0;
+  width: 100%;
+  height: calc(100% + 28px);
+  margin: 0;
+  opacity: 0;
+  cursor: grab;
+}
+.pista-trilho:has(input:focus-visible) {
+  outline: 3px solid var(--lavoura);
+  outline-offset: 6px;
+}
+.pista-escala {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+  margin-top: 6px;
+  font-size: 12.5px;
+  color: var(--apagado);
+}
+.pista-escala span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.pista-escala i {
+  display: inline-block;
+  width: 22px;
+  height: 8px;
+  border-radius: 4px;
+}
+.item ~ .item .pista-escala {
+  display: none;
+}
+
+/* Referências de preço: cada uma é uma figura com o seu valor. */
+.marcos-lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.marcos-lista li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px 8px 10px;
+  background: var(--chapa-2);
+  border: 2px solid var(--borda);
+}
+.marcos-lista small {
+  display: block;
+  font-size: 12px;
+  color: var(--apagado);
+}
+.marcos-lista b {
+  font-family: var(--fonte);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ouro);
+}
+
+/* Decisão: o preço grande, o efeito e o botão. */
+.item-decisao {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+  padding: 16px;
+  background: var(--chapa-2);
+  border: 2px solid var(--borda);
+}
+.item-preco {
+  display: grid;
+  gap: 8px;
+}
+.item-preco > span {
+  font-family: var(--fonte);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--apagado);
+}
+.item-preco > div {
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  gap: 8px;
+}
+.item-preco button {
+  min-height: 52px;
+  padding: 0;
+  font-size: 22px;
+}
+.item-preco input {
+  min-width: 0;
+  min-height: 52px;
+  text-align: center;
+  font-family: var(--pixel);
+  font-size: 26px;
+  color: var(--ouro);
+}
+.item-efeito {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.item-efeito > div {
+  display: grid;
+  gap: 2px;
+  padding: 10px 12px;
+  background: var(--noite-funda);
+  border: 2px solid var(--borda);
+}
+.item-efeito b {
+  font-family: var(--pixel);
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--creme);
+}
+.item-efeito .bom b {
+  color: var(--lavoura);
+}
+.item-efeito .ruim b {
+  color: var(--brasa);
+}
+.item-efeito span {
+  font-size: 12px;
+  color: var(--apagado);
+}
+.item-botoes {
+  display: grid;
+  gap: 8px;
+}
+.item-botoes .primary {
+  min-height: 48px;
+  font-size: 15px;
+}
+
+/* Esgotado: só o essencial. */
+.item.esgotado .pista,
+.item.esgotado .marcos-lista,
+.item.esgotado .pr-curva,
+.item.esgotado .item-efeito,
+.item.esgotado .item-botoes {
+  display: none;
+}
+.item.esgotado .item-corpo {
+  grid-template-columns: 1fr;
+}
+.item.esgotado .item-decisao {
+  display: none;
+}
+
+@media (max-width: 1000px) {
+  .item-corpo {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 700px) {
+  .item-hero {
+    grid-template-columns: 1fr;
+    justify-items: start;
+    gap: 14px;
+    padding: 18px 16px;
+  }
+  .item-ident h3 {
+    font-size: 24px;
+  }
+  .item-arte {
+    min-width: 0;
+    min-height: 0;
+  }
+  .item-repor {
+    width: 100%;
+    justify-content: center;
+  }
+  .item-corpo {
+    padding: 18px 16px 20px;
+  }
+  .pista {
+    padding: 0 12px;
+  }
+}
+
+/* O preço que você cobra, preso embaixo da moeda. */
+.pista-voce {
+  display: grid;
+  justify-items: center;
+}
+.pista-voce b {
+  position: absolute;
+  top: 100%;
+  margin-top: 2px;
+  padding: 1px 8px;
+  background: var(--ouro);
+  color: var(--noite);
+  font-family: var(--fonte);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 2px 2px 0 var(--sombra);
+}
+.pista {
+  padding-bottom: 14px;
+}
+
+/* A imagem do produto aparece inteira e grande, sem o limite de altura da lista antiga. */
+.item-arte .vit-arte,
+.gaveta-cena .vit-arte {
+  max-height: none;
+  max-width: none;
+}
+.item-arte .vit-icone svg,
+.gaveta-cena .vit-icone svg {
+  width: 72px;
+  height: 72px;
+}
+
+/* Versão compacta do cartão: só a faixa colorida, para listas de produtos manuais. */
+.item-compacto .item-hero {
+  grid-template-columns: auto 1fr auto;
+  gap: 20px;
+  padding: 16px 22px;
+  border-bottom: 0;
+}
+.item-compacto .item-arte {
+  min-width: 90px;
+  min-height: 80px;
+}
+.item-compacto .item-ident h3 {
+  font-size: 24px;
+}
+.item-compacto .item-medidor {
+  max-width: 260px;
+}
+
+/* Cartões de abastecimento: o corpo é uma coluna só, e o cartão pausado fica apagado. */
+.abs-corpo {
+  grid-template-columns: 1fr;
+}
+.abs-item.pausado .item-hero {
+  filter: saturate(0.45);
+}
+.abs-pausa {
+  margin: 0;
+  padding: 10px 14px;
+  background: var(--noite-funda);
+  border-left: 6px solid var(--ouro);
+  font-size: 14px;
+  color: var(--creme);
+}

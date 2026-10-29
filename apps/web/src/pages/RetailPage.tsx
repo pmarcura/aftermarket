@@ -1,13 +1,10 @@
 import { useState } from 'react';
-import { useGame, cr, num } from '../lib/game';
+import '../design/loja.css';
+import { useGame } from '../lib/game';
 import { PageHeading, Panel, Tabs, Empty } from '../components/ui';
-import { products } from '../../../../packages/simulation/src/model';
-import { gameCalendar } from '../../../../packages/simulation/src/operations';
-import { SupplyPlanner } from '../features/business/SupplyPlanner';
-import { Stock } from '../features/business/Stock';
+import { Abastecimento } from '../features/business/Abastecimento';
 import { Workforce } from '../features/business/Workforce';
 import { Installation } from '../features/business/Installation';
-import { Orders } from '../features/business/Orders';
 import { BusinessFinance, Consumption } from '../features/business/Analytics';
 import { LojaCabecalho } from '../features/business/Empate';
 import { Prateleira } from '../features/business/Prateleira';
@@ -46,7 +43,6 @@ export function RetailPage() {
         </div>
       </>
     );
-  const sales = world.ledger.filter((l) => l.establishmentId === e.id && l.kind === 'retail');
   return (
     <>
       <div className="page-body loja-pagina">
@@ -59,67 +55,12 @@ export function RetailPage() {
               onChange={setTab}
             />
             {tab === 'Prateleira' && <Prateleira loja={e} />}
-            {tab === 'Prateleira' && (
-              <div className="business-section">
-                <div className="panel-content">
-                  <h3>Últimas vendas às famílias</h3>
-                  <p className="small muted">
-                    Quantidade, receita e horário virtual observados. Pedidos entre empresas estão
-                    na aba Pedidos.
-                  </p>
-                </div>
-                {sales.length ? (
-                  <div className="table-scroll">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>Quando no jogo</th>
-                          <th>Produto</th>
-                          <th className="numeric">Quantidade</th>
-                          <th className="numeric">Preço / un.</th>
-                          <th className="numeric">Receita</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {sales
-                          .slice(-40)
-                          .reverse()
-                          .map((l) => (
-                            <tr key={l.id}>
-                              <td>
-                                {gameCalendar(world, l.at).date.toLocaleString('pt-BR', {
-                                  timeZone: 'UTC',
-                                })}
-                              </td>
-                              <td>{l.product ? products[l.product].name : l.description}</td>
-                              <td className="numeric">{num(l.quantity ?? 0)}</td>
-                              <td className="numeric">{cr(l.unitPrice ?? 0)}</td>
-                              <td className="numeric positive">{cr(l.amount)}</td>
-                            </tr>
-                          ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <Empty
-                    title="Aguardando a próxima rodada de vendas"
-                    description="Consumidores compram a cada minuto real, respeitando estoque, preço, qualidade, capacidade e orçamento."
-                  />
-                )}
-              </div>
-            )}
-            {tab === 'Abastecimento' && (
-              <>
-                <SupplyPlanner key={e.id} establishment={e} />
-                <Stock establishment={e} />
-                <Orders establishment={e} />
-              </>
-            )}
+            {tab === 'Abastecimento' && <Abastecimento key={e.id} establishment={e} />}
             {tab === 'Equipe' && <Workforce key={e.id} establishment={e} />}
             {tab === 'Finanças' && (
               <>
-                <Consumption key={e.id} establishment={e} />
-                <BusinessFinance establishment={e} />
+                <BusinessFinance key={e.id} establishment={e} />
+                <Consumption key={`${e.id}-consumo`} establishment={e} />
               </>
             )}
           </Panel>

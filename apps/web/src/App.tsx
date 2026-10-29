@@ -26,6 +26,7 @@ import { regionsOf } from '../../../packages/simulation/src/metrics';
 import { products, type Position } from '../../../packages/simulation/src/model';
 import { freeCash } from '../../../packages/simulation/src/design';
 import { comecoDoDia, relogio, useMarcarVisita, useResumoDoCaixa } from './features/inicio/tempo';
+import { ReporGaveta } from './features/economy/ReporGaveta';
 const InicioPage = lazy(() =>
   import('./pages/InicioPage').then((m) => ({ default: m.InicioPage })),
 );
@@ -402,6 +403,7 @@ function Shell() {
           {views[page] ?? <MapPage />}
         </Suspense>
       </main>
+      <ReporGaveta />
       {settings && (
         <Modal title="Preferências do mundo" onClose={() => setSettings(false)}>
           <Badge tone="blue">Ambiente local de desenvolvimento</Badge>

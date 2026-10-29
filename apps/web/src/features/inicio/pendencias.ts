@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useGame, cr } from '../../lib/game';
 import { products, type ProductId } from '../../../../../packages/simulation/src/model';
 import { arrears } from '../../../../../packages/simulation/src/design';
-import { mercadoDaCidade } from '../business/precificacao';
+import { contaDaPrateleira } from '../business/precificacao';
 
 /** Algo que só o jogador resolve. Toda pendência traz a ação que a resolve. */
 export interface Pendencia {
@@ -25,7 +25,7 @@ const lista = (nomes: string[]) =>
  * Mesma fonte para o Início e para o sino da barra de cima.
  */
 export function usePendencias(): Pendencia[] {
-  const { world, actor, navigate, openBusiness, openMarket } = useGame();
+  const { world, actor, navigate, openBusiness, openRepor } = useGame();
   return useMemo(() => {
     const itens: Pendencia[] = [];
     const atraso = arrears(world, actor);
@@ -78,17 +78,9 @@ export function usePendencias(): Pendencia[] {
       }
       if (e.category === 'retail') {
         // Acabando: menos de um dia de vendas ao preço atual, pela mesma conta da prateleira.
-        const acabando = (Object.keys(e.inventory) as ProductId[])
-          .map((id) => {
-            const m = mercadoDaCidade(world, e, id);
-            const preco = e.prices[id] ?? m.justo;
-            const vende = m.vendas(preco);
-            const estoque = e.inventory[id] ?? 0;
-            const dias = estoque <= 0 ? 0 : vende > 0.01 ? estoque / vende : Infinity;
-            return { id, dias, porDia: vende * preco };
-          })
-          .filter((x) => x.dias < 1)
-          .sort((a, b) => a.dias - b.dias);
+        const acabando = contaDaPrateleira(world, e)
+          .itens.map((x) => ({ id: x.id, dias: x.dias, porDia: x.vende * x.preco }))
+          .filter((x) => x.dias < 1);
         if (acabando.length) {
           const esgotados = acabando.filter((x) => x.dias === 0);
           const perda = acabando.reduce((n, x) => n + x.porDia, 0);
@@ -103,7 +95,7 @@ export function usePendencias(): Pendencia[] {
             detalhe: `${e.name}: sem repor, deixa de vender cerca de ${cr(perda, 0)} por dia.`,
             acao: {
               rotulo: 'Repor',
-              executar: () => openMarket({ destinationId: e.id, product: acabando[0].id }),
+              executar: () => openRepor({ destinationId: e.id, product: acabando[0].id }),
             },
           });
         }
@@ -124,7 +116,7 @@ export function usePendencias(): Pendencia[] {
           detalhe: 'Não há insumo para o próximo ciclo de produção.',
           acao: {
             rotulo: 'Repor',
-            executar: () => openMarket({ destinationId: e.id, product: falta[0][0] }),
+            executar: () => openRepor({ destinationId: e.id, product: falta[0][0] }),
           },
         });
     }

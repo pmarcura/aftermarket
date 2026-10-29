@@ -131,6 +131,9 @@ interface GameContextValue {
   openBusiness: (id: string) => void;
   intent: MarketIntent;
   openMarket: (intent: MarketIntent) => void;
+  /** Abre a gaveta de reposição (Mandar buscar) por cima da tela atual. */
+  repor: { destinationId: string; product: ProductId } | null;
+  openRepor: (alvo: { destinationId: string; product: ProductId } | null) => void;
   notice: (message: string, error?: boolean) => void;
 }
 const GameContext = createContext<GameContextValue | null>(null);
@@ -158,6 +161,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [focus, setFocus] = useState<[number, number]>();
   const consumeFocus = useCallback(() => setFocus(undefined), []);
   const [intent, setIntent] = useState<MarketIntent>({});
+  const [repor, openRepor] = useState<{ destinationId: string; product: ProductId } | null>(null);
   const [pending, setPending] = useState(false),
     [toast, setToast] = useState<{ message: string; error: boolean; id: number }>();
   // Pede só quando o mundo mudou: o servidor responde 204 se a revisão e a empresa são as mesmas.
@@ -301,6 +305,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
                   : 'industry',
           );
         },
+        repor,
+        openRepor,
         openMarket: (next) => {
           setIntent(next);
           changePage('market');

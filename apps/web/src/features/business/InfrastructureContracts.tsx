@@ -2,7 +2,7 @@ import { FleetPicker } from '../../components/FleetPicker';
 import { useState } from 'react';
 import { useGame, cr, num } from '../../lib/game';
 import { Empty, Modal, Rows, Select, Progress } from '../../components/ui';
-import { EconomicChart } from '../../components/EconomicChart';
+import { BarrasPixel } from '../../components/BarrasPixel';
 import {
   products,
   type InfrastructureContract,
@@ -276,22 +276,22 @@ export function InfrastructureContracts() {
                           </tbody>
                         </table>
                       </div>
-                      <EconomicChart
-                        label="Pontuação real das propostas do contrato"
-                        height={220}
-                        option={{
-                          color: ['#77bdc5'],
-                          tooltip: { trigger: 'axis' },
-                          grid: { left: 140, right: 30, top: 20, bottom: 30 },
-                          xAxis: { type: 'value', max: 100 },
-                          yAxis: {
-                            type: 'category',
-                            data: c.bids.map(
-                              (b) => world.companies.find((x) => x.id === b.supplierId)?.name,
-                            ),
-                          },
-                          series: [{ type: 'bar', data: c.bids.map((b) => b.score) }],
-                        }}
+                      <BarrasPixel
+                        titulo="Pontuação real das propostas do contrato, de 0 a 100"
+                        maximo={100}
+                        formato={(v) => num(v, 1)}
+                        itens={c.bids.map((b) => ({
+                          rotulo:
+                            world.companies.find((x) => x.id === b.supplierId)?.name ?? 'Empresa',
+                          valor: b.score,
+                          tom:
+                            b.status === 'won'
+                              ? 'lavoura'
+                              : b.status === 'valid'
+                                ? 'ceu'
+                                : 'apagado',
+                          nota: b.status === 'won' ? 'vencedora' : undefined,
+                        }))}
                       />
                     </details>
                   )}

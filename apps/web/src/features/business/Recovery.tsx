@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useGame, cr, num } from '../../lib/game';
 import { Panel, Rows, Select, Modal, Badge } from '../../components/ui';
-import { EconomicChart } from '../../components/EconomicChart';
+import { BarrasPixel } from '../../components/BarrasPixel';
 import {
   arrears,
   outstandingLoans,
@@ -359,23 +359,14 @@ export function Recovery() {
               <small>0–10.000; maior = mais concentração</small>
             </div>
           </div>
-          <EconomicChart
-            label="Distribuição do dinheiro entre famílias, empresas e tesouros"
-            height={260}
-            option={{
-              tooltip: { trigger: 'axis', valueFormatter: (v: unknown) => cr(Number(v) * 100) },
-              xAxis: { type: 'value', name: 'R$' },
-              yAxis: { type: 'category', data: ['Famílias', 'Empresas', 'Tesouros'] },
-              series: [
-                {
-                  name: 'Caixa observado (R$)',
-                  type: 'bar',
-                  data: [health.families, health.privateCash, health.governments].map(
-                    (v) => v / 100,
-                  ),
-                },
-              ],
-            }}
+          <BarrasPixel
+            titulo="Distribuição do dinheiro entre famílias, empresas e tesouros"
+            formato={(v) => cr(v, 0)}
+            itens={[
+              { rotulo: 'Famílias', valor: health.families, tom: 'ceu' },
+              { rotulo: 'Empresas', valor: health.privateCash, tom: 'lavoura' },
+              { rotulo: 'Tesouros', valor: health.governments, tom: 'ouro' },
+            ]}
           />
           <Rows
             rows={[

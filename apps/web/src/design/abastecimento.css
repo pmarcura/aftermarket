@@ -1,0 +1,475 @@
+/* Abastecimento: modo manual ou automático por produto, com barra de estoque e regras recolhidas. */
+.abs {
+  display: grid;
+  gap: 22px;
+  padding: 20px;
+}
+.abs h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-family: var(--fonte);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--creme);
+}
+.abs-conta {
+  display: inline-grid;
+  place-items: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  background: var(--chapa-3);
+  color: var(--creme);
+  font-size: 13px;
+  box-shadow: 2px 2px 0 var(--sombra);
+}
+.abs-bloco {
+  display: grid;
+  gap: 14px;
+}
+.abs-vazio {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 14px 16px;
+  background: var(--noite-funda);
+  border: 2px dashed var(--borda-forte);
+  font-size: 14px;
+  color: var(--apagado);
+}
+
+/* Topo: o interruptor e os três números que dizem se está sob controle. */
+.abs-topo {
+  display: grid;
+  gap: 16px;
+  padding: 18px 20px;
+  background: var(--chapa-2);
+  border: 2px solid var(--borda);
+  box-shadow: 4px 4px 0 var(--sombra);
+}
+.abs-topo-chave {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+.abs-topo p {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: var(--apagado);
+  max-width: 62ch;
+}
+.abs-topo .abs-dica {
+  margin: 0;
+  padding: 10px 14px;
+  border-left: 6px solid var(--ouro);
+  background: var(--chapa);
+  color: var(--creme);
+}
+.abs-numeros {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+}
+.abs-numeros > div {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+  padding: 2px 20px;
+}
+.abs-numeros > div:first-child {
+  padding-left: 0;
+}
+.abs-numeros > div + div {
+  border-left: 2px dashed var(--borda);
+}
+.abs-numeros dt {
+  font-size: 12.5px;
+  color: var(--apagado);
+}
+.abs-numeros dd {
+  margin: 0;
+  font-family: var(--pixel);
+  font-size: 22px;
+  color: var(--creme);
+}
+.abs-numeros dd small {
+  font-size: 12px;
+  color: var(--apagado);
+}
+.abs-medidor {
+  display: flex;
+  gap: 2px;
+  margin-top: 4px;
+}
+.abs-medidor i {
+  width: 100%;
+  max-width: 10px;
+  height: 10px;
+  background: var(--chapa-3);
+}
+.abs-medidor i.ok {
+  background: var(--lavoura);
+}
+.abs-medidor i.alto {
+  background: var(--brasa);
+}
+
+/* Interruptor de pixel. */
+.abs-chave {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  flex: none;
+  min-height: 44px;
+  padding: 0 14px 0 6px;
+  background: var(--noite-funda);
+  border: 2px solid var(--borda-forte);
+  color: var(--apagado);
+  font-family: var(--fonte);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.abs-chave i {
+  position: relative;
+  width: 48px;
+  height: 28px;
+  background: var(--chapa-3);
+  box-shadow: inset 0 0 0 2px var(--sombra);
+}
+.abs-chave i::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  background: var(--apagado);
+  transition: transform 0.12s steps(3);
+}
+.abs-chave.ligado {
+  color: var(--lavoura);
+  border-color: var(--lavoura-escura);
+}
+.abs-chave.ligado i {
+  background: var(--lavoura-escura);
+}
+.abs-chave.ligado i::after {
+  background: var(--lavoura-clara);
+  transform: translateX(20px);
+}
+.abs-chave:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.abs-chave:focus-visible {
+  outline: 3px solid var(--lavoura);
+  outline-offset: 3px;
+}
+
+/* Cartões dos produtos automáticos. */
+.abs-cartoes {
+  display: grid;
+  gap: 22px;
+}
+.abs-card {
+  display: grid;
+  gap: 16px;
+  padding: 16px 18px 14px;
+  background: var(--chapa);
+  border: 2px solid var(--borda);
+  border-top: 6px solid var(--tom, var(--lavoura));
+  box-shadow: 4px 4px 0 var(--sombra);
+}
+.abs-card > header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 14px;
+}
+.abs-card h3 {
+  margin: 0;
+  font-family: var(--fonte);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--creme);
+}
+.abs-card header small {
+  font-size: 12.5px;
+  color: var(--apagado);
+}
+.abs-regra {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px;
+}
+.abs-passo,
+.abs-origem,
+.abs-outro {
+  display: grid;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--apagado);
+}
+.abs-passo > div {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.abs-passo input {
+  min-width: 0;
+  width: 100%;
+  min-height: 38px;
+  padding: 0 8px;
+  text-align: center;
+  font-family: var(--fonte);
+  font-size: 15px;
+  font-weight: 600;
+}
+.abs-passo button {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  min-height: 38px;
+  padding: 0;
+}
+.abs-passo em {
+  font-style: normal;
+  font-size: 12px;
+  color: var(--apagado);
+}
+.abs-origem select,
+.abs-outro select {
+  min-height: 38px;
+  padding: 0 8px;
+  background: var(--noite-funda);
+  color: var(--creme);
+  border: 2px solid var(--borda);
+  border-radius: 0;
+}
+.abs-plano {
+  margin: 0;
+  padding: 10px 12px;
+  background: var(--noite-funda);
+  border-left: 6px solid var(--lavoura);
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--creme);
+}
+.abs-plano.sem {
+  border-left-color: var(--brasa);
+}
+.abs-limites summary,
+.abs-geral summary {
+  cursor: pointer;
+  font-family: var(--fonte);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--apagado);
+}
+.abs-limites summary:hover,
+.abs-geral summary:hover {
+  color: var(--lavoura);
+}
+.abs-limites .abs-regra {
+  margin-top: 12px;
+}
+.abs-card footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+.abs-erro {
+  margin-right: auto;
+  font-size: 12.5px;
+  color: var(--brasa);
+}
+
+/* Produtos manuais: uma linha por produto, com as três maneiras de repor ao alcance. */
+.abs-manuais {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.abs-manuais li {
+  display: block;
+}
+.abs-manual-nome {
+  display: grid;
+  gap: 2px;
+}
+.abs-manual-nome strong {
+  font-family: var(--fonte);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--creme);
+}
+.abs-manual-nome small {
+  font-size: 12px;
+  color: var(--apagado);
+}
+.abs-manual-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.abs-manual-acoes button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+}
+.abs-outro {
+  grid-template-columns: auto minmax(180px, 280px) auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.abs-pedidos {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 14px;
+  background: var(--chapa-2);
+  border-left: 6px solid var(--ouro);
+}
+.abs-pedidos p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--creme);
+}
+
+/* Regras gerais, recolhidas. */
+.abs-geral {
+  padding: 14px 18px;
+  background: var(--noite-funda);
+  border: 2px dashed var(--borda-forte);
+}
+.abs-geral summary {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  list-style: none;
+}
+.abs-geral summary small {
+  font-family: var(--fonte);
+  font-size: 12.5px;
+  color: var(--apagado);
+}
+.abs-geral-grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+.abs-geral fieldset {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  margin: 0;
+  padding: 14px 16px 16px;
+  background: var(--chapa);
+  border: 2px solid var(--borda);
+  min-width: 0;
+}
+.abs-geral legend {
+  padding: 0 8px;
+  font-family: var(--fonte);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--lavoura);
+}
+.abs-opcoes {
+  display: grid;
+  gap: 6px;
+}
+.abs-opcoes button {
+  min-height: 40px;
+  padding: 6px 12px;
+  background: var(--chapa-2);
+  border: 2px solid var(--borda);
+  color: var(--creme);
+  text-align: left;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+.abs-opcoes button.on {
+  border-color: var(--lavoura);
+  box-shadow: inset 4px 0 0 var(--lavoura);
+  color: var(--lavoura-clara);
+}
+.abs-opcoes button:focus-visible {
+  outline: 3px solid var(--lavoura);
+  outline-offset: 2px;
+}
+.abs-marca {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 13px;
+  color: var(--creme);
+}
+.abs-geral-salvar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+@media (max-width: 900px) {
+  .abs-cartoes {
+    grid-template-columns: 1fr;
+  }
+  .abs-manual-acoes {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+}
+@media (max-width: 600px) {
+  .abs {
+    padding: 14px 12px;
+  }
+  .abs-topo-chave {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .abs-numeros {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .abs-numeros > div,
+  .abs-numeros > div:first-child {
+    padding: 0;
+  }
+  .abs-numeros > div + div {
+    border-left: 0;
+    border-top: 2px dashed var(--borda);
+    padding-top: 12px;
+  }
+  .abs-card footer {
+    flex-wrap: wrap;
+  }
+  .abs-outro {
+    grid-template-columns: 1fr;
+  }
+  .abs-pedidos {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .abs-chave i::after {
+    transition: none;
+  }
+}

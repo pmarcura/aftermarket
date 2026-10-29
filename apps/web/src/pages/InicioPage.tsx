@@ -3,6 +3,7 @@ import { Check, Coins, Factory, Plus, ShoppingBasket, Truck } from 'lucide-react
 import { useGame, cr, num } from '../lib/game';
 import { Badge } from '../components/ui';
 import { PixelArt } from '../components/PixelArt';
+import { CargaCaminho } from '../components/CargaCaminho';
 import { GraficoPixel } from '../components/GraficoPixel';
 import { spriteDoNegocio } from '../design/arte';
 import { estadoDe } from '../features/business/BusinessCards';
@@ -16,7 +17,6 @@ import {
   useAusencia,
   useResumoDoCaixa,
 } from '../features/inicio/tempo';
-import { products } from '../../../../packages/simulation/src/model';
 import { GAME_DAY, gameCalendar } from '../../../../packages/simulation/src/operations';
 import '../design/inicio.css';
 
@@ -224,7 +224,6 @@ function PrimeirosPassos() {
 /** Cargas compradas ainda na estrada: o caminhão anda sobre a faixa até chegar. */
 function ACaminho() {
   const { world, actor, navigate } = useGame();
-  const agora = agoraDoMundo(world);
   const cargas = world.shipments
     .filter((s) => s.buyerId === actor && !s.delivered)
     .sort((a, b) => a.arrivesAt - b.arrivesAt);
@@ -232,36 +231,11 @@ function ACaminho() {
   return (
     <section className="ini-bloco" aria-labelledby="ini-caminho">
       <h2 id="ini-caminho">A caminho</h2>
-      <ul className="ini-cargas">
-        {cargas.slice(0, 4).map((s) => {
-          const total = Math.max(1, s.arrivesAt - s.departedAt);
-          const feito = Math.min(1, Math.max(0, (agora - s.departedAt) / total));
-          const falta = Math.max(0, horasDeJogo(s.arrivesAt - agora));
-          const destino = world.establishments.find((e) => e.id === s.destinationId)?.name;
-          return (
-            <li key={s.id}>
-              <div className="ini-carga-texto">
-                <strong>
-                  {num(s.quantity)} {products[s.product].unit} de {products[s.product].name}
-                </strong>
-                <small>
-                  para {destino} · {falta < 1 ? 'chegando' : `chega em ~${num(falta)} h`}
-                </small>
-              </div>
-              <div
-                className="ini-estrada"
-                role="progressbar"
-                aria-label={`Viagem até ${destino}`}
-                aria-valuenow={Math.round(feito * 100)}
-                aria-valuemin={0}
-                aria-valuemax={100}
-              >
-                <Truck size={16} strokeWidth={2.2} style={{ left: `${feito * 100}%` }} />
-              </div>
-            </li>
-          );
-        })}
-      </ul>
+      <ul className="cam-lista">
+        {cargas.slice(0, 4).map((s) => (
+          <CargaCaminho key={s.id} s={s} world={world} />
+        ))}
+      </ul>{' '}
       {cargas.length > 4 && (
         <button className="gpx-tabela-botao" onClick={() => navigate('logistics')}>
           Ver as {cargas.length} cargas

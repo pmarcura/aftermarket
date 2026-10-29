@@ -1,6 +1,13 @@
 /** Registro compartilhado por catálogo, capturas e laboratório. Não contém regras do jogo. */
 export const screens = [
   {
+    id: 'inicio',
+    title: 'Início',
+    source: 'pages/InicioPage.tsx',
+    purpose: 'Resumir o que aconteceu e mostrar o que precisa do jogador.',
+    task: 'Ver o que mudou desde a última visita e resolver uma pendência com um clique.',
+  },
+  {
     id: 'map',
     title: 'Mapa',
     source: 'pages/MapPage.tsx',

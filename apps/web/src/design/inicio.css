@@ -1,0 +1,393 @@
+/* Início: o que aconteceu, o que precisa de você e como estão os negócios. */
+.inicio {
+  display: grid;
+  gap: 24px;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 28px 32px 48px;
+}
+.ini-cab h1 {
+  margin: 0;
+  font-family: var(--titulo);
+  font-size: 26px;
+  font-weight: 400;
+  line-height: 1.3;
+  color: var(--creme);
+  text-shadow: 3px 3px 0 var(--sombra);
+}
+.ini-cab p {
+  margin: 10px 0 0;
+  font-family: var(--pixel);
+  font-size: 14px;
+  color: var(--apagado);
+}
+
+/* Títulos de bloco: pixel, sem caixa alta, com contador quadrado. */
+.inicio h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 14px;
+  font-family: var(--pixel);
+  font-size: 17px;
+  font-weight: 400;
+  color: var(--creme);
+}
+.ini-conta {
+  display: inline-grid;
+  place-items: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  background: var(--brasa);
+  color: var(--noite);
+  font-size: 13px;
+  box-shadow: 2px 2px 0 var(--sombra);
+}
+
+/* Relatório da ausência: a faixa que abre a tela. */
+.ini-fora {
+  position: relative;
+  padding: 18px 22px 22px;
+  background: var(--chapa);
+  border: 2px solid var(--borda);
+  box-shadow: 6px 6px 0 var(--lavoura-escura);
+}
+.ini-fora ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ini-fora li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 4px 12px;
+  padding: 4px 18px;
+}
+.ini-fora li + li {
+  border-left: 2px dashed var(--borda);
+}
+.ini-fora li > i {
+  grid-row: span 2;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  color: var(--noite);
+  background: var(--tom);
+  box-shadow:
+    inset -3px -3px 0 color-mix(in srgb, var(--sombra) 30%, transparent),
+    3px 3px 0 var(--sombra);
+}
+.ini-fora b {
+  font-family: var(--pixel);
+  font-size: 26px;
+  font-weight: 400;
+  line-height: 1.1;
+  color: var(--creme);
+  white-space: nowrap;
+}
+.ini-fora li.tom-brasa b {
+  color: var(--brasa);
+}
+.ini-fora li span {
+  font-size: 13px;
+  color: var(--apagado);
+}
+.tom-ouro {
+  --tom: var(--ouro);
+}
+.tom-ceu {
+  --tom: var(--ceu);
+}
+.tom-lavoura {
+  --tom: var(--lavoura);
+}
+.tom-brasa {
+  --tom: var(--brasa);
+}
+
+.ini-grade {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+.ini-coluna {
+  display: grid;
+  gap: 24px;
+}
+.ini-bloco {
+  padding: 18px 20px 20px;
+  background: var(--chapa);
+  border: 2px solid var(--borda);
+  box-shadow: 4px 4px 0 var(--sombra);
+}
+
+/* Pendências: faixa de cor à esquerda diz a urgência; o botão resolve. */
+.ini-pendencias {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ini-pendencias li,
+.ini-em-dia {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  background: var(--chapa-2);
+  border-left: 6px solid var(--tom, var(--lavoura));
+}
+.ini-pendencias li > div,
+.ini-em-dia > div {
+  display: grid;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+.ini-pendencias strong,
+.ini-em-dia strong {
+  font-size: 15px;
+  color: var(--creme);
+}
+.ini-pendencias small,
+.ini-em-dia small {
+  font-size: 13px;
+  color: var(--apagado);
+}
+.ini-pendencias button,
+.ini-em-dia button {
+  flex: none;
+  min-width: 104px;
+}
+.ini-em-dia > i {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  background: var(--lavoura);
+  color: var(--noite);
+  box-shadow: 3px 3px 0 var(--sombra);
+}
+
+/* Primeiros passos em blocos, como uma barra de vida. */
+.ini-passos h3 {
+  margin: 16px 0 6px;
+  font-family: var(--pixel);
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--lavoura);
+}
+.ini-passos p {
+  margin: 0 0 14px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--creme);
+  max-width: 60ch;
+}
+.ini-blocos {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.ini-blocos i {
+  width: 34px;
+  height: 14px;
+  background: var(--chapa-3);
+  box-shadow: inset 0 0 0 2px var(--borda);
+}
+.ini-blocos i.feito {
+  background: var(--lavoura);
+  box-shadow: inset 0 -3px 0 var(--lavoura-escura);
+}
+.ini-blocos i.agora {
+  background: var(--chapa-3);
+  box-shadow: inset 0 0 0 2px var(--lavoura);
+  animation: ini-piscar 1s steps(2) infinite;
+}
+@keyframes ini-piscar {
+  50% {
+    box-shadow: inset 0 0 0 2px var(--lavoura-escura);
+  }
+}
+.ini-blocos span {
+  margin-left: 10px;
+  font-family: var(--pixel);
+  font-size: 13px;
+  color: var(--apagado);
+}
+
+/* Negócios: cenas pixel em fila. */
+.ini-negocios ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ini-negocios button {
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+  width: 100%;
+  height: 100%;
+  padding: 10px 12px 12px;
+  background: var(--chapa-2);
+  border: 2px solid var(--borda);
+  color: var(--creme);
+  text-align: left;
+  cursor: pointer;
+}
+.ini-negocios button:hover {
+  border-color: var(--lavoura-escura);
+}
+.ini-negocios button:focus-visible {
+  outline: 3px solid var(--lavoura);
+  outline-offset: 2px;
+}
+.ini-negocios button:active {
+  transform: translate(2px, 2px);
+}
+.ini-cena {
+  display: grid;
+  place-items: center;
+  justify-self: stretch;
+  height: 76px;
+  background:
+    linear-gradient(var(--grade) 1px, transparent 1px) 0 0 / 8px 8px,
+    linear-gradient(90deg, var(--grade) 1px, transparent 1px) 0 0 / 8px 8px,
+    var(--noite-funda);
+}
+.ini-negocios strong {
+  font-family: var(--pixel);
+  font-size: 14px;
+  font-weight: 400;
+}
+.ini-negocios small {
+  font-size: 12px;
+  color: var(--apagado);
+}
+.ini-negocios small b {
+  font-family: var(--pixel);
+  font-weight: 400;
+}
+.ini-negocios .ini-novo {
+  place-content: center;
+  justify-items: center;
+  min-height: 170px;
+  background: transparent;
+  border: 2px dashed var(--borda-forte);
+  color: var(--lavoura);
+  text-align: center;
+}
+.ini-negocios .ini-novo small {
+  color: var(--apagado);
+}
+
+@media (max-width: 1100px) {
+  .ini-fora ul {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 16px;
+  }
+  .ini-fora li:nth-child(3) {
+    border-left: 0;
+  }
+  .ini-grade {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 600px) {
+  .inicio {
+    padding: 20px 16px 96px;
+    gap: 18px;
+  }
+  .ini-cab h1 {
+    font-size: 20px;
+  }
+  .ini-fora {
+    padding: 14px;
+  }
+  .ini-fora li {
+    padding: 4px 8px;
+    gap: 2px 10px;
+  }
+  .ini-fora li > i {
+    width: 30px;
+    height: 30px;
+  }
+  .ini-fora b {
+    font-size: 18px;
+  }
+  .ini-pendencias li,
+  .ini-em-dia {
+    flex-wrap: wrap;
+  }
+  .ini-pendencias button,
+  .ini-em-dia button {
+    width: 100%;
+  }
+  .ini-negocios ul {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ini-blocos i.agora {
+    animation: none;
+  }
+}
+
+.tom-apagado {
+  --tom: var(--apagado);
+}
+.ini-motivo.tom-brasa {
+  color: var(--brasa);
+}
+.ini-motivo.tom-ouro {
+  color: var(--ouro);
+}
+
+/* A caminho: cada carga é um caminhão andando sobre uma faixa de estrada. */
+.ini-cargas {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ini-carga-texto {
+  display: grid;
+  gap: 2px;
+  margin-bottom: 8px;
+}
+.ini-carga-texto strong {
+  font-size: 14px;
+  color: var(--creme);
+}
+.ini-carga-texto small {
+  font-size: 12px;
+  color: var(--apagado);
+}
+.ini-estrada {
+  position: relative;
+  height: 22px;
+  margin-right: 16px;
+  background:
+    var(--estrada) 0 50% / 100% 2px no-repeat,
+    var(--noite-funda);
+  box-shadow: inset 0 0 0 2px var(--borda);
+}
+.ini-estrada svg {
+  position: absolute;
+  top: 3px;
+  color: var(--ceu);
+  filter: drop-shadow(2px 2px 0 var(--sombra));
+  transition: left 1s steps(6);
+}

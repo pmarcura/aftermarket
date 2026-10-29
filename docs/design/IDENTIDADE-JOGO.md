@@ -33,20 +33,20 @@ Tokens em `apps/web/src/design/identidade.css`; gráfico em `components/GraficoP
 
 Vinda da auditoria de UX de 28/10 (primeira hora do amigo novo em primeiro lugar).
 
-| #   | Tela                                       | Por quê agora                                                           | Estado      |
-| --- | ------------------------------------------ | ----------------------------------------------------------------------- | ----------- |
-| 0   | Base: cores, letras, mapa, gráfico próprio | Tudo passa a parecer a landing de uma vez                               | Feita 28/10 |
-| 1   | Moldura (topo, menu) e **Início**          | Por onde o amigo começa; troca a janela de primeiros passos por cartões | Próxima     |
-| 2   | Loja: prateleira, anel de estoque, Repor   | Tela da primeira venda; prova o padrão de página                        |             |
-| 3   | Comprar como gaveta                        | Mesma peça do Repor; fecha os dois cliques                              |             |
-| 4   | Pedidos com Entregas                       | Caminhão andando preenche a espera e tira uma aba                       |             |
-| 5   | Abrir negócio com recibo e painel do mapa  | Segundo objetivo da primeira hora                                       |             |
-| 6   | Fábrica, fazenda e mina                    | Padrão da loja aplicado à produção                                      |             |
-| 7   | Meus Negócios                              | Fica simples com cartões e cabeçalhos prontos                           |             |
-| 8   | Empresa e Finanças                         | Porte da empresa e gráficos com marcos                                  |             |
-| 9   | Cotações com Oportunidades                 | Já está perto; é fundir e cortar a aba                                  |             |
-| 10  | Contratos                                  | Meio de jogo                                                            |             |
-| 11  | Frota                                      | Pouco usada na primeira hora                                            |             |
+| #   | Tela                                       | Por quê agora                                                           | Estado          |
+| --- | ------------------------------------------ | ----------------------------------------------------------------------- | --------------- |
+| 0   | Base: cores, letras, mapa, gráfico próprio | Tudo passa a parecer a landing de uma vez                               | Feita 28/10     |
+| 1   | Moldura (topo, menu) e **Início**          | Por onde o amigo começa; troca a janela de primeiros passos por cartões | Aguarda o Pedro |
+| 2   | Loja: prateleira, anel de estoque, Repor   | Tela da primeira venda; prova o padrão de página                        | Próxima         |
+| 3   | Comprar como gaveta                        | Mesma peça do Repor; fecha os dois cliques                              |                 |
+| 4   | Pedidos com Entregas                       | Caminhão andando preenche a espera e tira uma aba                       |                 |
+| 5   | Abrir negócio com recibo e painel do mapa  | Segundo objetivo da primeira hora                                       |                 |
+| 6   | Fábrica, fazenda e mina                    | Padrão da loja aplicado à produção                                      |                 |
+| 7   | Meus Negócios                              | Fica simples com cartões e cabeçalhos prontos                           |                 |
+| 8   | Empresa e Finanças                         | Porte da empresa e gráficos com marcos                                  |                 |
+| 9   | Cotações com Oportunidades                 | Já está perto; é fundir e cortar a aba                                  |                 |
+| 10  | Contratos                                  | Meio de jogo                                                            |                 |
+| 11  | Frota                                      | Pouco usada na primeira hora                                            |                 |
 
 ## Feito na base (28/10/2026)
 
@@ -60,3 +60,50 @@ Vinda da auditoria de UX de 28/10 (primeira hora do amigo novo em primeiro lugar
 
 Limites: os marcadores do mapa, as cenas pixel e as telas em si ainda são os de antes; só mudaram
 de temperatura. Cada uma ganha estrutura nova na sua vez.
+
+## Tela 1 · Moldura e Início (29/10/2026)
+
+Pergunta do jogador: o que aconteceu enquanto eu estava fora e o que eu resolvo agora?
+
+- **Menu com 5 itens** (Início, Mapa, Negócios, Comércio, Empresa). O jogo abre no Início.
+- **Barra de cima:** caixa livre sem centavos, vendas de hoje, relógio do jogo (`Dia 81 · 14h`)
+  e o nome real da empresa no perfil. No celular o caixa continua visível.
+- **Início:**
+  - **Faixa do período:** "Hoje" ou "Enquanto você esteve fora, N h de jogo". Mostra vendas e
+    gastos, separando a parte que virou estoque. Entregas e lotes só aparecem quando acontecem.
+  - **Precisa de você:** pendências tiradas do estado do mundo, cada uma com o botão que resolve.
+    Exemplos: "Leite esgotou · Repor", proposta recebida · Responder, pagamento atrasado · Resolver.
+  - **Seus negócios:** cena pixel e o motivo do estado, como "Produzindo, pronto em ~3 h" ou
+    "Leite acaba em ~18 h".
+  - **Primeiros passos** em blocos, até terminar. A janela que abria sozinha saiu.
+  - **A caminho:** cada carga é um caminhão andando sobre a faixa de estrada.
+  - **Vendas por dia** em blocos, a partir de 3 dias com vendas.
+- **Sino e Início usam a mesma lista de pendências** (`features/inicio/pendencias.ts`). Saíram
+  os textos de teste ("Mundo local · 120×", "piloto").
+- **Períodos:** "hoje" é sempre desde a meia-noite do jogo, igual na barra, na faixa e nos cartões.
+  A ausência conta desde a última visita, com no mínimo 4 h de jogo fora.
+- **Revisão independente:** o agente revisor apontou 10 problemas, todos corrigidos:
+  - três números de caixa diferentes;
+  - estoque que parecia prejuízo;
+  - zeros na faixa;
+  - saudação ocupando o topo;
+  - "acaba hoje" falso;
+  - gráfico vazio;
+  - cartões sem motivo;
+  - caixa sumindo no celular;
+  - histórico lido 11 vezes;
+  - contagem repetindo.
+
+Verificado:
+
+- Computador e celular, sem rolagem lateral.
+- Gráfico pelo teclado.
+- Repor abrindo Comprar já filtrado.
+- Cartão abrindo a loja.
+- Build e 230 testes.
+
+Limites e próxima ação:
+
+- O resumo ainda não conta o fato mais marcante (rival abriu loja, preço mudou).
+- Repor ainda leva à tela Comprar; a gaveta de dois cliques é a tela 3.
+- Proposta recebida abre a lista de Pedidos, não a proposta.

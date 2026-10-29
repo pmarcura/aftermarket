@@ -415,3 +415,32 @@ select:focus {
 .neg-card {
   --chao: var(--cat);
 }
+
+/* Relógio do jogo na barra de cima: some no celular, onde o Início mostra o dia. */
+.lavoura-text {
+  color: var(--lavoura);
+}
+@media (max-width: 1180px) {
+  .top-relogio {
+    display: none;
+  }
+}
+
+/* Celular: o caixa livre continua visível, compacto, no lugar do nome da marca. */
+@media (max-width: 700px) {
+  .marca div {
+    display: none;
+  }
+  .topbar .top-caixa {
+    display: flex;
+    padding: 0 8px;
+  }
+  .topbar .top-caixa svg,
+  .topbar .top-caixa span {
+    display: none;
+  }
+  .topbar .top-caixa strong {
+    font-size: 13px;
+    color: var(--ouro);
+  }
+}

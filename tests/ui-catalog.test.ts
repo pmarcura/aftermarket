@@ -5,7 +5,7 @@ describe('catálogo de interfaces', () => {
   it('segue reexports até a implementação real e mantém o laboratório fora das telas do jogo', () => {
     const catalog = generateUiCatalog();
     const market = catalog.screens.find((s) => s.id === 'market')!;
-    expect(catalog.screens).toHaveLength(13);
+    expect(catalog.screens).toHaveLength(14);
     expect(market.files).toContain('apps/web/src/features/economy/Market.tsx');
     expect(market.files).not.toContain('apps/web/src/devlab/LabPage.tsx');
     // Pedidos saíram da compra para a aba própria de Comércio.

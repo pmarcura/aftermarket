@@ -92,6 +92,7 @@ export function ProductIcon({ product, size = 16 }: { product: ProductId; size?:
   return <Icon size={size} strokeWidth={1.7} aria-hidden="true" />;
 }
 export type Page =
+  | 'inicio'
   | 'map'
   | 'opportunities'
   | 'businesses'
@@ -148,7 +149,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const actorRef = useRef(actor);
   actorRef.current = actor;
   const [page, changePage] = useState<Page>(
-    (localStorage.getItem('aftermarket.page') as Page) || 'map',
+    (localStorage.getItem('aftermarket.page') as Page) || 'inicio',
   );
   const [selectedId, select] = useState<string | null>(null);
   const [businessId, setBusinessId] = useState(

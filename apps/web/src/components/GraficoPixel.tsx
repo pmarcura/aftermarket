@@ -92,7 +92,7 @@ export function GraficoPixel({
     valores.map((v, i) => (i === 0 ? `M${x(0)} ${y(v)}` : `H${x(i)} V${y(v)}`)).join(' ');
 
   const rotulosVisiveis = useMemo(() => {
-    const cabem = Math.max(2, Math.floor((plotX1 - plotX0) / 120));
+    const cabem = Math.max(2, Math.floor((plotX1 - plotX0) / (tipo === 'barras' ? 40 : 120)));
     const salto = Math.max(1, Math.ceil(n / cabem));
     return rotulos
       .map((_, i) => i % salto === 0 || i === n - 1)
@@ -101,7 +101,7 @@ export function GraficoPixel({
         if (i !== n - 1 && v && n - 1 - i < salto / 2) return false;
         return a[i];
       });
-  }, [rotulos, n, plotX0, plotX1]);
+  }, [rotulos, n, plotX0, plotX1, tipo]);
 
   const indiceDoPonteiro = (clientX: number) => {
     const r = caixa.current?.getBoundingClientRect();
@@ -173,6 +173,10 @@ export function GraficoPixel({
                 <rect x={P} y={P} width={P} height={P} fill={c} />
               </pattern>
             ))}
+            {/* Entrada única: um retângulo que cresce em passos revela o desenho. */}
+            <clipPath id={`${id}-revelar`}>
+              <rect className="gpx-revelar" x={0} y={0} width={largura} height={altura} />
+            </clipPath>
             <clipPath id={`${id}-acima`}>
               <rect x={0} y={0} width={largura} height={zero} />
             </clipPath>
@@ -190,7 +194,7 @@ export function GraficoPixel({
             </g>
           ))}
 
-          <g className="gpx-desenho">
+          <g className="gpx-desenho" clipPath={`url(#${id}-revelar)`}>
             {tipo === 'linha' &&
               series.map((s, i) => {
                 const area = `${degraus(s.valores)} V${zero} H${x(0)} Z`;
@@ -238,7 +242,13 @@ export function GraficoPixel({
                   return (
                     <g
                       key={`${i}-${j}`}
-                      fill={v < 0 && unica ? 'var(--brasa)' : cor(s, j)}
+                      fill={
+                        v < 0 && unica
+                          ? 'var(--brasa)'
+                          : unica && i === ultimo
+                            ? 'var(--lavoura)'
+                            : cor(s, j)
+                      }
                       opacity={ativo === null || ativo === i ? 1 : 0.45}
                     >
                       {Array.from({ length: blocos }, (_, b) => (
@@ -343,7 +353,7 @@ export function GraficoPixel({
             ))}
           </div>
         )}
-        {ativo === null && valorPrincipal !== undefined && (
+        {tipo === 'linha' && ativo === null && valorPrincipal !== undefined && (
           <div className={`gpx-agora${valorPrincipal < 0 ? ' neg' : ''}`}>
             <span>agora</span>
             <b>{formato(valorPrincipal)}</b>

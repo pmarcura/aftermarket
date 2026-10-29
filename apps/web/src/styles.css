@@ -554,33 +554,6 @@ button.text-button:hover {
   margin-top: auto;
   padding: 15px 18px 14px;
 }
-.world-status {
-  display: flex;
-  align-items: flex-start;
-  gap: 9px;
-  margin: 0 8px 24px;
-}
-.world-status > i {
-  width: 6px;
-  height: 6px;
-  margin-top: 5px;
-  background: #79bd68;
-  border-radius: 50%;
-  box-shadow: 0 0 0 4px #64c69e0e;
-}
-.world-status strong {
-  font-size: 10px;
-  color: #cdc6b8;
-  font-weight: 500;
-}
-.world-status span {
-  display: block;
-  font-size: 8px;
-  color: #6f7369;
-  line-height: 1.6;
-  margin-top: 3px;
-  white-space: nowrap;
-}
 .settings-button,
 .collapse-button {
   color: #aa9e85 !important;
@@ -607,7 +580,6 @@ button.text-button:hover {
 }
 .collapsed .sidebar nav span,
 .collapsed .sidebar-bottom span,
-.collapsed .world-status,
 .collapsed .sidebar-bottom .settings-button span {
   display: none;
 }
@@ -2971,7 +2943,6 @@ td .primary {
   }
   .sidebar nav button span,
   .sidebar-bottom span,
-  .world-status,
   .sidebar-bottom .collapse-button {
     display: none;
   }

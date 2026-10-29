@@ -1,4 +1,3 @@
-import { FirstSteps } from './components/FirstSteps';
 import { NotificationCenter } from './components/NotificationCenter';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import {
@@ -9,7 +8,6 @@ import {
   Search,
   ChevronDown,
   Coins,
-  TrendingDown,
   Settings2,
   PanelLeftClose,
   PanelLeftOpen,
@@ -18,6 +16,8 @@ import {
   MapPin,
   ExternalLink,
   ArrowLeftRight,
+  House,
+  Clock3,
 } from 'lucide-react';
 import { GameProvider, useGame, cr, type Page } from './lib/game';
 import { Modal, Badge, Rows } from './components/ui';
@@ -25,6 +25,10 @@ import './business.css';
 import { regionsOf } from '../../../packages/simulation/src/metrics';
 import { products, type Position } from '../../../packages/simulation/src/model';
 import { freeCash } from '../../../packages/simulation/src/design';
+import { comecoDoDia, relogio, useMarcarVisita, useResumoDoCaixa } from './features/inicio/tempo';
+const InicioPage = lazy(() =>
+  import('./pages/InicioPage').then((m) => ({ default: m.InicioPage })),
+);
 const MapPage = lazy(() => import('./pages/MapPage').then((m) => ({ default: m.MapPage })));
 const PurchasePage = lazy(() =>
   import('./pages/MapPage').then((m) => ({ default: m.PurchasePage })),
@@ -69,10 +73,11 @@ const normalized = (value: string) =>
     .toLocaleLowerCase('pt-BR');
 
 const destinations: { id: Page; label: string; icon: typeof Map; pages: Page[] }[] = [
+  { id: 'inicio', label: 'Início', icon: House, pages: ['inicio'] },
   { id: 'map', label: 'Mapa', icon: Map, pages: ['map', 'purchase'] },
   {
     id: 'businesses',
-    label: 'Meus Negócios',
+    label: 'Negócios',
     icon: Store,
     pages: ['businesses', 'industry', 'retail', 'carrier'],
   },
@@ -107,8 +112,9 @@ function Shell() {
     [searchOpen, setSearchOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const company = world.companies.find((c) => c.id === actor)!,
-    mine = world.establishments.filter((e) => e.companyId === actor),
-    profit = mine.reduce((n, e) => n + e.revenue - e.expenses, 0) - (company.financingExpense ?? 0);
+    { dia, hora } = relogio(world);
+  useMarcarVisita();
+  const vendasHoje = useResumoDoCaixa(comecoDoDia(world)).vendasHoje;
   const coordinateMatch = query.trim().match(/^(-?\d+(?:\.\d+)?)\s*[,;]\s*(-?\d+(?:\.\d+)?)$/);
   const coordinate: Position | undefined =
     coordinateMatch &&
@@ -160,6 +166,7 @@ function Shell() {
     setSearchOpen(false);
   };
   const views: Record<Page, React.ReactNode> = {
+    inicio: <InicioPage />,
     map: <MapPage />,
     opportunities: <OpportunitiesPage />,
     businesses: <BusinessesPage />,
@@ -182,8 +189,8 @@ function Shell() {
       <header className="topbar">
         <button
           className="brand-button"
-          onClick={() => navigate('map')}
-          aria-label="AFTERMARKET · Abrir mapa"
+          onClick={() => navigate('inicio')}
+          aria-label="AFTERMARKET · Abrir o início"
         >
           <Brand />
         </button>
@@ -223,7 +230,7 @@ function Shell() {
                   </span>
                 </button>
               )}
-              {visibleRegions.length > 0 && <small>Municípios do piloto</small>}
+              {visibleRegions.length > 0 && <small>Cidades</small>}
               {visibleRegions.map((r) => (
                 <button
                   key={r.id}
@@ -264,34 +271,31 @@ function Shell() {
                 </button>
               ))}
               {!coordinate && !visibleRegions.length && !visibleProperties.length && (
-                <p>
-                  Nenhum resultado no piloto. Busque Campinas, Limeira, Itabira ou o nome de uma
-                  empresa.
-                </p>
+                <p>Nada encontrado. Tente o nome de uma cidade, empresa ou produto.</p>
               )}
             </div>
           )}
         </div>
         <div className="topbar-spacer" />
-        <div className="top-metric">
+        <div className="top-metric top-caixa">
           <Coins size={23} className="gold-text" />
           <div>
-            <strong>{cr(freeCash(world, actor))}</strong>
-            <span>Saldo disponível</span>
+            <strong>{cr(freeCash(world, actor), 0)}</strong>
+            <span>Caixa livre</span>
           </div>
         </div>
         <div className="top-metric top-result">
-          {profit >= 0 ? (
-            <TrendingUp size={23} className="positive" />
-          ) : (
-            <TrendingDown size={23} className="negative" />
-          )}
+          <TrendingUp size={23} className="positive" />
           <div>
-            <strong className={profit >= 0 ? 'positive' : 'negative'}>
-              {profit >= 0 ? '+' : '−'}
-              {cr(Math.abs(profit))}
-            </strong>
-            <span>Resultado operacional</span>
+            <strong>{cr(vendasHoje, 0)}</strong>
+            <span>Vendas hoje</span>
+          </div>
+        </div>
+        <div className="top-metric top-relogio" aria-label={`Dia ${dia} do jogo, ${hora} horas`}>
+          <Clock3 size={23} className="lavoura-text" />
+          <div>
+            <strong>Dia {dia}</strong>
+            <span>{String(hora).padStart(2, '0')}h no jogo</span>
           </div>
         </div>
         <NotificationCenter
@@ -314,7 +318,7 @@ function Shell() {
             <span className="avatar">{actor === 'player' ? 'JS' : 'MC'}</span>
             <span>
               <strong>{actor === 'player' ? 'João Silva' : 'Marina Costa'}</strong>
-              <small>Minha Empresa</small>
+              <small>{company.name}</small>
             </span>
             <ChevronDown size={14} />
           </button>
@@ -360,14 +364,6 @@ function Shell() {
           ))}
         </nav>
         <div className="sidebar-bottom">
-          <FirstSteps />
-          <div className="world-status">
-            <i />
-            <div>
-              <strong>Mundo local</strong>
-              <span>Economia compartilhada · 120×</span>
-            </div>
-          </div>
           <button
             className="settings-button"
             onClick={() => setSettings(true)}

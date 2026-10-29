@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Bell, Check, Info, X } from 'lucide-react';
-import { useGame, cr, num } from '../lib/game';
+import { useGame, num } from '../lib/game';
 import { products, type Shipment } from '../../../../packages/simulation/src/model';
-import { arrears } from '../../../../packages/simulation/src/design';
+import { usePendencias } from '../features/inicio/pendencias';
 
 export function NotificationCenter({
   open,
@@ -13,7 +13,7 @@ export function NotificationCenter({
   onToggle: () => void;
   onClose: () => void;
 }) {
-  const { world, actor, navigate, openBusiness } = useGame();
+  const { world, actor, navigate } = useGame();
   const [reads, setReads] = useState<Record<string, number>>(() => {
     try {
       return JSON.parse(localStorage.getItem('aftermarket.alerts.read') ?? '{}');
@@ -30,30 +30,8 @@ export function NotificationCenter({
     .map(([id, ships]) => ({ id, ships, at: Math.max(...ships.map((s) => s.arrivesAt)) }))
     .filter((g) => g.at > (reads[actor] ?? 0))
     .sort((a, b) => b.at - a.at);
-  const units = world.establishments.filter((e) => e.companyId === actor);
-  const alerts = units.flatMap((e) => {
-    if (!e.enabled) return [{ e, title: e.mothballed ? 'Estrutura suspensa' : 'Operação pausada' }];
-    const recipe = world.season.config.recipes.find((r) => r.id === e.specialization);
-    const low =
-      e.category === 'retail'
-        ? Object.values(e.inventory).some((q) => q! < 100)
-        : recipe
-          ? Object.entries(recipe.input).some(
-              ([p, q]) => (e.inventory[p as keyof typeof e.inventory] ?? 0) < q!,
-            )
-          : false;
-    return low
-      ? [
-          {
-            e,
-            title:
-              e.category === 'retail' ? 'Produtos com estoque baixo' : 'Insumos abaixo de um ciclo',
-          },
-        ]
-      : [];
-  });
-  const overdue = arrears(world, actor),
-    count = deliveries.length + alerts.length + Number(overdue > 0);
+  const pendencias = usePendencias(),
+    count = deliveries.length + pendencias.length;
   return (
     <div className="notification-wrapper">
       <button
@@ -82,34 +60,23 @@ export function NotificationCenter({
           </div>
           <div className="notification-content">
             <div className="notification-section">
-              <strong>Pendências atuais · {alerts.length + Number(overdue > 0)}</strong>
+              <strong>Precisa de você · {pendencias.length}</strong>
               <small>Continuam visíveis até resolver a causa.</small>
             </div>
-            {overdue > 0 && (
+            {pendencias.map((p) => (
               <button
+                key={p.id}
                 onClick={() => {
-                  navigate('company');
+                  p.acao.executar();
                   onClose();
                 }}
               >
-                <Info size={17} className="negative" />
+                <Info size={17} className={p.tom === 'brasa' ? 'negative' : 'gold-text'} />
                 <span>
-                  Pagamentos em atraso<small>{cr(overdue)} · abrir recuperação</small>
-                </span>
-              </button>
-            )}
-            {alerts.map(({ e, title }) => (
-              <button
-                key={e.id}
-                onClick={() => {
-                  openBusiness(e.id);
-                  onClose();
-                }}
-              >
-                <Info size={17} className="gold-text" />
-                <span>
-                  {title}
-                  <small>{e.name}</small>
+                  {p.titulo}
+                  <small>
+                    {p.detalhe} · {p.acao.rotulo}
+                  </small>
                 </span>
               </button>
             ))}
@@ -139,7 +106,7 @@ export function NotificationCenter({
             ))}
             {deliveries.length > 10 && (
               <p className="small muted">
-                Mostrando os 10 recebimentos mais recentes. Todo o histórico está na Logística.
+                Mostrando os 10 recebimentos mais recentes. Todo o histórico está em Pedidos.
               </p>
             )}
             {deliveries.length > 0 && (

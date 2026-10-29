@@ -103,15 +103,12 @@
   }
 }
 /* Entrada única: o desenho aparece da esquerda para a direita em passos de pixel. */
-.gpx-desenho {
+.gpx-revelar {
   animation: gpx-revelar 0.7s steps(14) both;
 }
 @keyframes gpx-revelar {
   from {
-    clip-path: inset(0 100% 0 0);
-  }
-  to {
-    clip-path: inset(0 0 0 0);
+    width: 0;
   }
 }
 .gpx-leitura,
@@ -181,7 +178,7 @@
   max-height: 260px;
 }
 @media (prefers-reduced-motion: reduce) {
-  .gpx-desenho,
+  .gpx-revelar,
   .gpx-ponto,
   .gpx-mira .gpx-cantos {
     animation: none;

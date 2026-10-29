@@ -27,6 +27,18 @@ const define = (
 /** Contratos de tarefa. Estados declarados só são cobertura quando constam de um UiFlowRun. */
 export const uiFlows: UiFlowDefinition[] = [
   define(
+    'inicio-pendencia',
+    'inicio',
+    'Ver a ausência e resolver uma pendência',
+    'pages/InicioPage.tsx',
+    ['Empresa com pelo menos um negócio'],
+    [],
+    ['openMarket'],
+    ['Pendência abre a tela que a resolve sem alterar caixa, estoque ou prazos'],
+    ['vazio', 'sucesso'],
+    false,
+  ),
+  define(
     'quotes-browse',
     'quotes',
     'Comparar cotações por categoria',

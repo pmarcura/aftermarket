@@ -1,0 +1,70 @@
+# Labels do projeto AFTERMARKET
+# Sincronizados automaticamente via .github/workflows/label-sync.yml
+
+# ── Tipo ────────────────────────────────────────────────
+- name: bug
+  color: "d73a4a"
+  description: "Algo não está funcionando como esperado"
+
+- name: enhancement
+  color: "0075ca"
+  description: "Nova funcionalidade ou melhoria"
+
+- name: duplicado
+  color: "cfd3d7"
+  description: "Issue duplicada de outra já existente"
+
+- name: wontfix
+  color: "ffffff"
+  description: "Não será implementado ou corrigido"
+
+# ── Domínio do jogo ────────────────────────────────────
+- name: balanceamento
+  color: "e6a817"
+  description: "Ajuste de valores, taxas ou parâmetros de simulação"
+
+- name: economia
+  color: "d4a017"
+  description: "Sistema financeiro, preços, mercado e transações"
+
+- name: logística
+  color: "2e86c1"
+  description: "Transporte, rotas, veículos e cadeia de suprimentos"
+
+- name: mapa
+  color: "27ae60"
+  description: "Dados geográficos, regiões e world package"
+
+- name: "UI/UX"
+  color: "7d3c98"
+  description: "Interface, usabilidade e experiência do jogador"
+
+# ── Área técnica ────────────────────────────────────────
+- name: documentação
+  color: "0e8a16"
+  description: "Melhorias em docs, README ou guias"
+
+- name: infraestrutura
+  color: "1d76db"
+  description: "CI/CD, build, deploy e ferramentas de dev"
+
+# ── Triagem e fluxo ────────────────────────────────────
+- name: bom-primeiro-issue
+  color: "7057ff"
+  description: "Bom ponto de entrada para novos contribuidores"
+
+- name: ajuda-necessária
+  color: "008672"
+  description: "Precisa de ajuda extra da comunidade"
+
+- name: prioridade-alta
+  color: "b60205"
+  description: "Deve ser resolvido o quanto antes"
+
+- name: prioridade-baixa
+  color: "c2e0c6"
+  description: "Pode esperar — sem impacto imediato"
+
+- name: em-progresso
+  color: "fbca04"
+  description: "Alguém já está trabalhando nisso"

@@ -1,0 +1,39 @@
+name: Limpeza de Issues
+
+on:
+  schedule:
+    - cron: "30 4 * * *" # Diariamente às 04:30 UTC
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    name: Marcar e fechar issues inativas
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/stale@v9
+        with:
+          days-before-stale: 60
+          days-before-close: 14
+          stale-issue-label: stale
+          stale-pr-label: stale
+          stale-issue-message: >
+            Esta issue está sem atividade há 60 dias.
+            Será fechada automaticamente em 14 dias se não houver resposta.
+            Comente para mantê-la aberta.
+          stale-pr-message: >
+            Este PR está sem atividade há 60 dias.
+            Será fechado automaticamente em 14 dias se não houver atualização.
+          close-issue-message: >
+            Fechado automaticamente por inatividade.
+            Reabra se ainda for relevante.
+          close-pr-message: >
+            Fechado automaticamente por inatividade.
+            Reabra se ainda for relevante.
+          exempt-issue-labels: "prioridade-alta,em-progresso"
+          exempt-pr-labels: "prioridade-alta,em-progresso"

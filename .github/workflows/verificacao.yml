@@ -1,0 +1,43 @@
+name: Verificação
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verificacao-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verificacao:
+    name: Build · Testes · Recursos · Formato
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Build (tsc + vite)
+        run: npm run build
+
+      - name: Testes unitários
+        run: npm test
+
+      - name: Auditoria de recursos
+        run: npm run resources:check
+
+      - name: Verificar formatação
+        run: npm run format:check

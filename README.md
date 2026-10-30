@@ -6,9 +6,9 @@ Simulador empresarial geográfico no Brasil. Explore oportunidades, adquira prop
 
 ## Executar
 
-Para investigar e refinar o jogo, use o [laboratório de desenvolvimento](docs/design/DEVELOPMENT-LAB.md): `npm run lab` inicia a bancada em `/lab` e sua coleta automática, sem API/banco. `npm run lab:refresh` reúne fluxos de interface, comparação visual e simulações A/B. `npm run lab:query -- --run=A:0 --bot=rival-1 --day=30` consulta causas observadas; `lab:context -- --screen=carrier --action=buyVehicle` localiza uma ação. Custos, velocidade, frete, políticas, choques, diário e evidências ficam na mesma bancada.
+Para balancear o jogo, use a [bancada de simulações](docs/design/DEVELOPMENT-LAB.md): `npm run lab` abre `/lab` sem API/banco, com A/B por semente, consulta por bot/produto/dia e exportação JSON. Na linha de comando, `npm run lab:batch` compara cenários e `npm run economy:proof` mede os KPIs de aceitação.
 
-Requisitos: **Node.js 22.13 ou superior**, npm e navegador com WebGL. O projeto foi verificado com Node 25.5 e Microsoft Edge. Não precisa de chave de API para o mapa.
+Requisitos: **Node.js 22 LTS** (22.13 ou superior; `.nvmrc` fixa a versão), npm e navegador com WebGL. Não precisa de chave de API para o mapa.
 
 ```powershell
 npm ci
@@ -113,7 +113,7 @@ npm run test:e2e
 npm run format:check
 ```
 
-Os testes de navegador usam Edge instalado. Em outro sistema, instale Chromium com `npx playwright install chromium` e defina `PLAYWRIGHT_CHANNEL=chromium`. Os testes sempre iniciam um banco novo em `.runtime/e2e` e usam portas 5183/3013, separadas do jogo. Não reutilizam o servidor principal. O teste econômico cria uma compra e um ciclo reais nesse banco e pode levar cerca de dois minutos.
+Os testes de navegador usam Chromium: instale com `npx playwright install chromium` (em Linux, `--with-deps`). Para usar o Edge instalado, defina `PLAYWRIGHT_CHANNEL=msedge`. Todos os testes bloqueiam a rede externa (tiles do OpenFreeMap e roteador OSRM) com a fixture `tests/e2e/fixtures.ts`. Os testes sempre iniciam um banco novo em `.runtime/e2e` e usam portas 5183/3013, separadas do jogo. Não reutilizam o servidor principal. O teste econômico cria uma compra e um ciclo reais nesse banco e pode levar cerca de dois minutos.
 
 ## Cartografia e dados
 

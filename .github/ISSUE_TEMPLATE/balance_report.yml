@@ -38,11 +38,11 @@ body:
       label: Situação observada
       description: |
         Descreva o que você viu. Se possível, inclua dados do lab:
-        `npm run lab:query -- --item=<id> --day=<dia>`
+        `npm run economy:proof -- --days=60 --window=30` ou o JSON exportado do `/lab`
       placeholder: |
         No dia 30, a margem da ração de frango é de 85%, enquanto
         todas as outras receitas ficam entre 15-30%.
-        Lab: `lab:query -- --item=chicken-feed --day=30`
+        Lab: economy:proof, semente 0, dia 30
     validations:
       required: true
 

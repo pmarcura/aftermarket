@@ -11,7 +11,7 @@ import { worldView } from '../apps/server/src/view';
 // Pacote enxuto do navegador: pequeno, mas com os mesmos números das telas.
 const AT = Date.UTC(2026, 9, 26, 12);
 describe('pacote do navegador', () => {
-  const w = createScenario(AT, 'economy-2');
+  const w = createScenario(AT, 'playtest');
   for (let d = 1; d <= 9; d++) advance(w, AT + d * GAME_DAY);
   const view = worldView(w, 'player');
 

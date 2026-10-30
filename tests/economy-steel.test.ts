@@ -9,20 +9,23 @@ import {
 } from '../packages/simulation/src/engine';
 import {
   ECONOMIC_INTERVAL,
-  products,
   type Establishment,
   type ProductId,
   type World,
 } from '../packages/simulation/src/model';
 import { SCRAP_COLLECTION } from '../packages/simulation/src/operations';
-import { dealershipMarkup, vehicleModels } from '../packages/simulation/src/catalog';
+import {
+  dealershipMarkup,
+  referencePrice,
+  vehicleModels,
+} from '../packages/simulation/src/catalog';
 
 // Fatias 6 e 7 da etapa B: aço para bens, sucata, reciclagem e caminhão como mercadoria.
 const NOW = Date.UTC(2026, 9, 27, 12);
 const money = (w: World) => w.companies.reduce((n, c) => n + c.balance, 0);
 
-function quiet(economy: 1 | 2 = 2) {
-  const w = createWorld(NOW, { economy });
+function quiet() {
+  const w = createWorld(NOW);
   w.nextEconomicAt = Infinity;
   for (const c of w.companies) c.bot = false;
   for (const e of w.establishments) {
@@ -58,12 +61,12 @@ function unit(
 }
 const truckFactory = (w: World) => unit(w, 'e-industry', 'truck-heavy', { truckHeavy: 1 });
 
-describe('mundo versão 2 · aço para bens e caminhões', () => {
+describe('aço para bens e caminhões', () => {
   it('cada utensílio vendido devolve 30% da massa como sucata à coleta municipal', () => {
     const w = quiet();
     w.season.config.operations.weekday = [1, 1, 1, 1, 1, 1, 1];
     const store = unit(w, 'e-retail', undefined, { utensils: 5000 });
-    store.prices = { utensils: products.utensils.basePrice };
+    store.prices = { utensils: w.season.config.basePrices.utensils };
     store.quality = { utensils: 70 };
     store.employees = 20;
     const collection = w.establishments.find((e) => e.id === SCRAP_COLLECTION)!;
@@ -145,7 +148,7 @@ describe('mundo versão 2 · aço para bens e caminhões', () => {
     company.balance = 1e12;
     execute(w, buyer.companyId, { type: 'buyVehicle', model: 'truckLight' }, NOW);
     expect(1e12 - company.balance).toBe(
-      Math.round(products.truckLight.basePrice * dealershipMarkup),
+      Math.round(referencePrice('truckLight') * dealershipMarkup),
     );
     expect(w.vehicles.at(-1)).toMatchObject({ model: 'truckLight', capacityT: 8, capacityM3: 25 });
   });
@@ -174,7 +177,7 @@ describe('mundo versão 2 · aço para bens e caminhões', () => {
     expect(yard.inventory.scrap! - scrapBefore).toBeCloseTo(9 * 0.9, 9);
   });
 
-  it('venda ao fundo estadual perde valor com a quilometragem só na versão 2', () => {
+  it('venda ao fundo estadual perde valor com a quilometragem', () => {
     const w = quiet();
     const truck = w.vehicles.find((v) => v.companyId === 'player' && v.status === 'available')!;
     Object.assign(truck, { model: 'truckHeavy', purchasePrice: 30000000, odometerKm: 0 });
@@ -183,21 +186,21 @@ describe('mundo versão 2 · aço para bens e caminhões', () => {
     expect(vehicleSalePrice(w, truck)).toBe(14625000);
     truck.odometerKm = vehicleModels.truckHeavy.lifeKm * 3; // passa da vida útil: piso de metade
     expect(vehicleSalePrice(w, truck)).toBe(9750000);
-    const v1 = quiet(1),
-      old = v1.vehicles.find((v) => v.companyId === 'player')!;
-    old.odometerKm = 1e6;
-    expect(vehicleSalePrice(v1, old)).toBe(Math.floor((old.purchasePrice ?? 28000000) * 0.65));
+    // Caminhão sem modelo registrado (sem desgaste conhecido) vende pelos 65% fixos.
+    const bare = { ...truck, model: undefined, odometerKm: 1e6 };
+    expect(vehicleSalePrice(w, bare)).toBe(Math.floor(30000000 * 0.65));
   });
 
-  it('mundo da versão 1 mantém só a compra antiga e não desmonta caminhões', () => {
-    const w = quiet(1);
-    const truck = w.vehicles.find((v) => v.companyId === 'player')!;
-    expect(() => execute(w, 'player', { type: 'buyVehicle', model: 'truckLight' }, NOW)).toThrow(
+  it('só caminhão próprio e livre, num pátio próprio, pode ser desmontado', () => {
+    const w = quiet();
+    const busy = w.vehicles.find((v) => v.companyId === 'player' && v.status !== 'available')!;
+    expect(() => execute(w, 'player', { type: 'scrapVehicle', vehicleId: busy.id }, NOW)).toThrow(
       RuleError,
     );
-    expect(() => execute(w, 'player', { type: 'scrapVehicle', vehicleId: truck.id }, NOW)).toThrow(
-      RuleError,
-    );
-    expect(w.establishments.some((e) => e.id === SCRAP_COLLECTION)).toBe(false);
+    const foreign = w.vehicles.find((v) => v.companyId === 'transbrasil')!;
+    expect(() =>
+      execute(w, 'player', { type: 'scrapVehicle', vehicleId: foreign.id }, NOW),
+    ).toThrow(RuleError);
+    expect(w.establishments.some((e) => e.id === SCRAP_COLLECTION)).toBe(true);
   });
 });

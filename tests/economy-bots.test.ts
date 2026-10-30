@@ -11,9 +11,9 @@ import type { World } from '../packages/simulation/src/model';
 const NOW = Date.UTC(2026, 9, 27, 12);
 const money = (w: World) => w.companies.reduce((n, c) => n + c.balance, 0);
 
-describe('mundo versão 2 · abertura dos bots', () => {
+describe('abertura dos bots', () => {
   it('cada especialidade da economia alvo tem rival, e tudo o que ele tem foi pago', () => {
-    const w = createWorld(NOW, { economy: 2 });
+    const w = createWorld(NOW);
     const rivals = w.establishments.filter((e) => e.companyId.startsWith('rival-'));
     expect(rivals).toHaveLength(v2PortfolioFor(w).length);
     const specialties = w.season.config.recipes.filter((r) => !r.alternativeOf).map((r) => r.id);
@@ -34,7 +34,7 @@ describe('mundo versão 2 · abertura dos bots', () => {
   });
 
   it('lojas-bot vão às cidades sem loja, da mais populosa para a menor', () => {
-    const w = createWorld(NOW, { economy: 2 });
+    const w = createWorld(NOW);
     const stores = w.establishments.filter(
       (e) => e.companyId.startsWith('rival-') && e.category === 'retail',
     );
@@ -43,18 +43,19 @@ describe('mundo versão 2 · abertura dos bots', () => {
     expect(new Set(cities).size).toBe(stores.length);
   });
 
-  it('o mundo da versão 1 continua sem a abertura nova', () => {
+  it('toda frota inicial tem modelo e quilometragem e as transportadoras têm pátio', () => {
     const w = createWorld(NOW);
-    expect(w.establishments.some((e) => e.id.startsWith('e-yard-'))).toBe(false);
-    expect(w.vehicles.some((v) => v.model)).toBe(false);
-    expect(w.establishments.some((e) => e.companyId === 'rival-1' && e.equipmentLines)).toBe(false);
+    expect(w.vehicles.every((v) => v.model && v.odometerKm !== undefined)).toBe(true);
+    for (const id of ['transbrasil', 'rodoleste', 'expresso'])
+      expect(w.establishments.some((e) => e.id === `e-yard-${id}`)).toBe(true);
+    expect(w.establishments.some((e) => e.companyId === 'rival-1' && e.equipmentLines)).toBe(true);
   });
 });
 
-describe('mundo versão 2 · vinte dias de bots', () => {
+describe('vinte dias de bots', () => {
   let w: World, before: number;
   beforeAll(() => {
-    w = createWorld(NOW, { economy: 2 });
+    w = createWorld(NOW);
     before = money(w);
     advance(w, NOW + 20 * GAME_DAY);
   }, 120000);

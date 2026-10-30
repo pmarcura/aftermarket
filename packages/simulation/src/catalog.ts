@@ -40,6 +40,8 @@ export interface DesignItem {
   // Faixa de referência por unidade. Consumo final: faixa de varejo; demais: faixa de porta da fábrica.
   band: [number, number];
   bandSource: 'real' | 'jogo';
+  // Origem da faixa, quando há referência real anotada; sem ela, vale a faixa do catálogo.
+  provenance?: { note: string; source: string; date: string; level: string };
   price: PriceRule;
   monthlyPerPerson?: number;
 }
@@ -72,6 +74,12 @@ export const designItems: Record<DesignItemId, DesignItem> = {
     isNew: false,
     band: [35000, 65000],
     bandSource: 'real',
+    provenance: {
+      note: 'Faixa de calibração do minério a granel; teor, umidade e frete mudam o preço.',
+      source: 'https://www.gov.br/mdic/pt-br/assuntos/comercio-exterior/estatisticas',
+      date: '2026-10-26',
+      level: 'Insumo a granel · estimativa',
+    },
     price: { kind: 'band', position: 0.5 },
   },
   coal: {
@@ -82,6 +90,12 @@ export const designItems: Record<DesignItemId, DesignItem> = {
     isNew: false,
     band: [130000, 240000],
     bandSource: 'real',
+    provenance: {
+      note: 'Carvão metalúrgico: faixa estimada, sem equiparar tipos térmicos e coque.',
+      source: 'https://www.gov.br/mdic/pt-br/assuntos/comercio-exterior/estatisticas',
+      date: '2026-10-26',
+      level: 'Insumo a granel · estimativa',
+    },
     price: { kind: 'band', position: 0.5 },
   },
   scrap: {
@@ -102,6 +116,13 @@ export const designItems: Record<DesignItemId, DesignItem> = {
     isNew: false,
     band: [380000, 620000],
     bandSource: 'real',
+    provenance: {
+      note: 'Barras industriais. Tipo, norma e acabamento não são diferenciados nesta versão.',
+      source:
+        'https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9270-sistema-nacional-de-pesquisa-de-custos-e-indices-da-construcao-civil.html',
+      date: '2026-10-26',
+      level: 'Material industrial · estimativa',
+    },
     price: { kind: 'band', position: 0.5 },
   },
   utensils: {
@@ -153,6 +174,12 @@ export const designItems: Record<DesignItemId, DesignItem> = {
     isNew: false,
     band: [210000, 270000],
     bandSource: 'real',
+    provenance: {
+      note: 'R$ 2.500/t equivale a R$ 150 por saca de 60 kg. Âncora de jogo, não cotação ao vivo.',
+      source: 'https://www.cepea.org.br/br/indicador/soja.aspx',
+      date: '2026-10-26',
+      level: 'Soja em grão · calibração por saca',
+    },
     price: { kind: 'band', position: 0.4 }, // porta da fazenda no Centro-Oeste, longe do porto (D-036)
   },
   soymeal: {
@@ -163,6 +190,12 @@ export const designItems: Record<DesignItemId, DesignItem> = {
     isNew: false,
     band: [170, 280],
     bandSource: 'real',
+    provenance: {
+      note: 'Farelo em kg; faixa de calibração do coproduto do esmagamento.',
+      source: 'https://www.cepea.org.br/upload/revista/pdf/0705703001775841088.pdf',
+      date: '2026-03',
+      level: 'Farelo a granel · estimativa',
+    },
     price: { kind: 'fixed', price: 220 },
   },
   oil: {
@@ -173,6 +206,13 @@ export const designItems: Record<DesignItemId, DesignItem> = {
     isNew: false,
     band: [650, 1050],
     bandSource: 'real',
+    provenance: {
+      note: 'Embalagem de 1 litro; comparar embalagem e canal antes de comparar preços.',
+      source:
+        'https://www.gov.br/conab/pt-br/atuacao/informacoes-agropecuarias/precos-agropecuarios',
+      date: '2026-10-26',
+      level: 'Varejo · parâmetro de calibração',
+    },
     price: { kind: 'band', position: 0.6 },
     monthlyPerPerson: 0.8,
   },
@@ -204,6 +244,13 @@ export const designItems: Record<DesignItemId, DesignItem> = {
     isNew: false,
     band: [400, 750],
     bandSource: 'real',
+    provenance: {
+      note: 'Leite embalado de 1 litro, distinto do preço pago ao produtor.',
+      source:
+        'https://www.gov.br/conab/pt-br/atuacao/informacoes-agropecuarias/precos-agropecuarios',
+      date: '2026-10-26',
+      level: 'Varejo · 1 litro',
+    },
     price: { kind: 'band', position: 0.62 }, // leite viaja ~430 km até as cidades (D-036)
     monthlyPerPerson: 8,
   },
@@ -225,6 +272,13 @@ export const designItems: Record<DesignItemId, DesignItem> = {
     isNew: false,
     band: [1900, 3000],
     bandSource: 'real',
+    provenance: {
+      note: 'Pacote de 5 kg. Faixa estimada para o varejo do cenário.',
+      source:
+        'https://www.gov.br/conab/pt-br/atuacao/informacoes-agropecuarias/precos-agropecuarios',
+      date: '2026-10-26',
+      level: 'Varejo · pacote 5 kg',
+    },
     price: { kind: 'band', position: 0.5 },
     monthlyPerPerson: 0.3,
   },
@@ -246,6 +300,13 @@ export const designItems: Record<DesignItemId, DesignItem> = {
     isNew: false,
     band: [650, 1200],
     bandSource: 'real',
+    provenance: {
+      note: 'Pacote de 1 kg; variedade e praça alteram o preço.',
+      source:
+        'https://www.gov.br/conab/pt-br/atuacao/informacoes-agropecuarias/precos-agropecuarios',
+      date: '2026-10-26',
+      level: 'Varejo · pacote 1 kg',
+    },
     price: { kind: 'band', position: 0.5 },
     monthlyPerPerson: 1,
   },
@@ -267,6 +328,13 @@ export const designItems: Record<DesignItemId, DesignItem> = {
     isNew: false,
     band: [1400, 2300],
     bandSource: 'real',
+    provenance: {
+      note: 'Pacote de 5 kg; parâmetro, sem pretensão de cotação local.',
+      source:
+        'https://www.gov.br/conab/pt-br/atuacao/informacoes-agropecuarias/precos-agropecuarios',
+      date: '2026-10-26',
+      level: 'Varejo · pacote 5 kg',
+    },
     price: { kind: 'band', position: 0.5 },
     monthlyPerPerson: 0.2,
   },

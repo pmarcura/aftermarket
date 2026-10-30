@@ -1,4 +1,4 @@
-import type { Category, LegacyProductId, ProductId, Recipe } from './model';
+import { productIds, type Category, type ProductId, type Recipe } from './model';
 import { designItems } from './catalog';
 import { competitionRules } from './competition';
 import { designRules } from './design';
@@ -67,122 +67,26 @@ type PriceReference = {
   date: string;
   level: string;
 };
-const legacyPriceReferences: Record<LegacyProductId, PriceReference> = {
-  iron: {
-    low: 35000,
-    high: 65000,
-    note: 'Faixa de calibração do minério a granel; teor, umidade e frete mudam o preço.',
-    source: 'https://www.gov.br/mdic/pt-br/assuntos/comercio-exterior/estatisticas',
-    date: '2026-10-26',
-    level: 'Insumo a granel · estimativa',
-  },
-  coal: {
-    low: 130000,
-    high: 240000,
-    note: 'Carvão metalúrgico: faixa estimada, sem equiparar tipos térmicos e coque.',
-    source: 'https://www.gov.br/mdic/pt-br/assuntos/comercio-exterior/estatisticas',
-    date: '2026-10-26',
-    level: 'Insumo a granel · estimativa',
-  },
-  steel: {
-    low: 380000,
-    high: 620000,
-    note: 'Barras industriais. Tipo, norma e acabamento não são diferenciados nesta versão.',
-    source:
-      'https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9270-sistema-nacional-de-pesquisa-de-custos-e-indices-da-construcao-civil.html',
-    date: '2026-10-26',
-    level: 'Material industrial · estimativa',
-  },
-  soy: {
-    low: 210000,
-    high: 270000,
-    note: 'R$ 2.500/t equivale a R$ 150 por saca de 60 kg. Âncora de jogo, não cotação ao vivo.',
-    source: 'https://www.cepea.org.br/br/indicador/soja.aspx',
-    date: '2026-10-26',
-    level: 'Soja em grão · calibração por saca',
-  },
-  soymeal: {
-    low: 170,
-    high: 280,
-    note: 'Farelo em kg; faixa de calibração do coproduto do esmagamento.',
-    source: 'https://www.cepea.org.br/upload/revista/pdf/0705703001775841088.pdf',
-    date: '2026-03',
-    level: 'Farelo a granel · estimativa',
-  },
-  oil: {
-    low: 650,
-    high: 1050,
-    note: 'Embalagem de 1 litro; comparar embalagem e canal antes de comparar preços.',
-    source: 'https://www.gov.br/conab/pt-br/atuacao/informacoes-agropecuarias/precos-agropecuarios',
-    date: '2026-10-26',
-    level: 'Varejo · parâmetro de calibração',
-  },
-  rice: {
-    low: 1900,
-    high: 3000,
-    note: 'Pacote de 5 kg. Faixa estimada para o varejo do cenário.',
-    source: 'https://www.gov.br/conab/pt-br/atuacao/informacoes-agropecuarias/precos-agropecuarios',
-    date: '2026-10-26',
-    level: 'Varejo · pacote 5 kg',
-  },
-  beans: {
-    low: 650,
-    high: 1200,
-    note: 'Pacote de 1 kg; variedade e praça alteram o preço.',
-    source: 'https://www.gov.br/conab/pt-br/atuacao/informacoes-agropecuarias/precos-agropecuarios',
-    date: '2026-10-26',
-    level: 'Varejo · pacote 1 kg',
-  },
-  sugar: {
-    low: 1400,
-    high: 2300,
-    note: 'Pacote de 5 kg; parâmetro, sem pretensão de cotação local.',
-    source: 'https://www.gov.br/conab/pt-br/atuacao/informacoes-agropecuarias/precos-agropecuarios',
-    date: '2026-10-26',
-    level: 'Varejo · pacote 5 kg',
-  },
-  milk: {
-    low: 400,
-    high: 750,
-    note: 'Leite embalado de 1 litro, distinto do preço pago ao produtor.',
-    source: 'https://www.gov.br/conab/pt-br/atuacao/informacoes-agropecuarias/precos-agropecuarios',
-    date: '2026-10-26',
-    level: 'Varejo · 1 litro',
-  },
-};
-// Itens da versão 2: faixas do catálogo da economia alvo (D-029).
-export const priceReferences: Record<ProductId, PriceReference> = {
-  ...legacyPriceReferences,
-  ...(Object.fromEntries(
-    (
-      [
-        'scrap',
-        'utensils',
-        'truckHeavy',
-        'truckLight',
-        'soySeed',
-        'feed',
-        'cow',
-        'riceSeed',
-        'beanSeed',
-        'caneSeedling',
-      ] as const
-    ).map((id) => [
+// Faixas de referência de cada item: do catálogo da economia alvo (D-029), com a proveniência
+// anotada nele quando a faixa vem de uma referência real.
+export const priceReferences: Record<ProductId, PriceReference> = Object.fromEntries(
+  productIds.map((id) => {
+    const item = designItems[id];
+    return [
       id,
       {
-        low: designItems[id].band[0],
-        high: designItems[id].band[1],
-        note: 'Faixa do catálogo da economia alvo.',
-        source: 'docs/product/ECONOMIA-ALVO.md',
-        date: '2026-10-27',
-        level:
-          designItems[id].bandSource === 'real'
-            ? 'Referência real · estimativa'
-            : 'Parâmetro de jogo',
+        low: item.band[0],
+        high: item.band[1],
+        ...(item.provenance ?? {
+          note: 'Faixa do catálogo da economia alvo.',
+          source: 'docs/product/ECONOMIA-ALVO.md',
+          date: '2026-10-27',
+          level: item.bandSource === 'real' ? 'Referência real · estimativa' : 'Parâmetro de jogo',
+        }),
       },
-    ]),
-  ) as Record<Exclude<ProductId, LegacyProductId>, PriceReference>),
-};
+    ];
+  }),
+) as Record<ProductId, PriceReference>;
 export const economicSources = [
   {
     name: 'Salário mínimo nacional · R$ 1.621 em 2026',

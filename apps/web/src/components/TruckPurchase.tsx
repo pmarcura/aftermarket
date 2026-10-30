@@ -3,9 +3,10 @@ import { useGame, cr, num } from '../lib/game';
 import { PixelArt } from './PixelArt';
 import { IconePixel } from './IconePixel';
 import { GavetaFrota } from '../features/frota/GavetaFrota';
-import { products, type Establishment } from '../../../../packages/simulation/src/model';
+import type { Establishment } from '../../../../packages/simulation/src/model';
 import {
   dealershipMarkup,
+  referencePrice,
   vehicleModels,
   type VehicleModel,
 } from '../../../../packages/simulation/src/catalog';
@@ -83,7 +84,7 @@ export function TruckPurchase({ depot, onClose }: { depot?: Establishment; onClo
       chave: 'concessionaria',
       name: 'Concessionária importadora',
       where: 'Importado',
-      price: Math.round(products[model].basePrice * dealershipMarkup),
+      price: Math.round(referencePrice(model) * dealershipMarkup),
       note: `${num((dealershipMarkup - 1) * 100)}% acima da referência; o dinheiro sai da economia`,
     },
   ];

@@ -52,7 +52,7 @@ import {
   SCRAP_COLLECTION,
   treasuryAvailable,
 } from './operations';
-import { dealershipMarkup, scrapRecovery, vehicleModels } from './catalog';
+import { dealershipMarkup, referencePrice, scrapRecovery, vehicleModels } from './catalog';
 import {
   dailyDemand,
   householdDemand,
@@ -1366,7 +1366,7 @@ function executeCommand(w: World, actor: string, command: Command, now: number):
         }
         seller.inventory[model] = seller.inventory[model]! - 1;
       } else {
-        price = Math.round(products[model].basePrice * dealershipMarkup);
+        price = Math.round(referencePrice(model) * dealershipMarkup);
         transfer(
           w,
           actor,
@@ -1519,16 +1519,13 @@ function economicTick(w: World, at: number) {
     e.inventory[product]! -= quantity;
     e.revenue += amount;
     e.expenses += Math.round((e.unitCosts[product] ?? 0) * quantity);
-    const recycling = w.season.config.recycling;
     const collection =
-      recycling && product === 'utensils'
-        ? w.establishments.find((x) => x.id === SCRAP_COLLECTION)
-        : undefined;
+      product === 'utensils' ? w.establishments.find((x) => x.id === SCRAP_COLLECTION) : undefined;
     // Utensílios velhos descartados pelas famílias voltam como sucata urbana.
     if (collection)
       collection.inventory.scrap =
         (collection.inventory.scrap ?? 0) +
-        quantity * products.utensils.massT * recycling!.urbanScrapShare;
+        quantity * products.utensils.massT * w.season.config.recycling.urbanScrapShare;
   }
   // Pausar a produção não encerra contratos de trabalho nem manutenção.
   for (const e of w.establishments) {
@@ -1763,8 +1760,7 @@ function openInfrastructure(w: World, at: number) {
           w.season.config.competition.maxOpenContracts,
           Math.floor(available / 20000000) + 1,
         ) ||
-      (last &&
-        at - last.createdAt < (w.season.config.government?.contractIntervalMs ?? GAME_DAY / 2))
+      (last && at - last.createdAt < w.season.config.government.contractIntervalMs)
     )
       continue;
     const cities = w.establishments.filter(
@@ -1779,7 +1775,7 @@ function openInfrastructure(w: World, at: number) {
       unitPrice = Math.round(referencePrice * w.season.config.competition.governmentBonus);
     const quantity = Math.max(
         1,
-        Math.round(program.quantity * (w.season.config.government?.lotScale ?? 1)),
+        Math.round(program.quantity * w.season.config.government.lotScale),
       ),
       maxFreight = Math.max(250000, Math.round(unitPrice * quantity * 0.2)),
       reserved = unitPrice * quantity + maxFreight;

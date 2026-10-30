@@ -44,7 +44,7 @@ describe('migração do banco', () => {
 
   it('completa um snapshot intermediário da economia 2 com backup e preserva recibos idempotentes', () => {
     const world = createWorld();
-    const partial = structuredClone(world) as Record<string, unknown>;
+    const partial = structuredClone(world) as unknown as Record<string, unknown>;
     delete partial.designVersion;
     delete (partial.season as { config: Record<string, unknown> }).config.history;
     const key = crypto.randomUUID(),

@@ -1,5 +1,9 @@
 # Tipografia · Geist Pixel Square
 
+Registro histórico de 28/10/2026. A interface atual segue a direção
+[Livro-caixa](IDENTIDADE-JOGO.md#direção-aprovada-livro-caixa-29102026), com Archivo,
+IBM Plex Mono e Caveat Brush. A evidência abaixo descreve a revisão anterior.
+
 Pedido do Pedro em 28/10/2026: melhorar a leitura dos números e textos que usavam
 Pixelify Sans. Ajuste pontual de UX-03 na etapa E; não conclui a etapa.
 

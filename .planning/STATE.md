@@ -1,20 +1,27 @@
 # Estado do projeto
 
-Atualizado em **28/10/2026**. Versão **0.4.0**. Uma página: o que é verdade agora e o que vem a seguir. Detalhes e evidências ficam nos documentos de cada fase e no histórico do Git.
+Atualizado em **30/10/2026**. Versão **0.4.0**. Uma página: o que é verdade agora e o que vem a seguir. Detalhes e evidências ficam nos documentos de cada fase e no histórico do Git.
 
 ## Onde estamos
 
 Etapas **A · Arrumar a casa** e **B · Redesenhar a economia** concluídas; parte da **E** (primeira hora) adiantada a pedido do Pedro. Próximas: **C · Motor que aguenta** e **D · Jogar junto** do [roteiro](ROADMAP.md), que faltam para o playtest com amigos. O panorama visual completo está em [`docs/raio-x.html`](../docs/raio-x.html).
 
-O jogo roda localmente: mapa real de SP–MG, compra de imóveis, produção, estoque físico, mercado com negociação, frota com rotas rodoviárias reais, finanças com crédito e empresas-bot usando os mesmos comandos dos jogadores. O mundo jogável da economia versão 2 (`npm run dev:v2`) tem 30 rivais em todas as especialidades, começo enxuto (loja vazia e R$ 1 milhão) e guia de primeiros passos. Build e 230 testes passam.
+O jogo roda localmente: mapa do Centro-Sul, compra de imóveis, produção, estoque físico, mercado com negociação, frota, finanças com crédito e empresas-bot usando os mesmos comandos dos jogadores. O mundo jogável da economia versão 2 (`npm run dev:v2`) usa escala 20, com cerca de 500 empresas-bot, começo enxuto (loja vazia e R$ 1 milhão) e guia de primeiros passos. O frete da versão 2 usa estimativa identificada; rotas rodoviárias reais continuam no mundo principal. Build e 230 testes passam.
 
 ## O que funciona
 
-Tipografia revisada a pedido do Pedro: Geist Pixel Square local em títulos, valores e controles;
-Archivo em textos corridos e legendas pequenas. Indicadores da loja empilhados no celular.
-Build e revisão de dez telas em desktop/celular, incluindo salvar preço pelo teclado em fixture,
-registrados em [TIPOGRAFIA](../docs/design/TIPOGRAFIA.md). O coletor geral do laboratório ainda
-precisa ajustar esperas de títulos e interferência do modal de primeiros passos.
+Direção **Livro-caixa** aplicada à interface: Archivo condensada nos títulos e valores,
+IBM Plex Mono nos controles e Caveat Brush nas notas curtas, com fontes locais, papel,
+carimbos e ilustrações pixel. Mapa com filtros e painel de terreno; pedidos e entregas
+unificados; frota em cartões. Ver [IDENTIDADE-JOGO](../docs/design/IDENTIDADE-JOGO.md).
+A revisão de Geist Pixel em [TIPOGRAFIA](../docs/design/TIPOGRAFIA.md) é histórica.
+O coletor geral do laboratório ainda precisa ajustar esperas de títulos e interferência
+do modal de primeiros passos.
+
+Validação de 30/10: build, 230 testes, catálogo de 14 telas, formatação, contraste e
+14 testes de navegador aprovados. Instalação sem área bloqueada antes da cobrança;
+avisos de entrega abrem Concluídos, inclusive com Pedidos já aberto. Escopo, evidências
+e limites em [VALIDAÇÃO DA INTERFACE](../docs/design/VALIDACAO-INTERFACE-2026-10-30.md).
 
 - Mapa, estradas reais (OSRM), caminhões animados sobre a rota.
 - Comprar imóvel, instalar equipamento, contratar equipe, produzir, vender.

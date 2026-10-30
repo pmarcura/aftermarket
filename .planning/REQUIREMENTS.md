@@ -48,6 +48,12 @@ Estados: **Implementado** = demonstrado no laboratório; **Parcial** = há base 
 
 ## Complemento · Economia explicável
 
+Revisão de 30/10/2026 de UX-03/05/06/07 e BIZ-09: direção Livro-caixa, mapa com
+filtros/seleção por teclado, navegação em desktop/celular, aviso de entrega abrindo
+Concluídos e instalação bloqueada sem área. Os testes usam fixtures em memória;
+escopo e limites em [VALIDAÇÃO DA INTERFACE](../docs/design/VALIDACAO-INTERFACE-2026-10-30.md).
+Esta revisão não altera o estado das fases C/D nem comprova todos os fluxos E2E.
+
 Tipografia de UX-03 revisada com Geist Pixel Square local: dez telas em 1440/390 px,
 fonte carregada e fluxo de salvar preço pelo teclado em fixture. Evidências e limites em
 [TIPOGRAFIA](../docs/design/TIPOGRAFIA.md).

@@ -19,27 +19,196 @@ import { shipmentRoadPath, shipmentRoute } from '../../../../packages/simulation
 import { shipmentStatus } from '../../../../packages/simulation/src/shipment';
 import { marketView, regionsOf } from '../../../../packages/simulation/src/metrics';
 maplibregl.setWorkerUrl(workerUrl);
-// Ícones das categorias desenhados uma vez como imagens do mapa (traço branco sobre o círculo
-// colorido da camada). Antes cada negócio era um elemento de página recriado a cada rodada e
-// reposicionado a cada quadro do zoom.
+// Peças em pixel art desenhadas uma vez como imagens de alta nitidez para o mapa:
+// - Negócios construídos usam as miniaturas isométricas reais (/arte/*.png) sobre um pedestal
+//   tático chanfrado (com destaque em lavoura/ouro para unidades do próprio jogador).
+// - Terrenos disponíveis usam um marco chanfrado compacto com o ícone da vocação.
 const categories = ['farm', 'mine', 'industry', 'retail', 'logistics', 'warehouse'] as const;
-const iconImages = Promise.all(
-  categories.map(
-    (category) =>
-      new Promise<[string, HTMLImageElement]>((resolve) => {
-        const markup = renderToStaticMarkup(
-          <CategoryIcon category={category} size={44} />,
-        ).replaceAll('currentColor', '#ffffff');
-        // Os ícones novos já trazem xmlns; repetir o atributo invalida o SVG e o mapa não abre.
-        const svg = markup.includes('xmlns=')
-          ? markup
-          : markup.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
-        const image = new Image(44, 44);
-        image.onload = () => resolve([category, image]);
-        image.onerror = () => resolve([category, image]);
-        image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-      }),
-  ),
+const categorySpriteUrl: Record<(typeof categories)[number], string> = {
+  farm: '/arte/lavoura.png',
+  mine: '/arte/mina.png',
+  industry: '/arte/siderurgica.png',
+  retail: '/arte/loja.png',
+  logistics: '/arte/caminhao.png',
+  warehouse: '/arte/silos.png',
+};
+
+function loadSprite(src: string): Promise<HTMLImageElement | null> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = src;
+  });
+}
+
+function loadCategoryIcon(category: (typeof categories)[number]): Promise<HTMLImageElement | null> {
+  return new Promise((resolve) => {
+    const markup = renderToStaticMarkup(<CategoryIcon category={category} size={28} />).replaceAll(
+      'currentColor',
+      '#f3e7cc',
+    );
+    const svg = markup.includes('xmlns=')
+      ? markup
+      : markup.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+    const image = new Image(28, 28);
+    image.onload = () => resolve(image);
+    image.onerror = () => resolve(null);
+    image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+  });
+}
+
+function drawChamferedRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  c: number,
+) {
+  ctx.beginPath();
+  ctx.moveTo(x + c, y);
+  ctx.lineTo(x + w - c, y);
+  ctx.lineTo(x + w, y + c);
+  ctx.lineTo(x + w, y + h - c);
+  ctx.lineTo(x + w - c, y + h);
+  ctx.lineTo(x + c, y + h);
+  ctx.lineTo(x, y + h - c);
+  ctx.lineTo(x, y + c);
+  ctx.closePath();
+}
+
+const pinImages = Promise.all(
+  categories.map(async (category) => {
+    const [sprite, icon] = await Promise.all([
+      loadSprite(categorySpriteUrl[category]),
+      loadCategoryIcon(category),
+    ]);
+    const color = categoryInfo[category].color;
+
+    const buildBusinessPin = (own: boolean) => {
+      const size = 96;
+      const canvas = document.createElement('canvas');
+      canvas.width = canvas.height = size;
+      const ctx = canvas.getContext('2d')!;
+      ctx.imageSmoothingEnabled = false;
+
+      // Sombra dura no chão e ponteiro tático inferior
+      ctx.fillStyle = 'rgba(5, 6, 4, 0.65)';
+      drawChamferedRect(ctx, 18, 56, 64, 24, 6);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(42, 78);
+      ctx.lineTo(54, 78);
+      ctx.lineTo(48, 88);
+      ctx.closePath();
+      ctx.fill();
+
+      // Base chanfrada (pedestal do negócio)
+      const borderColor = own ? '#a6e05a' : '#f3e7cc';
+      ctx.fillStyle = '#121410';
+      drawChamferedRect(ctx, 14, 52, 68, 24, 6);
+      ctx.fill();
+
+      ctx.fillStyle = color;
+      drawChamferedRect(ctx, 17, 55, 62, 18, 4);
+      ctx.fill();
+
+      // Brilho superior do pedestal
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.22)';
+      ctx.fillRect(21, 56, 54, 3);
+
+      // Contorno nítido do pedestal
+      ctx.lineWidth = own ? 3 : 2;
+      ctx.strokeStyle = borderColor;
+      drawChamferedRect(ctx, 15.5, 53.5, 65, 21, 5);
+      ctx.stroke();
+
+      // Ponteiro inferior
+      ctx.fillStyle = borderColor;
+      ctx.beginPath();
+      ctx.moveTo(41, 75);
+      ctx.lineTo(55, 75);
+      ctx.lineTo(48, 85);
+      ctx.closePath();
+      ctx.fill();
+
+      // Miniatura isométrica em pixel art
+      if (sprite) {
+        const scale = Math.min(68 / sprite.width, 56 / sprite.height);
+        const w = Math.round(sprite.width * scale);
+        const h = Math.round(sprite.height * scale);
+        const x = Math.round((size - w) / 2);
+        const y = Math.round(64 - h);
+        ctx.drawImage(sprite, x, y, w, h);
+      } else if (icon) {
+        ctx.drawImage(icon, 34, 36, 28, 28);
+      }
+
+      // Flâmula/insígnia para as unidades da própria empresa
+      if (own) {
+        ctx.fillStyle = '#121410';
+        drawChamferedRect(ctx, 62, 10, 24, 16, 3);
+        ctx.fill();
+        ctx.fillStyle = '#a6e05a';
+        drawChamferedRect(ctx, 64, 12, 20, 12, 2);
+        ctx.fill();
+        ctx.fillStyle = '#121410';
+        ctx.font = '700 9px Archivo, Arial, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('SEU', 74, 18.5);
+      }
+
+      return ctx.getImageData(0, 0, size, size);
+    };
+
+    const buildAvailablePin = () => {
+      const size = 64;
+      const canvas = document.createElement('canvas');
+      canvas.width = canvas.height = size;
+      const ctx = canvas.getContext('2d')!;
+      ctx.imageSmoothingEnabled = false;
+
+      // Sombra dura
+      ctx.fillStyle = 'rgba(5, 6, 4, 0.6)';
+      drawChamferedRect(ctx, 14, 14, 40, 36, 6);
+      ctx.fill();
+
+      // Moldura chanfrada escura com barra da cor da vocação
+      ctx.fillStyle = '#1a1d17';
+      drawChamferedRect(ctx, 11, 11, 40, 36, 6);
+      ctx.fill();
+
+      ctx.fillStyle = color;
+      ctx.fillRect(14, 39, 34, 5);
+
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#cfc6b4';
+      drawChamferedRect(ctx, 12, 12, 38, 34, 5);
+      ctx.stroke();
+
+      // Ponteiro inferior
+      ctx.fillStyle = '#cfc6b4';
+      ctx.beginPath();
+      ctx.moveTo(26, 46);
+      ctx.lineTo(36, 46);
+      ctx.lineTo(31, 54);
+      ctx.closePath();
+      ctx.fill();
+
+      if (icon) {
+        ctx.drawImage(icon, 19, 15, 24, 24);
+      }
+      return ctx.getImageData(0, 0, size, size);
+    };
+
+    return [
+      [`pin-${category}-own`, buildBusinessPin(true)],
+      [`pin-${category}-rival`, buildBusinessPin(false)],
+      [`pin-${category}-available`, buildAvailablePin()],
+    ] as const;
+  }),
 );
 export interface Layers {
   companies: boolean;
@@ -138,12 +307,6 @@ export function WorldMap({
     }
     const p = world.properties.find((x) => x.id === propertyId);
     const initial = center && typeof center[0] === 'number' ? (center as Position) : p?.coordinates;
-    // Filtro pixel-art: o mapa é renderizado em resolução reduzida (pixelRatio < 1)
-    // e esticado via CSS com image-rendering: pixelated. Toda a interatividade (cliques,
-    // zoom, popups, markers) continua funcionando porque o MapLibre calcula coordenadas
-    // em pixels de tela, não em pixels de canvas. Apenas o canvas do mapa é pixelado;
-    // controles HTML (botões, popups) ficam nítidos como antes.
-    const PIXEL_BLOCK = 4; // 1 = nítido, 2 = sutil, 4 = retrô clássico, 6+ = 8-bits pesado
     const instance = new maplibregl.Map({
       container: container.current!,
       style: createMapStyle(),
@@ -154,7 +317,6 @@ export function WorldMap({
       attributionControl: { compact: true },
       interactive: !mini,
       renderWorldCopies: false,
-      pixelRatio: (window.devicePixelRatio || 1) / PIXEL_BLOCK,
     });
     map.current = instance;
     // Inspeção em desenvolvimento (laboratório e testes de navegador); não existe no build final.
@@ -163,31 +325,148 @@ export function WorldMap({
     const timeout = setTimeout(() => {
       if (!instance.isStyleLoaded()) setFailed(true);
     }, 15000);
-    // Números das bolhas de agrupamento: o estilo não carrega fontes, então cada número vira
-    // uma pequena imagem. Gerados de antemão: criados sob demanda, os de dois algarismos
-    // chegavam depois do desenho e a bolha ficava sem número.
+    // Placas chanfradas de agrupamento (clusters) em alta definição com estética de jogo.
     const countImage = (label: string) => {
+      const size = 76;
       const canvas = document.createElement('canvas');
-      canvas.width = canvas.height = 64;
+      canvas.width = canvas.height = size;
       const context = canvas.getContext('2d')!;
-      context.fillStyle = '#f4ead7';
-      context.font = `700 ${label.length > 2 ? 21 : 26}px Figtree, Inter, Arial, sans-serif`;
+      context.imageSmoothingEnabled = false;
+      // Sombra dura
+      context.fillStyle = 'rgba(5, 6, 4, 0.7)';
+      drawChamferedRect(context, 12, 14, 54, 52, 8);
+      context.fill();
+      // Placa tática grafite com chanfro
+      context.fillStyle = '#1a1d17';
+      drawChamferedRect(context, 9, 10, 54, 52, 8);
+      context.fill();
+      context.fillStyle = '#282d23';
+      context.fillRect(14, 14, 44, 5);
+      // Aro duplo dourado
+      context.lineWidth = 2.5;
+      context.strokeStyle = '#f2bd3c';
+      drawChamferedRect(context, 10.5, 11.5, 51, 49, 7);
+      context.stroke();
+      // Número nítido
+      context.fillStyle = '#f3e7cc';
+      context.font = `700 ${label.length > 2 ? 20 : 24}px "Geist Pixel Square", Archivo, monospace`;
       context.textAlign = 'center';
       context.textBaseline = 'middle';
-      context.fillText(label, 32, 34);
-      return context.getImageData(0, 0, 64, 64);
+      context.fillText(label, 36, 37);
+      return context.getImageData(0, 0, size, size);
+    };
+    // Placas táticas com o nome das cidades do mundo para orientar a leitura das estradas.
+    const cityImage = (name: string) => {
+      const canvas = document.createElement('canvas');
+      const padX = 16;
+      const font = '700 22px Archivo, "Segoe UI", sans-serif';
+      const probe = canvas.getContext('2d')!;
+      probe.font = font;
+      const textW = Math.ceil(probe.measureText(name).width);
+      const w = textW + padX * 2 + 16;
+      const h = 42;
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d')!;
+      ctx.fillStyle = 'rgba(12, 14, 10, 0.82)';
+      drawChamferedRect(ctx, 2, 4, w - 4, h - 8, 5);
+      ctx.fill();
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = 'rgba(242, 189, 60, 0.55)';
+      drawChamferedRect(ctx, 2.75, 4.75, w - 5.5, h - 9.5, 4);
+      ctx.stroke();
+      // Quadradinho de mira dourado
+      ctx.fillStyle = '#f2bd3c';
+      ctx.fillRect(11, Math.round(h / 2) - 4, 8, 8);
+      ctx.fillStyle = '#f3e7cc';
+      ctx.font = font;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(name, 25, Math.round(h / 2) + 1);
+      return ctx.getImageData(0, 0, w, h);
+    };
+    // Texturas pixel-art nítidas (escala inteira) para água e florestas, sem borrar as estradas.
+    const createWaterPattern = () => {
+      const size = 32;
+      const canvas = document.createElement('canvas');
+      canvas.width = canvas.height = size;
+      const ctx = canvas.getContext('2d')!;
+      ctx.fillStyle = '#122932';
+      ctx.fillRect(0, 0, size, size);
+      ctx.fillStyle = '#1a3b47';
+      ctx.fillRect(4, 6, 8, 2);
+      ctx.fillRect(2, 8, 4, 2);
+      ctx.fillRect(12, 8, 4, 2);
+      ctx.fillRect(20, 22, 8, 2);
+      ctx.fillRect(18, 24, 4, 2);
+      ctx.fillRect(28, 24, 4, 2);
+      return ctx.getImageData(0, 0, size, size);
+    };
+    const createWoodPattern = () => {
+      const size = 24;
+      const canvas = document.createElement('canvas');
+      canvas.width = canvas.height = size;
+      const ctx = canvas.getContext('2d')!;
+      ctx.fillStyle = '#202a19';
+      ctx.fillRect(0, 0, size, size);
+      ctx.fillStyle = '#2a3821';
+      ctx.fillRect(3, 3, 4, 4);
+      ctx.fillRect(5, 1, 2, 2);
+      ctx.fillRect(15, 13, 4, 4);
+      ctx.fillRect(17, 11, 2, 2);
+      ctx.fillStyle = '#192113';
+      ctx.fillRect(3, 7, 4, 2);
+      ctx.fillRect(15, 17, 4, 2);
+      return ctx.getImageData(0, 0, size, size);
     };
     instance.on('load', async () => {
       clearTimeout(timeout);
       setFailed(false);
-      for (const [category, image] of await iconImages)
-        if (!instance.hasImage(`cat-${category}`))
-          instance.addImage(`cat-${category}`, image, { pixelRatio: 2 });
+      if (!instance.hasImage('water-pixel'))
+        instance.addImage('water-pixel', createWaterPattern(), { pixelRatio: 1 });
+      if (!instance.hasImage('wood-pixel'))
+        instance.addImage('wood-pixel', createWoodPattern(), { pixelRatio: 1 });
+      if (instance.getLayer('water'))
+        instance.setPaintProperty('water', 'fill-pattern', 'water-pixel');
+      if (instance.getLayer('natural-landcover'))
+        instance.setPaintProperty('natural-landcover', 'fill-pattern', 'wood-pixel');
+      for (const group of await pinImages)
+        for (const [id, image] of group)
+          if (!instance.hasImage(id)) instance.addImage(id, image, { pixelRatio: 2 });
       for (let n = 2; n <= 100; n++) {
         const label = n === 100 ? '99+' : String(n);
         if (!instance.hasImage(`count-${label}`))
           instance.addImage(`count-${label}`, countImage(label), { pixelRatio: 2 });
       }
+      const regions = regionsOf(world);
+      for (const r of regions) {
+        const key = `city-${r.id}`;
+        if (!instance.hasImage(key)) instance.addImage(key, cityImage(r.name), { pixelRatio: 2 });
+      }
+      instance.addSource('cities', {
+        type: 'geojson',
+        data: {
+          type: 'FeatureCollection',
+          features: regions.map((r) => ({
+            type: 'Feature',
+            geometry: { type: 'Point', coordinates: r.coordinates },
+            properties: { id: r.id, name: r.name },
+          })),
+        },
+      });
+      instance.addLayer({
+        id: 'city-labels',
+        type: 'symbol',
+        source: 'cities',
+        minzoom: mini ? 20 : 5.2,
+        layout: {
+          'icon-image': ['concat', 'city-', ['get', 'id']],
+          'icon-size': ['interpolate', ['linear'], ['zoom'], 5.2, 0.72, 9, 0.88, 13, 1],
+          'icon-offset': [0, -18],
+          'icon-allow-overlap': false,
+          'icon-padding': 6,
+        },
+      });
       instance.addSource('territories', {
         type: 'geojson',
         data: { type: 'FeatureCollection', features: [] },
@@ -206,16 +485,16 @@ export function WorldMap({
         source: 'territories',
         minzoom: mini ? 0 : 11,
         paint: {
-          'line-color': ['case', ['get', 'selected'], '#238cd3', ['get', 'color']],
-          'line-width': ['case', ['get', 'selected'], 3, 1.2],
-          'line-opacity': 0.85,
+          'line-color': ['case', ['get', 'selected'], '#a6e05a', ['get', 'color']],
+          'line-width': ['case', ['get', 'selected'], 3, 1.4],
+          'line-opacity': 0.9,
         },
       });
       instance.addSource('demand', {
         type: 'geojson',
         data: {
           type: 'FeatureCollection',
-          features: regionsOf(world).map((r) => ({
+          features: regions.map((r) => ({
             type: 'Feature',
             geometry: { type: 'Point', coordinates: r.coordinates },
             properties: { demand: 0 },
@@ -229,7 +508,7 @@ export function WorldMap({
         layout: { visibility: 'none' },
         paint: {
           'circle-radius': ['interpolate', ['linear'], ['get', 'demand'], 0, 8, 1, 80],
-          'circle-color': '#e8ac54',
+          'circle-color': '#f2bd3c',
           'circle-opacity': 0.28,
           'circle-blur': 0.6,
         },
@@ -242,13 +521,13 @@ export function WorldMap({
         id: 'route-casing',
         type: 'line',
         source: 'routes',
-        paint: { 'line-color': '#ffffff', 'line-width': mini ? 6 : 8 },
+        paint: { 'line-color': '#0c0e0a', 'line-width': mini ? 7 : 9 },
       });
       instance.addLayer({
         id: 'route-line',
         type: 'line',
         source: 'routes',
-        paint: { 'line-color': '#2a8ec0', 'line-width': mini ? 3 : 4 },
+        paint: { 'line-color': '#6cb8e8', 'line-width': mini ? 3.5 : 4.5 },
       });
       instance.addSource('traveled', {
         type: 'geojson',
@@ -258,14 +537,14 @@ export function WorldMap({
         id: 'traveled-line',
         type: 'line',
         source: 'traveled',
-        paint: { 'line-color': '#dfad63', 'line-width': 5 },
+        paint: { 'line-color': '#a6e05a', 'line-width': 5 },
       });
-      // Negócios: uma camada desenhada pelo mapa, agrupada em bolhas quando o zoom é baixo.
+      // Negócios: miniaturas pixel-art nítidas sobre o mapa, agrupadas em placas quando o zoom é baixo.
       instance.addSource('properties', {
         type: 'geojson',
         data: { type: 'FeatureCollection', features: [] },
         cluster: !mini,
-        clusterRadius: 46,
+        clusterRadius: 44,
         clusterMaxZoom: 8,
       });
       instance.addLayer({
@@ -274,10 +553,9 @@ export function WorldMap({
         source: 'properties',
         filter: ['has', 'point_count'],
         paint: {
-          'circle-radius': ['step', ['get', 'point_count'], 17, 10, 21, 40, 27],
-          'circle-color': '#163640',
-          'circle-stroke-color': '#e6b866',
-          'circle-stroke-width': 2,
+          'circle-radius': 20,
+          'circle-color': '#1a1d17',
+          'circle-opacity': 0.01,
         },
       });
       instance.addLayer({
@@ -302,16 +580,18 @@ export function WorldMap({
         source: 'properties',
         filter: ['!', ['has', 'point_count']],
         paint: {
-          'circle-radius': mini ? 12 : ['case', ['get', 'selected'], 21, 18],
+          'circle-radius': mini ? 14 : ['case', ['get', 'selected'], 28, 22],
           'circle-color': [
             'case',
             ['get', 'selected'],
-            '#ffffff',
+            '#a6e05a',
             ['get', 'own'],
-            '#e6b866',
-            '#0b1418',
+            '#f2bd3c',
+            '#0c0e0a',
           ],
-          'circle-opacity': ['case', ['any', ['get', 'selected'], ['get', 'own']], 0.9, 0.35],
+          'circle-opacity': ['case', ['get', 'selected'], 0.45, ['get', 'own'], 0.25, 0],
+          'circle-stroke-width': ['case', ['get', 'selected'], 2.5, 0],
+          'circle-stroke-color': '#a6e05a',
         },
       });
       instance.addLayer({
@@ -320,11 +600,9 @@ export function WorldMap({
         source: 'properties',
         filter: ['!', ['has', 'point_count']],
         paint: {
-          'circle-radius': mini ? 9 : 14,
+          'circle-radius': mini ? 12 : 20,
           'circle-color': ['get', 'color'],
-          'circle-opacity': ['case', ['get', 'available'], 0.55, 1],
-          'circle-stroke-color': ['case', ['get', 'available'], '#f4ead7', '#0b1418'],
-          'circle-stroke-width': ['case', ['get', 'available'], 2, 1.2],
+          'circle-opacity': 0.01,
         },
       });
       instance.addLayer({
@@ -333,8 +611,27 @@ export function WorldMap({
         source: 'properties',
         filter: ['!', ['has', 'point_count']],
         layout: {
-          'icon-image': ['concat', 'cat-', ['get', 'category']],
-          'icon-size': mini ? 0.6 : 0.82,
+          'icon-image': [
+            'concat',
+            'pin-',
+            ['get', 'category'],
+            '-',
+            ['case', ['get', 'available'], 'available', ['get', 'own'], 'own', 'rival'],
+          ],
+          'icon-size': mini
+            ? 0.72
+            : [
+                'interpolate',
+                ['linear'],
+                ['zoom'],
+                6,
+                ['case', ['get', 'available'], 0.7, 0.78],
+                10,
+                ['case', ['get', 'selected'], 1.12, ['get', 'available'], 0.88, 0.96],
+                14,
+                ['case', ['get', 'selected'], 1.22, ['get', 'available'], 1.0, 1.08],
+              ],
+          'icon-offset': [0, -10],
           'icon-allow-overlap': true,
           'icon-ignore-placement': true,
         },
@@ -346,8 +643,7 @@ export function WorldMap({
           event.originalEvent.stopPropagation();
           callback.current ? callback.current(id) : selectRef.current(id);
         };
-        instance.on('click', 'property-dots', pick);
-        instance.on('click', 'property-clusters', async (event) => {
+        const expandCluster = async (event: maplibregl.MapLayerMouseEvent) => {
           const feature = event.features?.[0];
           if (!feature) return;
           const zoom = await (
@@ -358,8 +654,17 @@ export function WorldMap({
             zoom,
             duration: 500,
           });
-        });
-        for (const layer of ['property-dots', 'property-clusters']) {
+        };
+        instance.on('click', 'property-dots', pick);
+        instance.on('click', 'property-icons', pick);
+        instance.on('click', 'property-clusters', expandCluster);
+        instance.on('click', 'property-cluster-count', expandCluster);
+        for (const layer of [
+          'property-dots',
+          'property-icons',
+          'property-clusters',
+          'property-cluster-count',
+        ]) {
           instance.on('mouseenter', layer, () => (instance.getCanvas().style.cursor = 'pointer'));
           instance.on('mouseleave', layer, () => (instance.getCanvas().style.cursor = ''));
         }

@@ -1,0 +1,421 @@
+/* Mapa tático, bandeja do imóvel e recibo de compra de propriedade na identidade do jogo. */
+
+.map-hud-top {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  right: 64px;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  pointer-events: none;
+}
+.map-hud-top > * {
+  pointer-events: auto;
+}
+
+.map-filter-bar {
+  display: inline-flex;
+  flex-wrap: wrap;
+  background: var(--noite-funda);
+  border: 2px solid var(--borda-forte);
+  box-shadow: 4px 4px 0 var(--sombra);
+}
+.map-filter-bar button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 0;
+  border-right: 1px solid var(--borda);
+  border-radius: 0;
+  background: transparent;
+  color: var(--creme);
+  font: 600 13px/1 var(--fonte);
+  cursor: pointer;
+}
+.map-filter-bar button:last-child {
+  border-right: 0;
+}
+.map-filter-bar button:hover {
+  background: var(--chapa-2);
+}
+.map-filter-bar button.on {
+  background: var(--lavoura);
+  color: var(--noite);
+}
+
+.map-layers-box {
+  position: relative;
+}
+.map-layers-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 14px;
+  background: var(--noite-funda);
+  color: var(--creme);
+  border: 2px solid var(--borda-forte);
+  box-shadow: 4px 4px 0 var(--sombra);
+  border-radius: 0;
+  font: 600 13px/1 var(--fonte);
+  cursor: pointer;
+}
+.map-layers-btn:hover,
+.map-layers-btn[aria-expanded='true'] {
+  background: var(--chapa-2);
+  border-color: var(--lavoura);
+}
+.map-layers-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 240px;
+  padding: 8px;
+  background: var(--noite-funda);
+  border: 2px solid var(--borda-forte);
+  box-shadow: 4px 4px 0 var(--sombra);
+  display: grid;
+  gap: 4px;
+}
+.map-layers-menu label {
+  display: grid;
+  grid-template-columns: 18px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 8px;
+  font: 600 13px/1.3 var(--fonte);
+  color: var(--creme);
+  cursor: pointer;
+}
+.map-layers-menu label:hover {
+  background: var(--chapa-2);
+}
+
+.map-legend-bar {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  padding: 8px 14px;
+  background: color-mix(in srgb, var(--noite-funda) 92%, transparent);
+  border: 2px solid var(--borda);
+  box-shadow: 4px 4px 0 var(--sombra);
+  font: 600 12.5px/1.2 var(--fonte);
+  color: var(--creme);
+}
+.map-legend-bar span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.map-legend-bar i {
+  width: 12px;
+  height: 12px;
+  display: inline-block;
+  border: 1px solid var(--noite);
+}
+.map-legend-bar i.livre {
+  background: var(--chapa);
+  border: 2px solid var(--creme);
+}
+
+/* Bandeja lateral do imóvel no mapa */
+.lote-gaveta {
+  width: min(410px, 100%);
+  height: 100%;
+  overflow-y: auto;
+  background: var(--noite-funda);
+  border-left: 2px solid var(--borda-forte);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  z-index: 6;
+}
+.lote-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  background: linear-gradient(135deg, hsl(var(--h, 110) 38% 22% / 0.85), var(--chapa) 75%);
+  border: 2px solid var(--borda-forte);
+  box-shadow: 4px 4px 0 var(--sombra);
+}
+.lote-hero-arte {
+  width: 84px;
+  height: 72px;
+  display: grid;
+  place-items: center;
+  background: var(--noite-funda);
+  border: 2px solid var(--borda);
+}
+.lote-hero-texto {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+.lote-hero-texto h2 {
+  margin: 0;
+  font: 600 20px/1.2 var(--pixel);
+  color: var(--creme);
+}
+.lote-hero-texto p {
+  margin: 0;
+  font: 600 13px/1.3 var(--fonte);
+  color: var(--apagado);
+}
+.lote-fechar {
+  align-self: start;
+  width: 36px;
+  height: 36px;
+  min-height: 36px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  background: var(--chapa-2);
+  color: var(--creme);
+  border: 2px solid var(--borda);
+  cursor: pointer;
+}
+.lote-fechar:hover {
+  border-color: var(--lavoura);
+  color: var(--lavoura);
+}
+
+.lote-dono {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--chapa);
+  border: 2px solid var(--borda);
+  box-shadow: 4px 4px 0 var(--sombra);
+}
+.lote-dono div {
+  display: grid;
+  gap: 2px;
+}
+.lote-dono span {
+  font: 600 12px/1.2 var(--fonte);
+  color: var(--apagado);
+}
+.lote-dono strong {
+  font: 600 16px/1.25 var(--pixel);
+  color: var(--creme);
+}
+
+.lote-numeros {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.lote-num {
+  padding: 12px 14px;
+  background: var(--chapa);
+  border: 2px solid var(--borda);
+  box-shadow: 4px 4px 0 var(--sombra);
+  display: grid;
+  gap: 4px;
+}
+.lote-num span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: 600 12.5px/1.2 var(--fonte);
+  color: var(--apagado);
+}
+.lote-num b {
+  font: 600 20px/1.2 var(--pixel);
+  color: var(--ouro);
+}
+.lote-num.area b {
+  color: var(--creme);
+}
+.lote-num small {
+  font: 600 12px/1.3 var(--fonte);
+  color: var(--apagado);
+}
+
+.lote-bloco {
+  padding: 14px;
+  background: var(--chapa);
+  border: 2px solid var(--borda);
+  box-shadow: 4px 4px 0 var(--sombra);
+  display: grid;
+  gap: 10px;
+}
+.lote-bloco h3 {
+  margin: 0;
+  font: 600 15px/1.25 var(--pixel);
+  color: var(--creme);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.lote-fatos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+.lote-fatos div {
+  padding: 8px 10px;
+  background: var(--noite-funda);
+  border: 1px solid var(--borda);
+  display: grid;
+  gap: 2px;
+}
+.lote-fatos dt {
+  font: 600 12px/1.2 var(--fonte);
+  color: var(--apagado);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.lote-fatos dd {
+  margin: 0;
+  font: 600 14px/1.3 var(--pixel);
+  color: var(--creme);
+}
+
+.lote-ofertas {
+  display: grid;
+  gap: 8px;
+}
+.lote-oferta {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: var(--noite-funda);
+  border: 1px solid var(--borda);
+}
+.lote-oferta strong {
+  display: block;
+  font: 600 14px/1.2 var(--fonte);
+  color: var(--creme);
+}
+.lote-oferta small {
+  font: 600 12px/1.2 var(--fonte);
+  color: var(--apagado);
+}
+
+.lote-acoes {
+  display: grid;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 4px;
+}
+
+/* Página de compra de imóvel (Recibo de aquisição) */
+.compra-lote {
+  display: grid;
+  gap: 20px;
+  max-width: 1120px;
+}
+.compra-lote-hero {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 18px;
+  padding: 20px;
+  background: linear-gradient(135deg, hsl(var(--h, 110) 38% 22% / 0.85), var(--chapa) 70%);
+  border: 2px solid var(--borda-forte);
+  box-shadow: 4px 4px 0 var(--sombra);
+}
+.compra-lote-arte {
+  width: 104px;
+  height: 88px;
+  display: grid;
+  place-items: center;
+  background: var(--noite-funda);
+  border: 2px solid var(--borda);
+}
+.compra-lote-titulo h2 {
+  margin: 4px 0;
+  font: 600 24px/1.2 var(--pixel);
+  color: var(--creme);
+}
+.compra-lote-titulo p {
+  margin: 0;
+  font: 600 14px/1.4 var(--fonte);
+  color: var(--apagado);
+}
+
+.compra-lote-tres {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.compra-lote-card {
+  padding: 16px;
+  background: var(--chapa);
+  border: 2px solid var(--borda);
+  box-shadow: 4px 4px 0 var(--sombra);
+  display: grid;
+  gap: 6px;
+}
+.compra-lote-card span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: 600 13px/1.3 var(--fonte);
+  color: var(--apagado);
+}
+.compra-lote-card b {
+  font: 600 24px/1.2 var(--pixel);
+  color: var(--ouro);
+}
+.compra-lote-card.ok b {
+  color: var(--lavoura);
+}
+.compra-lote-card.ruim b {
+  color: var(--brasa);
+}
+.compra-lote-card small {
+  font: 600 12.5px/1.35 var(--fonte);
+  color: var(--apagado);
+}
+
+.compra-lote-corpo {
+  display: grid;
+  grid-template-columns: minmax(300px, 420px) 1fr;
+  gap: 18px;
+}
+.compra-lote-mapa {
+  min-height: 300px;
+  border: 2px solid var(--borda);
+  box-shadow: 4px 4px 0 var(--sombra);
+  position: relative;
+  background: var(--chapa);
+}
+
+@media (max-width: 900px) {
+  .compra-lote-hero {
+    grid-template-columns: auto 1fr;
+  }
+  .compra-lote-tres,
+  .compra-lote-corpo {
+    grid-template-columns: 1fr;
+  }
+  .lote-gaveta {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: min(380px, 92vw);
+  }
+}

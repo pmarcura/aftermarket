@@ -17,11 +17,3 @@ export function labSourceFingerprint(extraPaths: string[] = []) {
     )
     .digest('hex');
 }
-
-export const labFixtureSources = [
-  'scripts/capture-lab.ts',
-  'apps/web/src/devlab/ui-flows.ts',
-  'apps/web/src/devlab/ui-evidence.ts',
-  'scripts/lib/visual-diff.ts',
-];
-export const labFixtureFingerprint = () => labSourceFingerprint(labFixtureSources);

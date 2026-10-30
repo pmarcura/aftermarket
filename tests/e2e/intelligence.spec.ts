@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 test('titularidade, filtros vazios e análise profissional usam dados internos', async ({
   page,

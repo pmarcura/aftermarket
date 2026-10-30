@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 import { createWorld } from '../../packages/simulation/src/seed';
 import { execute, advance, RuleError, quote } from '../../packages/simulation/src/engine';
 import { ECONOMIC_INTERVAL, type World, type Command } from '../../packages/simulation/src/model';

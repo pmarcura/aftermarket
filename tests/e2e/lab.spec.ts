@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { readFile } from 'node:fs/promises';
 
 test('laboratório executa A/B real, conserva dinheiro e exporta sem acessar o mundo salvo', async ({

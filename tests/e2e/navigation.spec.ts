@@ -1,4 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect } from './fixtures';
+import { type Page } from '@playwright/test';
 import { createWorld } from '../../packages/simulation/src/seed';
 import { TIME_SCALE } from '../../packages/simulation/src/model';
 
@@ -35,29 +36,12 @@ for (const viewport of [
       if (url.pathname === '/api/world') return route.fulfill({ json: world });
       if (url.pathname === '/api/market-history')
         return route.fulfill({ json: { samples: [], trades: [] } });
-      if (url.pathname === '/__navigation/empty.pbf')
-        return route.fulfill({ body: Buffer.alloc(0), contentType: 'application/x-protobuf' });
       if (url.pathname.startsWith('/api/')) {
         unexpectedApi.push(`${route.request().method()} ${url.pathname}`);
         return route.fulfill({ status: 503, json: { error: 'API não prevista no teste.' } });
       }
-      // Tiles vazios controlados: este teste verifica controles e seleção, não cartografia real.
-      if (url.hostname === 'tiles.openfreemap.org')
-        return route.fulfill({
-          json: {
-            tilejson: '3.0.0',
-            tiles: ['http://127.0.0.1:5183/__navigation/empty.pbf?z={z}&x={x}&y={y}'],
-            minzoom: 0,
-            maxzoom: 14,
-            vector_layers: ['landcover', 'water', 'waterway', 'transportation'].map((id) => ({
-              id,
-              fields: {},
-            })),
-          },
-        });
-      if (url.protocol.startsWith('http') && url.hostname !== '127.0.0.1')
-        return route.fulfill({ status: 200, body: '', contentType: 'application/octet-stream' });
-      return route.continue();
+      // Tiles e demais hosts externos: entregues ao bloqueio de ./fixtures (bloquearRedeExterna).
+      return route.fallback();
     });
     await page.addInitScript((seasonId) => {
       if (!localStorage.getItem('aftermarket.navigation-fixture')) {

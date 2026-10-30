@@ -10,8 +10,6 @@
     "dev": "concurrently -k -n API,WEB -c cyan,green \"npm:dev:api\" \"npm:dev:web\"",
     "dev:api": "tsx watch apps/server/src/index.ts",
     "dev:web": "vite --host 127.0.0.1",
-    "dev:starter": "tsx scripts/starter.ts",
-    "dev:v2": "tsx scripts/starter.ts --scenario=economy-2",
     "build": "tsc --noEmit && vite build",
     "start": "tsx apps/server/src/index.ts --production",
     "test": "vitest run",

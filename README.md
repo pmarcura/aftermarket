@@ -56,7 +56,7 @@ Para balancear os recursos, comece pelo [catálogo de itens, receitas e forneced
 
 O [relatório das mecânicas](docs/product/MECHANICS-REPORT.md) reúne origem/valor das sementes e dos estoques iniciais, óleo/farelo/leite, custos, capacidade, demanda, transporte, finanças e fluxos incompletos. Para atualizar a leitura e os anexos de configuração/números do código: `npm run mechanics:report -- --world=.runtime/world.sqlite --write-doc`. O comando lê o banco sem avançar ou alterar a season.
 
-A [auditoria matemática](docs/product/MATHEMATICS-AUDIT.md) reproduz os erros de cadência, recuperação e arredondamento de demanda, separando-os de calibração agrícola e políticas de estoque/varejo. `npm run mathematics:audit -- --write-doc` gera as provas em mundos isolados e consulta os resultados existentes do laboratório, sem abrir SQLite. O comando comprova os achados atuais; não aprova equilíbrio nem altera a economia.
+As correções de fórmula da auditoria matemática (cadência executável, frações da demanda, prioridade do varejo, meta de estoque repartida) são provas de regressão em `tests/formula-fixes.test.ts`, sobre as receitas do catálogo. O relatório que reproduzia os achados sobre as receitas antigas foi retirado com a economia 1 (spec 001).
 
 ```powershell
 npm run resources:catalog

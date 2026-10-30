@@ -69,7 +69,7 @@ A loja trabalha com margem bruta de 16%.
 
 ## O que muda no motor (próximos passos da etapa B)
 
-1. Corrigir as fórmulas que enganam os bots: M02, M03, M04, M05 e M07 da [auditoria](MATHEMATICS-AUDIT.md).
+1. Corrigir as fórmulas que enganam os bots: M02, M03, M04, M05 e M07 da auditoria matemática (feito; provas em `tests/formula-fixes.test.ts`).
 2. Nove itens novos com ficha do [padrão de recursos](RESOURCE-STANDARD.md): sementes de soja, arroz e feijão, muda de cana, ração, vaca, caminhão, utensílios e sucata.
 3. Receitas com perda declarada, equipamento por receita e rebanho que fica na linha sem ser consumido, com nascimentos e aposentadorias.
 4. Caminhão como mercadoria: a montadora produz, o comprador registra na frota, o veículo desgasta por km e pode virar sucata ou ser vendido usado.

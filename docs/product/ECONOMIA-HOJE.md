@@ -1,11 +1,10 @@
 # Economia hoje
 
-Resumo em linguagem simples, 27/10/2026. Ponto de entrada para três relatórios técnicos gerados pelo código. Para atualizar os três de uma vez: `npm run economy:report`.
+Resumo em linguagem simples, 27/10/2026. Ponto de entrada para dois relatórios técnicos gerados pelo código. Para atualizar os dois de uma vez: `npm run economy:report`.
 
 | Pergunta                                                                 | Relatório                                                                 |
 | ------------------------------------------------------------------------ | ------------------------------------------------------------------------- |
 | Quais produtos e receitas existem, quem fornece, quanto rende uma linha? | [RESOURCE-CATALOG](RESOURCE-CATALOG.md)                                   |
-| Quais contas do motor ou dos bots estão erradas?                         | [MATHEMATICS-AUDIT](MATHEMATICS-AUDIT.md)                                 |
 | De onde vem cada coisa e que fluxos estão incompletos (36 itens)?        | [MECHANICS-REPORT](MECHANICS-REPORT.md)                                   |
 | Como admitir um produto ou receita novo?                                 | [RESOURCE-STANDARD](RESOURCE-STANDARD.md) e [ficha](RESOURCE-TEMPLATE.md) |
 
@@ -55,7 +54,7 @@ A diferença entre o melhor (aço) e o pior (arroz) é de mais de R$ 120 mil por
 
 ## Contas dos bots corrigidas em 27/10
 
-As cinco contas erradas que enganavam os bots foram corrigidas e viraram provas de regressão no [auditor](MATHEMATICS-AUDIT.md) e em `tests/formula-fixes.test.ts`.
+As cinco contas erradas que enganavam os bots foram corrigidas e viraram provas de regressão em `tests/formula-fixes.test.ts`.
 
 | Código | Antes                                                                                                                | Agora                                                                                                                              |
 | ------ | -------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |

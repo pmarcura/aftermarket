@@ -33,7 +33,11 @@ async function abrir(page: Page, pagina: string, espera: string) {
   await page.waitForTimeout(2500);
 }
 
-const browser = await chromium.launch({ channel: 'msedge', headless: true });
+// Chromium por padrão (`npx playwright install chromium`); Edge só com PLAYWRIGHT_CHANNEL=msedge.
+const browser = await chromium.launch({
+  channel: process.env.PLAYWRIGHT_CHANNEL === 'msedge' ? 'msedge' : undefined,
+  headless: true,
+});
 for (const a of aparelhos)
   for (const c of cenas) {
     const page = await browser.newPage({

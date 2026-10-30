@@ -38,6 +38,12 @@ export function createStore(
     (db.prepare('SELECT state FROM worlds WHERE id=1').get() as { state: string }).state,
   );
   if (needsMigration(existing)) {
+    // Mundo que o motor não aceita mais (economia 1) é recusado antes de qualquer escrita:
+    // nem backup nem conversão; o arquivo fica como está (D-042).
+    if ((existing as { version?: number }).version !== 2) {
+      db.close();
+      migrateWorld(existing);
+    }
     if (path !== ':memory:') {
       const backup = resolve(dirname(path), 'backups', `pre-operations-${Date.now()}.sqlite`);
       mkdirSync(dirname(backup), { recursive: true });

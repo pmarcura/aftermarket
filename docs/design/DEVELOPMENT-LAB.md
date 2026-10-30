@@ -6,7 +6,7 @@ Objetivo: comparar hipóteses de balanceamento em mundos novos, isolados e repro
 npm run lab
 ```
 
-`npm run lab` sobe só a apresentação (Vite) e aponta para `/lab`. As simulações rodam num worker do navegador; nada é salvo no servidor. A cadeia de evidência visual de interface (catálogo de telas, capturas, fluxos, comparação com baseline, `lab:context`, `lab:query`) foi removida na spec 002: o histórico Git a preserva, e ela não volta sem uma spec nova.
+`npm run lab` sobe só a apresentação (Vite) e aponta para `/lab`. As simulações rodam num worker do navegador; nada é salvo no servidor. A cadeia de evidência visual de interface (catálogo de telas, capturas, fluxos, comparação com baseline e as consultas de contexto por tela/bot) foi removida na spec 002: o histórico Git a preserva, e ela não volta sem uma spec nova.
 
 ## O que a bancada faz
 

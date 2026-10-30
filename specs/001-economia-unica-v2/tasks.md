@@ -3,9 +3,11 @@
 Marcar `[x]` só com evidência (comando + resultado) na coluna da direita. Um commit por tarefa ou por arquivo, prefixo `spec-001:`.
 
 ## Passo 0 · Régua
+
 - [ ] T0.1 Gerar `test-results/spec-001-before.json` (escala 1, 20 dias, semente 0) e `spec-001-before-s20.json` (escala 20, 5 dias, janela 3). — A3
 
 ## Passo 1 · Inverter o padrão
+
 - [ ] T1.1 `seed.ts`: `createWorld(now, { scale })` só economia 2; apagar ramos `economy === 2`. — R1
 - [ ] T1.2 `scenarios.ts`: `baseline` | `playtest`; remover `starter`, `low-demand`, `economy-2`. — R2
 - [ ] T1.3 `apps/server/src/index.ts`: enum de cenário; `requireRoadRoutes: scale === 1`. — R7
@@ -13,6 +15,7 @@ Marcar `[x]` só com evidência (comando + resultado) na coluna da direita. Um c
 - [ ] T1.5 `npm test`: listar os arquivos que quebram (vão para o passo 4). — R5
 
 ## Passo 2 · Remover as flags (um commit por arquivo, `npm test` entre eles)
+
 - [ ] T2.1 `calibration.ts`: sem `economyVersion`; `wholesalePrices` obrigatório. — R3
 - [ ] T2.2 `engine.ts` (11 pontos). — R4
 - [ ] T2.3 `supply.ts` (6). — R4
@@ -23,6 +26,7 @@ Marcar `[x]` só com evidência (comando + resultado) na coluna da direita. Um c
 - [ ] T2.8 Régua A3 após o passo 2: diff ≤ 0,5%. — R8
 
 ## Passo 3 · Remover os dados v1
+
 - [ ] T3.1 `model.ts`: `ProductId`/`products` derivados de `catalog.ts`; apagar `legacyProducts`, `LegacyProductId`, `newProductIds`, `recipes` v1. Fixar ordem se a régua mudar. — R3
 - [ ] T3.2 `operations.ts`: apagar `expansionRecipes`; `engine.ts`: apagar expansão v1 de bots. — R3, R4
 - [ ] T3.3 `calibration.ts`: `legacyPriceReferences` → catálogo. — R3
@@ -31,6 +35,7 @@ Marcar `[x]` só com evidência (comando + resultado) na coluna da direita. Um c
 - [ ] T3.6 Régua A3 após o passo 3. — R8
 
 ## Passo 4 · Testes (uma linha por arquivo: adaptado | apagado + invariante que continua coberto)
+
 - [ ] T4.1 `tests/economy.test.ts` —
 - [ ] T4.2 `tests/operations.test.ts` —
 - [ ] T4.3 `tests/resources.test.ts` —
@@ -47,6 +52,7 @@ Marcar `[x]` só com evidência (comando + resultado) na coluna da direita. Um c
 - [ ] T4.14 Contagem final de testes ≥ 200 e `npm run check` verde. — A2
 
 ## Passo 5 · Fechamento
+
 - [ ] T5.1 Docs: README, STATE, CLAUDE.md, AGENTS.md, ECONOMIA-HOJE, ECONOMIA-ALVO. — R7
 - [ ] T5.2 A1 (grep zero), A4 (servidor sobe em `.runtime` vazio + `opening.spec.ts` em Chromium), A6 (linhas). —
 - [ ] T5.3 `specs/README.md` → verificada; evidência anexada abaixo.

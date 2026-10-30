@@ -1,6 +1,5 @@
 import type { World, Property, Establishment, Category, Position } from './model';
-import { ECONOMIC_INTERVAL, legacyProducts, products, recipes, type ProductId } from './model';
-import { createSeasonConfig } from './calibration';
+import { ECONOMIC_INTERVAL, products, type ProductId } from './model';
 import { v2SeasonConfig } from './economy-v2';
 import { operatingCosts, recordMarket } from './metrics';
 import { initializeOperations } from './operations';
@@ -15,11 +14,10 @@ import {
   prepareV2Fleet,
 } from './opening-v2';
 
-// Mundo versão 1 por padrão; `economy: 2` abre a economia alvo da etapa B (D-028 a D-030).
-export function createWorld(
-  now = Date.now(),
-  options: { economy?: 1 | 2; scale?: number } = {},
-): World {
+// Mundo da economia alvo (D-028 a D-030, D-042): catálogo de `catalog.ts`, Centro-Sul real e
+// abertura gerada pela calculadora vezes a escala (1 = mundo de referência; 20 = ~500 bots).
+export function createWorld(now = Date.now(), options: { scale?: number } = {}): World {
+  const scale = options.scale ?? 1;
   const properties: Property[] = [];
   const establishments: Establishment[] = [];
   const add = (
@@ -227,19 +225,17 @@ export function createWorld(
   e('botfactory').inventory = { soy: 40, oil: 12000 };
   e('marketbot').inventory = { oil: 400, rice: 300 };
   e('marketbot').prices = { oil: 850, rice: 2390 };
-  if (options.economy === 2) {
-    // Estoques declarados da abertura v2: a distribuidora vende sementes, mudas e matrizes finitas.
-    Object.assign(e('supplier').inventory, {
-      soySeed: 6,
-      riceSeed: 2000,
-      beanSeed: 2000,
-      caneSeedling: 80,
-      cow: 300,
-      utensils: 3000,
-    });
-    e('agro').inventory.soySeed = 1.2;
-    e('farm').inventory.soySeed = 1.2;
-  }
+  // Estoques declarados da abertura: a distribuidora vende sementes, mudas e matrizes finitas.
+  Object.assign(e('supplier').inventory, {
+    soySeed: 6,
+    riceSeed: 2000,
+    beanSeed: 2000,
+    caneSeedling: 80,
+    cow: 300,
+    utensils: 3000,
+  });
+  e('agro').inventory.soySeed = 1.2;
+  e('farm').inventory.soySeed = 1.2;
   for (const establishment of establishments)
     for (const id of Object.keys(establishment.inventory) as ProductId[])
       establishment.unitCosts[id] = Math.round(
@@ -288,12 +284,12 @@ export function createWorld(
         ['expresso', 'Expresso Paulista'],
       ].map(([id, name]) => ({ id, name, bot: true, balance: 650000000 })),
       { id: 'treasury', name: 'Serviços e propriedades do mundo', bot: true, balance: 0 },
-      // Na versão 2 o orçamento das famílias acompanha a escala do mundo (capital dos bots).
+      // O orçamento das famílias acompanha a escala do mundo (capital dos bots).
       {
         id: 'consumers',
         name: 'Orçamento dos consumidores',
         bot: true,
-        balance: options.economy === 2 ? 8000000000 * Math.max(1, options.scale ?? 1) : 5000000000,
+        balance: 8000000000 * Math.max(1, scale),
       },
     ],
     properties,
@@ -323,19 +319,11 @@ export function createWorld(
       id: `local-${now}`,
       name: 'Temporada local',
       startedAt: now,
-      config:
-        options.economy === 2
-          ? v2SeasonConfig(options.scale ?? 1)
-          : createSeasonConfig(
-              Object.fromEntries(
-                Object.entries(legacyProducts).map(([id, p]) => [id, p.basePrice]),
-              ) as Record<ProductId, number>,
-              recipes,
-            ),
+      config: v2SeasonConfig(scale),
     },
   };
   initializeOperations(world);
-  if (options.economy === 2) prepareV2Fleet(world);
+  prepareV2Fleet(world);
   for (const p of world.properties) {
     p.energyConnected = true;
     if (!p.ownerId) calibrateProperty(p);

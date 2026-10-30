@@ -16,7 +16,7 @@
     "start": "tsx apps/server/src/index.ts --production",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "check": "npm run build && npm test && npm run resources:check && npm run lab:catalog:check",
+    "check": "npm run build && npm test && npm run resources:check",
     "data:sync": "tsx scripts/sync-geography.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

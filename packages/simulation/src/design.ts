@@ -34,19 +34,18 @@ export const designRules = {
     logistics: 0.15,
   },
 };
-// Equipamento por linha: a versão 2 define por receita; a versão 1, por categoria.
+// Equipamento por linha: por receita quando há uma; por categoria para as demais unidades.
 export function equipmentCostFor(
   w: Pick<World, 'season'>,
   category: keyof typeof designRules.equipmentCost,
   recipeId?: string,
 ) {
   const design = w.season.config.design;
-  return (recipeId && design.equipmentByRecipe?.[recipeId]) || design.equipmentCost[category];
+  return (recipeId && design.equipmentByRecipe[recipeId]) || design.equipmentCost[category];
 }
 const institution = (id: string) =>
   id === 'consumers' || id === 'treasury' || id.startsWith('treasury:');
 export function initializeDesign(w: World, at = w.updatedAt) {
-  w.season.config.design ??= structuredClone(designRules);
   const cfg = w.season.config.design as unknown as Record<string, unknown>;
   for (const [key, value] of Object.entries(designRules))
     if (cfg[key] === undefined) cfg[key] = structuredClone(value);
@@ -72,9 +71,7 @@ export function initializeDesign(w: World, at = w.updatedAt) {
         maxFreightPerUnit: 0,
         carrierId: 'auto',
         rules: Object.entries(recipe.input)
-          .filter(
-            ([product]) => !(w.season.config.economyVersion && recipe.output[product as ProductId]),
-          )
+          .filter(([product]) => !recipe.output[product as ProductId])
           .map(([product, q]) => ({
             product: product as ProductId,
             minimum: Math.ceil(q! * 2),

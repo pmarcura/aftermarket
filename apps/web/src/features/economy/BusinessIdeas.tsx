@@ -37,40 +37,35 @@ export function useNegocios() {
     const e = world.establishments.find((x) => x.id === o.establishmentId);
     if (e && (e.inventory[o.product] ?? 0) > 0) vendendo.add(o.product);
   }
-  const itens = world.season.config.economyVersion
-    ? world.season.config.recipes
-        .filter((r) => !r.alternativeOf)
-        .flatMap((r) => {
-          const line = design.find((d) => d.id === r.id);
-          const profile = world.season.config.operations.profiles[r.id];
-          if (!line || !profile) return [];
-          const site = world.properties
-            .filter(
-              (p) => p.ownerId === null && p.category === r.category && p.area >= profile.areaM2,
-            )
-            .sort((a, b) => a.price - b.price)[0];
-          const rebanho = (Object.entries(r.requires ?? {}) as [ProductId, number][]).reduce(
-            (n, [id, q]) => n + q * world.season.config.basePrices[id],
-            0,
-          );
-          const investimento =
-            (site?.price ?? 0) + equipmentCostFor(world, r.category, r.id) + rebanho;
-          const saidas = Object.keys(r.output) as ProductId[];
-          return [
-            {
-              r,
-              line,
-              profile,
-              site,
-              investimento,
-              retorno: investimento / Math.max(1, line.profit),
-              saidas,
-              falta: saidas.length > 0 && saidas.every((id) => !vendendo.has(id)),
-            },
-          ];
-        })
-        .sort((a, b) => a.retorno - b.retorno)
-    : [];
+  const itens = world.season.config.recipes
+    .filter((r) => !r.alternativeOf)
+    .flatMap((r) => {
+      const line = design.find((d) => d.id === r.id);
+      const profile = world.season.config.operations.profiles[r.id];
+      if (!line || !profile) return [];
+      const site = world.properties
+        .filter((p) => p.ownerId === null && p.category === r.category && p.area >= profile.areaM2)
+        .sort((a, b) => a.price - b.price)[0];
+      const rebanho = (Object.entries(r.requires ?? {}) as [ProductId, number][]).reduce(
+        (n, [id, q]) => n + q * world.season.config.basePrices[id],
+        0,
+      );
+      const investimento = (site?.price ?? 0) + equipmentCostFor(world, r.category, r.id) + rebanho;
+      const saidas = Object.keys(r.output) as ProductId[];
+      return [
+        {
+          r,
+          line,
+          profile,
+          site,
+          investimento,
+          retorno: investimento / Math.max(1, line.profit),
+          saidas,
+          falta: saidas.length > 0 && saidas.every((id) => !vendendo.has(id)),
+        },
+      ];
+    })
+    .sort((a, b) => a.retorno - b.retorno);
   return { itens, caixa };
 }
 

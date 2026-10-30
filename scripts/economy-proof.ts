@@ -64,7 +64,7 @@ const stockValue = (w: World) => {
 };
 
 function run(seed: number): SeedResult {
-  const w = createScenario(AT, 'economy-2', seed, { scale });
+  const w = createScenario(AT, 'playtest', seed, { scale });
   applyLabOpening(w, {
     seed,
     seedMode: 'conditions',

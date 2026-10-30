@@ -4,7 +4,7 @@ import { advance } from './engine';
 import { marketView, withAppendOnlyMarketLedger } from './metrics';
 import { products, TIME_SCALE, type ProductId, type World, seasonProducts } from './model';
 import { GAME_DAY, treasuryReserved } from './operations';
-import { createScenario, type ScenarioName } from './scenarios';
+import { createScenario, scenarioNames, type ScenarioName } from './scenarios';
 import { withDecisionTrace } from './decision-trace';
 import {
   applyLabOpening,
@@ -16,7 +16,7 @@ import { LabTraceCollector, type LabBotTrace, type LabTraceBucket } from './lab-
 export type { LabTraceBucket } from './lab-telemetry';
 export type { LabPolicy, LabSeedMode, LabShock } from './lab-experiments';
 
-export const labScenarios = ['baseline', 'starter', 'low-demand', 'economy-2'] as const;
+export const labScenarios = scenarioNames;
 export interface LabOptions extends LabExperimentSettings {
   scenario: ScenarioName;
   seed: number;
@@ -186,7 +186,7 @@ export function validateLabOptions(input: unknown = {}): LabOptions {
     ...(record.capacityRecipe === undefined ? {} : { capacityRecipe: record.capacityRecipe }),
   };
   if (!labScenarios.includes(options.scenario as ScenarioName))
-    throw new Error('Cenário inválido: use baseline, starter, low-demand ou economy-2.');
+    throw new Error('Cenário inválido: use baseline ou playtest.');
   if (
     !Number.isSafeInteger(options.seed) ||
     Number(options.seed) < 0 ||

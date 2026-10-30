@@ -11,7 +11,7 @@ const seeds = arg('seeds', arg('seed', '0')).split(',').map(Number);
 if (!seeds.length || seeds.length > 10 || new Set(seeds).size !== seeds.length)
   throw Error('Use uma a dez sementes distintas em --seeds=0,1,2.');
 const scenario = arg('scenario', 'baseline');
-const compare = arg('compare', 'low-demand');
+const compare = arg('compare', 'playtest');
 function parameters(prefix: string) {
   const shockDay = arg(`${prefix}shock-day`, '');
   return {

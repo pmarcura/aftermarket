@@ -201,23 +201,21 @@ export const economicSources = [
 ];
 
 export interface SeasonConfig {
-  // Ausente nos mundos da versão 1; 2 = economia alvo da etapa B.
-  economyVersion?: number;
-  // Versão 2: sucata urbana devolvida pelos utensílios vendidos e preço da coleta municipal.
-  recycling?: { urbanScrapShare: number; scrapPrice: number };
-  // Versão 2: editais menores e espaçados, dimensionados pelo aço público da economia alvo.
-  government?: { lotScale: number; contractIntervalMs: number };
-  // Versão 2: preço de referência na porta da fábrica; basePrices dos itens de consumo é o de loja.
-  wholesalePrices?: Record<string, number>;
-  // Versão 2: o servidor arquiva extrato, lotes e entregas com mais de keepDays dias de jogo.
-  history?: { keepDays: number };
-  // Versão 2: municípios do mundo (geography-v2.ts) e escala da economia (1 = mundo de
-  // referência da calculadora; 10 = cerca de 500 empresas-bot). Ausente: 10 praças piloto.
-  regions?: import('../../world/src/geography-v2').City[];
-  worldScale?: number;
+  // Sucata urbana devolvida pelos utensílios vendidos e preço da coleta municipal.
+  recycling: { urbanScrapShare: number; scrapPrice: number };
+  // Editais menores e espaçados, dimensionados pelo aço público da economia alvo.
+  government: { lotScale: number; contractIntervalMs: number };
+  // Preço de referência na porta da fábrica; basePrices dos itens de consumo é o de loja.
+  wholesalePrices: Record<ProductId, number>;
+  // O servidor arquiva extrato, lotes e entregas com mais de keepDays dias de jogo.
+  history: { keepDays: number };
+  // Municípios do mundo (geography-v2.ts) e escala da economia (1 = mundo de referência da
+  // calculadora; 20 = cerca de 500 empresas-bot).
+  regions: import('../../world/src/geography-v2').City[];
+  worldScale: number;
   design: typeof designRules & {
-    equipmentByRecipe?: Record<string, number>;
-    wholesaleMargin?: number; // versão 2: margem do atacadista sobre o custo posto
+    equipmentByRecipe: Record<string, number>;
+    wholesaleMargin: number; // margem do atacadista sobre o custo posto
   };
   competition: typeof competitionRules;
   operations: typeof operationRules;
@@ -233,11 +231,17 @@ export interface SeasonConfig {
   population: Record<string, number>;
   qualification: Record<Category, number>;
 }
+// Parâmetros gerais da temporada; a parte derivada do catálogo (preços de fábrica, editais,
+// municípios, escala) entra em `v2SeasonConfig` (economy-v2.ts).
+export type SeasonBase = Omit<
+  SeasonConfig,
+  'recycling' | 'government' | 'wholesalePrices' | 'history' | 'regions' | 'worldScale' | 'design'
+> & { design: typeof designRules };
 // Cópia persistida na abertura da temporada. Nenhuma cotação externa é consultada pelo motor.
 export function createSeasonConfig(
   basePrices: Record<ProductId, number>,
   recipes: Recipe[],
-): SeasonConfig {
+): SeasonBase {
   return structuredClone({
     competition: competitionRules,
     design: designRules,

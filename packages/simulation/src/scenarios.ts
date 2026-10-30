@@ -114,12 +114,7 @@ export function createScenario(
   seed = 0,
   options: { scale?: number } = {},
 ) {
-  if (
-    !scenarioNames.includes(scenario) ||
-    !Number.isSafeInteger(seed) ||
-    seed < 0 ||
-    seed > 10000
-  )
+  if (!scenarioNames.includes(scenario) || !Number.isSafeInteger(seed) || seed < 0 || seed > 10000)
     throw Error('Cenário ou semente inválida.');
   const w = createWorld(at, { scale: options.scale });
   for (const [i, c] of w.companies.filter((c) => c.id.startsWith('rival-')).entries())

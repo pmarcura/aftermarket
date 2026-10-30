@@ -29,12 +29,13 @@ export function CartaoCarga({ g }: { g: GrupoCarga }) {
   const chegam = naEstrada.length
     ? horasDeJogo(Math.max(...naEstrada.map((s) => s.arrivesAt)) - agora)
     : 0;
+  const comprador = world.companies.find((c) => c.id === g.first.buyerId)?.name ?? g.destino.name;
   const frase = g.contrato
     ? `Contrato público: Prefeitura de ${g.contrato.municipality ?? g.destino.name}`
     : g.papel === 'compra'
-      ? `Você recebe em ${g.destino.name}`
+      ? `Você recebe de ${g.origem.name} em ${g.destino.name}`
       : g.papel === 'venda'
-        ? `Você entrega a ${world.companies.find((c) => c.id === g.first.buyerId)?.name ?? g.destino.name}`
+        ? `Você entrega de ${g.origem.name} a ${comprador}`
         : `Sua frota leva de ${g.origem.name} para ${g.destino.name}`;
   const chegou = g.shipments.filter((s) => s.delivered).length;
   const peso = g.quantity ? g.entregue / g.quantity : 0;
@@ -58,15 +59,7 @@ export function CartaoCarga({ g }: { g: GrupoCarga }) {
               ? 'Entregue'
               : `A caminho · ${chegou} de ${g.shipments.length} ${g.shipments.length === 1 ? 'caminhão chegou' : 'caminhões chegaram'}`}
           </span>
-          <p className="ped-frase">
-            {frase}
-            {g.papel !== 'transporte' && (
-              <>
-                {' '}
-                · {g.origem.name} → {g.destino.name}
-              </>
-            )}
-          </p>
+          <p className="ped-frase">{frase}</p>
           <dl className="item-fatos">
             <div>
               <IconePixel nome="caixa" tamanho={22} />

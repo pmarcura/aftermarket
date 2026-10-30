@@ -28,9 +28,10 @@
   grid-row: 1 / span 2;
 }
 .neg-faixa b {
-  font-family: var(--pixel);
-  font-size: 28px;
-  font-weight: 400;
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-size: 33px;
+  font-weight: 800;
   line-height: 1.1;
   color: var(--creme);
 }
@@ -192,9 +193,10 @@
   cursor: pointer;
 }
 .neg-novo strong {
-  font-family: var(--pixel);
-  font-size: 22px;
-  font-weight: 400;
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-size: 26px;
+  font-weight: 800;
   color: var(--creme);
 }
 .neg-novo small {
@@ -223,9 +225,11 @@
 }
 .neg-bloco h2 {
   margin: 0;
-  font-family: var(--pixel);
-  font-size: 20px;
-  font-weight: 400;
+  font-family: var(--display);
+  font-stretch: 66%;
+  text-transform: uppercase;
+  font-size: 24px;
+  font-weight: 800;
 }
 .neg-rotas {
   display: grid;
@@ -298,12 +302,22 @@
 }
 
 @media (max-width: 900px) {
-  .neg-faixa {
+  .neg-faixa > div {
     grid-template-columns: 1fr;
+    justify-items: start;
+    row-gap: 2px;
+    padding: 12px 14px;
   }
-  .neg-faixa > div + div {
-    border-left: 0;
-    border-top: 2px dashed var(--borda);
+  .neg-faixa svg {
+    grid-row: auto;
+    width: 26px;
+    height: 26px;
+  }
+  .neg-faixa b {
+    font-size: 20px;
+  }
+  .neg-faixa span {
+    font-size: 13px;
   }
 }
 @media (max-width: 600px) {

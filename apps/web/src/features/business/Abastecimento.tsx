@@ -1,4 +1,5 @@
 import { useId, useMemo, useState } from 'react';
+import { BotaoProduto } from '../../components/BotaoProduto';
 import { Minus, Plus, ShoppingCart, Truck, Repeat } from 'lucide-react';
 import { useGame, cr, num } from '../../lib/game';
 import { EstadoEstoque } from '../../components/EstadoEstoque';
@@ -35,6 +36,7 @@ function Passo({
   passo = 1,
   casas = 0,
   unidade,
+  dica,
 }: {
   rotulo: string;
   valor: number;
@@ -44,6 +46,8 @@ function Passo({
   passo?: number;
   casas?: number;
   unidade?: string;
+  /** Texto que repete o valor já formatado, por exemplo "R$ 100.000". */
+  dica?: string;
 }) {
   const id = useId();
   const fator = 10 ** casas;
@@ -81,6 +85,7 @@ function Passo({
         </button>
         {unidade && <em>{unidade}</em>}
       </div>
+      {dica && <small className="abs-dica-valor">{dica}</small>}
     </div>
   );
 }
@@ -153,10 +158,14 @@ function CartaoAutomatico({
     >
       <header className="item-hero">
         <div className="item-arte">
-          <ProdutoArte product={rule.product} escala={3} />
+          <BotaoProduto product={rule.product}>
+            <ProdutoArte product={rule.product} escala={3} />
+          </BotaoProduto>
         </div>
         <div className="item-ident">
-          <h3>{products[rule.product].name}</h3>
+          <h3>
+            <BotaoProduto product={rule.product}>{products[rule.product].name}</BotaoProduto>
+          </h3>
           <EstadoEstoque estoque={linha.current} dias={dias} />
           <dl className="item-fatos">
             <div>
@@ -303,7 +312,6 @@ export function Abastecimento({ establishment: e }: { establishment: Establishme
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [world.revision, e.id],
   );
-  const [adicionar, setAdicionar] = useState('');
   const [mover, setMover] = useState<ProductId>();
   const [geral, setGeral] = useState(politica);
   const [frota, setFrota] = useState(false);
@@ -497,10 +505,14 @@ export function Abastecimento({ establishment: e }: { establishment: Establishme
                   >
                     <header className="item-hero">
                       <div className="item-arte">
-                        <ProdutoArte product={id} escala={2} />
+                        <BotaoProduto product={id}>
+                          <ProdutoArte product={id} escala={2} />
+                        </BotaoProduto>
                       </div>
                       <div className="item-ident">
-                        <h3>{products[id].name}</h3>
+                        <h3>
+                          <BotaoProduto product={id}>{products[id].name}</BotaoProduto>
+                        </h3>
                         <EstadoEstoque estoque={e.inventory[id] ?? 0} dias={d} />
                         <dl className="item-fatos">
                           <div>
@@ -542,28 +554,22 @@ export function Abastecimento({ establishment: e }: { establishment: Establishme
           </ul>
         )}
         {outros.length > 0 && (
-          <label className="abs-outro">
-            <span>Outro produto</span>
-            <select value={adicionar} onChange={(ev) => setAdicionar(ev.target.value)}>
-              <option value="">Escolher um produto</option>
+          <div className="abs-outros">
+            <h3>Quer repor mais algum produto?</h3>
+            <ul>
               {outros.map((id) => (
-                <option key={id} value={id}>
-                  {products[id].name}
-                </option>
+                <li key={id}>
+                  <button type="button" disabled={pending} onClick={() => automatizar(id)}>
+                    <ProdutoArte product={id} escala={1} />
+                    <strong>{products[id].name}</strong>
+                    <span>
+                      <Plus size={14} /> Automatizar
+                    </span>
+                  </button>
+                </li>
               ))}
-            </select>
-            <button
-              type="button"
-              className="secondary"
-              disabled={!adicionar || pending}
-              onClick={() => {
-                void automatizar(adicionar as ProductId);
-                setAdicionar('');
-              }}
-            >
-              <Plus size={14} /> Automatizar
-            </button>
-          </label>
+            </ul>
+          </div>
         )}
       </section>
 
@@ -604,6 +610,7 @@ export function Abastecimento({ establishment: e }: { establishment: Establishme
           <fieldset>
             <legend>Quanto gastar</legend>
             <Passo
+              dica={cr(geral.dailyBudget, 0)}
               rotulo="Orçamento por dia (R$)"
               valor={geral.dailyBudget / 100}
               passo={100}
@@ -611,6 +618,7 @@ export function Abastecimento({ establishment: e }: { establishment: Establishme
               onChange={(v) => set('dailyBudget', v * 100)}
             />
             <Passo
+              dica={cr(geral.cashReserve, 0)}
               rotulo="Caixa que não pode ser tocado (R$)"
               valor={geral.cashReserve / 100}
               passo={100}
@@ -672,6 +680,7 @@ export function Abastecimento({ establishment: e }: { establishment: Establishme
               </button>
             </div>
             <Passo
+              dica={geral.maxFreightPerUnit ? cr(geral.maxFreightPerUnit) : 'sem limite'}
               rotulo="Frete máximo por unidade (R$, 0 = sem limite)"
               valor={geral.maxFreightPerUnit / 100}
               passo={1}

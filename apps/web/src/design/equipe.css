@@ -340,8 +340,10 @@
 .eq-passo input {
   min-height: 52px;
   text-align: center;
-  font-family: var(--pixel);
-  font-size: 26px;
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-weight: 800;
+  font-size: 31px;
 }
 .eq-regua {
   width: 100%;

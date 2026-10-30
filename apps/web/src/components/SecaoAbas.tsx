@@ -1,5 +1,8 @@
 import { useGame, type Page } from '../lib/game';
 
+/** Páginas que moram dentro de outra aba: a aba da mãe fica acesa. */
+const dentroDe: Partial<Record<Page, Page>> = { logistics: 'orders', opportunities: 'quotes' };
+
 const secoes = {
   comercio: {
     nome: 'Comércio',
@@ -8,8 +11,6 @@ const secoes = {
       ['quotes', 'Cotações'],
       ['orders', 'Pedidos'],
       ['contracts', 'Contratos'],
-      ['logistics', 'Entregas'],
-      ['opportunities', 'Oportunidades'],
     ],
   },
   negocios: {
@@ -25,14 +26,15 @@ const secoes = {
 export function SecaoAbas({ secao }: { secao: keyof typeof secoes }) {
   const { page, navigate } = useGame();
   const s = secoes[secao];
+  const ativa = dentroDe[page] ?? page;
   return (
     <nav className="secao-abas" aria-label={s.nome}>
       <span className="secao-nome">{s.nome}</span>
       {s.abas.map(([id, rotulo]) => (
         <button
           key={id}
-          className={page === id ? 'on' : ''}
-          aria-current={page === id ? 'page' : undefined}
+          className={ativa === id ? 'on' : ''}
+          aria-current={ativa === id ? 'page' : undefined}
           onClick={() => navigate(id)}
         >
           {rotulo}

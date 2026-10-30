@@ -170,7 +170,9 @@
   border: 2px solid var(--borda);
   box-shadow: 4px 4px 0 var(--sombra);
   pointer-events: none;
-  font-family: var(--pixel);
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-weight: 800;
 }
 .gpx-leitura {
   min-width: 150px;

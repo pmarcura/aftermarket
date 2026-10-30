@@ -28,7 +28,11 @@
 }
 .cot-fato b {
   color: var(--ouro);
-  font: 400 26px/1.2 var(--pixel);
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-weight: 800;
+  font-size: 31px;
+  line-height: 1.2;
   overflow-wrap: anywhere;
 }
 .cot-fato.alerta {
@@ -131,7 +135,11 @@
 .neg-ident h3 {
   margin: 0;
   color: var(--creme);
-  font: 400 22px/1.3 var(--pixel);
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-weight: 800;
+  font-size: 26px;
+  line-height: 1.3;
 }
 .cot-ident h3 .abre-produto {
   min-height: 44px;
@@ -159,13 +167,17 @@
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 4px 8px;
+  gap: 6px 14px;
   color: var(--apagado);
   font-size: 13px;
 }
 .cot-preco > b {
   color: var(--ouro);
-  font: 400 28px/1.2 var(--pixel);
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-weight: 800;
+  font-size: 33px;
+  line-height: 1.2;
 }
 .cot-var {
   display: inline-flex;
@@ -233,7 +245,11 @@
 .cot-movimento h2,
 .cot-ideias h2 {
   margin: 0;
-  font: 400 20px/1.4 var(--pixel);
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-weight: 800;
+  font-size: 24px;
+  line-height: 1.4;
 }
 .cot-movimento > p {
   margin: 8px 0 18px;
@@ -320,7 +336,11 @@
 }
 .neg-numeros b {
   color: var(--ouro);
-  font: 400 22px/1.3 var(--pixel);
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-weight: 800;
+  font-size: 26px;
+  line-height: 1.3;
 }
 .neg-numeros .lucro b {
   color: var(--lavoura);
@@ -437,4 +457,48 @@
   .cot-grupos button {
     flex: 1 1 auto;
   }
+}
+
+/* Análise avançada: recolhida, para quem quer zoom e velas. */
+.cot-avancada {
+  background: var(--chapa);
+  border: 2px dashed var(--borda-forte);
+}
+.cot-avancada > summary {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  list-style: none;
+  cursor: pointer;
+}
+.cot-avancada > summary:focus-visible {
+  outline: 3px solid var(--lavoura);
+  outline-offset: 2px;
+}
+.cot-avancada > summary span {
+  display: grid;
+  gap: 2px;
+}
+.cot-avancada > summary b {
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--creme);
+}
+.cot-avancada > summary small {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--apagado);
+}
+.cot-avancada-corpo {
+  display: grid;
+  gap: 16px;
+  padding: 4px 20px 20px;
+}
+
+.cot-preco > span:not(.cot-var) {
+  white-space: nowrap;
+  font-size: 14px;
 }

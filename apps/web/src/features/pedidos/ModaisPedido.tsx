@@ -19,6 +19,7 @@ import {
 import { quote } from '../../../../../packages/simulation/src/engine';
 import { GAME_DAY, availableStock } from '../../../../../packages/simulation/src/operations';
 import { storageQuantity } from '../../../../../packages/simulation/src/transport';
+import { freeCash } from '../../../../../packages/simulation/src/design';
 import { CampoNumero } from './CampoNumero';
 import { acoesDoPedido } from './dados';
 import '../../design/pedidos.css';
@@ -390,6 +391,8 @@ export function ModalPublicar({
   const [dias, setDias] = useState(3);
   const [reservar, setReservar] = useState(false);
   const total = quantidade * preco + frete;
+  const caixa = freeCash(world, actor);
+  const semCaixa = total > caixa;
   return (
     <Modal title="Pedir mercadoria" onClose={onClose} wide>
       <div className="ped-modal">
@@ -474,9 +477,23 @@ export function ModalPublicar({
             ]}
           />
         )}
+        {semCaixa && total > 0 && (
+          <p className="ped-aviso" role="status">
+            O pedido autoriza {cr(total)}, mas o seu caixa livre é {cr(caixa)}. Peça menos ou espere
+            entrar dinheiro.
+          </p>
+        )}
         <button
           className="primary ped-grande"
-          disabled={pending || !destino || !produto || quantidade <= 0 || preco <= 0 || frete <= 0}
+          disabled={
+            pending ||
+            semCaixa ||
+            !destino ||
+            !produto ||
+            quantidade <= 0 ||
+            preco <= 0 ||
+            frete <= 0
+          }
           onClick={async () => {
             if (
               await run(

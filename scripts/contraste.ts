@@ -42,6 +42,10 @@ const pares: Par[] = [
     fundo: f,
     uso: 'selo/botão com a cor de função',
   })),
+  // notas de papel: tinta e voz do dono sobre o papel
+  { texto: 'tinta', fundo: 'papel', uso: 'texto sobre papel' },
+  { texto: 'ferrugem', fundo: 'papel', uso: 'voz do dono sobre papel' },
+  { texto: 'tinta', fundo: 'papel-2', uso: 'texto sobre papel (sombra)' },
   // elementos gráficos sobre o fundo do gráfico (mínimo 3:1)
   ...['serie-1', 'serie-2', 'serie-3', 'serie-4', 'serie-5'].map((t) => ({
     texto: t,

@@ -11,9 +11,11 @@
 .comprar-bloco > h2,
 .comprar-titulo h2 {
   margin: 0;
-  font-family: var(--pixel);
-  font-size: 24px;
-  font-weight: 400;
+  font-family: var(--display);
+  font-stretch: 66%;
+  text-transform: uppercase;
+  font-size: 28px;
+  font-weight: 800;
   color: var(--creme);
   text-shadow: 3px 3px 0 var(--sombra);
 }
@@ -33,9 +35,10 @@
   color: var(--apagado);
 }
 .comprar-caixa b {
-  font-family: var(--pixel);
-  font-size: 18px;
-  font-weight: 400;
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-size: 21px;
+  font-weight: 800;
   color: var(--ouro);
 }
 .comprar-fornecedor {
@@ -108,9 +111,11 @@
   gap: 4px;
 }
 .destino-nome b {
-  font-family: var(--pixel);
-  font-size: 20px;
-  font-weight: 400;
+  font-family: var(--display);
+  font-stretch: 66%;
+  text-transform: uppercase;
+  font-size: 24px;
+  font-weight: 800;
 }
 .destino-nome small {
   display: inline-flex;
@@ -181,9 +186,11 @@
 }
 .prod-ident h3 {
   margin: 0;
-  font-family: var(--pixel);
-  font-size: 24px;
-  font-weight: 400;
+  font-family: var(--display);
+  font-stretch: 66%;
+  text-transform: uppercase;
+  font-size: 28px;
+  font-weight: 800;
   line-height: 1.15;
   text-shadow: 3px 3px 0 var(--sombra);
 }
@@ -209,9 +216,10 @@
   gap: 4px 12px;
 }
 .prod-preco b {
-  font-family: var(--pixel);
-  font-size: 32px;
-  font-weight: 400;
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-size: 38px;
+  font-weight: 800;
   line-height: 1;
   color: var(--ouro);
 }
@@ -242,7 +250,7 @@
 .prod-faixa i {
   display: block;
   height: 100%;
-  box-shadow: inset 0 3px 0 rgb(255 255 255 / 0.3);
+  box-shadow: inset 0 3px 0 color-mix(in srgb, var(--creme) 30%, transparent);
 }
 .prod-faixa .merc {
   background: var(--serie-3);
@@ -352,9 +360,10 @@
   gap: 2px;
 }
 .of-bloco > summary b {
-  font-family: var(--pixel);
-  font-size: 20px;
-  font-weight: 400;
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-size: 24px;
+  font-weight: 800;
 }
 .of-bloco > summary small {
   font-size: 13px;
@@ -462,9 +471,10 @@
   min-width: 0;
 }
 .of-quem strong {
-  font-family: var(--pixel);
-  font-size: 18px;
-  font-weight: 400;
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-size: 21px;
+  font-weight: 800;
 }
 .of-quem small {
   font-size: 13px;
@@ -475,9 +485,10 @@
   justify-items: end;
 }
 .of-preco b {
-  font-family: var(--pixel);
-  font-size: 20px;
-  font-weight: 400;
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-size: 24px;
+  font-weight: 800;
   color: var(--ouro);
 }
 .of-preco small {

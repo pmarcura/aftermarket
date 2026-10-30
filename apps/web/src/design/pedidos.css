@@ -325,3 +325,25 @@
     width: 100%;
   }
 }
+
+/* Responder sem nada pendente: uma linha leve, para as outras seções aparecerem logo. */
+.ped-livre {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: 12px 16px;
+  background: var(--chapa);
+  border-left: 6px solid var(--lavoura);
+  font: 600 15px var(--fonte);
+}
+
+/* Conteúdo das janelas: respiro nas bordas, como as outras gavetas do jogo. */
+.ped-modal {
+  padding: 18px 22px 24px;
+}
+@media (max-width: 650px) {
+  .ped-modal {
+    padding: 14px 14px 20px;
+  }
+}

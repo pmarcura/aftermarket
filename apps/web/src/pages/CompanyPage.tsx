@@ -11,6 +11,7 @@ import { GRUPOS, porteDe, resumoDaEmpresa, type GrupoSaida } from '../features/e
 import { operatingCosts } from '../../../../packages/simulation/src/metrics';
 import { arrears, freeCash, outstandingLoans } from '../../../../packages/simulation/src/design';
 import type { ProductId } from '../../../../packages/simulation/src/model';
+import '../design/item.css';
 import '../design/empresa.css';
 
 const PERIODOS = [7, 30] as const;

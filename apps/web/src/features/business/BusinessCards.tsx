@@ -1,4 +1,5 @@
 import { IconePixel } from '../../components/IconePixel';
+import '../../design/item.css';
 import { PixelArt, Fumaca } from '../../components/PixelArt';
 import { cr, num, useGame } from '../../lib/game';
 import { spriteDoNegocio, type Sprite } from '../../design/arte';
@@ -22,6 +23,8 @@ const MATIZ: Record<Category, number> = {
   warehouse: 272,
   logistics: 188,
 };
+
+const primeiraMaiuscula = (t: string) => t.charAt(0).toLocaleUpperCase('pt-BR') + t.slice(1);
 
 export function estadoDe(e: Establishment): { label: string; tone: 'green' | 'gold' } {
   if (e.installed === false) return { label: 'Instalação pendente', tone: 'gold' };
@@ -55,6 +58,8 @@ export function BusinessCard({
   const arte = spriteDoNegocio(e, world);
   const estado = estadoDe(e);
   const parado = !e.enabled || e.installed === false || e.mothballed;
+  // Se o botão do alerta já abre o negócio, não repete o "Abrir".
+  const abreONegocio = alerta ? ['Abrir', 'Instalar'].includes(alerta.acao.rotulo) : false;
   const palavra = alerta?.tom === 'brasa' ? 'Precisa de você' : estado.label;
   const tom = alerta?.tom === 'brasa' ? 'brasa' : estado.tone === 'green' ? 'lavoura' : 'ouro';
   return (
@@ -95,7 +100,7 @@ export function BusinessCard({
           <p className={`neg-aviso tom-${alerta.tom}`}>
             <IconePixel nome="alerta" tamanho={28} />
             <span>
-              <b>{alerta.titulo.replace(`${e.name} `, '')}</b>
+              <b>{primeiraMaiuscula(alerta.titulo.replace(`${e.name} `, ''))}</b>
               <small>{alerta.detalhe}</small>
             </span>
           </p>
@@ -117,14 +122,16 @@ export function BusinessCard({
               {alerta.acao.rotulo}
             </button>
           )}
-          <button
-            type="button"
-            className={alerta ? 'secondary' : 'primary'}
-            onClick={() => openBusiness(e.id)}
-            aria-label={`Abrir ${e.name}`}
-          >
-            Abrir
-          </button>
+          {(!alerta || !abreONegocio) && (
+            <button
+              type="button"
+              className={alerta ? 'secondary' : 'primary'}
+              onClick={() => openBusiness(e.id)}
+              aria-label={`Abrir ${e.name}`}
+            >
+              Abrir
+            </button>
+          )}
         </div>
       </div>
     </article>

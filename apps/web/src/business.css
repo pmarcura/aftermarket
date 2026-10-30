@@ -1094,9 +1094,11 @@ summary:focus-visible {
 }
 .loja-id h1 {
   margin: 0;
-  font-family: var(--pixel);
-  font-size: 30px;
-  font-weight: 600;
+  font-family: var(--display);
+  font-stretch: 66%;
+  text-transform: uppercase;
+  font-size: 35px;
+  font-weight: 800;
   line-height: 1;
 }
 .loja-id small {
@@ -1126,9 +1128,10 @@ summary:focus-visible {
   border: 2px solid var(--borda);
 }
 .loja-nums b {
-  font-family: var(--pixel);
-  font-size: 22px;
-  font-weight: 600;
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-size: 26px;
+  font-weight: 800;
   line-height: 1;
 }
 .loja-nums span {
@@ -1369,14 +1372,16 @@ summary:focus-visible {
   border: 2px solid var(--borda);
 }
 .prat-efeito b {
-  font-family: var(--pixel);
-  font-size: 20px;
-  font-weight: 600;
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-size: 24px;
+  font-weight: 800;
 }
 .prat-preco input {
-  font-family: var(--pixel);
-  font-size: 22px;
-  font-weight: 600;
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-size: 26px;
+  font-weight: 800;
 }
 .prat-produto h3 {
   font-family: var(--fonte);
@@ -1388,9 +1393,10 @@ summary:focus-visible {
   border-left-width: 4px;
 }
 .prat-resumo b {
-  font-family: var(--pixel);
-  font-size: 24px;
-  font-weight: 600;
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-size: 28px;
+  font-weight: 800;
 }
 @media (max-width: 1100px) {
   .prat-item {

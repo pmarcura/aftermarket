@@ -1,10 +1,10 @@
 import { FleetPicker } from '../../components/FleetPicker';
 import { freeCash } from '../../../../../packages/simulation/src/design';
-import { OrderLogistics } from '../business/OrderLogistics';
+import { PedidosPage } from '../../pages/ComercioPages';
 import { useState } from 'react';
 import { Truck, ChevronRight, MapPin, ShoppingCart } from 'lucide-react';
 import { useGame, cr, num } from '../../lib/game';
-import { Badge, Empty, Modal, PageHeading, Panel, Rows, Tabs } from '../../components/ui';
+import { Badge, Empty, Modal, PageHeading, Panel, Rows } from '../../components/ui';
 import { SecaoAbas } from '../../components/SecaoAbas';
 import { WorldMap } from '../../components/WorldMap';
 import { products, TIME_SCALE } from '../../../../../packages/simulation/src/model';
@@ -12,10 +12,23 @@ import { quote } from '../../../../../packages/simulation/src/engine';
 import { useRouteStatus } from '../../lib/routing';
 import '../../economy.css';
 
+/**
+ * Entregas moraram aqui; agora vivem em Pedidos › A caminho. Esta página só abre o fechamento do
+ * frete quando alguém chega com uma compra montada (oferta, destino e quantidade escolhidos);
+ * sem isso, leva direto às cargas na estrada.
+ */
 export function LogisticsPage() {
+  const { world, actor, intent } = useGame();
+  const montada =
+    world.offers.some((o) => o.id === intent.offerId) &&
+    world.establishments.some((e) => e.id === intent.destinationId && e.companyId === actor) &&
+    Boolean(intent.quantity);
+  return montada ? <ContratarFrete /> : <PedidosPage inicial="caminho" />;
+}
+
+function ContratarFrete() {
   const { world, actor, intent, navigate, run, pending } = useGame();
-  const [view, setView] = useState(intent.offerId ? 'Contratar frete' : 'Meus pedidos'),
-    [carrier, setCarrier] = useState(''),
+  const [carrier, setCarrier] = useState(''),
     [confirm, setConfirm] = useState(false),
     [more, setMore] = useState(false);
   const [orderMode, setOrderMode] = useState(false),
@@ -49,21 +62,16 @@ export function LogisticsPage() {
     <>
       <SecaoAbas secao="comercio" />
       <PageHeading
-        title={view === 'Contratar frete' ? 'Contratar frete' : 'Entregas'}
-        description="A posição da carga acompanha o prazo da remessa. Recarregar a página preserva o progresso."
+        title="Contratar frete"
+        description="Escolha quem leva a carga e confirme. O total é conferido de novo na hora de pagar."
         action={
-          <button className="secondary" onClick={() => navigate('carrier')}>
-            <Truck size={17} />{' '}
-            {world.season.config.economyVersion ? 'Minha frota' : 'Minha transportadora'}{' '}
-            <ChevronRight size={14} />
+          <button className="secondary" onClick={() => navigate('orders')}>
+            <Truck size={17} /> Ver pedidos <ChevronRight size={14} />
           </button>
         }
       />
       <div className="page-body">
-        <div className="logistics-toolbar">
-          <Tabs values={['Meus pedidos', 'Contratar frete']} value={view} onChange={setView} />
-        </div>
-        {view === 'Contratar frete' && (!offer || !origin || !dest || !quantity) ? (
+        {!offer || !origin || !dest || !quantity ? (
           <Empty
             title="Monte a compra antes de contratar"
             description="Escolha uma oferta, o estabelecimento de destino e a quantidade no mercado. Nenhuma carga é escolhida automaticamente."
@@ -73,7 +81,7 @@ export function LogisticsPage() {
               </button>
             }
           />
-        ) : view === 'Contratar frete' && offer && dest && quantity && preview ? (
+        ) : preview ? (
           <>
             <div className="freight-filter">
               <div>
@@ -236,9 +244,7 @@ export function LogisticsPage() {
               </Panel>
             </div>
           </>
-        ) : (
-          <OrderLogistics />
-        )}
+        ) : null}
       </div>
       {confirm && offer && dest && quantity && selected && (
         <Modal
@@ -309,7 +315,7 @@ export function LogisticsPage() {
               ) {
                 setConfirm(false);
                 if (orderMode) navigate('businesses');
-                else setView('Meus pedidos');
+                else navigate('logistics');
               }
             }}
           >

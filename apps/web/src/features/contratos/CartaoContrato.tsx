@@ -108,7 +108,7 @@ export function CartaoContrato({
             {aberto && c.biddingEndsAt && (
               <div>
                 <IconePixel nome="prazo" tamanho={22} />
-                <dt>Encerra em (min:s)</dt>
+                <dt>Encerra em</dt>
                 <dd>
                   {Math.floor(restam / 60)}:{String(restam % 60).padStart(2, '0')}
                 </dd>

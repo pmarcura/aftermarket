@@ -1,0 +1,537 @@
+/*
+ * Livro-caixa: a linguagem visual do jogo.
+ * Peças de papel presas com fita, etiquetas de preço, carimbos, notas com picote e adesivos de
+ * produto, sobre grafite com grão. Tipografia: Archivo condensada e pesada para título e número,
+ * IBM Plex Mono em maiúsculas para rótulos, Caveat Brush para a voz do dono.
+ * Texto pequeno nunca usa a fonte de marcador: ela só aparece a partir de 22 px.
+ */
+
+/* ---------- Tipografia ---------- */
+.lv-grande {
+  font-family: var(--display);
+  font-stretch: 68%;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.005em;
+  line-height: 0.95;
+}
+.lv-rotulo {
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.lv-mao {
+  font-family: var(--mao);
+  font-size: 26px;
+  line-height: 1.1;
+  color: var(--ouro);
+}
+.lv-numero {
+  font-family: var(--display);
+  font-stretch: 62%;
+  font-weight: 900;
+  line-height: 0.92;
+  letter-spacing: -0.005em;
+}
+
+/* ---------- Fita ---------- */
+.lv-fita {
+  position: absolute;
+  z-index: 2;
+  width: 104px;
+  height: 28px;
+  background: color-mix(in srgb, var(--ouro) 62%, transparent);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.25);
+  clip-path: polygon(
+    0 8%,
+    4% 0,
+    8% 10%,
+    12% 0,
+    100% 0,
+    96% 50%,
+    100% 100%,
+    12% 100%,
+    8% 90%,
+    4% 100%,
+    0 92%,
+    3% 50%
+  );
+  pointer-events: none;
+}
+.lv-fita.a {
+  top: -12px;
+  left: 42%;
+  transform: rotate(-4deg);
+}
+.lv-fita.b {
+  right: 18px;
+  bottom: -10px;
+  width: 78px;
+  transform: rotate(5deg);
+}
+
+/* ---------- Placa do nome: papel escuro rasgado, inclinado ---------- */
+.lv-placa {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  padding: 20px 44px 22px 28px;
+  isolation: isolate;
+  transform: rotate(-1.4deg);
+  filter: drop-shadow(6px 7px 0 var(--sombra));
+}
+.lv-placa::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--chapa) var(--grao);
+  background-blend-mode: soft-light;
+  clip-path: polygon(
+    0 3%,
+    3% 0,
+    22% 2%,
+    41% 0,
+    63% 3%,
+    82% 0,
+    100% 2%,
+    99% 40%,
+    100% 70%,
+    98% 98%,
+    78% 100%,
+    56% 97%,
+    33% 100%,
+    12% 98%,
+    0 100%,
+    1% 60%
+  );
+}
+.lv-placa h1,
+.lv-placa .lv-titulo {
+  margin: 0;
+  font-family: var(--display);
+  font-stretch: 68%;
+  font-weight: 900;
+  font-size: clamp(40px, 5.4vw, 76px);
+  line-height: 0.95;
+  text-transform: uppercase;
+  color: var(--creme);
+  text-shadow: 4px 4px 0 var(--sombra);
+}
+.lv-placa .lv-sub {
+  margin: 10px 0 0;
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--apagado);
+}
+
+/* ---------- Nota de papel: valor grande, voz do dono, borda rasgada ---------- */
+.lv-nota {
+  position: relative;
+  padding: 32px 28px 40px;
+  color: var(--tinta);
+  isolation: isolate;
+  transform: rotate(1.1deg);
+  filter: drop-shadow(8px 10px 0 var(--sombra));
+}
+.lv-nota::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--papel) var(--grao);
+  background-blend-mode: multiply;
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% 95%,
+    94% 98%,
+    88% 95%,
+    82% 99%,
+    74% 96%,
+    66% 100%,
+    58% 96%,
+    50% 99%,
+    42% 95%,
+    34% 99%,
+    26% 96%,
+    18% 100%,
+    10% 96%,
+    4% 99%,
+    0 95%
+  );
+}
+.lv-nota .lv-etiqueta {
+  position: absolute;
+  top: -14px;
+  left: 22px;
+  padding: 6px 14px;
+  background: var(--ouro);
+  color: var(--noite);
+  transform: rotate(-3deg);
+  box-shadow: 3px 3px 0 var(--sombra);
+}
+.lv-nota .lv-mao {
+  color: var(--ferrugem);
+  transform: rotate(-2deg);
+}
+.lv-nota hr {
+  margin: 16px 0;
+  border: 0;
+  border-top: 2px dashed #8d8265;
+}
+.lv-nota p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+/* ---------- Peça escura: azulejo com marca de ouro no canto ---------- */
+.lv-peca {
+  position: relative;
+  padding: 20px 22px 22px;
+  background: var(--chapa) var(--grao);
+  background-blend-mode: soft-light;
+  box-shadow:
+    inset 0 0 0 2px var(--borda),
+    5px 5px 0 var(--sombra);
+}
+.lv-peca::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 46px;
+  height: 5px;
+  background: var(--ouro);
+}
+
+/* ---------- Carimbo: estado como objeto ---------- */
+.lv-carimbo {
+  display: inline-block;
+  padding: 5px 14px;
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--tom, var(--brasa));
+  border: 4px double var(--tom, var(--brasa));
+  background: rgb(0 0 0 / 0.28);
+  transform: rotate(var(--giro, -4deg));
+}
+
+/* ---------- Etiqueta de preço pendurada ---------- */
+.lv-preco {
+  position: relative;
+  display: inline-block;
+  padding: 8px 14px 8px 26px;
+  color: var(--tinta);
+  background: var(--papel);
+  clip-path: polygon(14px 0, 100% 0, 100% 100%, 14px 100%, 0 50%);
+  font-family: var(--display);
+  font-stretch: 62%;
+  font-weight: 900;
+  font-size: 30px;
+  line-height: 1;
+  transform: rotate(-5deg);
+  filter: drop-shadow(3px 3px 0 var(--sombra));
+}
+.lv-preco::before {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  margin-top: -4px;
+  border-radius: 50%;
+  background: var(--chapa);
+}
+
+/* ---------- Adesivo: o produto recortado, com borda branca ---------- */
+.lv-adesivo,
+.lv-adesivo img {
+  filter: drop-shadow(3px 0 0 #fff) drop-shadow(-3px 0 0 #fff) drop-shadow(0 3px 0 #fff)
+    drop-shadow(0 -3px 0 #fff) drop-shadow(5px 8px 0 rgb(0 0 0 / 0.55));
+}
+
+/* ---------- Divisor da seção: título e linha tracejada ---------- */
+.lv-secao {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 0 0 22px;
+  font-family: var(--display);
+  font-stretch: 68%;
+  font-weight: 900;
+  font-size: 38px;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--creme);
+}
+.lv-secao::after {
+  content: '';
+  flex: 1;
+  border-top: 3px dashed var(--borda-forte);
+}
+
+/* ---------- Recibo com picote (nota de entrega, extrato) ---------- */
+.lv-recibo {
+  position: relative;
+  padding: 24px 32px;
+  color: var(--tinta);
+  isolation: isolate;
+  transform: rotate(-0.5deg);
+  filter: drop-shadow(8px 8px 0 var(--sombra));
+}
+.lv-recibo::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--papel) var(--grao);
+  background-blend-mode: multiply;
+  -webkit-mask:
+    radial-gradient(circle 9px at 0 14px, #0000 98%, #000) 0 0 / 51% 28px repeat-y,
+    radial-gradient(circle 9px at 100% 14px, #0000 98%, #000) 100% 0 / 51% 28px repeat-y;
+  mask:
+    radial-gradient(circle 9px at 0 14px, #0000 98%, #000) 0 0 / 51% 28px repeat-y,
+    radial-gradient(circle 9px at 100% 14px, #0000 98%, #000) 100% 0 / 51% 28px repeat-y;
+}
+
+/* ============================================================
+   Estilos gerais do jogo (só dentro da moldura, para não mexer na landing nem no laboratório)
+   ============================================================ */
+
+/* Botões: rótulo em mono maiúsculo, volume de peça de balcão */
+.app-shell button.primary,
+.app-shell button.secondary {
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  min-height: 46px;
+  padding-inline: 20px;
+}
+.app-shell button.primary {
+  background: var(--lavoura);
+  color: var(--noite);
+  box-shadow:
+    inset 0 -5px 0 var(--lavoura-escura),
+    inset 0 2px 0 var(--lavoura-clara),
+    4px 4px 0 var(--sombra);
+}
+.app-shell button.secondary {
+  background: var(--chapa-2);
+  box-shadow:
+    inset 0 0 0 2px var(--borda-forte),
+    inset 0 -4px 0 var(--chapa-3),
+    4px 4px 0 var(--sombra);
+}
+.app-shell button.primary:hover:not(:disabled),
+.app-shell button.secondary:hover:not(:disabled) {
+  transform: translate(-1px, -1px);
+}
+.app-shell button.primary:active:not(:disabled),
+.app-shell button.secondary:active:not(:disabled) {
+  transform: translate(3px, 3px);
+  box-shadow: none;
+}
+
+/* Título da página: vira placa de papel inclinada, com fita */
+.app-shell .page-heading {
+  position: relative;
+  border-bottom: 0;
+  padding-top: 8px;
+}
+.app-shell .page-heading > div:first-child {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  padding: 18px 44px 20px 26px;
+  isolation: isolate;
+  transform: rotate(-1deg);
+  filter: drop-shadow(5px 6px 0 var(--sombra));
+}
+.app-shell .page-heading > div:first-child::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--chapa) var(--grao);
+  background-blend-mode: soft-light;
+  clip-path: polygon(
+    0 3%,
+    3% 0,
+    22% 2%,
+    41% 0,
+    63% 3%,
+    82% 0,
+    100% 2%,
+    99% 40%,
+    100% 70%,
+    98% 98%,
+    78% 100%,
+    56% 97%,
+    33% 100%,
+    12% 98%,
+    0 100%,
+    1% 60%
+  );
+}
+.app-shell .page-heading > div:first-child::after {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 44%;
+  width: 96px;
+  height: 26px;
+  background: color-mix(in srgb, var(--ouro) 62%, transparent);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.25);
+  clip-path: polygon(
+    0 8%,
+    4% 0,
+    8% 10%,
+    12% 0,
+    100% 0,
+    96% 50%,
+    100% 100%,
+    12% 100%,
+    8% 90%,
+    4% 100%,
+    0 92%,
+    3% 50%
+  );
+  transform: rotate(-4deg);
+}
+.app-shell .page-heading h1 {
+  font-family: var(--display);
+  font-stretch: 68%;
+  font-weight: 900;
+  font-size: clamp(36px, 4.6vw, 60px);
+  line-height: 0.95;
+  text-transform: uppercase;
+  text-shadow: 4px 4px 0 var(--sombra);
+}
+.app-shell .page-heading p {
+  font-size: 15px;
+  color: var(--apagado);
+}
+.app-shell .eyebrow {
+  font-family: var(--rotulo);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--lavoura);
+}
+
+/* Abas: adesivos levemente inclinados; a ativa é o adesivo verde */
+.app-shell .tabs {
+  gap: 10px;
+  border-bottom: 0;
+}
+.app-shell .tabs button,
+.app-shell .secao-abas button {
+  font-family: var(--rotulo);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 11px 18px;
+  background: var(--chapa);
+  color: var(--apagado);
+  box-shadow: inset 0 0 0 2px var(--borda);
+  transform: rotate(-0.6deg);
+}
+.app-shell .tabs button:nth-child(even),
+.app-shell .secao-abas button:nth-of-type(even) {
+  transform: rotate(0.7deg);
+}
+.app-shell .tabs button.active,
+.app-shell .secao-abas button.on {
+  background: var(--lavoura);
+  color: var(--noite);
+  border-bottom: 0;
+  box-shadow: 4px 4px 0 var(--sombra);
+  transform: rotate(-1.2deg) translateY(-3px);
+}
+.app-shell .secao-abas button.on::after {
+  display: none;
+}
+.app-shell .secao-nome {
+  font-family: var(--rotulo);
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* Painéis e peças: grão no lugar do chapado */
+.app-shell .panel,
+.app-shell .stat {
+  background-image: var(--grao);
+  background-blend-mode: soft-light;
+}
+
+/* Subtítulos de bloco: título condensado com linha tracejada */
+.app-shell .ini-bloco h2,
+.app-shell .abs-bloco h2,
+.app-shell .ficha-bloco h3 {
+  font-family: var(--display);
+  font-stretch: 68%;
+  font-weight: 900;
+  font-size: 30px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+@media (max-width: 700px) {
+  .lv-placa {
+    padding: 16px 30px 18px 20px;
+  }
+  .lv-nota {
+    padding: 28px 20px 36px;
+  }
+  .lv-secao {
+    font-size: 30px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-shell button.primary:hover:not(:disabled),
+  .app-shell button.secondary:hover:not(:disabled) {
+    transform: none;
+  }
+}
+
+/* Celular: a placa e os números grandes quebram linha em vez de sair da tela. */
+@media (max-width: 700px) {
+  .lv-placa,
+  .app-shell .page-heading > div:first-child {
+    max-width: calc(100% - 14px);
+    box-sizing: border-box;
+  }
+  .lv-placa h1,
+  .app-shell .page-heading h1 {
+    overflow-wrap: anywhere;
+    font-size: clamp(32px, 11vw, 48px);
+  }
+  .ini-cab .lv-placa h1 {
+    font-size: clamp(32px, 11vw, 48px);
+  }
+}
+
+@media (max-width: 700px) {
+  .app-shell .secao-abas,
+  .app-shell .tabs {
+    flex-wrap: wrap;
+    overflow: visible;
+    row-gap: 10px;
+  }
+}

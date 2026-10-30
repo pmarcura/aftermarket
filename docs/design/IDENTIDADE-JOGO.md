@@ -3,6 +3,11 @@
 Pedido do Pedro em 28/10/2026: o jogo tinha se afastado da landing (azul-marinho, mapa claro,
 cara de painel de gestão). A landing é a fonte da identidade; o jogo passa a falar a mesma língua.
 
+Atualização de 30/10/2026: a direção [Livro-caixa](#direção-aprovada-livro-caixa-29102026)
+foi aplicada ao jogo e prevalece sobre a tipografia e as peças descritas na proposta inicial
+abaixo. A landing mantém sua composição própria; as ilustrações pixel e os papéis das cores
+continuam compartilhados.
+
 ## Regras que valem para todas as telas
 
 | O quê          | Regra                                                                                                                                                                                                                                                        |
@@ -180,3 +185,37 @@ O que existe e pode ser reaproveitado:
 - Peças: `item.css` (cartão de produto), `IconePixel` (ilustrações), `ReporGaveta`, `GraficoPixel`/`BarrasPixel`, `CargaCaminho`, `EstadoEstoque`.
 - O mapa noturno está em `lib/map-style.ts` (paleta grafite) e os marcadores em `components/WorldMap.tsx`, ainda com cores soltas (16 em `WorldMap.tsx`, 13 em `map-style.ts`). É o primeiro ponto a revisar, junto com o painel do imóvel e a compra de imóvel.
 - Pendências que a identidade nova deve resolver: telas ainda no estilo antigo (Comprar, Cotações, Pedidos, Contratos, Frota, Fábrica, Meus Negócios, Empresa), `landing.css` com sua própria paleta, e a revisão das chaves em forma geométrica dos gráficos antigos.
+
+### Direção aprovada: Livro-caixa (29/10/2026)
+
+Referência do Pedro: Deadlock Labs (interface autoral, de peças de papel, fita e marcador). Nossa tradução é o **livro-caixa do armazém**: notas, etiquetas de preço, carimbos, fita crepe e adesivos de produto sobre grafite com grão. Protótipo em `docs/design/direcao-autoral.html`; código em `design/livro.css` e `components/Livro.tsx`.
+
+**Tipografia**
+
+| Uso                            | Fonte                                    | Observação                                              |
+| ------------------------------ | ---------------------------------------- | ------------------------------------------------------- |
+| Título e número grande         | Archivo condensada (62–68%) peso 800–900 | Caixa alta em títulos; classe `lv-grande` / `lv-numero` |
+| Rótulo curto                   | IBM Plex Mono 600, maiúsculas, 13 px+    | `lv-rotulo`; botões e abas usam o mesmo                 |
+| Texto corrido                  | Archivo 14–16 px                         |                                                         |
+| Voz do dono (comentário curto) | Caveat Brush, 22 px ou mais              | `lv-mao`; nunca em texto informativo longo              |
+
+As fontes pixel antigas saíram de títulos e números. A pixel art continua sendo a nossa assinatura nas ilustrações (produtos, cenas, ícones).
+
+**Peças** (`design/livro.css`)
+
+- `Placa` / `.lv-placa`: título da tela em papel escuro rasgado, inclinado, com fita. Toda `PageHeading` já vira placa por estilo global.
+- `.lv-nota`: papel creme com borda rasgada para o valor que importa (margem do dia), com etiqueta de ouro e comentário à mão.
+- `.lv-peca`: azulejo escuro com marca de ouro no canto, para números secundários.
+- `Carimbo` / `.lv-carimbo`: estado como objeto (_Esgotado_, _Urgente_, _Pausado_), em tinta dupla e levemente torto.
+- `.lv-preco`: etiqueta de preço pendurada; `.lv-adesivo`: produto com borda branca recortada.
+- `.lv-recibo`: nota com picote (entregas, extrato); `.lv-secao`: título de seção com linha tracejada.
+- Abas são adesivos levemente inclinados; a ativa é o adesivo verde. Botões usam mono maiúsculo com volume de balcão.
+- Tudo é escopado em `.app-shell`, então a landing e o laboratório não mudam.
+
+**Regras de uso**
+
+1. Cada estado é um objeto: carimbo, etiqueta ou nota; não existe "badge" genérico.
+2. Inclinação de no máximo 2°, para parecer feito à mão e não quebrar a leitura.
+3. Um acento só como tinta: lavoura age, ouro é dinheiro, brasa alerta, céu é logística.
+4. Texto sobre papel usa `--tinta` (14:1) e a voz do dono `--ferrugem` (6,3:1); ambos conferidos por `npm run ui:contraste`.
+5. No celular, placas e números quebram linha; nunca passam da tela.

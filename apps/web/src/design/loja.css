@@ -237,3 +237,309 @@
 .chave-est .etiqueta.alvo {
   background: var(--ouro);
 }
+
+/* Cabeçalho da loja: faixa colorida com a cena grande, os números do dia e a barra de empate. */
+.lojah {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 18px 28px;
+  padding: 24px 30px 22px;
+  background:
+    radial-gradient(circle at 10% 35%, hsl(var(--h, 40) 55% 30%), transparent 55%),
+    linear-gradient(100deg, hsl(var(--h, 40) 32% 17%), var(--chapa) 85%);
+  border: 2px solid var(--borda);
+  box-shadow: 6px 6px 0 var(--sombra);
+}
+.lojah-cena {
+  display: grid;
+  place-items: center;
+  filter: drop-shadow(5px 7px 0 var(--sombra));
+}
+.lojah-id {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+  min-width: 0;
+}
+.lojah-trilha {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--lavoura);
+}
+.lojah-id h1 {
+  margin: 0;
+  font-family: var(--display);
+  font-stretch: 66%;
+  text-transform: uppercase;
+  font-size: 31px;
+  font-weight: 800;
+  line-height: 1.35;
+  text-shadow: 3px 3px 0 var(--sombra);
+}
+.lojah-id p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--apagado);
+}
+.lojah-comprar {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 54px;
+  padding: 0 24px;
+  font-size: 16px;
+}
+.lojah-dia {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 12px;
+}
+.lojah-numeros {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lojah-numeros li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 2px 12px;
+  padding: 12px 16px;
+  background: color-mix(in srgb, var(--noite-funda) 80%, transparent);
+  border: 2px solid var(--borda);
+}
+.lojah-numeros li > :first-child {
+  grid-row: span 2;
+}
+.lojah-numeros span {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--apagado);
+}
+.lojah-numeros b {
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--creme);
+}
+.lojah-numeros .bom b {
+  color: var(--lavoura);
+}
+.lojah-numeros .ruim b {
+  color: var(--brasa);
+}
+.lojah-barra {
+  position: relative;
+  height: 22px;
+  background: var(--noite-funda);
+  border-radius: 11px;
+  box-shadow:
+    inset 0 3px 0 rgb(255 255 255 / 0.06),
+    0 0 0 3px var(--sombra);
+  margin-bottom: 22px;
+}
+.lojah-barra i {
+  display: block;
+  height: 100%;
+  border-radius: 11px;
+  box-shadow: inset 0 3px 0 rgb(255 255 255 / 0.3);
+  transition: width 0.5s ease-out;
+}
+.lojah-barra i.bom {
+  background: linear-gradient(
+    180deg,
+    var(--lavoura-clara),
+    var(--lavoura) 45%,
+    var(--lavoura-escura)
+  );
+}
+.lojah-barra i.ruim {
+  background: linear-gradient(180deg, var(--brasa), var(--serie-5));
+}
+.lojah-empate {
+  position: absolute;
+  top: -5px;
+  bottom: -5px;
+  width: 4px;
+  margin-left: -2px;
+  background: var(--creme);
+  border-radius: 2px;
+}
+.lojah-empate small {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--creme);
+}
+.lojah-caminho {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--ceu);
+}
+.lojah-ideias {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--creme);
+}
+.lojah-ideias button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+@media (max-width: 800px) {
+  .lojah {
+    grid-template-columns: 1fr;
+    padding: 18px 16px;
+  }
+  .lojah-numeros {
+    grid-template-columns: 1fr;
+  }
+  .lojah-comprar {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Cabeçalho da loja no Livro-caixa: placa do nome, nota da margem e peças do dia. */
+.lojah2 {
+  display: grid;
+  gap: 30px;
+}
+.lojah2-topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px 28px;
+}
+.lojah2-acoes {
+  display: grid;
+  gap: 10px;
+}
+.lojah2-acoes .primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 56px;
+}
+.lojah2-painel {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 30px;
+  align-items: start;
+}
+.lojah2-valor {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 12px;
+}
+.lojah2-valor b {
+  font-size: 92px;
+}
+.lojah2-valor span {
+  color: #5a5242;
+}
+.lojah2-escala {
+  position: relative;
+  height: 14px;
+  margin: 24px 0 8px;
+  background: linear-gradient(90deg, #d8553b, #e8b13a 50%, #5fae3a);
+  border-radius: 7px;
+  box-shadow: inset 0 0 0 2px rgb(0 0 0 / 0.25);
+}
+.lojah2-escala i {
+  position: absolute;
+  top: -10px;
+  width: 6px;
+  height: 34px;
+  margin-left: -3px;
+  background: var(--tinta);
+  border-radius: 2px;
+  box-shadow: 0 0 0 2px var(--papel);
+}
+.lojah2-empate {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 3px;
+  margin-left: -1px;
+  background: repeating-linear-gradient(180deg, var(--tinta) 0 4px, transparent 4px 7px);
+}
+.lojah2-legenda {
+  display: flex;
+  justify-content: space-between;
+  color: #5a5242;
+}
+.lojah2-pecas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.lojah2-pecas .lv-peca {
+  display: grid;
+  gap: 6px;
+}
+.lojah2-pecas .lv-rotulo {
+  color: var(--apagado);
+}
+.lojah2-pecas .lv-numero {
+  font-size: 60px;
+}
+.lojah2-pecas .lv-numero.bom {
+  color: var(--lavoura);
+}
+.lojah2-pecas .lv-numero.ruim {
+  color: var(--brasa);
+}
+.lojah2-pecas small {
+  font-size: 14px;
+  color: var(--apagado);
+}
+.lojah2-caminho {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 15px;
+}
+.lojah2-ideias {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.lojah2-ideias button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+@media (max-width: 1000px) {
+  .lojah2-painel {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 600px) {
+  .lojah2-pecas {
+    grid-template-columns: 1fr;
+  }
+  .lojah2-valor b {
+    font-size: 72px;
+  }
+}

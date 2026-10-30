@@ -152,6 +152,10 @@ export function Pedidos({ unidade, inicial }: { unidade?: Establishment; inicial
               <Secao titulo="Precisam de você" contagem={nResponder}>
                 {d.precisa.map((o) => cartao(o, 'precisa'))}
               </Secao>
+            ) : d.espera.length + d.abertos.length > 0 ? (
+              <p className="ped-livre">
+                <IconePixel nome="carta" tamanho={28} /> Nada esperando você agora.
+              </p>
             ) : (
               <Vazio
                 icone="carta"

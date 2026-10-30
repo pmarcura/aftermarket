@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { ArrowDownRight, ArrowUpRight, Minus } from 'lucide-react';
 import { useGame, cr, num } from '../../lib/game';
-import { PageHeading } from '../../components/ui';
+import { PageHeading, Select } from '../../components/ui';
 import { SecaoAbas } from '../../components/SecaoAbas';
 import { IconePixel } from '../../components/IconePixel';
 import { BotaoProduto } from '../../components/BotaoProduto';
@@ -20,6 +20,11 @@ import {
 import { seasonPrice } from '../../../../../packages/simulation/src/metrics';
 import { GAME_DAY } from '../../../../../packages/simulation/src/operations';
 import '../../design/cotacoes.css';
+
+// A análise com zoom e velas pesa; só carrega quando o jogador abre a seção avançada.
+const AnaliseAvancada = lazy(() =>
+  import('../../components/ProductAnalysis').then((m) => ({ default: m.ProductAnalysis })),
+);
 
 interface Negocio {
   at: number;
@@ -77,6 +82,8 @@ export function CotacoesPage() {
   const historico = useHistorico(ids);
   const negocios = useNegocios();
   const [grupo, setGrupo] = useState('');
+  const [avancadaAberta, setAvancadaAberta] = useState(false);
+  const [avancado, setAvancado] = useState<ProductId>(ids[0]);
   const nome = (id: string) => world.companies.find((c) => c.id === id)?.name ?? 'Empresa';
 
   const linhas = ids.map((id) => {
@@ -329,6 +336,36 @@ export function CotacoesPage() {
             <BusinessIdeas limite={3} filtro="falta" />
           </section>
         )}
+        <details
+          className="cot-avancada"
+          onToggle={(ev) => setAvancadaAberta(ev.currentTarget.open)}
+        >
+          <summary>
+            <IconePixel nome="grafico" tamanho={32} />
+            <span>
+              <b>Análise avançada</b>
+              <small>Gráfico com zoom, velas e ofertas à venda de um produto</small>
+            </span>
+          </summary>
+          {avancadaAberta && (
+            <div className="cot-avancada-corpo">
+              <Select
+                label="Produto da análise"
+                value={avancado}
+                onChange={(ev) => setAvancado(ev.target.value as ProductId)}
+              >
+                {ids.map((id) => (
+                  <option key={id} value={id}>
+                    {products[id].name}
+                  </option>
+                ))}
+              </Select>
+              <Suspense fallback={<p className="muted">Carregando a análise…</p>}>
+                <AnaliseAvancada product={avancado} advanced />
+              </Suspense>
+            </div>
+          )}
+        </details>
       </div>
     </>
   );

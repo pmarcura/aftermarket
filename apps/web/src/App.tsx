@@ -2,12 +2,10 @@ import { NotificationCenter } from './components/NotificationCenter';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import {
   Map,
-  TrendingUp,
   Store,
   Building2,
   Search,
   ChevronDown,
-  Coins,
   Settings2,
   PanelLeftClose,
   PanelLeftOpen,
@@ -17,13 +15,13 @@ import {
   ExternalLink,
   ArrowLeftRight,
   House,
-  Clock3,
 } from 'lucide-react';
 import { GameProvider, useGame, cr, type Page } from './lib/game';
 import { Modal, Badge, Rows } from './components/ui';
+import { IconePixel } from './components/IconePixel';
 import './business.css';
 import { regionsOf } from '../../../packages/simulation/src/metrics';
-import { products, type Position } from '../../../packages/simulation/src/model';
+import { products, TIME_SCALE, type Position } from '../../../packages/simulation/src/model';
 import { freeCash } from '../../../packages/simulation/src/design';
 import { comecoDoDia, relogio, useMarcarVisita, useResumoDoCaixa } from './features/inicio/tempo';
 import { ReporGaveta } from './features/economy/ReporGaveta';
@@ -245,9 +243,7 @@ function Shell() {
                   <MapPin size={17} />
                   <span>
                     <strong>{r.name}</strong>
-                    <small>
-                      {r.state} · Código IBGE {r.id}
-                    </small>
+                    <small>{r.state}</small>
                   </span>
                   <ArrowUpRight size={14} />
                 </button>
@@ -280,21 +276,21 @@ function Shell() {
         </div>
         <div className="topbar-spacer" />
         <div className="top-metric top-caixa">
-          <Coins size={23} className="gold-text" />
+          <IconePixel nome="moeda" tamanho={26} />
           <div>
             <strong>{cr(freeCash(world, actor), 0)}</strong>
             <span>Caixa livre</span>
           </div>
         </div>
         <div className="top-metric top-result">
-          <TrendingUp size={23} className="positive" />
+          <IconePixel nome="estrela" tamanho={26} />
           <div>
             <strong>{cr(vendasHoje, 0)}</strong>
             <span>Vendas hoje</span>
           </div>
         </div>
         <div className="top-metric top-relogio" aria-label={`Dia ${dia} do jogo, ${hora} horas`}>
-          <Clock3 size={23} className="lavoura-text" />
+          <IconePixel nome="prazo" tamanho={26} />
           <div>
             <strong>Dia {dia}</strong>
             <span>{String(hora).padStart(2, '0')}h no jogo</span>
@@ -328,7 +324,7 @@ function Shell() {
             <div className="header-popover profile-popover">
               <div className="popover-title">
                 <strong>{company.name}</strong>
-                <Badge tone="blue">Conta de teste</Badge>
+                <Badge tone="gold">Em operação</Badge>
               </div>
               <button
                 onClick={() => {
@@ -408,10 +404,10 @@ function Shell() {
       <ProdutoFicha />
       {settings && (
         <Modal title="Preferências do mundo" onClose={() => setSettings(false)}>
-          <Badge tone="blue">Ambiente local de desenvolvimento</Badge>
+          <Badge tone="gold">Mundo ativo</Badge>
           <p>
-            Este mundo está salvo no servidor SQLite. As duas empresas abaixo veem as mesmas
-            propriedades, ofertas e entregas.
+            Alterne entre as empresas disponíveis para administrar propriedades, ofertas e entregas
+            no mesmo território.
           </p>
           <div className="account-options">
             {world.companies
@@ -440,16 +436,12 @@ function Shell() {
           </div>
           <Rows
             rows={[
-              { label: 'Velocidade da simulação', value: '1 segundo real = 2 minutos no jogo' },
-              { label: 'Persistência', value: 'SQLite · salva automaticamente' },
-              { label: 'Cartografia', value: 'OpenFreeMap / OpenStreetMap' },
+              { label: 'Ritmo do mundo', value: `1 minuto real = ${TIME_SCALE} minutos no jogo` },
+              { label: 'Progresso', value: 'Salvo automaticamente' },
               { label: 'Economia e lotes', value: 'Dados simulados' },
+              { label: 'Cartografia', value: 'OpenFreeMap / OpenStreetMap' },
             ]}
           />
-          <p className="small muted">
-            As contas são perfis locais sem senha para teste funcional. Autenticação e acesso
-            público fazem parte da próxima fase.
-          </p>
           <a
             className="text-button"
             href="https://www.openstreetmap.org/copyright"

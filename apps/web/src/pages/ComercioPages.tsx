@@ -2,18 +2,20 @@ import { PageHeading } from '../components/ui';
 import { SecaoAbas } from '../components/SecaoAbas';
 import { Pedidos } from '../features/pedidos/Pedidos';
 import { Contratos } from '../features/contratos/Contratos';
+import { useGame, type OrdersTab } from '../lib/game';
 import '../economy.css';
 
-export function PedidosPage() {
+export function PedidosPage({ inicial }: { inicial?: OrdersTab } = {}) {
+  const { ordersIntent } = useGame();
   return (
     <>
       <SecaoAbas secao="comercio" />
       <PageHeading
-        title="Pedidos e negociações"
+        title="Pedidos e entregas"
         description="Compras e vendas combinadas com outras empresas: o que espera resposta, o que está a caminho e o que já foi entregue."
       />
       <div className="page-body">
-        <Pedidos />
+        <Pedidos key={ordersIntent?.request ?? 'default'} inicial={ordersIntent?.tab ?? inicial} />
       </div>
     </>
   );

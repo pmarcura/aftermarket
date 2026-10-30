@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { BotaoProduto } from '../../components/BotaoProduto';
 import { X } from 'lucide-react';
 import { useGame, cr, num } from '../../lib/game';
 import { useRouteStatus } from '../../lib/routing';
@@ -225,7 +226,9 @@ function Gaveta() {
           <>
             <header className="gaveta-cab" style={{ ['--h' as string]: matizDoProduto(produto) }}>
               <div className="gaveta-cena">
-                <ProdutoArte product={produto} escala={4} />
+                <BotaoProduto product={produto}>
+                  <ProdutoArte product={produto} escala={4} />
+                </BotaoProduto>
               </div>
               <div>
                 <h2 id="gaveta-titulo">Mandar buscar {info.name}</h2>

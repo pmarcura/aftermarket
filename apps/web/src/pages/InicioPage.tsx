@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Check, Coins, Factory, Plus, ShoppingBasket, Truck } from 'lucide-react';
 import { useGame, cr, num } from '../lib/game';
-import { Badge } from '../components/ui';
+import { BotaoProduto } from '../components/BotaoProduto';
+import { Carimbo, Placa } from '../components/Livro';
+import { IconePixel } from '../components/IconePixel';
+import { ProdutoArte } from '../features/economy/Vitrine';
 import { PixelArt } from '../components/PixelArt';
 import { CargaCaminho } from '../components/CargaCaminho';
 import { GraficoPixel } from '../components/GraficoPixel';
-import { spriteDoNegocio } from '../design/arte';
+import { matizDoProduto, spriteDoNegocio } from '../design/arte';
 import { estadoDe } from '../features/business/BusinessCards';
 import { usePendencias, type Pendencia } from '../features/inicio/pendencias';
 import { usePrimeirosPassos } from '../features/inicio/primeirosPassos';
@@ -154,13 +157,31 @@ function PrecisaDeVoce({ pendencias }: { pendencias: Pendencia[] }) {
       {pendencias.length ? (
         <ul className="ini-pendencias">
           {pendencias.map((p) => (
-            <li key={p.id} className={`tom-${p.tom}`}>
-              <div>
+            <li
+              key={p.id}
+              className={`pend tom-${p.tom}`}
+              style={{ ['--h' as string]: p.produto ? matizDoProduto(p.produto) : 30 }}
+            >
+              <div className="pend-arte">
+                {p.produto ? (
+                  <BotaoProduto product={p.produto}>
+                    <ProdutoArte product={p.produto} escala={2} />
+                  </BotaoProduto>
+                ) : (
+                  <IconePixel nome={p.tom === 'brasa' ? 'pedido' : 'estrela'} tamanho={48} />
+                )}
+              </div>
+              <div className="pend-texto">
+                <span className="pend-nivel">
+                  <Carimbo tom={p.tom} giro={p.tom === 'brasa' ? -4 : 3}>
+                    {p.tom === 'brasa' ? 'Urgente' : 'Atenção'}
+                  </Carimbo>
+                </span>
                 <strong>{p.titulo}</strong>
                 <small>{p.detalhe}</small>
               </div>
               <button
-                className={p.tom === 'brasa' ? 'primary' : 'secondary'}
+                className={`pend-acao ${p.tom === 'brasa' ? 'primary' : 'secondary'}`}
                 onClick={p.acao.executar}
               >
                 {p.acao.rotulo}
@@ -171,10 +192,10 @@ function PrecisaDeVoce({ pendencias }: { pendencias: Pendencia[] }) {
       ) : (
         <div className="ini-em-dia">
           <i aria-hidden="true">
-            <Check size={18} strokeWidth={3} />
+            <Check size={22} strokeWidth={3} />
           </i>
           <div>
-            <strong>Nada esperando por você.</strong>
+            <strong>Tudo em dia por aqui.</strong>
             <small>Bom momento para olhar o que está em falta no mercado.</small>
           </div>
           <button className="secondary" onClick={() => navigate('quotes')}>
@@ -292,6 +313,7 @@ function SeusNegocios({
           const problema = pendencias.find((p) => p.negocioId === e.id);
           const lote = world.jobs.find((j) => j.establishmentId === e.id && !j.completed);
           const vendas = porNegocioHoje.get(e.id) ?? 0;
+          const parado = estado.tone !== 'green';
           const motivo = problema
             ? problema.titulo.replace(`${e.name} `, '')
             : lote
@@ -299,27 +321,32 @@ function SeusNegocios({
               : vendas > 0 || e.category === 'retail'
                 ? `Vendeu ${cr(vendas, 0)} hoje`
                 : 'Sem produção agora';
+          const tom = problema ? problema.tom : parado ? 'ouro' : 'lavoura';
           return (
             <li key={e.id}>
               <button
+                className={`neg tom-${tom}`}
+                style={{ ['--h' as string]: matizDoProduto(e.category) }}
                 onClick={() => openBusiness(e.id)}
-                aria-label={`${e.name}: ${estado.tone === 'green' ? motivo : estado.label}`}
+                aria-label={`${e.name}: ${parado ? estado.label : motivo}`}
               >
-                <span className="ini-cena">
-                  <PixelArt name={spriteDoNegocio(e, world)} scale={1} />
+                <span className="neg-cena">
+                  <PixelArt name={spriteDoNegocio(e, world)} scale={2} />
                 </span>
                 <strong>{e.name}</strong>
-                {estado.tone !== 'green' && <Badge tone="gold">{estado.label}</Badge>}
-                <small className={problema ? `ini-motivo tom-${problema.tom}` : 'ini-motivo'}>
-                  {motivo}
-                </small>
+                <span className="neg-estado">
+                  {parado ? estado.label : problema ? 'Precisa de atenção' : 'Funcionando'}
+                </span>
+                <small>{motivo}</small>
               </button>
             </li>
           );
         })}
         <li>
-          <button className="ini-novo" onClick={() => navigate('map')}>
-            <Plus size={22} aria-hidden="true" />
+          <button className="neg neg-novo" onClick={() => navigate('map')}>
+            <span className="neg-mais" aria-hidden="true">
+              <Plus size={34} strokeWidth={3} />
+            </span>
             <strong>Abrir negócio</strong>
             <small>Escolha um imóvel no mapa</small>
           </button>
@@ -339,10 +366,10 @@ export function InicioPage() {
   return (
     <div className="inicio">
       <header className="ini-cab">
-        <h1>{empresa.name}</h1>
-        <p>
-          Dia {dia} · {semana.toLocaleLowerCase('pt-BR')} · {String(hora).padStart(2, '0')}h no jogo
-        </p>
+        <Placa
+          titulo={empresa.name}
+          sub={`Dia ${dia} · ${semana.toLocaleLowerCase('pt-BR')} · ${String(hora).padStart(2, '0')}h no jogo`}
+        />
       </header>
       <Ausencia caixa={caixa} periodo={periodo} />
       <div className="ini-grade">

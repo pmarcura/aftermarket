@@ -78,9 +78,11 @@
 }
 .gaveta-cab h2 {
   margin: 0 0 8px;
-  font-family: var(--titulo);
-  font-size: 20px;
-  font-weight: 400;
+  font-family: var(--display);
+  font-stretch: 66%;
+  text-transform: uppercase;
+  font-size: 24px;
+  font-weight: 800;
   line-height: 1.4;
   text-shadow: 3px 3px 0 var(--sombra);
 }
@@ -101,9 +103,11 @@
 }
 .gaveta-bloco h3 {
   margin: 0;
-  font-family: var(--pixel);
-  font-size: 20px;
-  font-weight: 400;
+  font-family: var(--display);
+  font-stretch: 66%;
+  text-transform: uppercase;
+  font-size: 24px;
+  font-weight: 800;
 }
 
 /* Quanto: três tamanhos prontos, grandes e fáceis de tocar. */
@@ -129,8 +133,10 @@
   font-weight: 600;
 }
 .gaveta-prazos span {
-  font-family: var(--pixel);
-  font-size: 22px;
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-weight: 800;
+  font-size: 26px;
   color: var(--ouro);
 }
 .gaveta-prazos small {
@@ -231,9 +237,10 @@
 }
 .gaveta-opcao strong {
   grid-column: 1 / -1;
-  font-family: var(--pixel);
-  font-size: 18px;
-  font-weight: 400;
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-size: 21px;
+  font-weight: 800;
 }
 .gaveta-onde,
 .gaveta-prazo {
@@ -254,9 +261,10 @@
   align-self: center;
 }
 .gaveta-preco b {
-  font-family: var(--pixel);
-  font-size: 24px;
-  font-weight: 400;
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-size: 28px;
+  font-weight: 800;
   color: var(--ouro);
 }
 .gaveta-preco small {
@@ -297,9 +305,10 @@
   color: var(--brasa);
 }
 .gaveta-conta b {
-  font-family: var(--pixel);
-  font-size: 30px;
-  font-weight: 400;
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-size: 35px;
+  font-weight: 800;
   color: var(--ouro);
 }
 .gaveta-despachar {
@@ -326,9 +335,11 @@
 }
 .gaveta-ok h2 {
   margin: 0;
-  font-family: var(--titulo);
-  font-size: 22px;
-  font-weight: 400;
+  font-family: var(--display);
+  font-stretch: 66%;
+  text-transform: uppercase;
+  font-size: 26px;
+  font-weight: 800;
   color: var(--lavoura);
   text-shadow: 3px 3px 0 var(--sombra);
 }

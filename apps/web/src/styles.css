@@ -1190,9 +1190,19 @@ td .primary {
   position: absolute;
   inset: 0;
 }
-.map-canvas canvas.maplibregl-canvas {
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
+.world-map::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 50% 50%, transparent 58%, rgba(12, 14, 10, 0.42) 100%),
+    linear-gradient(rgba(166, 224, 90, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(166, 224, 90, 0.03) 1px, transparent 1px);
+  background-size:
+    100% 100%,
+    64px 64px,
+    64px 64px;
 }
 .maplibregl-ctrl-attrib {
   font-family: Arial, sans-serif !important;

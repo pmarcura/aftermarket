@@ -93,8 +93,10 @@
 }
 .abs-numeros dd {
   margin: 0;
-  font-family: var(--pixel);
-  font-size: 22px;
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-weight: 800;
+  font-size: 26px;
   color: var(--creme);
 }
 .abs-numeros dd small {
@@ -472,4 +474,69 @@
   .abs-chave i::after {
     transition: none;
   }
+}
+
+/* Outros produtos: cartões com a imagem, em vez de uma lista suspensa. */
+.abs-outros {
+  display: grid;
+  gap: 14px;
+  padding: 18px 20px;
+  background: var(--noite-funda);
+  border: 2px dashed var(--borda-forte);
+}
+.abs-outros h3 {
+  margin: 0;
+  font-family: var(--display);
+  font-stretch: 66%;
+  text-transform: uppercase;
+  font-size: 21px;
+  font-weight: 800;
+}
+.abs-outros ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.abs-outros button {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 12px 8px;
+  background: var(--chapa-2);
+  border: 2px solid var(--borda);
+  box-shadow: 3px 3px 0 var(--sombra);
+  color: var(--creme);
+  cursor: pointer;
+}
+.abs-outros button:hover:not(:disabled) {
+  border-color: var(--lavoura);
+}
+.abs-outros button:focus-visible {
+  outline: 3px solid var(--lavoura);
+  outline-offset: 2px;
+}
+.abs-outros .vit-arte {
+  max-height: 64px;
+}
+.abs-outros strong {
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+.abs-outros span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--lavoura);
+}
+.abs-dica-valor {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ouro);
 }

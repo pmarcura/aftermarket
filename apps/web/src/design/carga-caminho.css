@@ -1,4 +1,4 @@
-/* A caminho: cada carga é um caminhão andando sobre uma faixa de estrada. */
+/* Carga a caminho: cartão com a imagem do produto, a rota e o caminhão na pista. */
 .cam-lista {
   display: grid;
   gap: 14px;
@@ -6,32 +6,194 @@
   padding: 0;
   list-style: none;
 }
-.cam-texto {
+.cam {
   display: grid;
-  gap: 2px;
-  margin-bottom: 8px;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 18px;
+  padding: 14px 18px 14px 10px;
+  background:
+    radial-gradient(circle at 8% 40%, hsl(var(--h, 40) 50% 28%), transparent 55%),
+    linear-gradient(100deg, hsl(var(--h, 40) 28% 17%), var(--chapa) 80%);
+  border: 2px solid var(--borda);
+  box-shadow: 4px 4px 0 var(--sombra);
 }
-.cam-texto strong {
-  font-size: 14px;
+.cam-arte {
+  display: grid;
+  place-items: center;
+  min-width: 82px;
+  filter: drop-shadow(3px 4px 0 var(--sombra));
+}
+.cam-arte .vit-arte {
+  max-height: none;
+  max-width: none;
+}
+.cam-corpo {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.cam-topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 14px;
+}
+.cam-topo strong {
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1.3;
   color: var(--creme);
 }
-.cam-texto small {
-  font-size: 12px;
+.cam-prazo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 12px 3px 8px;
+  background: var(--ceu);
+  color: var(--noite);
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 2px 2px 0 var(--sombra);
+}
+.cam-prazo.chegando {
+  background: var(--lavoura);
+}
+.cam-rota {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 600;
   color: var(--apagado);
 }
+.cam-rota i {
+  flex: 1;
+  max-width: 60px;
+  height: 0;
+  border-top: 3px dotted var(--borda-forte);
+}
+.cam-rota span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Pista lisa: asfalto com a faixa tracejada, uma bandeira de partida e uma de chegada. */
 .cam-estrada {
   position: relative;
-  height: 22px;
-  margin-right: 16px;
+  height: 30px;
+  margin: 6px 14px 0;
   background:
-    var(--estrada) 0 50% / 100% 2px no-repeat,
-    var(--noite-funda);
-  box-shadow: inset 0 0 0 2px var(--borda);
+    repeating-linear-gradient(90deg, var(--creme) 0 10px, transparent 10px 22px) 0 50% / 100% 3px
+      no-repeat,
+    linear-gradient(180deg, var(--noite-funda), var(--chapa-2));
+  border-radius: 15px;
+  box-shadow:
+    inset 0 3px 0 rgb(255 255 255 / 0.06),
+    0 0 0 3px var(--sombra);
 }
-.cam-estrada svg {
+.cam-feito {
   position: absolute;
-  top: 3px;
-  color: var(--ceu);
-  filter: drop-shadow(2px 2px 0 var(--sombra));
-  transition: left 1s steps(6);
+  inset: 0 auto 0 0;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--ceu) 35%, transparent), transparent);
+  border-radius: 15px 0 0 15px;
+  pointer-events: none;
+}
+.cam-ponto {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  border: 3px solid var(--noite);
+}
+.cam-ponto.origem {
+  left: -7px;
+  background: var(--apagado);
+}
+.cam-ponto.destino {
+  right: -7px;
+  background: var(--lavoura);
+}
+.cam-caminhao {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -62%);
+  filter: drop-shadow(2px 3px 0 var(--sombra));
+  transition: left 1s linear;
+}
+@media (max-width: 600px) {
+  .cam {
+    grid-template-columns: 1fr;
+    justify-items: start;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cam-caminhao {
+    transition: none;
+  }
+}
+
+/* ===== Livro-caixa: a carga é uma nota de entrega ===== */
+.cam {
+  color: var(--tinta);
+  background: var(--papel) var(--grao);
+  background-blend-mode: multiply;
+  border: 0;
+  box-shadow: 5px 5px 0 var(--sombra);
+  transform: rotate(-0.4deg);
+}
+.cam:nth-child(even) {
+  transform: rotate(0.5deg);
+}
+.cam-topo strong {
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-weight: 900;
+  font-size: 28px;
+  text-transform: uppercase;
+  color: var(--tinta);
+}
+.cam-rota {
+  font-family: var(--rotulo);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #5a5242;
+}
+.cam-rota i {
+  border-top-color: #8d8265;
+}
+.cam-prazo {
+  background: none;
+  color: var(--ferrugem);
+  box-shadow: none;
+  font-family: var(--mao);
+  font-size: 24px;
+  font-weight: 400;
+}
+.cam-prazo.chegando {
+  background: none;
+  color: #2f6b13;
+}
+.cam-estrada {
+  background:
+    repeating-linear-gradient(90deg, #8d8265 0 10px, transparent 10px 22px) 0 50% / 100% 3px
+      no-repeat,
+    transparent;
+  box-shadow: none;
+  border-bottom: 3px dotted #8d8265;
+  border-radius: 0;
+}
+.cam-feito {
+  display: none;
+}
+.cam-ponto {
+  border-color: var(--papel);
 }

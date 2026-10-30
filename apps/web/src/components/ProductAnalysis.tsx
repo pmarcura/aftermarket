@@ -13,6 +13,13 @@ import {
 } from '../../../../packages/simulation/src/model';
 import { marketView, seasonPrice } from '../../../../packages/simulation/src/metrics';
 
+/** Cor do tema em hex, lida das variáveis de design.css; o canvas do gráfico não aceita var(). */
+const tema = (nome: string) =>
+  getComputedStyle(document.documentElement)
+    .getPropertyValue('--' + nome)
+    .trim() || 'black';
+const comAlfa = (hex: string, alfa: string) => (hex.length === 7 ? hex + alfa : hex);
+
 interface History {
   samples: MarketSample[];
   trades: Entry[];
@@ -111,24 +118,24 @@ export function ProductAnalysis({
     const candle = kind === 'candlestick',
       labels = candle ? candles.map((c) => gameTime(c.at)) : data.map((s) => gameTime(s.at));
     return {
-      color: ['#67c7c1', '#e3b46a', '#70a8cc'],
+      color: [tema('lavoura'), tema('ouro'), tema('ceu')],
       grid: [
         { left: 74, right: 30, top: 55, height: '58%' },
         { left: 74, right: 30, top: '78%', height: '11%' },
       ],
       tooltip: {
         trigger: 'axis',
-        axisPointer: { type: 'cross', crossStyle: { color: '#829ba9' } },
-        backgroundColor: '#102530',
-        borderColor: '#45616f',
-        textStyle: { color: '#e5eff3' },
+        axisPointer: { type: 'cross', crossStyle: { color: tema('apagado') } },
+        backgroundColor: tema('chapa'),
+        borderColor: tema('borda-forte'),
+        textStyle: { color: tema('creme') },
       },
-      legend: { top: 8, left: 10, textStyle: { color: '#abc2ce' } },
+      legend: { top: 8, left: 10, textStyle: { color: tema('apagado') } },
       toolbox: {
         show: expanded,
         right: 16,
         top: 8,
-        iconStyle: { borderColor: '#9db8c6' },
+        iconStyle: { borderColor: tema('apagado') },
         feature: {
           dataZoom: {
             yAxisIndex: false,
@@ -139,7 +146,7 @@ export function ProductAnalysis({
             title: 'Exportar PNG',
             name: `aftermarket-${product}`,
             pixelRatio: 2,
-            backgroundColor: '#142832',
+            backgroundColor: tema('noite'),
           },
         },
       },
@@ -148,20 +155,25 @@ export function ProductAnalysis({
         gridIndex,
         data: labels,
         boundaryGap: candle,
-        axisLine: { lineStyle: { color: '#3c5664' } },
-        axisLabel: { show: gridIndex === 1, color: '#91aebb', fontSize: 10, hideOverlap: true },
-        axisPointer: { label: { backgroundColor: '#34505e' } },
+        axisLine: { lineStyle: { color: tema('borda-forte') } },
+        axisLabel: {
+          show: gridIndex === 1,
+          color: tema('apagado'),
+          fontSize: 12,
+          hideOverlap: true,
+        },
+        axisPointer: { label: { backgroundColor: tema('chapa-3') } },
       })),
       yAxis: [
         {
           type: log ? 'log' : 'value',
           scale: true,
           name: `R$ / ${item.unit}`,
-          nameTextStyle: { color: '#8daebc', align: 'left' },
+          nameTextStyle: { color: tema('apagado'), align: 'left' },
           gridIndex: 0,
-          splitLine: { lineStyle: { color: '#29424e', type: 'dashed' } },
+          splitLine: { lineStyle: { color: tema('borda'), type: 'dashed' } },
           axisLabel: {
-            color: '#99b7c7',
+            color: tema('apagado'),
             formatter: (v: number) => v.toLocaleString('pt-BR', { maximumFractionDigits: 2 }),
           },
         },
@@ -170,7 +182,7 @@ export function ProductAnalysis({
           name: `Negócios / ${item.unit}`,
           gridIndex: 1,
           splitLine: { show: false },
-          axisLabel: { color: '#819fac', fontSize: 9 },
+          axisLabel: { color: tema('apagado'), fontSize: 12 },
         },
       ],
       dataZoom: expanded
@@ -181,15 +193,17 @@ export function ProductAnalysis({
               xAxisIndex: [0, 1],
               bottom: 0,
               height: 17,
-              borderColor: '#37515f',
-              textStyle: { color: '#8eb0c0' },
-              fillerColor: '#669da52b',
+              borderColor: tema('borda'),
+              textStyle: { color: tema('apagado') },
+              fillerColor: comAlfa(tema('lavoura'), '2b'),
             },
           ]
         : [],
       series: [
         {
-          name: candle ? 'Negócios executados · OHLC' : 'Ofertas ponderadas por estoque',
+          name: candle
+            ? 'Negócios fechados (abre, fecha, mínima, máxima)'
+            : 'Preço médio das ofertas',
           type: candle ? 'candlestick' : 'line',
           data: candle
             ? candles.map((c) => [
@@ -204,22 +218,22 @@ export function ProductAnalysis({
           connectNulls: false,
           itemStyle: candle
             ? {
-                color: '#67c7c1',
-                color0: '#d58b64',
-                borderColor: '#67c7c1',
-                borderColor0: '#d58b64',
+                color: tema('lavoura'),
+                color0: tema('brasa'),
+                borderColor: tema('lavoura'),
+                borderColor0: tema('brasa'),
               }
-            : { color: '#67c7c1' },
+            : { color: tema('lavoura') },
           lineStyle: { width: 2 },
           markLine: {
             silent: true,
             symbol: 'none',
-            lineStyle: { color: '#cfaa71', type: 'dashed' },
+            lineStyle: { color: tema('ouro'), type: 'dashed' },
             label: {
               formatter: 'Abertura da temporada',
               position: 'insideEndTop',
-              color: '#cfaa71',
-              fontSize: 10,
+              color: tema('ouro'),
+              fontSize: 12,
             },
             data: [{ yAxis: seasonPrice(world, product) / 100 }],
           },
@@ -227,11 +241,11 @@ export function ProductAnalysis({
         ...(average && !candle
           ? [
               {
-                name: 'Média móvel · 7 observações',
+                name: 'Média das últimas 7 leituras',
                 type: 'line',
                 data: moving,
                 showSymbol: false,
-                lineStyle: { color: '#e3b46a', width: 1.5, type: 'dashed' },
+                lineStyle: { color: tema('ouro'), width: 1.5, type: 'dashed' },
               },
             ]
           : []),
@@ -241,7 +255,7 @@ export function ProductAnalysis({
           xAxisIndex: 1,
           yAxisIndex: 1,
           data: candle ? candles.map((c) => c.volume) : bars,
-          itemStyle: { color: '#5f99b5' },
+          itemStyle: { color: tema('ceu') },
         },
       ],
     };
@@ -311,7 +325,7 @@ export function ProductAnalysis({
       {expanded && (
         <>
           <Tabs
-            values={['Preço e volume', 'Livro de ofertas', 'Dados e método']}
+            values={['Preço e volume', 'Ofertas à venda', 'Como calculamos']}
             value={tab}
             onChange={setTab}
           />
@@ -343,11 +357,11 @@ export function ProductAnalysis({
                     disabled={kind === 'candlestick'}
                     onChange={(e) => setAverage(e.target.checked)}
                   />
-                  MM7
+                  Média de 7 leituras
                 </label>
                 <label className="inline-check">
                   <input type="checkbox" checked={log} onChange={(e) => setLog(e.target.checked)} />
-                  Escala log
+                  Escala em proporção (log)
                 </label>
               </>
             )}
@@ -391,7 +405,7 @@ export function ProductAnalysis({
             </p>
           </>
         )
-      ) : tab === 'Livro de ofertas' ? (
+      ) : tab === 'Ofertas à venda' ? (
         <>
           <EconomicChart
             label={`Ofertas de venda de ${item.name}`}
@@ -409,14 +423,14 @@ export function ProductAnalysis({
                 type: 'value',
                 name: `R$ / ${item.unit}`,
                 scale: true,
-                splitLine: { lineStyle: { color: '#29424e' } },
+                splitLine: { lineStyle: { color: tema('borda') } },
               },
               series: [
                 {
                   name: 'Venda disponível',
                   type: 'line',
                   step: 'end',
-                  areaStyle: { color: '#65b6ad26' },
+                  areaStyle: { color: comAlfa(tema('lavoura'), '26') },
                   data: [...market.offers]
                     .sort((a, b) => a.price - b.price)
                     .map((o, i, all) => [
@@ -435,7 +449,10 @@ export function ProductAnalysis({
         <div className="method-content">
           <Rows
             rows={[
-              { label: 'Preço das ofertas', value: 'Σ(preço × estoque) ÷ Σ estoque' },
+              {
+                label: 'Preço médio das ofertas',
+                value: 'média dos preços, com mais peso para quem tem mais estoque',
+              },
               { label: 'Demanda por dia do jogo', value: `${num(market.demand, 1)} ${item.unit}` },
               {
                 label: 'Consumo da população',

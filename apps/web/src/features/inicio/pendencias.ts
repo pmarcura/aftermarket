@@ -10,6 +10,8 @@ export interface Pendencia {
   tom: 'brasa' | 'ouro';
   /** Negócio afetado, para o cartão dele mostrar o motivo. */
   negocioId?: string;
+  /** Produto envolvido, para mostrar a imagem no cartão. */
+  produto?: ProductId;
   titulo: string;
   detalhe: string;
   acao: { rotulo: string; executar: () => void };
@@ -87,6 +89,7 @@ export function usePendencias(): Pendencia[] {
           const nomes = (xs: typeof acabando) => lista(xs.map((x) => products[x.id].name));
           itens.push({
             id: `estoque-${e.id}`,
+            produto: acabando[0].id,
             negocioId: e.id,
             tom: esgotados.length ? 'brasa' : 'ouro',
             titulo: esgotados.length
@@ -110,6 +113,7 @@ export function usePendencias(): Pendencia[] {
       if (falta.length)
         itens.push({
           id: `insumo-${e.id}`,
+          produto: falta[0][0],
           negocioId: e.id,
           tom: 'brasa',
           titulo: `${e.name} sem ${lista(falta.map(([p]) => products[p].name.toLocaleLowerCase('pt-BR')))}`,

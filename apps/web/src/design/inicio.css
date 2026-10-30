@@ -6,22 +6,6 @@
   margin: 0 auto;
   padding: 28px 32px 48px;
 }
-.ini-cab h1 {
-  margin: 0;
-  font-family: var(--titulo);
-  font-size: 26px;
-  font-weight: 400;
-  line-height: 1.3;
-  color: var(--creme);
-  text-shadow: 3px 3px 0 var(--sombra);
-}
-.ini-cab p {
-  margin: 10px 0 0;
-  font-family: var(--fonte);
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--apagado);
-}
 
 /* Títulos de bloco: pixel, sem caixa alta, com contador quadrado. */
 .inicio h2 {
@@ -84,9 +68,10 @@
     3px 3px 0 var(--sombra);
 }
 .ini-fora b {
-  font-family: var(--pixel);
-  font-size: 26px;
-  font-weight: 400;
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-size: 31px;
+  font-weight: 800;
   line-height: 1.1;
   color: var(--creme);
   white-space: nowrap;
@@ -116,54 +101,110 @@
   box-shadow: 4px 4px 0 var(--sombra);
 }
 
-/* Pendências: faixa de cor à esquerda diz a urgência; o botão resolve. */
+/* Pendências: cada uma é um cartão com a imagem do produto, a consequência e o botão que resolve. */
 .ini-pendencias {
   display: grid;
-  gap: 10px;
+  gap: 14px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
-.ini-pendencias li,
+.pend {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 20px;
+  padding: 14px 20px 14px 12px;
+  background:
+    radial-gradient(
+      circle at 7% 45%,
+      color-mix(in srgb, var(--tom) 30%, transparent),
+      transparent 52%
+    ),
+    linear-gradient(100deg, color-mix(in srgb, var(--tom) 10%, var(--chapa-2)), var(--chapa) 85%);
+  border: 2px solid var(--borda);
+  border-left: 8px solid var(--tom, var(--lavoura));
+  box-shadow: 4px 4px 0 var(--sombra);
+}
+.pend-arte {
+  display: grid;
+  place-items: center;
+  min-width: 86px;
+  filter: drop-shadow(3px 4px 0 var(--sombra));
+}
+.pend-arte .vit-arte {
+  max-height: none;
+  max-width: none;
+}
+.pend-texto {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.pend-nivel {
+  justify-self: start;
+  padding: 1px 10px;
+  background: var(--tom, var(--lavoura));
+  color: var(--noite);
+  font-size: 13px;
+  font-weight: 600;
+}
+.pend-texto strong {
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.3;
+  color: var(--creme);
+}
+.pend-texto small {
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--apagado);
+}
+.pend-acao {
+  min-width: 118px;
+  min-height: 50px;
+  font-size: 16px;
+}
 .ini-em-dia {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 12px 14px;
-  background: var(--chapa-2);
-  border-left: 6px solid var(--tom, var(--lavoura));
-}
-.ini-pendencias li > div,
-.ini-em-dia > div {
-  display: grid;
-  gap: 3px;
-  flex: 1;
-  min-width: 0;
-}
-.ini-pendencias strong,
-.ini-em-dia strong {
-  font-size: 15px;
-  color: var(--creme);
-}
-.ini-pendencias small,
-.ini-em-dia small {
-  font-size: 13px;
-  color: var(--apagado);
-}
-.ini-pendencias button,
-.ini-em-dia button {
-  flex: none;
-  min-width: 104px;
+  gap: 16px;
+  padding: 16px 18px;
+  background: linear-gradient(
+    100deg,
+    color-mix(in srgb, var(--lavoura) 14%, var(--chapa-2)),
+    var(--chapa)
+  );
+  border: 2px solid var(--borda);
+  border-left: 8px solid var(--lavoura);
 }
 .ini-em-dia > i {
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
   flex: none;
   background: var(--lavoura);
   color: var(--noite);
+  border-radius: 50%;
   box-shadow: 3px 3px 0 var(--sombra);
+}
+.ini-em-dia > div {
+  display: grid;
+  gap: 3px;
+  flex: 1;
+}
+.ini-em-dia strong {
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-size: 21px;
+  font-weight: 800;
+}
+.ini-em-dia small {
+  font-size: 14px;
+  color: var(--apagado);
 }
 
 /* Primeiros passos em blocos, como uma barra de vida. */
@@ -214,72 +255,91 @@
   color: var(--apagado);
 }
 
-/* Negócios: cenas pixel em fila. */
+/* Negócios: um cartão por unidade, com a cena grande e uma palavra de estado. */
 .ini-negocios ul {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
-.ini-negocios button {
+.neg {
   display: grid;
-  justify-items: start;
-  gap: 6px;
+  justify-items: center;
+  gap: 8px;
   width: 100%;
   height: 100%;
-  padding: 10px 12px 12px;
+  padding: 0 0 16px;
   background: var(--chapa-2);
   border: 2px solid var(--borda);
+  box-shadow: 4px 4px 0 var(--sombra);
   color: var(--creme);
-  text-align: left;
+  text-align: center;
   cursor: pointer;
+  overflow: hidden;
 }
-.ini-negocios button:hover {
-  border-color: var(--lavoura-escura);
+.neg:hover {
+  border-color: var(--borda-forte);
+  transform: translateY(-2px);
 }
-.ini-negocios button:focus-visible {
+.neg:focus-visible {
   outline: 3px solid var(--lavoura);
-  outline-offset: 2px;
+  outline-offset: 3px;
 }
-.ini-negocios button:active {
+.neg:active {
   transform: translate(2px, 2px);
 }
-.ini-cena {
+.neg-cena {
   display: grid;
   place-items: center;
-  justify-self: stretch;
-  height: 76px;
+  align-self: stretch;
+  min-height: 150px;
+  padding: 14px;
   background:
-    linear-gradient(var(--grade) 1px, transparent 1px) 0 0 / 8px 8px,
-    linear-gradient(90deg, var(--grade) 1px, transparent 1px) 0 0 / 8px 8px,
-    var(--noite-funda);
+    radial-gradient(circle at 50% 45%, hsl(var(--h, 40) 55% 34%), transparent 70%),
+    linear-gradient(180deg, hsl(var(--h, 40) 32% 17%), var(--chapa));
+  filter: drop-shadow(0 4px 0 var(--sombra));
 }
-.ini-negocios strong {
-  font-family: var(--fonte);
+.neg strong {
+  padding: 0 12px;
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+.neg-estado {
+  padding: 3px 12px;
+  background: var(--tom, var(--lavoura));
+  color: var(--noite);
   font-size: 14px;
   font-weight: 600;
+  box-shadow: 2px 2px 0 var(--sombra);
 }
-.ini-negocios small {
-  font-size: 12px;
+.neg small {
+  padding: 0 12px;
+  font-size: 14px;
   color: var(--apagado);
 }
-.ini-negocios small b {
-  font-family: var(--fonte);
-  font-weight: 600;
-}
-.ini-negocios .ini-novo {
-  place-content: center;
-  justify-items: center;
-  min-height: 170px;
+.neg-novo {
+  align-content: center;
+  min-height: 250px;
   background: transparent;
-  border: 2px dashed var(--borda-forte);
+  border: 3px dashed var(--borda-forte);
+  box-shadow: none;
   color: var(--lavoura);
-  text-align: center;
 }
-.ini-negocios .ini-novo small {
-  color: var(--apagado);
+.neg-mais {
+  display: grid;
+  place-items: center;
+  width: 68px;
+  height: 68px;
+  border: 3px dashed var(--lavoura);
+  border-radius: 50%;
+}
+.neg-novo strong {
+  color: var(--lavoura);
 }
 
 @media (max-width: 1100px) {
@@ -316,16 +376,15 @@
   .ini-fora b {
     font-size: 18px;
   }
-  .ini-pendencias li,
-  .ini-em-dia {
-    flex-wrap: wrap;
+  .pend {
+    grid-template-columns: auto 1fr;
   }
-  .ini-pendencias button,
-  .ini-em-dia button {
+  .pend-acao {
+    grid-column: 1 / -1;
     width: 100%;
   }
   .ini-negocios ul {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr 1fr;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -339,4 +398,102 @@
 }
 .ini-motivo.tom-ouro {
   color: var(--ouro);
+}
+
+/* ===== Livro-caixa no Início ===== */
+.ini-cab {
+  padding: 6px 0 10px;
+}
+.ini-cab .lv-placa h1 {
+  font-size: clamp(40px, 4.6vw, 64px);
+}
+.pend-nivel {
+  background: none;
+  padding: 0;
+}
+.pend-nivel .lv-carimbo {
+  font-size: 13px;
+  padding: 2px 10px;
+  border-width: 3px;
+}
+.pend-texto strong {
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-weight: 900;
+  font-size: 30px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.neg strong {
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-weight: 900;
+  font-size: 32px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.neg-estado {
+  background: none;
+  color: var(--tom, var(--lavoura));
+  border: 3px double var(--tom, var(--lavoura));
+  box-shadow: none;
+  font-family: var(--rotulo);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transform: rotate(-2deg);
+}
+.ini-fora b {
+  font-family: var(--display);
+  font-stretch: 62%;
+  font-weight: 900;
+  font-size: 44px;
+}
+.ini-bloco,
+.ini-fora {
+  background-image: var(--grao);
+  background-blend-mode: soft-light;
+}
+
+@media (max-width: 700px) {
+  .ini-fora b {
+    font-size: 30px;
+  }
+  .pend-texto strong,
+  .neg strong {
+    font-size: 24px;
+  }
+}
+
+/* A grade do Início nunca passa da largura da tela. */
+.inicio {
+  grid-template-columns: minmax(0, 1fr);
+}
+.ini-grade > *,
+.ini-coluna,
+.ini-fora li,
+.pend-texto {
+  min-width: 0;
+}
+.ini-fora ul {
+  grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+}
+
+@media (max-width: 700px) {
+  .pend {
+    grid-template-columns: auto minmax(0, 1fr);
+    padding-right: 14px;
+  }
+  .pend-acao {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+  .pend-texto strong,
+  .neg strong,
+  .cam-topo strong {
+    overflow-wrap: anywhere;
+  }
+  .pend-arte {
+    min-width: 64px;
+  }
 }

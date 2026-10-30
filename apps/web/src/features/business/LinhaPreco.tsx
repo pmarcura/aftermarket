@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { BotaoProduto } from '../../components/BotaoProduto';
 import { ShoppingCart } from 'lucide-react';
 import { useGame, cr, num } from '../../lib/game';
 import { ProdutoArte } from '../economy/Vitrine';
@@ -172,11 +173,16 @@ export function LinhaPreco({
       style={{ ['--h' as string]: matizDoProduto(product) }}
     >
       <header className="item-hero">
+        <span className="lv-preco item-etiqueta">{cr(preco)}</span>
         <div className="item-arte">
-          <ProdutoArte product={product} escala={3} />
+          <BotaoProduto product={product}>
+            <ProdutoArte product={product} escala={3} />
+          </BotaoProduto>
         </div>
         <div className="item-ident">
-          <h3>{products[product].name}</h3>
+          <h3>
+            <BotaoProduto product={product}>{products[product].name}</BotaoProduto>
+          </h3>
           <EstadoEstoque estoque={estoque} dias={dias} />
           <dl className="item-fatos">
             <div>

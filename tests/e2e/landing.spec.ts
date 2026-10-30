@@ -85,7 +85,7 @@ test('entrar abre o mundo de teste e preserva o destino do jogador', async ({ pa
     .click();
   await expect(page).toHaveURL(/\/jogar$/);
   await expect(page.getByRole('navigation', { name: 'Menu principal' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Meus Negócios', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Meus negócios', exact: true })).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem('aftermarket.company'))).toBe('player');
   expect(unexpectedApi).toEqual([]);
   expect(errors).toEqual([]);

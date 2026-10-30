@@ -1,3 +1,219 @@
+/* Página da Frota e complemento da gaveta de caminhões na identidade do jogo. */
+
+.fro-pagina {
+  display: grid;
+  gap: 22px;
+  max-width: 1180px;
+}
+
+.fro-faixa {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+.fro-faixa > div {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 12px;
+  align-items: center;
+  padding: 14px 16px;
+  background: var(--chapa);
+  border: 2px solid var(--borda);
+  box-shadow: 4px 4px 0 var(--sombra);
+}
+.fro-faixa > div svg {
+  grid-row: 1 / 3;
+}
+.fro-faixa b {
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-weight: 800;
+  font-size: 26px;
+  line-height: 1.15;
+  color: var(--creme);
+}
+.fro-faixa span {
+  font: 600 13px/1.3 var(--fonte);
+  color: var(--apagado);
+}
+
+.fro-grade {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 16px;
+}
+.fro-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: var(--chapa);
+  border: 2px solid var(--borda-forte);
+  box-shadow:
+    inset 0 -4px 0 var(--terra-logistica),
+    4px 4px 0 var(--sombra);
+}
+.fro-card-topo {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+}
+.fro-card-arte {
+  width: 72px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  background: var(--noite-funda);
+  border: 2px solid var(--borda);
+}
+.fro-card-id {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+.fro-card-id h3 {
+  margin: 0;
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-weight: 800;
+  font-size: 21px;
+  line-height: 1.2;
+  color: var(--creme);
+}
+.fro-card-id small {
+  font: 600 13px/1.25 var(--fonte);
+  color: var(--apagado);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.fro-card-fatos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+.fro-card-fatos div {
+  padding: 8px 10px;
+  background: var(--noite-funda);
+  border: 1px solid var(--borda);
+  display: grid;
+  gap: 2px;
+}
+.fro-card-fatos dt {
+  font: 600 12px/1.2 var(--fonte);
+  color: var(--apagado);
+}
+.fro-card-fatos dd {
+  margin: 0;
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-weight: 800;
+  font-size: 18px;
+  line-height: 1.25;
+  color: var(--creme);
+}
+
+.fro-vida {
+  display: grid;
+  gap: 5px;
+}
+.fro-vida-topo {
+  display: flex;
+  justify-content: space-between;
+  font: 600 12.5px/1.2 var(--fonte);
+  color: var(--apagado);
+}
+.fro-vida-barra {
+  height: 10px;
+  background: var(--noite-funda);
+  border: 1px solid var(--borda);
+  overflow: hidden;
+}
+.fro-vida-barra > i {
+  display: block;
+  height: 100%;
+  background: var(--lavoura);
+}
+.fro-vida-barra.alerta > i {
+  background: var(--ouro);
+}
+.fro-vida-barra.ruim > i {
+  background: var(--brasa);
+}
+
+.fro-card-acoes {
+  margin-top: auto;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.fro-novo {
+  width: 100%;
+  height: 100%;
+  min-height: 210px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--chapa);
+  border: 2px dashed var(--borda-forte);
+  box-shadow: 4px 4px 0 var(--sombra);
+  color: var(--creme);
+  cursor: pointer;
+  text-align: center;
+}
+.fro-novo:hover {
+  border-color: var(--lavoura);
+  background: var(--chapa-2);
+}
+.fro-novo strong {
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-weight: 800;
+  font-size: 21px;
+  line-height: 1.25;
+  color: var(--lavoura);
+}
+.fro-novo small {
+  font: 600 13px/1.35 var(--fonte);
+  color: var(--apagado);
+}
+
+.fro-bloco {
+  padding: 18px;
+  background: var(--chapa);
+  border: 2px solid var(--borda);
+  box-shadow: 4px 4px 0 var(--sombra);
+  display: grid;
+  gap: 14px;
+}
+.fro-bloco-cab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.fro-bloco-cab h2 {
+  margin: 0;
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-weight: 800;
+  font-size: 21px;
+  line-height: 1.25;
+  color: var(--creme);
+}
+
 /* Complemento da gaveta comum; regras do recibo restritas à compra de caminhão. */
 .fro-modelos {
   display: grid;
@@ -22,7 +238,11 @@
   cursor: pointer;
 }
 .fro-modelos strong {
-  font: 400 22px/1.3 var(--pixel);
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-weight: 800;
+  font-size: 26px;
+  line-height: 1.3;
 }
 .fro-modelos span {
   color: var(--ceu);
@@ -122,9 +342,72 @@
     min-height: 0;
   }
 }
-/* Em janela baixa ou com zoom, o recibo segue no fluxo e não encobre as escolhas. */
 @media (max-height: 600px) {
   .gaveta[aria-label='Comprar caminhão'] .gaveta-rodape {
     position: static;
+  }
+}
+
+/* Cartão de caminhão no formato do cartão de produto (design/item.css). */
+.fro-item {
+  height: 100%;
+  grid-template-rows: auto 1fr;
+}
+.fro-item .item-hero {
+  grid-template-columns: auto 1fr;
+  gap: 18px;
+  padding: 18px 20px;
+}
+.fro-item .item-arte {
+  min-width: 150px;
+  min-height: 112px;
+}
+.fro-item .item-ident h3 {
+  font-size: 24px;
+}
+.fro-item.parado .item-hero {
+  filter: saturate(0.5);
+}
+.fro-vida-txt {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--apagado);
+}
+.fro-corpo {
+  grid-template-columns: 1fr;
+  align-content: space-between;
+  gap: 14px;
+  padding: 16px 20px 20px;
+}
+.fro-agora {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: 12px 14px;
+  background: var(--noite-funda);
+  border-left: 6px solid var(--ceu);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--creme);
+}
+.fro-produto {
+  font-size: inherit;
+  font-weight: 700;
+}
+.fro-corpo .primary {
+  min-height: 48px;
+  font-size: 16px;
+}
+@media (max-width: 600px) {
+  .fro-item .item-hero {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+  .fro-item .item-arte {
+    min-width: 0;
+    min-height: 0;
+    justify-self: start;
   }
 }

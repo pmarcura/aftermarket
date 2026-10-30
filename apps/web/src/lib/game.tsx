@@ -113,6 +113,7 @@ export interface MarketIntent {
   offerId?: string;
   quantity?: number;
 }
+export type OrdersTab = 'responder' | 'caminho' | 'concluidos';
 interface GameContextValue {
   world: World;
   actor: string;
@@ -122,6 +123,8 @@ interface GameContextValue {
   refresh: () => Promise<void>;
   page: Page;
   navigate: (page: Page, preserveIntent?: boolean) => void;
+  ordersIntent: { tab: OrdersTab; request: number } | null;
+  openOrders: (tab: OrdersTab) => void;
   selectedId: string | null;
   select: (id: string | null) => void;
   focus: [number, number] | undefined;
@@ -164,6 +167,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [focus, setFocus] = useState<[number, number]>();
   const consumeFocus = useCallback(() => setFocus(undefined), []);
   const [intent, setIntent] = useState<MarketIntent>({});
+  const [ordersIntent, setOrdersIntent] = useState<GameContextValue['ordersIntent']>(null);
+  const ordersRequest = useRef(0);
   const [produtoAberto, openProduto] = useState<ProductId | null>(null);
   const [repor, openRepor] = useState<{ destinationId: string; product: ProductId } | null>(null);
   const [pending, setPending] = useState(false),
@@ -216,6 +221,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const notice = (message: string, isError = false) =>
     setToast({ message, error: isError, id: Date.now() });
   const navigate = (p: Page, preserveIntent = false) => {
+    setOrdersIntent(null);
     if (p === 'market' || (p === 'logistics' && !preserveIntent)) setIntent({});
     changePage(p);
     localStorage.setItem('aftermarket.page', p);
@@ -271,6 +277,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
         setActor,
         page,
         navigate,
+        ordersIntent,
+        openOrders: (tab) => {
+          navigate('orders');
+          setOrdersIntent({ tab, request: ++ordersRequest.current });
+        },
         selectedId,
         select,
         focus,

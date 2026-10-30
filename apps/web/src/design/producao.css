@@ -11,9 +11,11 @@
   align-items: center;
   gap: 10px;
   margin: 0;
-  font-family: var(--pixel);
-  font-size: 20px;
-  font-weight: 400;
+  font-family: var(--display);
+  font-stretch: 66%;
+  text-transform: uppercase;
+  font-size: 24px;
+  font-weight: 800;
   color: var(--creme);
 }
 .prod-conta {
@@ -113,9 +115,11 @@
 }
 .unid-ident h1 {
   margin: 0;
-  font-family: var(--pixel);
-  font-size: 38px;
-  font-weight: 400;
+  font-family: var(--display);
+  font-stretch: 66%;
+  text-transform: uppercase;
+  font-size: 45px;
+  font-weight: 800;
   line-height: 1.1;
   text-shadow: 3px 3px 0 var(--sombra);
 }
@@ -158,8 +162,10 @@
 }
 .unid-numeros dd {
   margin: 2px 0 0;
-  font-family: var(--pixel);
-  font-size: 26px;
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-weight: 800;
+  font-size: 31px;
   color: var(--creme);
 }
 .dinheiro {
@@ -206,9 +212,11 @@
 }
 .prod-instalar h1 {
   margin: 0 0 8px;
-  font-family: var(--pixel);
-  font-size: 34px;
-  font-weight: 400;
+  font-family: var(--display);
+  font-stretch: 66%;
+  text-transform: uppercase;
+  font-size: 40px;
+  font-weight: 800;
 }
 .prod-instalar p {
   margin: 0;
@@ -260,9 +268,11 @@
 }
 .fluxo-col h3 {
   margin: 0;
-  font-family: var(--pixel);
-  font-size: 18px;
-  font-weight: 400;
+  font-family: var(--display);
+  font-stretch: 66%;
+  text-transform: uppercase;
+  font-size: 21px;
+  font-weight: 800;
   color: var(--apagado);
 }
 .fluxo-seta {
@@ -293,9 +303,11 @@
 }
 .pcard-corpo h4 {
   margin: 0;
-  font-family: var(--pixel);
-  font-size: 20px;
-  font-weight: 400;
+  font-family: var(--display);
+  font-stretch: 66%;
+  text-transform: uppercase;
+  font-size: 24px;
+  font-weight: 800;
   line-height: 1.2;
 }
 .pcard-corpo p,
@@ -337,9 +349,11 @@
 }
 .fluxo-maquina h4 {
   margin: 0;
-  font-family: var(--pixel);
-  font-size: 20px;
-  font-weight: 400;
+  font-family: var(--display);
+  font-stretch: 66%;
+  text-transform: uppercase;
+  font-size: 24px;
+  font-weight: 800;
   text-align: center;
 }
 .fluxo-maquina ul {
@@ -414,9 +428,11 @@
 }
 .lote-corpo h4 {
   margin: 0;
-  font-family: var(--pixel);
-  font-size: 20px;
-  font-weight: 400;
+  font-family: var(--display);
+  font-stretch: 66%;
+  text-transform: uppercase;
+  font-size: 24px;
+  font-weight: 800;
   line-height: 1.25;
 }
 .lote-corpo p {
@@ -457,9 +473,10 @@
   filter: grayscale(0.6);
 }
 .fila-vazia strong {
-  font-family: var(--pixel);
-  font-size: 20px;
-  font-weight: 400;
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-size: 24px;
+  font-weight: 800;
 }
 .fila-vazia p {
   margin: 6px 0 12px;
@@ -579,9 +596,10 @@
   color: var(--apagado);
 }
 .est-ocupacao b {
-  font-family: var(--pixel);
-  font-size: 20px;
-  font-weight: 400;
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-size: 24px;
+  font-weight: 800;
 }
 .est-lista {
   display: grid;
@@ -653,9 +671,11 @@
 }
 .recibo-cab h3 {
   margin: 0 0 4px;
-  font-family: var(--pixel);
-  font-size: 24px;
-  font-weight: 400;
+  font-family: var(--display);
+  font-stretch: 66%;
+  text-transform: uppercase;
+  font-size: 28px;
+  font-weight: 800;
 }
 .recibo-cab p {
   margin: 0;
@@ -686,8 +706,10 @@
   min-width: 0;
   min-height: 52px;
   text-align: center;
-  font-family: var(--pixel);
-  font-size: 28px;
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-weight: 800;
+  font-size: 33px;
   color: var(--ouro);
 }
 .recibo-atalhos {
@@ -755,9 +777,10 @@
   color: var(--brasa);
 }
 .recibo-grande {
-  font-family: var(--pixel);
-  font-size: 22px;
-  font-weight: 400;
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-size: 26px;
+  font-weight: 800;
 }
 .recibo-grande small {
   font-family: var(--fonte);
@@ -884,4 +907,9 @@
   .lote-barra i {
     transition: none;
   }
+}
+
+/* Links de texto da unidade: legíveis (mínimo de 14 px). */
+.prod .text-button {
+  font-size: 14px;
 }

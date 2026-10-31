@@ -1,7 +1,7 @@
 import type { World, Property, Establishment, Category, Position } from './model';
-import { ECONOMIC_INTERVAL, legacyProducts, products, recipes, type ProductId } from './model';
-import { createSeasonConfig } from './calibration';
+import { ECONOMIC_INTERVAL, products, type ProductId } from './model';
 import { v2SeasonConfig } from './economy-v2';
+import { referencePrice } from './catalog';
 import { operatingCosts, recordMarket } from './metrics';
 import { initializeOperations } from './operations';
 import { initializeCompetition } from './competition';
@@ -15,11 +15,28 @@ import {
   prepareV2Fleet,
 } from './opening-v2';
 
-// Mundo versão 1 por padrão; `economy: 2` abre a economia alvo da etapa B (D-028 a D-030).
-export function createWorld(
-  now = Date.now(),
-  options: { economy?: 1 | 2; scale?: number } = {},
-): World {
+// Preços de abertura das empresas antigas (Minas Ferro, Aurora, AgroVale, lojas dos jogadores):
+// custo do estoque, preço de prateleira e ofertas iniciais. Vêm da temporada anterior e diferem
+// da referência do catálogo (ex.: carvão R$ 1.800/t contra R$ 1.850/t). Mantidos nesta spec para
+// não mudar a economia (R8); alinhar ao catálogo é decisão de balanceamento da spec 003.
+const openingPrices: Partial<Record<ProductId, number>> = {
+  iron: 50000,
+  coal: 180000,
+  steel: 480000,
+  soy: 250000,
+  soymeal: 230,
+  oil: 849,
+  rice: 2345,
+  beans: 870,
+  sugar: 1745,
+  milk: 549,
+};
+const openingPrice = (id: ProductId) => openingPrices[id] ?? referencePrice(id);
+
+// Mundo da economia alvo (D-028 a D-030, D-042): catálogo de `catalog.ts`, Centro-Sul real e
+// abertura gerada pela calculadora vezes a escala (1 = mundo de referência; 20 = ~500 bots).
+export function createWorld(now = Date.now(), options: { scale?: number } = {}): World {
+  const scale = options.scale ?? 1;
   const properties: Property[] = [];
   const establishments: Establishment[] = [];
   const add = (
@@ -227,23 +244,21 @@ export function createWorld(
   e('botfactory').inventory = { soy: 40, oil: 12000 };
   e('marketbot').inventory = { oil: 400, rice: 300 };
   e('marketbot').prices = { oil: 850, rice: 2390 };
-  if (options.economy === 2) {
-    // Estoques declarados da abertura v2: a distribuidora vende sementes, mudas e matrizes finitas.
-    Object.assign(e('supplier').inventory, {
-      soySeed: 6,
-      riceSeed: 2000,
-      beanSeed: 2000,
-      caneSeedling: 80,
-      cow: 300,
-      utensils: 3000,
-    });
-    e('agro').inventory.soySeed = 1.2;
-    e('farm').inventory.soySeed = 1.2;
-  }
+  // Estoques declarados da abertura: a distribuidora vende sementes, mudas e matrizes finitas.
+  Object.assign(e('supplier').inventory, {
+    soySeed: 6,
+    riceSeed: 2000,
+    beanSeed: 2000,
+    caneSeedling: 80,
+    cow: 300,
+    utensils: 3000,
+  });
+  e('agro').inventory.soySeed = 1.2;
+  e('farm').inventory.soySeed = 1.2;
   for (const establishment of establishments)
     for (const id of Object.keys(establishment.inventory) as ProductId[])
       establishment.unitCosts[id] = Math.round(
-        products[id].basePrice * (establishment.category === 'retail' ? 0.67 : 0.75),
+        openingPrice(id) * (establishment.category === 'retail' ? 0.67 : 0.75),
       );
   const vehicles: World['vehicles'] = [];
   for (const [owner, count] of [
@@ -288,12 +303,12 @@ export function createWorld(
         ['expresso', 'Expresso Paulista'],
       ].map(([id, name]) => ({ id, name, bot: true, balance: 650000000 })),
       { id: 'treasury', name: 'Serviços e propriedades do mundo', bot: true, balance: 0 },
-      // Na versão 2 o orçamento das famílias acompanha a escala do mundo (capital dos bots).
+      // O orçamento das famílias acompanha a escala do mundo (capital dos bots).
       {
         id: 'consumers',
         name: 'Orçamento dos consumidores',
         bot: true,
-        balance: options.economy === 2 ? 8000000000 * Math.max(1, options.scale ?? 1) : 5000000000,
+        balance: 8000000000 * Math.max(1, scale),
       },
     ],
     properties,
@@ -323,31 +338,23 @@ export function createWorld(
       id: `local-${now}`,
       name: 'Temporada local',
       startedAt: now,
-      config:
-        options.economy === 2
-          ? v2SeasonConfig(options.scale ?? 1)
-          : createSeasonConfig(
-              Object.fromEntries(
-                Object.entries(legacyProducts).map(([id, p]) => [id, p.basePrice]),
-              ) as Record<ProductId, number>,
-              recipes,
-            ),
+      config: v2SeasonConfig(scale),
     },
   };
   initializeOperations(world);
-  if (options.economy === 2) prepareV2Fleet(world);
+  prepareV2Fleet(world);
   for (const p of world.properties) {
     p.energyConnected = true;
     if (!p.ownerId) calibrateProperty(p);
   }
   for (const offer of world.offers)
     offer.price = Math.round(
-      products[offer.product].basePrice * (products[offer.product].unit === 'un' ? 0.78 : 1),
+      openingPrice(offer.product) * (products[offer.product].unit === 'un' ? 0.78 : 1),
     );
   for (const establishment of world.establishments) {
     establishment.automation = world.companies.find((c) => c.id === establishment.companyId)!.bot;
     for (const id of Object.keys(establishment.prices) as ProductId[])
-      establishment.prices[id] = products[id].basePrice;
+      establishment.prices[id] = openingPrice(id);
     establishment.dailyCost = operatingCosts(world, establishment).total;
   }
   initializeCompetition(world, now);

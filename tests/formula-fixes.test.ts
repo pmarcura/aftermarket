@@ -2,12 +2,17 @@ import { describe, expect, it } from 'vitest';
 import { createWorld } from '../packages/simulation/src/seed';
 import { advance, execute } from '../packages/simulation/src/engine';
 import { ECONOMIC_INTERVAL, type ProductId, type World } from '../packages/simulation/src/model';
-import { automationCyclesPerDay, GAME_DAY } from '../packages/simulation/src/operations';
+import {
+  automationCyclesPerDay,
+  GAME_DAY,
+  retailCapacity,
+} from '../packages/simulation/src/operations';
 import { dailyNeed } from '../packages/simulation/src/supply';
-import { marketView } from '../packages/simulation/src/metrics';
+import { botRecoveryPlan } from '../packages/simulation/src/director';
+import { dailyDemand, marketView } from '../packages/simulation/src/metrics';
 import { householdProducts } from '../packages/simulation/src/channels';
 
-// Correções da auditoria matemática M03, M04, M05 e M07. M02 está no auditor (npm run mathematics:audit).
+// Correções da auditoria matemática M02, M03, M04, M05 e M07, provadas sobre as receitas da temporada.
 const NOW = Date.UTC(2026, 9, 30, 12);
 const money = (w: World) => w.companies.reduce((n, c) => n + c.balance, 0);
 function quiet() {
@@ -41,6 +46,39 @@ const sold = (w: World, ids: string[], product?: ProductId) =>
     .reduce((n, h) => n + h.sold, 0);
 
 describe('correções da auditoria matemática', () => {
+  it('M02: a recuperação de um bot não projeta mais ciclos do que a linha conclui por dia', () => {
+    const plan = (slower: number) => {
+      const w = createWorld(NOW);
+      const recipe = w.season.config.recipes.find((r) => r.id === 'milk-production')!;
+      recipe.duration *= slower;
+      const dairy = w.establishments.find(
+        (e) => e.specialization === recipe.id && w.companies.find((c) => c.id === e.companyId)!.bot,
+      )!;
+      Object.assign(dairy, { enabled: false, mothballed: true, employees: 0 });
+      const preview = {
+        ...dairy,
+        enabled: true,
+        mothballed: false,
+        employees:
+          w.season.config.operations.profiles[recipe.id].workers * (dairy.equipmentLines ?? 1),
+      };
+      const price = marketView(w, 'milk').price ?? w.season.config.basePrices.milk;
+      return {
+        plan: botRecoveryPlan(w, dairy, NOW)!,
+        cadence: automationCyclesPerDay(w, preview, recipe),
+        ceiling: price * recipe.output.milk!,
+      };
+    };
+    const normal = plan(1),
+      slow = plan(4);
+    expect(slow.cadence).toBe(normal.cadence / 4);
+    // Receita do dia ≤ saída por ciclo × ciclos concluíveis; a margem cai quando a linha fica lenta.
+    expect(slow.plan.contribution).toBeLessThanOrEqual(
+      slow.ceiling * slow.cadence - slow.plan.fixed,
+    );
+    expect(slow.plan.contribution).toBeLessThan(normal.plan.contribution);
+  });
+
   it('M03: previsões usam a mesma cadência que a automação executa', () => {
     const w = quiet();
     const steel = w.establishments.find((e) => e.id === 'e-industry')!;
@@ -68,9 +106,11 @@ describe('correções da auditoria matemática', () => {
       NOW,
     );
     const recipe = w.season.config.recipes.find((r) => r.id === 'steel-bars')!;
-    expect(automationCyclesPerDay(w, steel, recipe)).toBe(30);
-    expect(dailyNeed(w, steel, 'iron')).toBe(30 * recipe.input.iron!);
-    expect(marketView(w, 'iron').industrialDemand).toBe(30 * recipe.input.iron!);
+    // Lote de 5 em 2 linhas de 4 h: 3 rodadas × 4 h = 12 h por lote → 10 ciclos por dia.
+    const perDay = automationCyclesPerDay(w, steel, recipe);
+    expect(perDay).toBe(10);
+    expect(dailyNeed(w, steel, 'iron')).toBe(perDay * recipe.input.iron!);
+    expect(marketView(w, 'iron').industrialDemand).toBe(perDay * recipe.input.iron!);
     w.nextEconomicAt = NOW + ECONOMIC_INTERVAL;
     advance(w, NOW + 3 * GAME_DAY);
     const started = w.jobs
@@ -81,7 +121,7 @@ describe('correções da auditoria matemática', () => {
           j.startedAt < NOW + 2 * GAME_DAY,
       )
       .reduce((n, j) => n + j.cycles, 0);
-    expect(started).toBe(30);
+    expect(started).toBe(perDay);
   });
 
   it('M04: duas lojas iguais vendem tanto quanto uma, sem perder frações', () => {
@@ -111,7 +151,9 @@ describe('correções da auditoria matemática', () => {
     const rows = w.consumptionHistory.filter((h) => h.establishmentId === shop.id);
     const milk = rows.find((h) => h.product === 'milk')!,
       oil = rows.find((h) => h.product === 'oil')!;
-    expect(rows.reduce((n, h) => n + h.sold, 0)).toBe(20);
+    const capacity = retailCapacity(w, shop);
+    expect(rows.reduce((n, h) => n + h.desired, 0)).toBeGreaterThan(capacity);
+    expect(rows.reduce((n, h) => n + h.sold, 0)).toBe(capacity);
     expect(milk.desired).toBeGreaterThan(oil.desired);
     expect(milk.sold).toBeGreaterThan(oil.sold);
   });
@@ -123,16 +165,19 @@ describe('correções da auditoria matemática', () => {
       (e) => e.specialization === 'soy-oil' && e.enabled && !e.mothballed && e.automation,
     );
     expect(producers.length).toBeGreaterThan(1);
-    const demand = marketView(w, 'oil').householdDemand;
-    const shared = Math.max(600, (demand * 3) / producers.length);
-    // Entre a meta repartida e a meta antiga (três dias da demanda total para cada um), com folga
-    // para as vendas da própria rodada.
-    const stock = Math.ceil(shared * 3);
+    const recipe = w.season.config.recipes.find((r) => r.id === 'soy-oil')!;
+    // Meta: três dias da procura do mundo mais o prazo do lote. Antiga: inteira para cada produtor.
+    const whole = dailyDemand(w, 'oil') * (3 + recipe.duration / GAME_DAY);
+    const shared = whole / producers.length;
+    // Entre a meta repartida e a antiga, com folga para as vendas da própria rodada.
+    const stock = Math.ceil((shared + whole) / 2);
     for (const e of producers) {
       e.inventory.oil = stock;
       e.inventory.soy = 100;
+      expect(stock).toBeGreaterThan(recipe.output.oil! * (e.automationCycles ?? 1) * 2);
     }
-    expect(stock).toBeLessThan(demand * 3);
+    expect(stock).toBeGreaterThan(shared);
+    expect(stock).toBeLessThan(whole);
     const jobs = w.jobs.length;
     w.nextEconomicAt = NOW + ECONOMIC_INTERVAL;
     advance(w, NOW + ECONOMIC_INTERVAL);

@@ -10,7 +10,7 @@ const NOW = Date.UTC(2026, 9, 27, 12);
 describe('rotas no mundo versão 2', () => {
   it('liga o acesso rodoviário sem bloquear o frete pela distância estimada', () => {
     const store = createStore(':memory:', {
-      scenario: 'economy-2',
+      scenario: 'playtest',
       requireRoadRoutes: false,
       roadAccess: true,
     });
@@ -20,7 +20,7 @@ describe('rotas no mundo versão 2', () => {
   });
 
   it('só entrega ao mapa caminho de estrada confirmado entre as entradas dos imóveis', () => {
-    const w = createWorld(NOW, { economy: 2 }) as World;
+    const w = createWorld(NOW) as World;
     const [a, b] = w.establishments.filter((e) => e.companyId.startsWith('rival-'));
     const pa = w.properties.find((p) => p.id === a.propertyId)!,
       pb = w.properties.find((p) => p.id === b.propertyId)!;

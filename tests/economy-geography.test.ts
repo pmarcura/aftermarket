@@ -42,7 +42,7 @@ describe('economia versão 2 no mapa real', () => {
   });
 
   it('dá ao atacadista margem própria e pedido de caminhão cheio', () => {
-    const w = createWorld(NOW, { economy: 2, scale: 2 });
+    const w = createWorld(NOW, { scale: 2 });
     expect(w.season.config.design.wholesaleMargin).toBe(0.04);
     const distributors = w.establishments.filter(
       (e) => e.companyId.startsWith('rival-') && e.category === 'warehouse',
@@ -58,7 +58,7 @@ describe('economia versão 2 no mapa real', () => {
   });
 
   it('deixa o carvão distante caber no teto de frete das usinas', () => {
-    const w = createWorld(NOW, { economy: 2, scale: 2 });
+    const w = createWorld(NOW, { scale: 2 });
     const mill = w.establishments.find(
       (e) => e.companyId.startsWith('rival-') && e.specialization === 'steel-bars',
     )!;
@@ -72,7 +72,7 @@ describe('economia versão 2 no mapa real', () => {
 
   // D-038: anúncio de procura sem resposta não ocupa o orçamento do dia.
   it('não conta pedido aberto sem vendedor como gasto da reposição', () => {
-    const w = createWorld(NOW, { economy: 2, scale: 2 });
+    const w = createWorld(NOW, { scale: 2 });
     const mill = w.establishments.find(
       (e) => e.companyId.startsWith('rival-') && e.specialization === 'steel-bars',
     )!;

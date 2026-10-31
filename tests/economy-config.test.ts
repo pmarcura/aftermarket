@@ -12,14 +12,17 @@ import {
 
 const NOW = Date.UTC(2026, 9, 27, 12);
 
-describe('mundo versão 2 · configuração da economia alvo', () => {
-  const v1 = createWorld(NOW);
-  const v2 = createWorld(NOW, { economy: 2 });
+describe('configuração da economia alvo', () => {
+  const v2 = createWorld(NOW);
   const design = analyzeDesign();
 
   it('congela os vinte itens e as receitas do catálogo', () => {
-    expect(v2.season.config.economyVersion).toBe(2);
     expect(seasonProducts(v2).sort()).toEqual(Object.keys(products).sort());
+    expect(v2.season.config.recipes.map((r) => r.id).sort()).toEqual(
+      designRecipes.map((r) => r.id).sort(),
+    );
+    expect(v2.season.config.worldScale).toBe(1);
+    expect(v2.season.config.regions.length).toBeGreaterThan(10);
     for (const r of designRecipes) {
       const recipe = v2.season.config.recipes.find((x) => x.id === r.id)!;
       // Vacas exigidas na linha saem dos insumos e viram nascimentos/aposentadorias do rebanho.
@@ -48,7 +51,7 @@ describe('mundo versão 2 · configuração da economia alvo', () => {
     // referência vezes a escala.
     const population = Object.values(v2.season.config.population).reduce((n, p) => n + p, 0);
     expect(population * v2.season.config.parameters.playableConsumerShare).toBeCloseTo(
-      designWorld.consumers * (v2.season.config.worldScale ?? 1),
+      designWorld.consumers * v2.season.config.worldScale,
       3,
     );
     expect(householdItems(v2)).toContain('utensils');
@@ -65,20 +68,23 @@ describe('mundo versão 2 · configuração da economia alvo', () => {
       0,
     );
     expect(milk).toBeCloseTo(
-      (designWorld.consumers *
-        (v2.season.config.worldScale ?? 1) *
-        v2.season.config.consumption.milk!) /
+      (designWorld.consumers * v2.season.config.worldScale * v2.season.config.consumption.milk!) /
         30,
       3,
     );
   });
 
-  it('não altera o mundo da versão 1', () => {
-    expect(v1.season.config.economyVersion).toBeUndefined();
-    expect(v1.season.config.design.equipmentByRecipe).toBeUndefined();
-    expect(householdItems(v1)).toEqual(['oil', 'rice', 'beans', 'sugar', 'milk']);
-    expect(equipmentCostFor(v1, 'industry', 'steel-bars')).toBe(
-      v1.season.config.design.equipmentCost.industry,
+  it('a escala multiplica a procura e os editais sem mudar o catálogo', () => {
+    const big = createWorld(NOW, { scale: 2 });
+    expect(big.season.config.worldScale).toBe(2);
+    expect(big.season.config.parameters.playableConsumerShare).toBeCloseTo(
+      v2.season.config.parameters.playableConsumerShare * 2,
+      12,
+    );
+    expect(big.season.config.recipes).toEqual(v2.season.config.recipes);
+    expect(big.season.config.basePrices).toEqual(v2.season.config.basePrices);
+    expect(big.season.config.government.contractIntervalMs).toBe(
+      Math.round(v2.season.config.government.contractIntervalMs / 2),
     );
   });
 });

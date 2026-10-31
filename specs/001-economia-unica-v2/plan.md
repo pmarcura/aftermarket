@@ -60,3 +60,6 @@ Refatoração em cinco passos, cada um com `npm test` verde ao final. A régua d
 1. Cenário `playtest` substitui `economy-2`; `baseline` passa a ser v2 sem começo enxuto.
 2. Rota real obrigatória só na escala 1 (comportamento atual preservado por outro critério).
 3. `products` deriva de `catalog.ts`; `model.ts` deixa de ser fonte de itens.
+4. Os e2e com mundo simulado continuam com `createWorld()` (= `baseline`): o `playtest` tira a fábrica e a mina do jogador, que esses testes usam. Os que falam com o servidor recebem `playtest` pelo padrão de T1.3.
+5. `docs/design/UI-CATALOG.json` é regenerado para `npm run check` ficar verde neste branch; a spec 002 apaga o arquivo e tira `lab:catalog:check` do `check` (no rebase, manter a remoção).
+6. M02 volta como teste em `formula-fixes.test.ts` (antes vivia só no auditor apagado em T3.5).

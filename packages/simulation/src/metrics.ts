@@ -6,14 +6,13 @@ import {
   type Position,
   seasonProducts,
 } from './model';
-import { regions } from '../../world/src/regions';
 import { distanceKm } from './geometry';
 import { automationCyclesPerDay, availableStock } from './operations';
 
 const clamp = (n: number, min = 0, max = 100) => Math.min(max, Math.max(min, n));
-// Municípios do mundo: os da temporada na versão 2 (Centro-Sul real), senão as 10 praças piloto.
+// Municípios do mundo: os da temporada (Centro-Sul real, geography-v2.ts).
 export function regionsOf(w: Pick<World, 'season'>) {
-  return w.season.config.regions ?? regions;
+  return w.season.config.regions;
 }
 export function regionFor(w: Pick<World, 'season'>, position: Position, city?: string) {
   const regions = regionsOf(w);
@@ -35,9 +34,9 @@ export function regionFor(w: Pick<World, 'season'>, position: Position, city?: s
 export function seasonPrice(w: World, product: ProductId) {
   return w.season.config.basePrices[product];
 }
-// Preço de referência entre empresas: porta da fábrica na versão 2; na versão 1, o da temporada.
+// Preço de referência entre empresas: porta da fábrica.
 export function wholesaleReference(w: World, product: ProductId) {
-  return w.season.config.wholesalePrices?.[product] ?? w.season.config.basePrices[product];
+  return w.season.config.wholesalePrices[product];
 }
 export function utilityTariff(w: World, p: Property) {
   return w.season.config.utilities[p.state] ?? w.season.config.utilities.SP;

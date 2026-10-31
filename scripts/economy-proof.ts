@@ -58,13 +58,13 @@ const stockValue = (w: World) => {
     for (const [id, q] of Object.entries(e.inventory) as [ProductId, number][])
       value.set(
         e.companyId,
-        (value.get(e.companyId) ?? 0) + q * (w.season.config.wholesalePrices?.[id] ?? 0),
+        (value.get(e.companyId) ?? 0) + q * (w.season.config.wholesalePrices[id] ?? 0),
       );
   return value;
 };
 
 function run(seed: number): SeedResult {
-  const w = createScenario(AT, 'economy-2', seed, { scale });
+  const w = createScenario(AT, 'playtest', seed, { scale });
   applyLabOpening(w, {
     seed,
     seedMode: 'conditions',

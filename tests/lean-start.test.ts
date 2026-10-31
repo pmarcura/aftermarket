@@ -10,7 +10,7 @@ const NOW = Date.UTC(2026, 9, 26, 12);
 const money = (w: ReturnType<typeof createWorld>) => w.companies.reduce((n, c) => n + c.balance, 0);
 
 describe('começo enxuto do mundo jogável', () => {
-  const w = createScenario(NOW, 'economy-2');
+  const w = createScenario(NOW, 'playtest');
   it('cada jogador começa com uma loja vazia, equipe mínima e R$ 1 milhão', () => {
     for (const actor of ['player', 'player2']) {
       const owned = w.establishments.filter((e) => e.companyId === actor);
@@ -40,7 +40,7 @@ describe('começo enxuto do mundo jogável', () => {
   });
 
   it('conserva o dinheiro, segue rodando e os bots não levam os lotes livres', () => {
-    expect(money(w)).toBe(money(createWorld(NOW, { economy: 2 })));
+    expect(money(w)).toBe(money(createWorld(NOW)));
     const before = money(w),
       free = w.properties.filter((p) => p.ownerId === null).map((p) => p.id);
     advance(w, NOW + GAME_DAY * 2);

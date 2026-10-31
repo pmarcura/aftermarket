@@ -2,7 +2,7 @@
 
 Números da proposta 1 aprovada pelo Pedro em 27/10/2026 (D-029). Itens e receitas ficam em [`packages/simulation/src/catalog.ts`](../../packages/simulation/src/catalog.ts), lido pelo motor e pela calculadora [`economy-design.ts`](../../packages/simulation/src/economy-design.ts); este documento resume. Para ver tudo: `npm run economy:design`. O teste `tests/economy-design.test.ts` falha se alguma regra de balanceamento quebrar.
 
-Ainda **não** está no motor. O jogo atual segue o que descreve [ECONOMIA-HOJE](ECONOMIA-HOJE.md).
+Está no motor e é a única economia do jogo (D-042, spec 001). O que os bots fazem com ela está em [ECONOMIA-HOJE](ECONOMIA-HOJE.md) e nas provas [PROVA-V2](PROVA-V2.md) e [PROVA-V2-ESCALA-20](PROVA-V2-ESCALA-20.md).
 
 ## Como os números foram escolhidos
 
@@ -67,14 +67,14 @@ A loja trabalha com margem bruta de 16%.
 - **Sucata urbana:** 30% da massa dos utensílios volta pela coleta.
 - **Montadora:** uma só atende o mundo. Bom alvo para um jogador ambicioso; risco de monopólio a observar.
 
-## O que muda no motor (próximos passos da etapa B)
+## O que entrou no motor (etapa B)
 
-1. Corrigir as fórmulas que enganam os bots: M02, M03, M04, M05 e M07 da [auditoria](MATHEMATICS-AUDIT.md).
+1. Corrigir as fórmulas que enganam os bots: M02, M03, M04, M05 e M07 da auditoria matemática (feito; provas em `tests/formula-fixes.test.ts`).
 2. Nove itens novos com ficha do [padrão de recursos](RESOURCE-STANDARD.md): sementes de soja, arroz e feijão, muda de cana, ração, vaca, caminhão, utensílios e sucata.
 3. Receitas com perda declarada, equipamento por receita e rebanho que fica na linha sem ser consumido, com nascimentos e aposentadorias.
 4. Caminhão como mercadoria: a montadora produz, o comprador registra na frota, o veículo desgasta por km e pode virar sucata ou ser vendido usado.
 5. Parcela de consumidores em 2%, consumo de utensílios, capacidade da loja em 50 unidades por pessoa por rodada e demanda do governo perto de 16 t/dia.
 6. Coleta municipal vende sucata urbana a preço fixo.
 7. Bots aprendem as receitas e os produtos novos pelos mesmos comandos.
-8. Relógio de 120× para 6× (mundo semanal), junto com a etapa D.
+8. Relógio de 120× para 6× (mundo semanal): ainda não; fica para a spec 004 (relógio por mundo).
 9. Provar com 90 dias de bots no `/lab`, com várias sementes aleatórias.

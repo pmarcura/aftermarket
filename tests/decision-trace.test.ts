@@ -5,6 +5,7 @@ import { runBotDirector } from '../packages/simulation/src/director';
 import { runSupplyPolicies } from '../packages/simulation/src/supply';
 import { defaultSupplyPolicy } from '../packages/simulation/src/competition';
 import { ECONOMIC_INTERVAL, type World } from '../packages/simulation/src/model';
+import { GAME_DAY } from '../packages/simulation/src/operations';
 import {
   hasDecisionTrace,
   withDecisionSource,
@@ -38,7 +39,7 @@ function supplyWorld() {
     cashReserve: 0,
     rules: [{ product: 'iron', minimum: 1, target: 10, maxBuy: 10, maxPrice: 0 }],
   };
-  world.offers = world.offers.filter((offer) => offer.id === 'offer-ferrovale');
+  world.offers = world.offers.filter((offer) => offer.id === 'offer-aurora');
   return { world, destination };
 }
 
@@ -198,6 +199,16 @@ describe('observação opcional das decisões', () => {
     });
     destination.capacityT = 0;
     destination.capacityM3 = 0;
+    events.length = 0;
+    // Sem fornecedor elegível na rodada anterior, a busca do produto espera meio dia (D-036).
+    withDecisionTrace(
+      world,
+      (event) => events.push(event),
+      () => runSupplyPolicies(world, NOW + ECONOMIC_INTERVAL * 3),
+    );
+    expect(events.some((event) => event.code === 'supply-retry-wait')).toBe(true);
+    expect(destination.supplyRetryAt?.iron).toBe(NOW + ECONOMIC_INTERVAL * 2 + GAME_DAY / 2);
+    destination.supplyRetryAt = {};
     events.length = 0;
     withDecisionTrace(
       world,

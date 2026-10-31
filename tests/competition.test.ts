@@ -25,6 +25,7 @@ import { runBotDirector } from '../packages/simulation/src/director';
 import { laborMarket } from '../packages/simulation/src/metrics';
 import { ECONOMIC_INTERVAL, type World } from '../packages/simulation/src/model';
 import { migrateWorld } from '../packages/simulation/src/migrate';
+import { v2PortfolioFor } from '../packages/simulation/src/opening-v2';
 const NOW = Date.UTC(2026, 9, 26, 12),
   sum = (w: World) => w.companies.reduce((n, c) => n + c.balance, 0),
   unit = (w: World, id = 'e-industry') => w.establishments.find((e) => e.id === id)!;
@@ -62,14 +63,20 @@ function publicOrder(w: World) {
   return w.orders.at(-1)!;
 }
 describe('população de bots e salários estaduais', () => {
-  it('adiciona exatamente trinta concorrentes financiados sem emitir dinheiro', () => {
-    const w = createWorld(NOW);
-    expect(w.companies.filter((c) => c.id.startsWith('rival-'))).toHaveLength(30);
+  it('abre exatamente os concorrentes da carteira da calculadora, financiados sem emitir dinheiro', () => {
+    const w = createWorld(NOW),
+      rivals = v2PortfolioFor(w).length;
+    expect(rivals).toBeGreaterThan(20);
+    expect(w.companies.filter((c) => c.id.startsWith('rival-'))).toHaveLength(rivals);
+    expect(w.companies.filter((c) => c.id.startsWith('carrier-'))).toHaveLength(22);
     expect(w.companies.filter((c) => c.id.startsWith('treasury:'))).toHaveLength(27);
-    expect(sum(w)).toBe(2 * 285062500 + 8 * 650000000 + 5000000000);
+    expect(sum(w)).toBe(2 * 285062500 + 8 * 650000000 + 8000000000);
     expect(
-      w.ledger.filter((l) => l.description.includes('Capital finito de abertura')),
-    ).toHaveLength(30);
+      w.ledger.filter((l) => l.description === 'Capital finito de abertura · concorrente'),
+    ).toHaveLength(rivals);
+    expect(
+      w.ledger.filter((l) => l.description === 'Capital finito de abertura · transportadora'),
+    ).toHaveLength(22);
     expect(w.companies.every((c) => Number.isSafeInteger(c.balance) && c.balance >= 0)).toBe(true);
     const before = structuredClone(w);
     initializeCompetition(w, NOW);
@@ -79,8 +86,10 @@ describe('população de bots e salários estaduais', () => {
     const w = createWorld(NOW);
     for (const r of w.season.config.recipes) {
       expect(w.season.config.operations.profiles[r.id]).toBeDefined();
+      // A receita alternativa (reciclagem) roda na instalação da principal.
+      const id = r.alternativeOf ?? r.id;
       expect(
-        w.establishments.some((e) => e.companyId.startsWith('rival-') && e.specialization === r.id),
+        w.establishments.some((e) => e.companyId.startsWith('rival-') && e.specialization === id),
       ).toBe(true);
     }
   });
@@ -98,10 +107,14 @@ describe('população de bots e salários estaduais', () => {
   });
   it('protege semente de produção automática sem inventar estoque', () => {
     const w = createWorld(NOW),
-      e = w.establishments.find((e) => e.specialization === 'rice-harvest')!;
-    expect(availableStock(w, e, 'rice')).toBe((e.inventory.rice ?? 0) - 1);
+      e = w.establishments.find((e) => e.specialization === 'rice-harvest')!,
+      seed = w.season.config.recipes.find((r) => r.id === 'rice-harvest')!.input.riceSeed!;
+    expect(e.inventory.riceSeed).toBeGreaterThan(0);
+    expect(availableStock(w, e, 'riceSeed')).toBe(
+      e.inventory.riceSeed! - seed * (e.automationCycles ?? 1),
+    );
     e.automation = false;
-    expect(availableStock(w, e, 'rice')).toBe(e.inventory.rice);
+    expect(availableStock(w, e, 'riceSeed')).toBe(e.inventory.riceSeed);
   });
 });
 describe('propostas e contrapropostas', () => {
@@ -112,11 +125,11 @@ describe('propostas e contrapropostas', () => {
       ledger = w.ledger.length;
     execute(
       w,
-      'ferrovale',
+      'aurora',
       {
         type: 'proposeOrder',
         orderId: o.id,
-        establishmentId: 'e-ferrovale',
+        establishmentId: 'e-supplier',
         quantity: 60,
         unitPrice: 49000,
         maxFreight: 1000000,
@@ -130,12 +143,7 @@ describe('propostas e contrapropostas', () => {
     const proposal = o.proposals![0];
     const unchanged = structuredClone(w);
     expect(() =>
-      execute(
-        w,
-        'ferrovale',
-        { type: 'acceptProposal', orderId: o.id, proposalId: proposal.id },
-        NOW,
-      ),
+      execute(w, 'aurora', { type: 'acceptProposal', orderId: o.id, proposalId: proposal.id }, NOW),
     ).toThrow(/contraparte/);
     expect(w).toEqual(unchanged);
     expect(() =>
@@ -160,11 +168,11 @@ describe('propostas e contrapropostas', () => {
       o = publicOrder(w);
     execute(
       w,
-      'ferrovale',
+      'aurora',
       {
         type: 'proposeOrder',
         orderId: o.id,
-        establishmentId: 'e-ferrovale',
+        establishmentId: 'e-supplier',
         quantity: 65,
         unitPrice: 51000,
         maxFreight: 1000000,
@@ -179,7 +187,7 @@ describe('propostas e contrapropostas', () => {
       {
         type: 'proposeOrder',
         orderId: o.id,
-        establishmentId: 'e-ferrovale',
+        establishmentId: 'e-supplier',
         quantity: 55,
         unitPrice: 48000,
         maxFreight: 1000000,
@@ -190,24 +198,24 @@ describe('propostas e contrapropostas', () => {
     );
     execute(
       w,
-      'ferrovale',
+      'aurora',
       { type: 'acceptProposal', orderId: o.id, proposalId: o.proposals!.at(-1)!.id },
       NOW,
     );
     expect(o.quantity).toBe(55);
     expect(o.unitPrice).toBe(48000);
-    expect(o.sellerId).toBe('ferrovale');
+    expect(o.sellerId).toBe('aurora');
   });
   it('aceitação com falta de estoque não altera caixa, proposta ou frota', () => {
     const w = quiet(),
       o = publicOrder(w);
     execute(
       w,
-      'ferrovale',
+      'aurora',
       {
         type: 'proposeOrder',
         orderId: o.id,
-        establishmentId: 'e-ferrovale',
+        establishmentId: 'e-supplier',
         quantity: 65,
         unitPrice: 50000,
         maxFreight: 1000000,
@@ -216,7 +224,7 @@ describe('propostas e contrapropostas', () => {
       },
       NOW,
     );
-    unit(w, 'e-ferrovale').inventory.iron = 0;
+    unit(w, 'e-supplier').inventory.iron = 0;
     const before = structuredClone(w);
     expect(() =>
       execute(
@@ -428,7 +436,7 @@ describe('disputa e entrega aos tesouros estaduais', () => {
     expect(c.status).toBe('delivering');
     expect(c.bids![0].status).toBe('won');
     const shipments = w.shipments.filter((s) => s.infrastructureId === c.id);
-    expect(shipments.length).toBeGreaterThan(1);
+    expect(shipments.length).toBeGreaterThanOrEqual(1); // editais a 1/4 do lote cabem num caminhão
     expect(shipments.reduce((n, s) => n + s.quantity, 0)).toBe(c.quantity);
     advance(w, Math.max(...shipments.map((s) => s.arrivesAt)));
     expect(c.status).toBe('completed');
@@ -474,14 +482,14 @@ describe('disputa e entrega aos tesouros estaduais', () => {
 it('bot não aceita contraproposta ruinosa, mas negocia novamente pelos mesmos comandos', () => {
   const w = quiet(),
     o = publicOrder(w);
-  w.companies.find((c) => c.id === 'ferrovale')!.bot = true;
+  w.companies.find((c) => c.id === 'aurora')!.bot = true;
   execute(
     w,
-    'ferrovale',
+    'aurora',
     {
       type: 'proposeOrder',
       orderId: o.id,
-      establishmentId: 'e-ferrovale',
+      establishmentId: 'e-supplier',
       quantity: 65,
       unitPrice: 50000,
       maxFreight: 1000000,
@@ -496,7 +504,7 @@ it('bot não aceita contraproposta ruinosa, mas negocia novamente pelos mesmos c
     {
       type: 'proposeOrder',
       orderId: o.id,
-      establishmentId: 'e-ferrovale',
+      establishmentId: 'e-supplier',
       quantity: 65,
       unitPrice: 1,
       maxFreight: 1000000,
@@ -507,13 +515,16 @@ it('bot não aceita contraproposta ruinosa, mas negocia novamente pelos mesmos c
   );
   runBotDirector(w, NOW);
   expect(o.status).toBe('pending');
-  expect(o.proposals!.at(-1)!.proposedBy).toBe('ferrovale');
+  expect(o.proposals!.at(-1)!.proposedBy).toBe('aurora');
   expect(o.proposals!.at(-1)!.unitPrice).toBeGreaterThan(1);
   expect(w.shipments).toHaveLength(0);
 });
 it('bot publica necessidade real e aceita oferta de jogador com débito, frota e entrega', () => {
   const w = quiet(),
-    e = unit(w, 'e-rival-1'),
+    // Uma siderúrgica-bot: a receita compra minério.
+    e = w.establishments.find(
+      (e) => e.companyId.startsWith('rival-') && e.specialization === 'steel-bars',
+    )!,
     at = NOW + GAME_DAY / 3,
     total = sum(w);
   w.companies.find((c) => c.id === e.companyId)!.bot = true;
@@ -523,18 +534,19 @@ it('bot publica necessidade real e aceita oferta de jogador com débito, frota e
   const o = w.orders.find((o) => o.buyerId === e.companyId && o.product === 'iron')!;
   expect(o).toBeDefined();
   expect(o.sellerId).toBe('');
+  // A mina do jogador fica em Itabira, perto da usina; o teto de frete do bot é 30% do item.
   execute(
     w,
     'player',
     {
       type: 'proposeOrder',
       orderId: o.id,
-      establishmentId: 'e-industry',
+      establishmentId: 'e-mine',
       quantity: o.quantity,
       unitPrice: o.unitPrice,
       maxFreight: o.maxFreight,
       deliveryDays: 3,
-      carrierId: 'transbrasil',
+      carrierId: 'rodoleste', // pátio em Belo Horizonte, a transportadora mais perto
     },
     at + 1,
   );

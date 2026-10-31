@@ -18,10 +18,8 @@ import './lab.css';
 type Result = { side: 'A' | 'B'; seed: number; report: LabReport };
 type Scenario = LabOptions['scenario'];
 const names: Record<Scenario, string> = {
-  baseline: 'Abertura atual',
-  starter: 'Iniciante',
-  'low-demand': 'Demanda reduzida',
-  'economy-2': 'Economia versão 2',
+  baseline: 'Mundo de referência',
+  playtest: 'Mundo jogável (começo enxuto)',
 };
 const money = (n: number) =>
   (n / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -79,7 +77,7 @@ function SimulationPanel({
 }) {
   const workerRef = useRef<Worker | null>(null);
   const [scenarioA, setScenarioA] = useState<Scenario>('baseline'),
-    [scenarioB, setScenarioB] = useState<Scenario>('low-demand');
+    [scenarioB, setScenarioB] = useState<Scenario>('playtest');
   const [demandA, setDemandA] = useState(1),
     [demandB, setDemandB] = useState(1);
   const [parametersA, setParametersA] = useState<LabParametersValue>({ ...initialParameters }),

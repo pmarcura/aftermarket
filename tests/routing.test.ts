@@ -9,9 +9,11 @@ import { shipmentRoute } from '../packages/simulation/src/road-path';
 import type { Position, World } from '../packages/simulation/src/model';
 import { routeMatchesProperties } from '../packages/simulation/src/road-access';
 const NOW = Date.UTC(2026, 9, 27, 4),
+  // Distribuidora Aurora (Americana) → Indústria de Aço (Piracicaba), imóveis que seguem no
+  // mundo da economia 2 (as minas foram para os polos de Minas).
   coordinates: Position[] = [
-    [-47.401, -22.568],
-    [-47.35, -22.68],
+    [-47.32, -22.731],
+    [-47.45, -22.7],
     [-47.586, -22.73],
   ];
 const response = {
@@ -80,17 +82,15 @@ describe('roteamento autoritativo', () => {
     const before = structuredClone(w),
       cmd = {
         type: 'trade' as const,
-        offerId: 'offer-ferrovale',
+        offerId: 'offer-aurora',
         destinationId: 'e-industry',
         quantity: 1,
         carrierId: 'transbrasil',
       };
-    expect(quote(w, 'e-ferrovale', 'e-industry', 'iron', 1, 'transbrasil').routeRequired).toBe(
-      true,
-    );
+    expect(quote(w, 'e-supplier', 'e-industry', 'iron', 1, 'transbrasil').routeRequired).toBe(true);
     expect(() => execute(w, 'player', cmd, NOW)).toThrow(/Rota rodoviária pendente/);
     expect(w).toEqual(before);
-    const a = w.establishments.find((e) => e.id === 'e-ferrovale')!,
+    const a = w.establishments.find((e) => e.id === 'e-supplier')!,
       b = w.establishments.find((e) => e.id === 'e-industry')!;
     w.routes[`${a.propertyId}:${b.propertyId}`] = parseRoadRoute(response)!;
     execute(w, 'player', cmd, NOW);
@@ -105,13 +105,13 @@ describe('roteamento autoritativo', () => {
     const routing = createRoutingService(store, { fetcher, intervalMs: 0 });
     try {
       const [a, b] = await Promise.all([
-        routing.request('ferrovale', 'industry'),
-        routing.request('ferrovale', 'industry'),
+        routing.request('supplier', 'industry'),
+        routing.request('supplier', 'industry'),
       ]);
       expect(a).toEqual(b);
       expect(fetcher).toHaveBeenCalledTimes(1);
-      expect(store.read().routes['ferrovale:industry'].coordinates).toEqual(coordinates);
-      await routing.request('ferrovale', 'industry');
+      expect(store.read().routes['supplier:industry'].coordinates).toEqual(coordinates);
+      await routing.request('supplier', 'industry');
       expect(fetcher).toHaveBeenCalledTimes(1);
     } finally {
       routing.stop();
@@ -125,10 +125,10 @@ describe('roteamento autoritativo', () => {
       }) as unknown as typeof fetch,
       routing = createRoutingService(store, { fetcher, intervalMs: 0 });
     try {
-      expect(await routing.request('ferrovale', 'industry')).toBeUndefined();
-      expect(await routing.request('ferrovale', 'industry')).toBeUndefined();
+      expect(await routing.request('supplier', 'industry')).toBeUndefined();
+      expect(await routing.request('supplier', 'industry')).toBeUndefined();
       expect(fetcher).toHaveBeenCalledTimes(1);
-      expect(store.read().routes['ferrovale:industry']).toBeUndefined();
+      expect(store.read().routes['supplier:industry']).toBeUndefined();
     } finally {
       routing.stop();
       store.close();
@@ -141,7 +141,7 @@ describe('roteamento autoritativo', () => {
         'player',
         {
           type: 'trade',
-          offerId: 'offer-ferrovale',
+          offerId: 'offer-aurora',
           destinationId: 'e-industry',
           quantity: 1,
           carrierId: 'transbrasil',
@@ -150,7 +150,7 @@ describe('roteamento autoritativo', () => {
       );
       // Cópia: o servidor mantém o mundo vivo na memória.
       const before = structuredClone(store.read().shipments[0]);
-      store.route('ferrovale:industry', parseRoadRoute(response)!);
+      store.route('supplier:industry', parseRoadRoute(response)!);
       const after = store.read().shipments[0];
       expect(shipmentRoute(store.read(), after)).toEqual(coordinates);
       const { mapRouteKey: _, mapRouteSource: __, ...rest } = after;
@@ -172,13 +172,13 @@ describe('roteamento autoritativo', () => {
   it('cache novo não modifica a geometria já contratada', () => {
     const w = connect(createWorld(NOW));
     w.requireRoadRoutes = true;
-    w.routes['ferrovale:industry'] = { ...parseRoadRoute(response)!, fetchedAt: NOW };
+    w.routes['supplier:industry'] = { ...parseRoadRoute(response)!, fetchedAt: NOW };
     execute(
       w,
       'player',
       {
         type: 'trade',
-        offerId: 'offer-ferrovale',
+        offerId: 'offer-aurora',
         destinationId: 'e-industry',
         quantity: 1,
         carrierId: 'transbrasil',
@@ -187,7 +187,7 @@ describe('roteamento autoritativo', () => {
     );
     const shipment = w.shipments[0],
       before = structuredClone(shipmentRoute(w, shipment));
-    w.routes['ferrovale:industry'] = {
+    w.routes['supplier:industry'] = {
       ...parseRoadRoute(response)!,
       fetchedAt: NOW + 100,
       coordinates: [
@@ -201,18 +201,18 @@ describe('roteamento autoritativo', () => {
   it('enriquece cache antigo com ruas e mantém geometria utilizável se provedor falha', async () => {
     const store = connectedStore();
     const old = { ...parseRoadRoute(response)!, steps: undefined };
-    store.route('ferrovale:industry', old);
+    store.route('supplier:industry', old);
     const fetcher = vi.fn(
       async () => new Response(JSON.stringify(response), { status: 200 }),
     ) as unknown as typeof fetch;
     const routing = createRoutingService(store, { fetcher, intervalMs: 0 });
     try {
-      expect((await routing.request('ferrovale', 'industry'))?.steps?.length).toBe(1);
+      expect((await routing.request('supplier', 'industry'))?.steps?.length).toBe(1);
       expect(fetcher).toHaveBeenCalledTimes(1);
     } finally {
       routing.stop();
     }
-    store.route('ferrovale:industry', old);
+    store.route('supplier:industry', old);
     const offline = createRoutingService(store, {
       fetcher: vi.fn(async () => {
         throw Error('offline');
@@ -220,7 +220,7 @@ describe('roteamento autoritativo', () => {
       intervalMs: 0,
     });
     try {
-      expect((await offline.request('ferrovale', 'industry'))?.coordinates).toEqual(coordinates);
+      expect((await offline.request('supplier', 'industry'))?.coordinates).toEqual(coordinates);
     } finally {
       offline.stop();
       store.close();
@@ -243,10 +243,10 @@ describe('roteamento autoritativo', () => {
   it('cache OSRM não autoriza frete com acesso desconhecido nem coordenadas desatualizadas', () => {
     const w = createWorld(NOW);
     w.requireRoadRoutes = true;
-    w.routes['ferrovale:industry'] = parseRoadRoute(response)!;
+    w.routes['supplier:industry'] = parseRoadRoute(response)!;
     const command = {
       type: 'trade' as const,
-      offerId: 'offer-ferrovale',
+      offerId: 'offer-aurora',
       destinationId: 'e-industry',
       quantity: 1,
       carrierId: 'transbrasil',
@@ -255,21 +255,19 @@ describe('roteamento autoritativo', () => {
     expect(() => execute(w, 'player', command, NOW)).toThrow(/Rota rodoviária pendente/);
     expect(w).toEqual(before);
     connect(w);
-    const origin = w.properties.find((p) => p.id === 'ferrovale')!;
+    const origin = w.properties.find((p) => p.id === 'supplier')!;
     const destination = w.properties.find((p) => p.id === 'industry')!;
-    expect(routeMatchesProperties(w.routes['ferrovale:industry'], origin, destination)).toBe(true);
+    expect(routeMatchesProperties(w.routes['supplier:industry'], origin, destination)).toBe(true);
     destination.coordinates = [-47.8, -22.9];
     const moved = structuredClone(w);
-    expect(quote(w, 'e-ferrovale', 'e-industry', 'iron', 1, 'transbrasil').routeRequired).toBe(
-      true,
-    );
+    expect(quote(w, 'e-supplier', 'e-industry', 'iron', 1, 'transbrasil').routeRequired).toBe(true);
     expect(() => execute(w, 'player', command, NOW)).toThrow(/Rota rodoviária pendente/);
     expect(w).toEqual(moved);
     w.orders.push({
       id: 'needs-new-route',
       buyerId: 'player',
-      sellerId: 'ferrovale',
-      originId: 'e-ferrovale',
+      sellerId: 'aurora',
+      originId: 'e-supplier',
       destinationId: 'e-industry',
       product: 'iron',
       quantity: 1,
@@ -280,7 +278,7 @@ describe('roteamento autoritativo', () => {
       deadline: NOW + 100000,
       status: 'pending',
     });
-    expect(roadNeeds(w).some((n) => n.origin === 'ferrovale' && n.destination === 'industry')).toBe(
+    expect(roadNeeds(w).some((n) => n.origin === 'supplier' && n.destination === 'industry')).toBe(
       true,
     );
   });
@@ -294,7 +292,7 @@ describe('roteamento autoritativo', () => {
         'player',
         {
           type: 'buyProperty',
-          propertyId: 'hortolandia',
+          propertyId: w.properties.find((p) => p.ownerId === null && p.category === 'industry')!.id,
           name: 'Minha fábrica',
         },
         NOW,
@@ -312,8 +310,8 @@ describe('roteamento autoritativo', () => {
     });
     const routing = createRoutingService(store, { fetcher, ensureAccess, intervalMs: 0 });
     try {
-      expect(await routing.request('ferrovale', 'industry')).toBeDefined();
-      expect(ensureAccess).toHaveBeenCalledWith(['ferrovale', 'industry']);
+      expect(await routing.request('supplier', 'industry')).toBeDefined();
+      expect(ensureAccess).toHaveBeenCalledWith(['supplier', 'industry']);
       expect(fetcher).toHaveBeenCalledTimes(1);
       expect(vi.mocked(fetcher).mock.calls[0][0]).toContain('radiuses=25;25');
     } finally {
@@ -330,7 +328,7 @@ describe('roteamento autoritativo', () => {
     try {
       store.read().requireRoadRoutes = true;
       routing.prepare(store.read());
-      expect(await routing.request('ferrovale', 'industry')).toBeUndefined();
+      expect(await routing.request('supplier', 'industry')).toBeUndefined();
       expect(fetcher).not.toHaveBeenCalled();
       expect(routing.status().pending).toBe(0);
     } finally {
@@ -347,12 +345,12 @@ describe('roteamento autoritativo', () => {
     ) as unknown as typeof fetch;
     const routing = createRoutingService(store, { fetcher, intervalMs: 0 });
     try {
-      expect(await routing.request('ferrovale', 'industry')).toBeUndefined();
-      expect(await routing.request('ferrovale', 'industry')).toBeUndefined();
+      expect(await routing.request('supplier', 'industry')).toBeUndefined();
+      expect(await routing.request('supplier', 'industry')).toBeUndefined();
       expect(fetcher).toHaveBeenCalledTimes(1);
       expect(store.read()).toEqual(before);
       expect(
-        quote(store.read(), 'e-ferrovale', 'e-industry', 'iron', 1, 'transbrasil').routeRequired,
+        quote(store.read(), 'e-supplier', 'e-industry', 'iron', 1, 'transbrasil').routeRequired,
       ).toBe(true);
     } finally {
       routing.stop();
@@ -368,8 +366,8 @@ describe('roteamento autoritativo', () => {
     }) as unknown as typeof fetch;
     const routing = createRoutingService(store, { fetcher, intervalMs: 0 });
     try {
-      expect(await routing.request('ferrovale', 'industry')).toBeUndefined();
-      expect(store.read().routes['ferrovale:industry']).toBeUndefined();
+      expect(await routing.request('supplier', 'industry')).toBeUndefined();
+      expect(store.read().routes['supplier:industry']).toBeUndefined();
     } finally {
       routing.stop();
       store.close();

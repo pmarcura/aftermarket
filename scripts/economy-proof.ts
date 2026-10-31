@@ -58,7 +58,7 @@ const stockValue = (w: World) => {
     for (const [id, q] of Object.entries(e.inventory) as [ProductId, number][])
       value.set(
         e.companyId,
-        (value.get(e.companyId) ?? 0) + q * (w.season.config.wholesalePrices?.[id] ?? 0),
+        (value.get(e.companyId) ?? 0) + q * (w.season.config.wholesalePrices[id] ?? 0),
       );
   return value;
 };

@@ -20,9 +20,10 @@ test('laboratório executa A/B real, conserva dinheiro e exporta sem acessar o m
     '100',
   );
   await expect(page.getByRole('region', { name: 'Comparação pareada' })).toBeVisible();
+  // Uma linha por item do catálogo (20 itens).
   await expect(
     page.getByRole('region', { name: 'Tabela de mercadorias' }).locator('tbody tr'),
-  ).toHaveCount(10);
+  ).toHaveCount(20);
   const downloadPromise = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Exportar lote JSON' }).click();
   const download = await downloadPromise;

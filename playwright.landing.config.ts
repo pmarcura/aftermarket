@@ -7,7 +7,7 @@ export default defineConfig({
   timeout: 30000,
   use: {
     baseURL: 'http://127.0.0.1:5187',
-    channel: process.env.PLAYWRIGHT_CHANNEL === 'chromium' ? undefined : 'msedge',
+    channel: process.env.PLAYWRIGHT_CHANNEL === 'msedge' ? 'msedge' : undefined,
     headless: true,
     viewport: { width: 1440, height: 1000 },
     reducedMotion: 'reduce',

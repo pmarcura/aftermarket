@@ -2,7 +2,7 @@
 
 Este projeto adapta a disciplina GSD para ciclos de jogo: cada fase precisa entregar uma decisão interessante ao jogador, regras econômicas consistentes e evidência de funcionamento.
 
-Para investigação rápida, usar o [laboratório de desenvolvimento](design/DEVELOPMENT-LAB.md): índice automático de interfaces, evidências de navegador e simulações A/B no mesmo motor. Começar pelo resumo, abrir detalhe por dia/item/empresa/tela e registrar observação → hipótese → experimento → decisão. `lab:refresh` coleta tudo; `lab:watch` mantém a coleta durante alterações. Evidência estática, observação da fixture e playtest humano têm alcances diferentes.
+Para balanceamento, usar a [bancada de simulações](design/DEVELOPMENT-LAB.md): A/B no mesmo motor, em mundos novos, e `npm run economy:proof` como régua de aceitação. Registrar observação → hipótese → experimento → decisão.
 
 ## Ciclo de uma fase
 

@@ -1,4 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect } from './fixtures';
+import { type Page } from '@playwright/test';
 import { createWorld } from '../../packages/simulation/src/seed';
 import { execute, RuleError } from '../../packages/simulation/src/engine';
 import { equipmentCostFor } from '../../packages/simulation/src/design';
@@ -23,23 +24,7 @@ async function fixture(page: Page, world: World, destination: 'map' | 'industry'
       });
     }
   });
-  await page.route('https://tiles.openfreemap.org/**', (route) =>
-    route.fulfill({
-      json: {
-        tilejson: '3.0.0',
-        tiles: [`${test.info().project.use.baseURL}/__opening/empty.pbf?z={z}&x={x}&y={y}`],
-        minzoom: 0,
-        maxzoom: 14,
-        vector_layers: ['landcover', 'water', 'waterway', 'transportation'].map((id) => ({
-          id,
-          fields: {},
-        })),
-      },
-    }),
-  );
-  await page.route('**/__opening/empty.pbf?**', (route) =>
-    route.fulfill({ contentType: 'application/x-protobuf', body: Buffer.alloc(0) }),
-  );
+  // Tiles e roteador externos já são bloqueados por ./fixtures (bloquearRedeExterna).
   await page.addInitScript(
     ({ season, destination }) => {
       localStorage.setItem('aftermarket.company', 'player');

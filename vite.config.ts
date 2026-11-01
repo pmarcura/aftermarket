@@ -1,9 +1,8 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { labArtifacts } from './scripts/lab-artifacts';
 
 export default defineConfig({
-  plugins: [react(), labArtifacts()],
+  plugins: [react()],
   root: 'apps/web',
   server: {
     port: Number(process.env.AFTERMARKET_WEB_PORT ?? 5173),

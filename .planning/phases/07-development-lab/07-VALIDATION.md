@@ -66,7 +66,7 @@ Relatórios completos em `.runtime/lab/simulations/<hash>.json`; comparação em
 
 ## Verificações
 
-- `npm test`: **143 testes passaram em 12 arquivos**. Inclui invariantes, determinismo, isolamento, cancelamento/progresso, equivalência de 30 dias com/sem índice e equivalência de histórico de mercado. Após filtrar os comandos pelo contrato, `tests/ui-catalog.test.ts` passou novamente.
+- `npm test`: **143 testes passaram em 12 arquivos**. Inclui invariantes, determinismo, isolamento, cancelamento/progresso, equivalência de 30 dias com/sem índice e equivalência de histórico de mercado. Após filtrar os comandos pelo contrato, o teste do catálogo de interfaces passou novamente (teste e catálogo removidos na spec 002).
 - `npm run test:lab`: **três fluxos passaram** na versão final: lote A/B real/exportação/conservação/ausência de chamadas ao mundo salvo; cancelamento e nova execução; catálogo sem evidência, busca/teclado e celular. Capturas em `test-results/lab-*/`.
 - `npx vite build`: passou; worker compilado em arquivo separado. Permanecem os avisos conhecidos de tamanho de MapLibre/ECharts e aviso de extensão de import da configuração Vite.
 - `npm run resources:check`: estrutura e catálogo atuais; 29 alertas econômicos conhecidos preservados, sem declaração de equilíbrio.

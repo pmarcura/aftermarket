@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 import type { World } from '../../packages/simulation/src/model';
 
 test('compra, frete, entrega e produção alteram o estado real e persistem após recarregar', async ({

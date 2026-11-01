@@ -96,7 +96,7 @@ Mexer na economia do jogo exige cuidado. Antes de alterar qualquer item ou recei
 2. **Preencha** `RESOURCE-TEMPLATE.md` com todos os campos.
 3. **Explique**: origem/semente, destino de cada coproduto, unidades, custo completo e efeito na season.
 4. **Rode** `npm run resources:check` — estrutura válida ≠ economia balanceada.
-5. **Teste** com o lab: `npm run lab:query -- --item=<id> --day=30`.
+5. **Teste** com a bancada: `npm run lab:batch -- --days=60 --seeds=0,1,2` e `npm run economy:proof`.
 
 > **Regra de ouro**: dinheiro sempre em centavos inteiros. Lotes reservados antes de transporte ou produção. Informação real, parâmetro simulado e estimativa devem ser identificados.
 

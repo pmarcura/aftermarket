@@ -36,9 +36,7 @@ Usar o processo em `docs/DEVELOPMENT.md`. Questionar internamente necessidade, c
 
 ## Investigar o jogo com rapidez
 
-Para evolução e motivos observados, usar `npm run lab:query -- --run=A:0 --bot=rival-1 --day=30 --limit=5` (ou `--item=soymeal`). Para uma ação de UI, `lab:context -- --screen=carrier --action=buyVehicle`. Conferir período, fingerprint e ausência de atribuição: gates de candidatos não provam que o bot inteiro ficou parado. A comparação nunca deve substituir a referência anterior sem aceitação explícita.
-
-Para perguntas sobre telas, bots ou balanceamento, começar pelo contexto gerado em `.runtime/lab/context.json` e pela triagem em `.runtime/lab/review.json`, quando existirem. `npm run lab:context -- --screen=<id>` consulta uma tela; `--detail --state=abertura --viewport=desktop` abre os controles observados. Usar `npm run lab:refresh` para atualizar tudo ou `lab:watch` para coleta automática durante refinamentos. Conferir hashes/limites da evidência antes de concluir. Ler `docs/design/DEVELOPMENT-LAB.md`. Scripts fazem a coleta repetitiva; agentes investigam problemas e decisões. Prioridade é tempo até entender/reproduzir, não apenas custo de execução.
+A ferramenta de balanceamento é a bancada de simulações (`npm run lab`, aba única em `/lab`, sem API nem banco) e os scripts `lab:batch`, `lab:benchmark` e `economy:proof`. A régua é a da constituição: `npm run economy:proof -- --days=60 --window=30 --seeds=0,1,2,3,4`, aceitar só se a mediana melhora e o pior caso não piora. Para ver o que um bot fez, use a consulta por bot/produto/dia dentro do `/lab` ou o JSON exportado da execução. Para interface, verifique no navegador e nos testes `tests/e2e/*.spec.ts` (Chromium, sem rede externa). Ler `docs/design/DEVELOPMENT-LAB.md`.
 
 ## Concluir uma fase
 

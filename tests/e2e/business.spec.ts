@@ -1,4 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect } from './fixtures';
+import { type Page } from '@playwright/test';
 import type { World } from '../../packages/simulation/src/model';
 async function actor(page: Page, id: string) {
   await page.evaluate((id) => {

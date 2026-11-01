@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { createWorld } from '../../packages/simulation/src/seed';
 import { execute } from '../../packages/simulation/src/engine';
 

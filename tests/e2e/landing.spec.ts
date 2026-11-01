@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { createWorld } from '../../packages/simulation/src/seed';
 
 const viewports = [
@@ -142,7 +142,7 @@ test('laboratório mantém sua rota e abre sem consultar a API do mundo', async 
   });
   await page.goto('/lab');
   await expect(page.getByRole('heading', { name: 'Entender antes de ajustar.' })).toBeVisible();
-  await expect(page.getByRole('navigation', { name: 'Áreas do laboratório' })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Resultados das simulações' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Abrir jogo' })).toHaveAttribute('href', '/jogar');
   expect(worldRequests).toEqual([]);
 });

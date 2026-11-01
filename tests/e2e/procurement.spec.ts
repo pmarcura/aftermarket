@@ -22,7 +22,7 @@ test('edital estadual mostra referência, disputa e todos os caminhões indo à 
   const contract = w.infrastructure.find((c) => c.state === 'SP')!;
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  await page.route('**/api/world', (route) => route.fulfill({ json: w }));
+  await page.route('**/api/world*', (route) => route.fulfill({ json: w }));
   await page.route('**/api/commands', async (route) => {
     try {
       execute(
@@ -31,7 +31,9 @@ test('edital estadual mostra referência, disputa e todos os caminhões indo à 
         route.request().postDataJSON() as Command,
         w.updatedAt,
       );
+      // Encerra a disputa logo após a proposta: o motor escolhe a vencedora e despacha.
       advance(w, contract.biddingEndsAt!);
+      w.revision++;
       await route.fulfill({ json: w });
     } catch (error) {
       await route.fulfill({
@@ -40,30 +42,53 @@ test('edital estadual mostra referência, disputa e todos os caminhões indo à 
       });
     }
   });
-  await page.addInitScript(() => localStorage.setItem('aftermarket.page', 'market'));
+  await page.addInitScript((season) => {
+    localStorage.setItem('aftermarket.company', 'player');
+    localStorage.setItem('aftermarket.page', 'contracts');
+    localStorage.setItem(`aftermarket.welcome.${season}.player`, 'seen');
+  }, w.season.id);
   await page.goto('/jogar');
-  await page.locator('summary').filter({ hasText: 'Contratos de infraestrutura' }).click();
-  await page.getByLabel('Estado dos contratos públicos', { exact: true }).selectOption('SP');
-  const card = page.locator('.commercial-order').filter({ hasText: `#${contract.id.slice(0, 6)}` });
-  await expect(card.getByText('Referência interna', { exact: false })).toBeVisible();
+  await page
+    .getByRole('group', { name: 'Estado dos contratos públicos', exact: true })
+    .getByRole('button', { name: 'SP', exact: true })
+    .click();
+  const card = page.getByRole('article').filter({ hasText: `#${contract.id.slice(0, 6)}` });
+  // Teto do edital: preço de referência mais 25%, por unidade e no total.
+  await expect(card.getByText(/^até R\$\s?[\d.,]+ por /)).toBeVisible();
+  await expect(card.getByText('Paga até', { exact: true })).toBeVisible();
   await card.getByRole('button', { name: 'Participar da disputa', exact: true }).click();
   const dialog = page.getByRole('dialog');
-  await dialog.getByLabel('Origem da proposta pública', { exact: true }).selectOption('e-industry');
+  await expect(
+    dialog.getByRole('heading', { name: 'Participar da disputa', exact: true }),
+  ).toBeVisible();
+  await dialog.getByRole('radio', { name: /^Indústria de Aço/ }).click();
   await dialog
     .getByRole('button', { name: 'Selecionar TransBrasil Logística', exact: true })
     .click();
   await dialog.getByRole('button', { name: 'Registrar proposta', exact: true }).click();
-  await expect(card.getByText('Em entrega', { exact: true })).toBeVisible();
-  await card.locator('summary').filter({ hasText: 'Comparar propostas e resultado' }).click();
-  await expect(card.getByRole('cell', { name: 'Vencedora', exact: true })).toBeVisible();
+  await expect(dialog).not.toBeVisible();
+  expect(w.infrastructure.find((c) => c.id === contract.id)?.supplierId).toBe('player');
+  const entrega = page
+    .locator('section.ped-secao')
+    .filter({ has: page.getByRole('heading', { name: /^Em entrega/ }) });
+  const vencido = entrega.getByRole('article').filter({ hasText: `#${contract.id.slice(0, 6)}` });
+  await expect(vencido.getByText('Você venceu', { exact: true })).toBeVisible();
+  const empresa = w.companies.find((c) => c.id === 'player')!.name;
+  await expect(
+    vencido.getByRole('figure', { name: new RegExp(`^Pódio: 1º ${empresa}`) }),
+  ).toBeVisible();
   await page.screenshot({ path: 'test-results/competition/public-contract.png', fullPage: true });
-  await card.getByRole('button', { name: 'Acompanhar pedido e caminhões', exact: true }).click();
-  await page
-    .locator('.shipment-item')
-    .filter({ hasText: contract.id.slice(0, 6).toUpperCase() })
-    .click();
-  await expect(page.locator('.shipment-truck')).toHaveCount(3);
-  await expect(page.getByText('Prefeitura de Campinas', { exact: false }).first()).toBeVisible();
+  const viagens = w.shipments.filter((s) => s.infrastructureId === contract.id);
+  expect(viagens.length).toBeGreaterThan(0);
+  expect(viagens.every((s) => s.destinationId === contract.destinationId)).toBe(true);
+  await vencido.getByRole('button', { name: 'Acompanhar os caminhões', exact: true }).click();
+  const prefeitura = `Contrato público: Prefeitura de ${contract.municipality}`;
+  const carga = page.getByRole('article').filter({ hasText: prefeitura });
+  await expect(carga).toHaveCount(1);
+  await carga.getByRole('button', { name: 'Ver no mapa', exact: true }).click();
+  await expect(carga.getByRole('button', { name: 'Localizar', exact: true })).toHaveCount(
+    viagens.length,
+  );
   await page.screenshot({ path: 'test-results/competition/public-delivery.png', fullPage: true });
   expect(errors).toEqual([]);
 });

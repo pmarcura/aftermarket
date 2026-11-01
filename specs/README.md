@@ -5,7 +5,7 @@ Como trabalhar: ler `CONSTITUTION.md`, depois a spec ativa. Cada pasta tem `spec
 | Nº   | Spec                                                                                                                        | Estado                                         | Semana | Depende de |
 | ---- | --------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- | ------ | ---------- |
 | 001  | [Economia única: fim do mundo v1](001-economia-unica-v2/spec.md)                                                            | verificada                                     | 1      | —          |
-| 001b | [Testes de navegador alinhados à interface atual](001b-e2e-interface-atual/spec.md)                                         | aprovada                                       | 2      | 001        |
+| 001b | [Testes de navegador alinhados à interface atual](001b-e2e-interface-atual/spec.md)                                         | verificada (A1 na CI pendente do push)         | 2      | 001        |
 | 002  | [Dieta de ferramental: lab de interfaces fora do `check`, e2e em Chromium, versões travadas](002-dieta-ferramental/spec.md) | verificada (A3 pendente de execução no GitHub) | 1      | —          |
 | 003  | Régua honesta da prova econômica e KPIs de balanceamento                                                                    | rascunho                                       | 2      | 001        |
 | 004  | Relógio por mundo (`timeScale` na temporada)                                                                                | rascunho                                       | 2      | 001        |

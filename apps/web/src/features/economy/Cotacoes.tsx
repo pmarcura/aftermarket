@@ -286,7 +286,7 @@ export function CotacoesPage() {
                       )}
                       {l.vendedores === 0 && l.ideia && (
                         <small className="cot-ideia">
-                          Rende {cr(l.ideia.line.profit, 0)} por dia e se paga em{' '}
+                          Rende {cr(l.ideia.line.profitAtCapacity, 0)} por dia e se paga em{' '}
                           {num(l.ideia.retorno)} dias.
                         </small>
                       )}

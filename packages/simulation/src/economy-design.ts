@@ -23,6 +23,11 @@ export const designWorld = {
   consumerShare: 0.02,
   consumers: regions.reduce((n, r) => n + r.population, 0) * 0.02,
   servedShare: 0.7, // parte da demanda atendida em regime
+  // Calculadora realista (spec 003): a linha roda 70% do tempo (espera insumo, comprador, caminhão)
+  // e vende a 95% da referência (desconto para girar no atacado). O resultado a plena capacidade
+  // continua disponível como `profitAtCapacity`, só para comparação.
+  utilization: 0.7,
+  realizedPrice: 0.95,
   state: 'SP',
   linesPerSite: 2, // manutenção do estabelecimento rateada entre linhas
   landPerM2: {
@@ -62,7 +67,11 @@ export const designWorld = {
     maxLines: 20,
     absorption: [0.9, 1.1] as [number, number],
     equipment: [2000000, 300000000] as [number, number],
-    operatingMargin: 0.08,
+    // Por receita, com utilização e preço realizado (spec 003): margem sobre a receita realizada,
+    // lucro que cobre 1,5× o custo fixo e prazo de retorno do investimento em dias.
+    operatingMargin: 0.15,
+    profitOverFixed: 1.5,
+    paybackDays: [20, 60] as [number, number],
   },
 };
 
@@ -213,7 +222,12 @@ export function lineEconomics(r: DesignRecipe, price: Record<DesignItemId, numbe
     monthlyMaintenance[r.category] / 30 / designWorld.linesPerSite;
   const revenue = outputs.reduce((n, [id, q]) => n + q * price[id], 0) * cycles;
   const cost = materials + freight + variable + fixed;
-  const profit = revenue - cost;
+  const profitAtCapacity = revenue - cost;
+  // Lucro de projeto: receita a preço realizado menos custos variáveis, na utilização de projeto;
+  // o custo fixo (equipe, manutenção) corre com a linha parada.
+  const { utilization, realizedPrice } = designWorld;
+  const realizedRevenue = revenue * realizedPrice * utilization;
+  const profit = (revenue * realizedPrice - materials - freight - variable) * utilization - fixed;
   const land = r.areaM2 * designWorld.landPerM2[r.category];
   const livestock = (Object.entries(r.requires ?? {}) as [DesignItemId, number][]).reduce(
     (n, [id, q]) => n + q * price[id],
@@ -232,8 +246,10 @@ export function lineEconomics(r: DesignRecipe, price: Record<DesignItemId, numbe
     fixed,
     revenue,
     cost,
+    profitAtCapacity,
+    realizedRevenue,
     profit,
-    margin: revenue ? profit / revenue : 0,
+    margin: realizedRevenue ? profit / realizedRevenue : 0,
     land,
     livestock,
     equipment,
@@ -320,7 +336,7 @@ export function dailyFlows() {
       scrapSupply,
     },
     soymeal: { made: soymealMade, used: soymealUsed, absorption: soymealUsed / soymealMade },
-    cows: (byId('milk-production').requires!.cow ?? 0) * lines.dairy,
+    cows: (byId('milk-production').requires!.cow ?? 0) * (lines['milk-production'] ?? 0),
     herdSurplus: make('milk-production', 'cow') - use('milk-production', 'cow'),
     seedSurplus,
     retailUnits,
@@ -354,11 +370,23 @@ export function analyzeDesign() {
   ) as Partial<Record<DesignItemId, number>>;
   const checks: { id: string; ok: boolean; detail: string }[] = [];
   const [eqMin, eqMax] = designWorld.targets.equipment;
+  const [payMin, payMax] = designWorld.targets.paybackDays;
+  const days = (n: number) => (Number.isFinite(n) ? `${n.toFixed(0)} dias` : 'nunca');
   for (const r of recipes) {
     checks.push({
       id: `margem:${r.id}`,
       ok: r.margin >= designWorld.targets.operatingMargin,
-      detail: `${r.name}: lucro operacional ${reais(r.profit)}/dia por linha, margem ${(r.margin * 100).toFixed(0)}%`,
+      detail: `${r.name}: margem ${(r.margin * 100).toFixed(0)}% sobre a receita realizada (alvo ≥ ${(designWorld.targets.operatingMargin * 100).toFixed(0)}%)`,
+    });
+    checks.push({
+      id: `lucro:${r.id}`,
+      ok: r.profit >= designWorld.targets.profitOverFixed * r.fixed,
+      detail: `${r.name}: lucro ${reais(r.profit)}/dia por linha, ${(r.profit / r.fixed).toFixed(2)}× o custo fixo de ${reais(r.fixed)} (alvo ≥ ${designWorld.targets.profitOverFixed}×)`,
+    });
+    checks.push({
+      id: `retorno:${r.id}`,
+      ok: r.paybackDays >= payMin && r.paybackDays <= payMax,
+      detail: `${r.name}: investimento de ${reais(r.capex)} se paga em ${days(r.paybackDays)} (alvo ${payMin}–${payMax})`,
     });
     checks.push({
       id: `equipamento:${r.id}`,

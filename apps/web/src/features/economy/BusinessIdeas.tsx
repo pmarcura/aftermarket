@@ -26,7 +26,8 @@ const spriteDaCategoria: Record<Category, Sprite> = {
 /**
  * Quanto custa e quanto rende abrir cada negócio: o imóvel livre mais barato que comporta uma linha,
  * o equipamento e o rebanho. O lucro é estimativa a preços de referência, com a linha sempre
- * ocupada. `falta` marca os negócios cujo produto ninguém vende agora.
+ * ocupada (`profitAtCapacity`; o lucro de projeto da calculadora, com utilização e preço realizado,
+ * ainda não aparece na interface — spec 003). `falta` marca os negócios cujo produto ninguém vende agora.
  */
 export function useNegocios() {
   const { world, actor } = useGame();
@@ -59,7 +60,7 @@ export function useNegocios() {
           profile,
           site,
           investimento,
-          retorno: investimento / Math.max(1, line.profit),
+          retorno: investimento / Math.max(1, line.profitAtCapacity),
           saidas,
           falta: saidas.length > 0 && saidas.every((id) => !vendendo.has(id)),
         },
@@ -109,7 +110,7 @@ function CartaoNegocio({ n, caixa }: { n: Negocio; caixa: number }) {
             <IconePixel nome="moeda" tamanho={30} />
             <span>
               <small>Lucro por dia</small>
-              <b>{cr(n.line.profit, 0)}</b>
+              <b>{cr(n.line.profitAtCapacity, 0)}</b>
             </span>
           </div>
           <div>

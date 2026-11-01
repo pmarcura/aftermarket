@@ -99,12 +99,14 @@ test('frota mostra limite, ajusta quantidade; erro fica no modal e conexão pers
   await dialog.getByLabel('Orçamento da conexão', { exact: true }).fill('5000');
   await dialog.getByRole('button', { name: 'Ativar conexão de reposição', exact: true }).click();
   await expect(dialog).not.toBeVisible();
-  expect(dest.supplyPolicy?.rules.find((r) => r.product === 'iron')).toMatchObject({
+  // Lida por função: o comando grava a política no mesmo objeto que a fixture esvaziou.
+  const politica = () => dest.supplyPolicy;
+  expect(politica()?.rules.find((r) => r.product === 'iron')).toMatchObject({
     originId: 'e-mine',
     minimum: 10,
     target: 100,
   });
-  expect(dest.supplyPolicy?.enabled).toBe(true);
+  expect(politica()?.enabled).toBe(true);
   expect(w.shipments).toHaveLength(0);
   await page.setViewportSize({ width: 1600, height: 1080 });
   await page

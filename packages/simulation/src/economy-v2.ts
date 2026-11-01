@@ -1,7 +1,13 @@
 import { TIME_SCALE, products, type ProductId, type Recipe } from './model';
 import { createSeasonConfig, type SeasonConfig } from './calibration';
-import { designItems, designRecipes, referencePrice, type DesignItemId } from './catalog';
-import { analyzeDesign, designWorld, priceList } from './economy-design';
+import {
+  designItems,
+  designRecipes,
+  equipmentByRecipe,
+  referencePrice,
+  type DesignItemId,
+} from './catalog';
+import { designWorld, priceList } from './economy-design';
 import { infrastructurePrograms } from './channels';
 import { GAME_DAY } from './operations';
 import { cities } from '../../world/src/geography-v2';
@@ -85,10 +91,8 @@ export function v2SeasonConfig(scale = 1): SeasonConfig {
     design: {
       ...base.design,
       wholesaleMargin: designWorld.wholesaleMargin,
-      // Equipamento por receita, arredondado a R$ 1.000: é o botão que faz cada linha se pagar no prazo.
-      equipmentByRecipe: Object.fromEntries(
-        analyzeDesign().recipes.map((r) => [r.id, Math.round(r.equipment / 100000) * 100000]),
-      ),
+      // Equipamento por receita: tabela explícita do catálogo (spec 003), não mais derivada do lucro.
+      equipmentByRecipe: { ...equipmentByRecipe },
     },
   };
   config.population = Object.fromEntries(cities.map((city) => [city.id, city.population]));

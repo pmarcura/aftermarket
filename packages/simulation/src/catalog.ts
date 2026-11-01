@@ -568,6 +568,27 @@ export const designRecipes: DesignRecipe[] = [
   },
 ];
 
+// Equipamento por linha de cada receita, em centavos (spec 003). Até a spec 003 era derivado da
+// calculadora (lucro × prazo de retorno − terreno − rebanho) e mudava junto com qualquer ajuste na
+// fórmula do lucro; agora é parâmetro explícito, congelado com os valores que o motor usava em
+// 01/11/2026 (já arredondados a R$ 1.000). O prazo de retorno passa a ser saída da calculadora.
+export const equipmentByRecipe: Record<string, number> = {
+  'iron-extraction': 15900000,
+  'coal-extraction': 21100000,
+  'steel-bars': 33300000,
+  'steel-recycling': 42100000,
+  utensils: 11000000,
+  'truck-heavy': 86200000,
+  'truck-light': 83500000,
+  'soy-harvest': 25800000,
+  'soy-oil': 11400000,
+  'feed-mill': 19100000,
+  'milk-production': 2200000,
+  'rice-harvest': 2800000,
+  'beans-harvest': 2300000,
+  'sugar-harvest': 2500000,
+};
+
 // Rótulo de categoria exibido nas telas.
 export const itemCategory: Record<DesignItemId, string> = {
   iron: 'Matérias-primas',

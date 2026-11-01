@@ -9,6 +9,7 @@ import { distanceKm } from './geometry';
 import {
   designItems,
   designRecipes,
+  equipmentByRecipe,
   type DesignItem,
   type DesignItemId,
   type DesignRecipe,
@@ -218,8 +219,11 @@ export function lineEconomics(r: DesignRecipe, price: Record<DesignItemId, numbe
     (n, [id, q]) => n + q * price[id],
     0,
   );
-  // Botão de balanceamento: o equipamento que faz a linha se pagar no prazo alvo da categoria.
-  const equipment = profit * designWorld.paybackDays[r.category] - land - livestock;
+  // Equipamento da linha: tabela explícita do catálogo (spec 003). O prazo de retorno é saída; o
+  // equipamento que faria a linha se pagar no prazo alvo da categoria fica só como sugestão.
+  const equipment = equipmentByRecipe[r.id] ?? 0;
+  const suggestedEquipment = profit * designWorld.paybackDays[r.category] - land - livestock;
+  const capex = equipment + land + livestock;
   return {
     cycles,
     materials,
@@ -233,7 +237,9 @@ export function lineEconomics(r: DesignRecipe, price: Record<DesignItemId, numbe
     land,
     livestock,
     equipment,
-    capex: equipment + land + livestock,
+    suggestedEquipment,
+    capex,
+    paybackDays: profit > 0 ? capex / profit : Infinity,
   };
 }
 

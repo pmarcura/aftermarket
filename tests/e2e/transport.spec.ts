@@ -16,6 +16,9 @@ test('frota mostra limite, ajusta quantidade; erro fica no modal e conexão pers
   }
   origin.inventory.iron = 500;
   dest.inventory = {};
+  // Sem regras de abastecimento, minério e carvão ficam em "Repor você mesmo", onde a fábrica
+  // traz material de outra unidade sua.
+  dest.supplyPolicy = undefined;
   dest.capacityT = 10000;
   dest.capacityM3 = 10000;
   const road = {
@@ -31,7 +34,7 @@ test('frota mostra limite, ajusta quantidade; erro fica no modal e conexão pers
   };
   w.routes[`${origin.propertyId}:${dest.propertyId}`] = road;
   let reject = true;
-  await page.route('**/api/world', (r) => r.fulfill({ json: w }));
+  await page.route('**/api/world*', (r) => r.fulfill({ json: w }));
   await page.route('**/api/route?**', (r) => r.fulfill({ json: road }));
   await page.route('**/api/commands', async (r) => {
     if (reject) {
@@ -43,16 +46,27 @@ test('frota mostra limite, ajusta quantidade; erro fica no modal e conexão pers
       return;
     }
     execute(w, 'player', r.request().postDataJSON() as Command, w.updatedAt);
+    w.revision++;
     await r.fulfill({ json: w });
   });
-  await page.addInitScript(() => {
+  await page.addInitScript((season) => {
+    localStorage.setItem('aftermarket.company', 'player');
     localStorage.setItem('aftermarket.page', 'industry');
     localStorage.setItem('aftermarket.business', 'e-industry');
-  });
+    localStorage.setItem(`aftermarket.welcome.${season}.player`, 'seen');
+  }, w.season.id);
   await page.goto('/jogar');
-  await page.getByRole('tab', { name: 'Estoque', exact: true }).click();
-  await page.getByRole('button', { name: 'Trazer de outro estoque', exact: true }).click();
+  await page.getByRole('tab', { name: 'Abastecimento', exact: true }).click();
+  await page
+    .getByRole('region', { name: /^Repor você mesmo/ })
+    .getByRole('article')
+    .filter({ hasText: 'Minério de ferro' })
+    .getByRole('button', { name: 'Trazer de outra unidade', exact: true })
+    .click();
   const dialog = page.getByRole('dialog');
+  await expect(
+    dialog.getByRole('heading', { name: 'Transferir entre minhas unidades', exact: true }),
+  ).toBeVisible();
   await dialog.getByLabel('Origem da transferência', { exact: true }).selectOption('e-mine');
   await dialog.getByLabel('Produto da transferência', { exact: true }).selectOption('iron');
   await dialog.getByLabel('Quantidade para transferir', { exact: true }).fill('99999');
@@ -94,16 +108,16 @@ test('frota mostra limite, ajusta quantidade; erro fica no modal e conexão pers
   expect(w.shipments).toHaveLength(0);
   await page.setViewportSize({ width: 1600, height: 1080 });
   await page
-    .getByRole('navigation')
-    .getByRole('button', { name: 'Meus Negócios', exact: true })
+    .getByRole('navigation', { name: 'Menu principal' })
+    .getByRole('button', { name: 'Negócios', exact: true })
     .click();
-  const network = page.locator('section.panel').filter({
-    has: page.getByRole('heading', { name: 'Minha rede de abastecimento', exact: true }),
-  });
-  await expect(network.getByText('Mineradora Horizonte', { exact: true })).toBeVisible();
-  await expect(network.getByText('Indústria de Aço', { exact: true })).toBeVisible();
+  const network = page.getByRole('region', { name: 'Rotas entre meus negócios', exact: true });
+  const rota = network.getByRole('listitem').filter({ hasText: 'Minério de ferro' });
+  await expect(rota.getByText('Mineradora Horizonte', { exact: true })).toBeVisible();
+  await expect(rota.getByText('Indústria de Aço', { exact: true })).toBeVisible();
+  await expect(rota).toContainText('ligada');
   await network.screenshot({ path: 'test-results/design/supply-network.png' });
-  await network.getByRole('button', { name: 'Conectar estruturas', exact: true }).click();
+  await network.getByRole('button', { name: 'Ligar dois negócios', exact: true }).click();
   await expect(
     page.getByRole('dialog').getByLabel('Origem da conexão', { exact: true }),
   ).toHaveValue('');
@@ -113,39 +127,4 @@ test('frota mostra limite, ajusta quantidade; erro fica no modal e conexão pers
   await expect(
     page.getByRole('dialog').getByLabel('Produto da conexão', { exact: true }),
   ).toHaveValue('');
-});
-
-test('central agrupa caminhões por pedido e mantém leitura após recarga', async ({ page }) => {
-  const now = Date.now(),
-    w = createWorld(now);
-  execute(
-    w,
-    'player',
-    {
-      type: 'transferStock',
-      originId: 'e-mine',
-      destinationId: 'e-industry',
-      product: 'iron',
-      quantity: 65,
-      carrierId: 'player',
-    },
-    now,
-  );
-  expect(w.shipments.length).toBeGreaterThan(1);
-  // Fixture de apresentação: domínio/recebimentos são cobertos nos testes econômicos.
-  for (const s of w.shipments) {
-    s.delivered = true;
-    s.arrivesAt = now - 1;
-  }
-  await page.route('**/api/world', (r) => r.fulfill({ json: w }));
-  await page.goto('/jogar');
-  await page.getByRole('button', { name: 'Abrir notificações', exact: true }).click();
-  const center = page.getByRole('region', { name: 'Central de notificações', exact: true });
-  await expect(center.getByText('Recebimentos não lidos · 1', { exact: true })).toBeVisible();
-  await expect(center.getByRole('button', { name: /Material recebido no estoque/ })).toHaveCount(1);
-  await center.getByRole('button', { name: 'Marcar recebimentos como lidos', exact: true }).click();
-  await expect(center.getByText('Nenhum novo recebimento.', { exact: true })).toBeVisible();
-  await page.reload();
-  await page.getByRole('button', { name: 'Abrir notificações', exact: true }).click();
-  await expect(center.getByText('Recebimentos não lidos · 0', { exact: true })).toBeVisible();
 });

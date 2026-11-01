@@ -9,8 +9,10 @@ import {
   analyzeDesign,
   cyclesPerDay,
   dailyFlows,
+  designItems,
   designRecipes,
   designWorld,
+  type DesignItemId,
 } from '../packages/simulation/src/economy-design';
 import type { ProductId, World } from '../packages/simulation/src/model';
 
@@ -83,7 +85,10 @@ export const targets = {
 interface RecipeKpi {
   installedLines: number; // linhas de equipamento instaladas nas unidades da especialidade
   utilization: number | null; // linhas-dia usadas ÷ linhas-dia instaladas na janela
-  profitPerLine: number | null; // resultado/dia dos bots da especialidade ÷ linhas observadas
+  // Resultado/dia dos bots da especialidade ÷ linhas instaladas: o lucro de projeto já é por linha
+  // instalada a 70% de utilização, então dividir pelas linhas observadas contaria a utilização duas
+  // vezes. Derivado de `margins` e `installedLines` por `deriveRecipeKpis`.
+  profitPerLine: number | null;
   projectProfitPerLine: number; // lucro de projeto da calculadora (utilização e preço realizado)
   profitRatio: number | null; // observado ÷ projeto
   realizedPrice: number | null; // preço médio das vendas no atacado dos produtores ÷ referência
@@ -278,10 +283,7 @@ function run(seed: number): SeedResult {
         const recipe = group.find((x) => x.id === j.recipeId);
         return n + (recipe ? j.cycles / cyclesPerDay(recipe) : 0);
       }, 0);
-    const observedLines = usedLineDays / window;
     const projectProfitPerLine = design.recipes.find((x) => x.id === r.id)?.profit ?? 0;
-    const profitPerLine =
-      margins[r.id] !== undefined && observedLines > 0 ? margins[r.id] / observedLines : null;
     let quantity = 0,
       value = 0;
     if (r.priced)
@@ -299,12 +301,9 @@ function run(seed: number): SeedResult {
     recipes[r.id] = {
       installedLines,
       utilization: installedLines ? usedLineDays / (installedLines * window) : null,
-      profitPerLine,
+      profitPerLine: null,
       projectProfitPerLine,
-      profitRatio:
-        profitPerLine !== null && projectProfitPerLine
-          ? profitPerLine / projectProfitPerLine
-          : null,
+      profitRatio: null,
       realizedPrice: quantity && reference ? value / quantity / reference : null,
     };
   }
@@ -342,7 +341,7 @@ function run(seed: number): SeedResult {
         .filter((e) => e.companyId.startsWith('rival-') && e.mothballed)
         .map((e) => `${e.companyId} ${e.specialization ?? e.category} suspensa`),
     );
-  return {
+  return deriveRecipeKpis({
     seed,
     seasonHash,
     msPerDay,
@@ -363,7 +362,22 @@ function run(seed: number): SeedResult {
     uncostedStock: uncostedStock(w),
     idleStockDays,
     concentration,
-  };
+  });
+}
+
+// Lucro por linha e quociente sobre o projeto, a partir dos dados brutos da semente. Aplicado também
+// aos arquivos de --from, para que uma correção da definição não exija rodar a simulação de novo.
+function deriveRecipeKpis(r: SeedResult): SeedResult {
+  for (const [id, k] of Object.entries(r.recipes)) {
+    const margin = r.margins[id];
+    k.profitPerLine =
+      margin !== undefined && k.installedLines > 0 ? margin / k.installedLines : null;
+    k.profitRatio =
+      k.profitPerLine !== null && k.projectProfitPerLine
+        ? k.profitPerLine / k.projectProfitPerLine
+        : null;
+  }
+  return r;
 }
 
 // Mediana, mínimo e máximo entre sementes. Valores ausentes (KPI sem base na semente) ficam fora e
@@ -429,7 +443,7 @@ function summarize(results: SeedResult[]) {
   };
 }
 
-const results: SeedResult[] = from.flatMap((f) => f.results);
+const results: SeedResult[] = from.flatMap((f) => f.results.map(deriveRecipeKpis));
 // Código medido: commit do repositório (com "+alterações" se a árvore não estiver limpa).
 const commit =
   from[0]?.commit ??
@@ -469,101 +483,247 @@ writeFileSync(
 console.log(`Relatório completo em ${out}`);
 if (process.argv.includes('--write-doc')) writeDoc();
 
+// Documento único da prova (spec 003, R7): uma seção por escala, regenerada sem tocar nas outras.
 function writeDoc() {
-  // Mediana entre sementes (spec 003, R3); o formato completo com faixa vem na T6.
-  const avg = (f: (r: SeedResult) => number) => stat(results.map(f)).median ?? 0;
+  const target = arg('doc', 'docs/product/PROVA.md');
   const pct = (n: number) => `${(n * 100).toFixed(0)}%`;
-  const fmt = (n: number, d = 1) => n.toLocaleString('pt-BR', { maximumFractionDigits: d });
-  const rows = designRecipes.map((r) => {
-    const observed = avg((x) => x.lines[r.id].observed),
-      reference = (flows.lines[r.id] ?? 0) * scale;
-    return `| ${r.name} | ${fmt(reference)} | ${fmt(observed)} | ${reference ? pct(observed / reference) : '—'} | ${fmt(
-      avg((x) => (x.margins[r.id] ?? 0) / 100),
-      0,
-    )} |`;
-  });
-  for (const [key, name] of [
+  // Arredonda antes de formatar para não escrever "-0".
+  const fmt = (n: number, d = 1) =>
+    Number.isFinite(n)
+      ? (Math.round(n * 10 ** d) / 10 ** d || 0).toLocaleString('pt-BR', {
+          maximumFractionDigits: d,
+        })
+      : 'sem venda';
+  const brl = (cents: number) => fmt(cents / 100, 0);
+  const show = (x: Stat, f: (n: number) => string) => (x.median === null ? '—' : range(x, f));
+  const name = (id: string) => designItems[id as DesignItemId]?.name ?? id;
+  const by = (f: (r: SeedResult) => number | null | undefined) => stat(results.map(f));
+  // Situação de um KPI com alvo: a mediana e o pior caso (o extremo do lado do alvo).
+  const judge = (x: Stat, t: { min?: number; max?: number }) => {
+    const ok = (v: number | null) =>
+      v !== null && (t.min === undefined || v >= t.min) && (t.max === undefined || v <= t.max);
+    if (x.median === null) return '— | —';
+    const worst = [t.min !== undefined ? x.min : null, t.max !== undefined ? x.max : null].filter(
+      (v) => v !== null,
+    );
+    return `${ok(x.median) ? 'dentro' : 'fora'} | ${worst.every(ok) ? 'dentro' : 'fora'}`;
+  };
+  const inRange = (v: number | null | undefined, t: { min: number; max: number }) =>
+    typeof v === 'number' && v >= t.min && v <= t.max;
+  // Produtos vendidos em alguma semente: os demais (sementes, vacas) só circulam dentro da empresa.
+  const traded = [...new Set(results.flatMap((r) => Object.keys(r.idleStockDays)))]
+    .filter((id) => results.some((r) => Number.isFinite(days_(r.idleStockDays[id]))))
+    .sort();
+  const hhiTarget = scale >= targets.concentration.fromScale;
+  const steelTarget = targets.governmentSteel.minShare * targets.governmentSteel.perDay * scale;
+  const recipeIds = Object.keys(summary.recipes);
+  const outside = (f: (k: RecipeKpi) => number | null, t: { min: number; max: number }) =>
+    by(
+      (r) =>
+        recipeIds.filter((id) => {
+          const v = r.recipes[id] ? f(r.recipes[id]) : null;
+          return v !== null && !inRange(v, t);
+        }).length,
+    );
+  const world: [string, string, Stat, (n: number) => string, string][] = [
+    [
+      'Dinheiro conservado (diferença em centavos)',
+      '0',
+      summary.moneyDrift,
+      String,
+      judge(summary.moneyDrift, { max: 0 }),
+    ],
+    [
+      'Empresas-bot quebradas ou suspensas',
+      '0',
+      summary.broke,
+      String,
+      judge(summary.broke, { max: 0 }),
+    ],
+    [
+      'Procura atendida pelas lojas',
+      `≥ ${pct(targets.coverageAll.min)}`,
+      summary.coverageAll,
+      pct,
+      judge(summary.coverageAll, { min: targets.coverageAll.min }),
+    ],
+    [
+      'Aço entregue ao governo (t/dia)',
+      `≥ ${fmt(steelTarget, 1)} (80% de ${fmt(targets.governmentSteel.perDay * scale, 0)})`,
+      summary.governmentSteelPerDay,
+      (n) => fmt(n, 1),
+      judge(summary.governmentSteelPerDay, { min: steelTarget }),
+    ],
+    [
+      'Produtos vendidos com estoque fora de 1–7 dias',
+      '0',
+      by(
+        (r) =>
+          traded.filter((id) => !inRange(days_(r.idleStockDays[id]), targets.idleStockDays)).length,
+      ),
+      String,
+      judge(
+        by(
+          (r) =>
+            traded.filter((id) => !inRange(days_(r.idleStockDays[id]), targets.idleStockDays))
+              .length,
+        ),
+        { max: 0 },
+      ),
+    ],
+    [
+      'Produtos com HHI ≥ 2.500 no atacado',
+      hhiTarget ? '0' : 'sem alvo nesta escala',
+      by(
+        (r) => Object.values(r.concentration).filter((v) => v >= targets.concentration.max).length,
+      ),
+      String,
+      hhiTarget
+        ? judge(
+            by(
+              (r) =>
+                Object.values(r.concentration).filter((v) => v >= targets.concentration.max).length,
+            ),
+            { max: 0 },
+          )
+        : '— | —',
+    ],
+    [
+      'Receitas com utilização fora de 70–95%',
+      '0',
+      outside((k) => k.utilization, targets.utilization),
+      String,
+      judge(
+        outside((k) => k.utilization, targets.utilization),
+        { max: 0 },
+      ),
+    ],
+    [
+      'Receitas com lucro/linha ÷ projeto fora de 0,8–1,2',
+      '0',
+      outside((k) => k.profitRatio, targets.profitRatio),
+      String,
+      judge(
+        outside((k) => k.profitRatio, targets.profitRatio),
+        { max: 0 },
+      ),
+    ],
+    [
+      'Caminhões pesados comprados por dia',
+      `referência ${fmt(designWorld.fleet.heavyPerDay * scale, 1)}, sem alvo`,
+      summary.trucksBoughtPerDay.heavy,
+      (n) => fmt(n, 2),
+      '— | —',
+    ],
+    [
+      'Caminhões leves comprados por dia',
+      `referência ${fmt(designWorld.fleet.lightPerDay * scale, 1)}, sem alvo`,
+      summary.trucksBoughtPerDay.light,
+      (n) => fmt(n, 2),
+      '— | —',
+    ],
+    [
+      'Caminhões importados por dia',
+      'sem alvo',
+      summary.trucksBoughtPerDay.imported,
+      (n) => fmt(n, 2),
+      '— | —',
+    ],
+    [
+      'Caminhões aposentados por dia',
+      'sem alvo',
+      summary.trucksRetiredPerDay,
+      (n) => fmt(n, 2),
+      '— | —',
+    ],
+  ];
+  const recipeRows = designRecipes
+    .filter((r) => !r.alternativeOf)
+    .map((r) => {
+      const k = summary.recipes[r.id];
+      const alt = designRecipes.filter((x) => x.alternativeOf === r.id).map((x) => x.name);
+      return `| ${r.name}${alt.length ? ` (com ${alt.join(', ').toLowerCase()})` : ''} | ${show(k.installedLines, (n) => fmt(n, 0))} | ${fmt((flows.lines[r.id] ?? 0) * scale, 1)} | ${show(summary.lines[r.id], (n) => fmt(n, 1))} | ${show(k.utilization, pct)} | ${show(summary.margins[r.id] ?? by(() => null), brl)} | ${show(k.profitPerLine, brl)} | ${brl(k.projectProfitPerLine.median ?? 0)} | ${show(k.profitRatio, (n) => fmt(n, 2))} | ${show(k.realizedPrice, (n) => fmt(n, 2))} |`;
+    });
+  for (const [key, label] of [
     ['retail', 'Lojas'],
     ['warehouse', 'Distribuidores'],
+    ['logistics', 'Transportadoras'],
   ])
-    rows.push(
-      `| ${name} | — | — | — | ${fmt(
-        avg((x) => (x.margins[key] ?? 0) / 100),
-        0,
-      )} |`,
-    );
-  const products = Object.keys(results[0].coverage).sort();
-  const doc = `# Prova da economia versão 2
+    if (summary.margins[key])
+      recipeRows.push(
+        `| ${label} | — | — | — | — | ${show(summary.margins[key], brl)} | — | — | — | — |`,
+      );
+  const hashes = [...new Set(results.map((r) => r.seasonHash))].join(', ');
+  const section = `<!-- escala:${scale} início -->
+## Escala ${scale}
 
-Gerado por \`npm run economy:proof -- --days=${days} --window=${window} --scale=${scale} --seeds=${seeds.join(',')} --write-doc\`, escala ${scale} do mundo de referência. Médias de ${seeds.length} sementes nos últimos ${window} dias de ${days}. As sementes variam o capital inicial e os orçamentos dos bots em ±15% e rodam as estratégias; não há jogadores humanos. Detalhe por semente em \`test-results/economy-proof.json\`.
+\`npm run economy:proof -- --days=${days} --window=${window} --seeds=${seeds.join(',')} --scale=${scale} --write-doc\`${from.length > 1 ? ' (uma semente por processo, juntadas com \`--from\`)' : ''}. Código \`${commit}\`; temporada \`${hashes}\`. ${results.length} sementes, janela dos últimos ${window} dias de ${days}. Simulação: ${show(summary.msPerDay, (n) => fmt(n / 1000, 1))} s por dia de jogo por semente.
 
-## Resumo
+### KPIs de mundo
 
-| Critério | Alvo | Observado |
-| --- | --- | --- |
-| Dinheiro conservado | diferença 0 | ${results.every((r) => r.moneyDrift === 0) ? 'sim, em todas as sementes' : 'NÃO'} |
-| Empresas quebradas ou suspensas | nenhuma | ${results.map((r) => r.broke.length).join(' / ')} |
-| Procura atendida pelas lojas | 70% | ${pct(avg((r) => r.coverageAll))} |
-| Aço ao governo | ${fmt(16 * scale, 0)} t/dia | ${fmt(avg((r) => r.governmentSteelPerDay))} t/dia |
-| Caminhões comprados | ${fmt(0.8 * scale)} pesado + ${fmt(0.8 * scale)} leve/dia | ${fmt(
-    avg((r) => r.trucksBoughtPerDay.heavy),
-    2,
-  )} + ${fmt(
-    avg((r) => r.trucksBoughtPerDay.light),
-    2,
-  )}/dia (${fmt(
-    avg((r) => r.trucksBoughtPerDay.imported),
-    2,
-  )} importados) |
-| Caminhões aposentados | reposição | ${fmt(
-    avg((r) => r.trucksRetiredPerDay),
-    2,
-  )}/dia |
-| Tempo de simulação | — | ${fmt(avg((r) => r.msPerDay) / 1000, 1)} s por dia de jogo |
+| KPI | Alvo | Mediana [mín–máx] | Mediana | Pior caso |
+| --- | --- | ---: | --- | --- |
+${world.map(([label, goal, x, f, status]) => `| ${label} | ${goal} | ${show(x, f)} | ${status} |`).join('\n')}
 
-## Desvios explicados
+Quebras por semente: ${results.map((r) => `${r.seed}: ${r.broke.length ? r.broke.join(', ') : 'nenhuma'}`).join('; ')}.
 
-- **Procura atendida abaixo de 70%:** as lojas-bot contratam equipe para 60% da procura da cidade (D-031). O resto fica para as lojas dos jogadores; sem humanos, a prova mede só os bots.
-- **Linhas abaixo da referência:** os bots abrem com 60% a 90% das linhas da calculadora; a diferença é espaço para os jogadores.
-- **Montadoras com pouca procura:** a frota cresce pouco depois de cheia, e a reposição depende do desgaste (vida útil comprimida, D-033). Uma montadora de jogador concorre com a de bot pela mesma procura.
-- **Aço ao governo abaixo da meta:** cada edital pede de 6 a 24 t de uma só usina; as fábricas compram o aço assim que sai do forno, as usinas raramente juntam 24 t e os editais maiores expiram sem lance (D-038).
-- **Tempo de simulação:** as sementes rodam em paralelo no mesmo computador; o tempo por dia é maior do que numa rodada isolada.
+### Por negócio
 
-## Produção por negócio
+Linhas instaladas: equipamento das unidades da especialidade. Linhas de referência: calculadora × escala. Linhas observadas: produção ÷ uma linha a plena capacidade. Utilização: linhas-dia usadas ÷ instaladas (alvo 70–95%). Resultado dos bots: R$/dia da especialidade (fórmula no topo). Lucro/linha: resultado ÷ linhas instaladas, comparado ao lucro de projeto da calculadora (alvo 0,8–1,2). Preço realizado: vendas no atacado dos produtores ÷ preço de referência.
 
-"Linhas" é a produção diária dividida pela de uma linha a plena capacidade. Resultado é o lucro operacional diário dos bots da especialidade: entradas menos saídas mais o estoque formado a preço de referência, sem imóveis, crédito, caminhões e educação da equipe.
+| Negócio | Linhas instaladas | Linhas na referência | Linhas observadas | Utilização | Resultado dos bots/dia (R$) | Lucro/linha/dia (R$) | Projeto/linha/dia (R$) | Observado ÷ projeto | Preço realizado ÷ referência |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+${recipeRows.join('\n')}
 
-| Negócio | Linhas na referência | Linhas observadas | % | Resultado dos bots/dia (R$) |
-| --- | ---: | ---: | ---: | ---: |
-${rows.join('\n')}
-
-## Procura atendida por produto
+### Procura atendida por produto
 
 | Produto | Atendida |
 | --- | ---: |
-${products.map((id) => `| ${id} | ${pct(avg((r) => r.coverage[id] ?? 0))} |`).join('\n')}
+${Object.entries(summary.coverage)
+  .map(([id, x]) => `| ${name(id)} | ${show(x, pct)} |`)
+  .join('\n')}
 
-## Estoque parado e concentração
+### Estoque e concentração
 
-Dias de estoque: quanto o estoque do mundo duraria no ritmo de vendas recente. Concentração: índice HHI das vendas no atacado (acima de 2.500 é concentrado; 10.000 é um só vendedor).
+Dias de estoque: quanto o estoque do mundo dura no ritmo de vendas da janela (alvo 1–7). HHI: concentração das vendas no atacado por vendedor (2.500 ou mais é concentrado; 10.000 é um vendedor só${hhiTarget ? '' : '; sem alvo nesta escala'}).
 
-| Produto | Dias de estoque | Concentração |
+| Produto | Dias de estoque | HHI |
 | --- | ---: | ---: |
-${Object.keys(results[0].idleStockDays)
-  .sort()
+${traded
   .map(
     (id) =>
-      `| ${id} | ${fmt(
-        avg((r) => Math.min(999, r.idleStockDays[id] ?? 0)),
-        0,
-      )} | ${fmt(
-        avg((r) => r.concentration[id] ?? 0),
-        0,
-      )} |`,
+      `| ${name(id)} | ${show(summary.idleStockDays[id], (n) => fmt(n, 1))} | ${summary.concentration[id] ? show(summary.concentration[id], (n) => fmt(n, 0)) : '—'} |`,
   )
   .join('\n')}
+<!-- escala:${scale} fim -->`;
+  let previous = '';
+  try {
+    previous = readFileSync(target, 'utf8');
+  } catch {
+    previous = '';
+  }
+  const sections = new Map<number, string>();
+  for (const m of previous.matchAll(/<!-- escala:(\d+) início -->[\s\S]*?<!-- escala:\1 fim -->/g))
+    sections.set(Number(m[1]), m[0]);
+  sections.set(scale, section);
+  const doc = `# Prova da economia
+
+Régua oficial de balanceamento (constituição §5, spec 003), gerada por \`npm run economy:proof -- --write-doc\`. Cada escala tem sua seção; rodar a prova numa escala regenera só a seção dela. O detalhe por semente fica no JSON de \`test-results/\`.
+
+## Como ler
+
+- **Mundo medido:** mundo jogável (\`playtest\`) criado do zero, só bots, sem jogadores humanos. As sementes variam o capital inicial e os orçamentos dos bots em ±15% e rodam as estratégias.
+- **Números:** mediana [mínimo–máximo] entre sementes, nunca média. A janela são os últimos dias da rodada, depois da partida.
+- **Resultado dos bots:** caixa operacional da janela (sem imóvel e equipamento, crédito, verba do cenário, educação, caminhões da frota e venda de ativos) mais a variação do estoque a custo médio, dos lotes em curso a custo e das cargas compradas em trânsito. Nenhum preço de referência entra no resultado.
+- **Projeto:** lucro por linha instalada da calculadora (\`npm run economy:design\`) com 70% de utilização e 95% do preço de referência. As receitas que não fecham na própria calculadora estão em \`knownBalanceDebt\` (\`tests/economy-design.test.ts\`).
+- **Situação:** "Mediana" diz se a mediana atende o alvo; "Pior caso" avalia o extremo do lado do alvo (o mínimo para alvo mínimo, o máximo para alvo máximo). Regra de aceitação de uma mudança de balanceamento: a mediana melhora e o pior caso não piora em todos os KPIs com alvo.
+- **Referência sem alvo:** compras de caminhão comparadas à frota da calculadora; não decidem aceitação.
+
+${[...sections.entries()]
+  .sort(([a], [b]) => a - b)
+  .map(([, text]) => text)
+  .join('\n\n')}
 `;
-  const target = arg('doc', 'docs/product/PROVA-V2.md');
   writeFileSync(target, doc);
   console.log(`Documento em ${target}`);
 }

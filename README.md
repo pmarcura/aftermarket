@@ -6,7 +6,7 @@ Simulador empresarial geográfico no Brasil. Explore oportunidades, adquira prop
 
 ## Executar
 
-Para balancear o jogo, use a [bancada de simulações](docs/design/DEVELOPMENT-LAB.md): `npm run lab` abre `/lab` sem API/banco, com A/B por semente, consulta por bot/produto/dia e exportação JSON. Na linha de comando, `npm run lab:batch` compara cenários e `npm run economy:proof` mede os KPIs de aceitação.
+Para balancear o jogo, use a [bancada de simulações](docs/design/DEVELOPMENT-LAB.md): `npm run lab` abre `/lab` sem API/banco, com A/B por semente, consulta por bot/produto/dia e exportação JSON. Na linha de comando, `npm run lab:batch` compara cenários e `npm run economy:proof` mede os KPIs de aceitação ([PROVA](docs/product/PROVA.md)).
 
 Requisitos: **Node.js 22 LTS** (22.13 ou superior; `.nvmrc` fixa a versão), npm e navegador com WebGL. Não precisa de chave de API para o mapa.
 

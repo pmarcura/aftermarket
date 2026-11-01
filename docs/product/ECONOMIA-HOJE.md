@@ -1,6 +1,6 @@
 # Economia hoje
 
-Resumo em linguagem simples, 30/10/2026. Existe **uma única economia** no motor (D-042, spec 001): a do catálogo da etapa B. Os números de projeto estão em [ECONOMIA-ALVO](ECONOMIA-ALVO.md); o que os bots fazem de verdade está nas provas [PROVA-V2](PROVA-V2.md) e [PROVA-V2-ESCALA-20](PROVA-V2-ESCALA-20.md). Para atualizar os relatórios técnicos: `npm run economy:report`.
+Resumo em linguagem simples, 30/10/2026. Existe **uma única economia** no motor (D-042, spec 001): a do catálogo da etapa B. Os números de projeto estão em [ECONOMIA-ALVO](ECONOMIA-ALVO.md); o que os bots fazem de verdade está na [PROVA](PROVA.md) (escalas 1 e 20). Para atualizar os relatórios técnicos: `npm run economy:report`.
 
 | Pergunta                                                                 | Relatório                                                                 |
 | ------------------------------------------------------------------------ | ------------------------------------------------------------------------- |
@@ -34,7 +34,7 @@ flowchart LR
 
 ## Os furos que continuam
 
-Medidos na escala 20 ([PROVA-V2-ESCALA-20](PROVA-V2-ESCALA-20.md)): arroz, feijão, utensílios e caminhão leve no vermelho; aço ao governo abaixo da meta (cerca de 180 de 320 t/dia); lojas atendem 51% da procura (alvo 70%). Ficam para as specs de balanceamento (003 e 006).
+Medidos na escala 20 pela régua antiga (29/10, PROVA-V2-ESCALA-20 no histórico do Git; régua nova em [PROVA](PROVA.md)): arroz, feijão, utensílios e caminhão leve no vermelho; aço ao governo abaixo da meta (cerca de 180 de 320 t/dia); lojas atendem 51% da procura (alvo 70%). Ficam para as specs de balanceamento (003 e 006).
 
 ## Contas dos bots corrigidas
 

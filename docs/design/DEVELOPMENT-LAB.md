@@ -25,14 +25,16 @@ npm run lab:batch -- --days=90 --compare=baseline --compare-capacity=0.75 --comp
 npm run lab:batch -- --days=90 --seed-mode=conditions --seeds=0,1,2 --compare=baseline --compare-policy=quality
 npm run lab:batch -- --days=90 --compare=baseline --compare-shock-day=30 --compare-shock-type=demand --compare-shock-multiplier=0.5
 npm run lab:benchmark
-npm run economy:proof -- --days=60 --window=30 --seeds=0,1,2,3,4 --write-doc
+npm run economy:proof -- --write-doc                 # padrão: 60 dias, janela 30, sementes 0–4, escala 1
+for s in 0 1 2 3 4; do npm run economy:proof -- --scale=20 --seeds=$s --out=test-results/p20-s$s.json & done; wait
+npm run economy:proof -- --from=test-results/p20-s0.json,test-results/p20-s1.json,test-results/p20-s2.json,test-results/p20-s3.json,test-results/p20-s4.json --write-doc
 ```
 
 A/B usa a mesma época e semente, alterando somente as opções declaradas. `--compare=none` executa apenas A; `--force` ignora o cache em `.runtime/lab/simulations/`. `seed-mode=rotation` rotaciona três estratégias; `conditions` varia capital e orçamentos inaugurais em ±15%, com transferências entre bots e famílias conservando dinheiro. Não representa Monte Carlo amplo de jogadores humanos. Preços e demanda são simulados.
 
 Custos alteram salários/manutenção/utilidades/processamento; velocidade divide duração, preservando quantidades das receitas; frete altera seus componentes monetários, preservando mínimo comercial. Choques aplicam-se no início do dia declarado. `metadata.config` registra abertura; `experiment.events` registra a intervenção. Tudo ocorre em mundos novos: os multiplicadores são hipóteses simuladas, sem recalibrar a season salva.
 
-`economy:proof` é a régua de aceitação: 5 sementes, 60 dias, janela de 30, escala do mundo jogável; aceitar uma mudança só se a mediana melhora e o pior caso não piora nos KPIs da spec 003. Resultados em `test-results/economy-proof.json` e, com `--write-doc`, em `docs/product/PROVA-V2*.md`.
+`economy:proof` é a régua de aceitação: 5 sementes, 60 dias, janela de 30, escala do mundo jogável; aceitar uma mudança só se a mediana melhora e o pior caso não piora nos KPIs com alvo (constituição §5, spec 003). Resultado por negócio a custo médio, com lotes em curso e cargas em trânsito; cada métrica em mediana [mín–máx]. Resultados em `test-results/economy-proof.json` e, com `--write-doc`, na seção da escala em `docs/product/PROVA.md`. `runLab` também aceita `scale`.
 
 ## Arquivos gerados
 

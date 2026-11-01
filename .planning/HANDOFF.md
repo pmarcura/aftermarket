@@ -67,7 +67,7 @@ Como investigar (funcionou nesta conversa): rastrear decisões de um tipo de bot
 
 ## Calibração depois da D-036 (31/10/2026)
 
-Commits: `1288da6` (economia, D-036) e `edf70da` (rotas pela entrada dos imóveis, D-037). Resultado completo em [PROVA-V2-ESCALA-20](../docs/product/PROVA-V2-ESCALA-20.md); página visual em `docs/calibracao-brasil.html`. Comando: `npx tsx scripts/economy-proof.ts --days=20 --window=10 --seeds=0 --scale=20 --out=.runtime/geo-x.json` (cerca de 4 min). Linhas de referência = calculadora × escala; bots abrem com 80%.
+Commits: `1288da6` (economia, D-036) e `edf70da` (rotas pela entrada dos imóveis, D-037). Resultado completo na PROVA-V2-ESCALA-20 da época (histórico do Git; a prova vigente é a [PROVA](../docs/product/PROVA.md)); página visual em `docs/calibracao-brasil.html`. Comando: `npx tsx scripts/economy-proof.ts --days=20 --window=10 --seeds=0 --scale=20 --out=.runtime/geo-x.json` (cerca de 4 min). Linhas de referência = calculadora × escala; bots abrem com 80%.
 
 | Medida (últimos 10 de 20 dias) | Código anterior                  | Agora                     |
 | ------------------------------ | -------------------------------- | ------------------------- |

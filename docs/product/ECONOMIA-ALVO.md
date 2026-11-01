@@ -2,7 +2,7 @@
 
 Números da proposta 1 aprovada pelo Pedro em 27/10/2026 (D-029). Itens e receitas ficam em [`packages/simulation/src/catalog.ts`](../../packages/simulation/src/catalog.ts), lido pelo motor e pela calculadora [`economy-design.ts`](../../packages/simulation/src/economy-design.ts); este documento resume. Para ver tudo: `npm run economy:design`. O teste `tests/economy-design.test.ts` falha se alguma regra de balanceamento quebrar.
 
-Está no motor e é a única economia do jogo (D-042, spec 001). O que os bots fazem com ela está em [ECONOMIA-HOJE](ECONOMIA-HOJE.md) e nas provas [PROVA-V2](PROVA-V2.md) e [PROVA-V2-ESCALA-20](PROVA-V2-ESCALA-20.md).
+Está no motor e é a única economia do jogo (D-042, spec 001). O que os bots fazem com ela está em [ECONOMIA-HOJE](ECONOMIA-HOJE.md) e na [PROVA](PROVA.md) (escalas 1 e 20).
 
 ## Como os números foram escolhidos
 

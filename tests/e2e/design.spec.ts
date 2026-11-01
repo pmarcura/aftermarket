@@ -153,8 +153,15 @@ test('servidor contrata rota curva, caminhão segue geometria e preserva contrat
     },
   });
   expect(response.ok(), await response.text()).toBe(true);
+  // O pacote do mundo não garante ordem: a remessa nova é a que não existia antes da compra.
   const after = (await response.json()) as World,
-    s = after.shipments.at(-1)!;
+    s = after.shipments.find(
+      (x) =>
+        !w.shipments.some((old) => old.id === x.id) &&
+        x.originId === origem.id &&
+        x.destinationId === 'e-industry',
+    )!;
+  expect(s).toBeTruthy();
   expect(s.routeSource).toBe('osrm');
   expect(s.routeKey).toBeTruthy();
   expect(shipmentRoute(after, s)).toEqual(route.coordinates);

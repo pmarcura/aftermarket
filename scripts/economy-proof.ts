@@ -13,8 +13,12 @@ import {
 import type { ProductId, World } from '../packages/simulation/src/model';
 
 // Prova da economia: mundo jogável por N dias em várias sementes, medido contra a ECONOMIA-ALVO.
-// Uso: npm run economy:proof -- --days=90 --seeds=0,1,2 [--write-doc]
-// Sementes em paralelo: rode uma por processo com --out e junte com --from=a.json,b.json --write-doc.
+// Uso: npm run economy:proof -- [--days=60] [--window=30] [--seeds=0,1,2,3,4] [--scale=1] [--write-doc]
+// A régua padrão (constituição §5) é a dos valores padrão; a escala do playtest grande é --scale=20.
+// Sementes em paralelo: rode uma por processo com --out e junte com --from=a.json,b.json --write-doc:
+//   for s in 0 1 2 3 4; do npm run economy:proof -- --scale=20 --seeds=$s --out=test-results/p20-s$s.json & done; wait
+//   npm run economy:proof -- --from=test-results/p20-s0.json,...,test-results/p20-s4.json --write-doc
+// Cada métrica sai como mediana, mínimo e máximo entre sementes; nunca só a média.
 //
 // Resultado por negócio (spec 003, R1), por empresa-bot e somado por especialidade, por dia da janela:
 //   caixa operacional da janela (entradas − saídas do extrato, sem imóvel e equipamento, crédito,
@@ -38,14 +42,19 @@ const from = arg('from', '')
         results: SeedResult[];
       },
   );
-const days = from[0]?.days ?? Number(arg('days', '90'));
+const days = from[0]?.days ?? Number(arg('days', '60'));
 const seeds = from.length
   ? from.flatMap((f) => f.results.map((r) => r.seed))
-  : arg('seeds', '0,1,2').split(',').map(Number);
-// Janela medida: os últimos dias, depois da partida (padrão: até 30 dias, metade em rodadas curtas).
+  : arg('seeds', '0,1,2,3,4').split(',').map(Number);
+// Janela medida: os últimos dias, depois da partida (padrão: 30 dias, metade em rodadas curtas).
 const window = from[0]?.window ?? Number(arg('window', String(Math.min(30, Math.ceil(days / 2)))));
 const out = arg('out', 'test-results/economy-proof.json');
 const scale = from[0]?.scale ?? Number(arg('scale', '1'));
+if (
+  from.some((f) => f.days !== days || (f.window ?? window) !== window || (f.scale ?? 1) !== scale)
+)
+  throw new Error('Os arquivos de --from precisam ter os mesmos dias, janela e escala.');
+if (new Set(seeds).size !== seeds.length) throw new Error('Semente repetida na prova.');
 const AT = Date.UTC(2026, 9, 26, 12);
 const flows = dailyFlows();
 const design = analyzeDesign();
@@ -348,7 +357,72 @@ function run(seed: number): SeedResult {
   };
 }
 
+// Mediana, mínimo e máximo entre sementes. Valores ausentes (KPI sem base na semente) ficam fora e
+// são contados em `n`; Infinity (estoque sem venda) entra como valor.
+export interface Stat {
+  median: number | null;
+  min: number | null;
+  max: number | null;
+  n: number;
+}
+export function stat(values: (number | null | undefined)[]): Stat {
+  const v = values
+    .filter((x): x is number => typeof x === 'number' && !Number.isNaN(x))
+    .sort((a, b) => a - b);
+  if (!v.length) return { median: null, min: null, max: null, n: 0 };
+  const mid = Math.floor(v.length / 2);
+  const median = v.length % 2 ? v[mid] : (v[mid - 1] + v[mid]) / 2;
+  return { median, min: v[0], max: v[v.length - 1], n: v.length };
+}
+// JSON grava Infinity como null: estoque sem venda volta como Infinity ao juntar arquivos.
+const days_ = (x: number | null | undefined) => (x === null ? Infinity : x);
+
+function summarize(results: SeedResult[]) {
+  const by = (f: (r: SeedResult) => number | null | undefined) => stat(results.map(f));
+  const keys = (f: (r: SeedResult) => object) =>
+    [...new Set(results.flatMap((r) => Object.keys(f(r))))].sort();
+  return {
+    moneyDrift: by((r) => r.moneyDrift),
+    broke: by((r) => r.broke.length),
+    coverageAll: by((r) => r.coverageAll),
+    governmentSteelPerDay: by((r) => r.governmentSteelPerDay),
+    trucksBoughtPerDay: {
+      heavy: by((r) => r.trucksBoughtPerDay.heavy),
+      light: by((r) => r.trucksBoughtPerDay.light),
+      imported: by((r) => r.trucksBoughtPerDay.imported),
+    },
+    trucksRetiredPerDay: by((r) => r.trucksRetiredPerDay),
+    msPerDay: by((r) => r.msPerDay),
+    coverage: Object.fromEntries(
+      keys((r) => r.coverage).map((id) => [id, by((r) => r.coverage[id])]),
+    ),
+    idleStockDays: Object.fromEntries(
+      keys((r) => r.idleStockDays).map((id) => [id, by((r) => days_(r.idleStockDays[id]))]),
+    ),
+    concentration: Object.fromEntries(
+      keys((r) => r.concentration).map((id) => [id, by((r) => r.concentration[id])]),
+    ),
+    lines: Object.fromEntries(designRecipes.map((r) => [r.id, by((x) => x.lines[r.id]?.observed)])),
+    margins: Object.fromEntries(keys((r) => r.margins).map((k) => [k, by((r) => r.margins[k])])),
+    recipes: Object.fromEntries(
+      keys((r) => r.recipes).map((id) => [
+        id,
+        {
+          installedLines: by((r) => r.recipes[id]?.installedLines),
+          utilization: by((r) => r.recipes[id]?.utilization),
+          profitPerLine: by((r) => r.recipes[id]?.profitPerLine),
+          projectProfitPerLine: by((r) => r.recipes[id]?.projectProfitPerLine),
+          profitRatio: by((r) => r.recipes[id]?.profitRatio),
+          realizedPrice: by((r) => r.recipes[id]?.realizedPrice),
+        },
+      ]),
+    ),
+  };
+}
+
 const results: SeedResult[] = from.flatMap((f) => f.results);
+const range = (x: Stat, f: (n: number) => string) =>
+  x.median === null ? '—' : `${f(x.median)} [${f(x.min!)}–${f(x.max!)}]`;
 for (const seed of from.length ? [] : seeds) {
   const r = run(seed);
   results.push(r);
@@ -356,14 +430,22 @@ for (const seed of from.length ? [] : seeds) {
     `semente ${seed}: ${Math.round(r.msPerDay)} ms/dia · vendas ${(r.coverageAll * 100).toFixed(0)}% · aço ao governo ${r.governmentSteelPerDay.toFixed(1)} t/dia · caminhões ${r.trucksBoughtPerDay.heavy.toFixed(2)} pesado + ${r.trucksBoughtPerDay.light.toFixed(2)} leve/dia, ${r.trucksRetiredPerDay.toFixed(2)} aposentados/dia · quebras ${r.broke.length}`,
   );
 }
+const summary = summarize(results);
+if (results.length > 1) {
+  const pct = (n: number) => `${(n * 100).toFixed(0)}%`;
+  const one = (n: number) => n.toFixed(1);
+  console.log(
+    `${results.length} sementes, mediana [mín–máx]: vendas ${range(summary.coverageAll, pct)} · aço ao governo ${range(summary.governmentSteelPerDay, one)} t/dia · quebras ${range(summary.broke, String)} · dinheiro ${range(summary.moneyDrift, String)}`,
+  );
+}
 mkdirSync('test-results', { recursive: true });
-writeFileSync(out, JSON.stringify({ days, window, scale, seeds, results }, null, 2));
+writeFileSync(out, JSON.stringify({ days, window, scale, seeds, results, summary }, null, 2));
 console.log(`Relatório completo em ${out}`);
 if (process.argv.includes('--write-doc')) writeDoc();
 
 function writeDoc() {
-  const avg = (f: (r: SeedResult) => number) =>
-    results.reduce((n, r) => n + f(r), 0) / results.length;
+  // Mediana entre sementes (spec 003, R3); o formato completo com faixa vem na T6.
+  const avg = (f: (r: SeedResult) => number) => stat(results.map(f)).median ?? 0;
   const pct = (n: number) => `${(n * 100).toFixed(0)}%`;
   const fmt = (n: number, d = 1) => n.toLocaleString('pt-BR', { maximumFractionDigits: d });
   const rows = designRecipes.map((r) => {

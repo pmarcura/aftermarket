@@ -22,6 +22,8 @@ export interface LabOptions extends LabExperimentSettings {
   seed: number;
   days: number;
   demandMultiplier: number;
+  // Escala do mundo (spec 003): 1 é o mundo de referência; o playtest grande usa 20.
+  scale?: number;
 }
 export interface LabProgress {
   day: number;
@@ -169,6 +171,7 @@ export function validateLabOptions(input: unknown = {}): LabOptions {
     'seedMode',
     'shock',
     'capacityRecipe',
+    'scale',
   ]);
   if (Object.keys(record).some((key) => !allowed.has(key)))
     throw new Error('Opção de laboratório desconhecida.');
@@ -184,6 +187,7 @@ export function validateLabOptions(input: unknown = {}): LabOptions {
     seedMode: record.seedMode === undefined ? 'rotation' : record.seedMode,
     ...(record.shock === undefined ? {} : { shock: record.shock }),
     ...(record.capacityRecipe === undefined ? {} : { capacityRecipe: record.capacityRecipe }),
+    ...(record.scale === undefined ? {} : { scale: record.scale }),
   };
   if (!labScenarios.includes(options.scenario as ScenarioName))
     throw new Error('Cenário inválido: use baseline ou playtest.');
@@ -215,6 +219,11 @@ export function validateLabOptions(input: unknown = {}): LabOptions {
     throw new Error('Política de bots inválida.');
   if (!['rotation', 'conditions'].includes(String(options.seedMode)))
     throw new Error('Modo de semente inválido.');
+  if (
+    options.scale !== undefined &&
+    (!Number.isInteger(options.scale) || Number(options.scale) < 1 || Number(options.scale) > 50)
+  )
+    throw new Error('A escala do mundo deve ser um inteiro de 1 a 50.');
   if (options.shock !== undefined) {
     if (!options.shock || typeof options.shock !== 'object' || Array.isArray(options.shock))
       throw new Error('Choque deve ser um objeto.');
@@ -549,7 +558,7 @@ export function runLab(input: Partial<LabOptions> = {}, hooks: LabHooks = {}): L
   const started = performance.now();
   // A fixed epoch keeps A/B runs on the same weekdays. The seed rotates rival strategies.
   const at = Date.UTC(2026, 9, 26, 12);
-  const world = createScenario(at, options.scenario, options.seed);
+  const world = createScenario(at, options.scenario, options.seed, { scale: options.scale });
   if (
     options.capacityRecipe &&
     !world.season.config.recipes.some((r) => r.id === options.capacityRecipe)

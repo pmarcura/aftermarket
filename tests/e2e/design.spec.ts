@@ -1,7 +1,12 @@
 import { test, expect } from './fixtures';
 import { createWorld } from '../../packages/simulation/src/seed';
 import { execute, advance, RuleError, quote } from '../../packages/simulation/src/engine';
-import { ECONOMIC_INTERVAL, type World, type Command } from '../../packages/simulation/src/model';
+import {
+  ECONOMIC_INTERVAL,
+  type World,
+  type Command,
+  type Position,
+} from '../../packages/simulation/src/model';
 import { arrears, outstandingLoans } from '../../packages/simulation/src/design';
 import { positionAlongRoute } from '../../packages/simulation/src/geometry';
 import { shipmentRoute } from '../../packages/simulation/src/road-path';
@@ -108,20 +113,40 @@ test('servidor contrata rota curva, caminhão segue geometria e preserva contrat
   request,
 }) => {
   test.setTimeout(60000);
-  const road = await request.get('/api/route?origin=ferrovale&destination=industry');
-  expect(road.ok()).toBe(true);
-  const route = await road.json();
+  // O servidor roda a economia de verdade: os bots podem esgotar um fornecedor antes deste teste.
+  // Escolhe uma oferta de minério com estoque e transportadora compatível depois de pedir a rota.
+  const mundo = async () => (await (await request.get('/api/world')).json()) as World;
+  let w = await mundo();
+  let escolha:
+    | {
+        offerId: string;
+        origem: World['establishments'][number];
+        carrier: string;
+        route: { coordinates: Position[] };
+      }
+    | undefined;
+  for (const o of w.offers.filter((o) => o.product === 'iron')) {
+    const origem = w.establishments.find((e) => e.id === o.establishmentId);
+    if (!origem || origem.companyId === 'player' || (origem.inventory.iron ?? 0) < 1) continue;
+    const road = await request.get(`/api/route?origin=${origem.propertyId}&destination=industry`);
+    if (!road.ok()) continue;
+    w = await mundo();
+    const carrier = ['transbrasil', 'rodoleste', 'expresso', 'player'].find(
+      (c) => quote(w, origem.id, 'e-industry', 'iron', 1, c).compatible,
+    );
+    if (carrier) {
+      escolha = { offerId: o.id, origem, carrier, route: await road.json() };
+      break;
+    }
+  }
+  expect(escolha).toBeTruthy();
+  const { offerId, origem, carrier, route } = escolha!;
   expect(route.coordinates).toHaveLength(3);
-  const w = (await (await request.get('/api/world')).json()) as World;
-  const carrier = ['transbrasil', 'rodoleste', 'expresso', 'player'].find(
-    (c) => quote(w, 'e-ferrovale', 'e-industry', 'iron', 1, c).compatible,
-  )!;
-  expect(carrier).toBeTruthy();
   const response = await request.post('/api/commands', {
     headers: { 'x-company-id': 'player', 'Idempotency-Key': crypto.randomUUID() },
     data: {
       type: 'trade',
-      offerId: 'offer-ferrovale',
+      offerId,
       destinationId: 'e-industry',
       quantity: 1,
       carrierId: carrier,
@@ -142,7 +167,7 @@ test('servidor contrata rota curva, caminhão segue geometria e preserva contrat
   await page.getByRole('tab', { name: /^A caminho/ }).click();
   const carga = page
     .getByRole('article')
-    .filter({ hasText: 'Você recebe de FerroVale Comercial em Indústria de Aço' })
+    .filter({ hasText: `Você recebe de ${origem.name} em Indústria de Aço` })
     .filter({ hasText: /Chegou\s*0 de 1 t/ });
   await expect(carga).toHaveCount(1);
   await carga.getByRole('button', { name: 'Ver no mapa', exact: true }).click();

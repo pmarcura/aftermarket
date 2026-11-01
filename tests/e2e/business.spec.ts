@@ -87,9 +87,8 @@ test('negocia pedido real, agrupa caminhões e configura abastecimento e educaç
     await card.getByRole('button', { name: 'Fazer uma proposta', exact: true }).click();
     await dialog.getByRole('radio', { name: /^Indústria de Aço/ }).click();
     await dialog.getByLabel('Preço por unidade (R$)', { exact: true }).fill('490');
-    await dialog
-      .getByRole('button', { name: 'Selecionar TransBrasil Logística', exact: true })
-      .click();
+    // Frota própria: os caminhões das transportadoras-bot podem estar ocupados pela economia viva.
+    await dialog.getByRole('button', { name: 'Selecionar Minha frota', exact: true }).click();
     await dialog.getByRole('button', { name: 'Enviar proposta', exact: true }).click();
     await expect(dialog).not.toBeVisible();
 

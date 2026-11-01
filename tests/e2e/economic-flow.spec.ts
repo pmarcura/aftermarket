@@ -49,7 +49,13 @@ test('compra, frete, entrega e produção alteram o estado real e persistem apó
       .click();
     const gaveta = page.getByRole('dialog', { name: 'Mandar buscar Minério de ferro' });
     await gaveta.getByRole('radio', { name: /^Pouco/ }).click();
-    await gaveta.getByRole('button', { name: /Distribuidora Aurora/ }).click();
+    // A Aurora é a viagem mais curta; se os bots esgotaram o estoque dela, vale a mais rápida.
+    const opcoes = gaveta.getByRole('list').getByRole('button');
+    await expect(opcoes.first()).toBeVisible({ timeout: 20000 });
+    const aurora = opcoes.filter({ hasText: 'Distribuidora Aurora' });
+    const rapida = opcoes.filter({ hasText: 'Mais rápido' });
+    if (await aurora.count()) await aurora.click();
+    else if (await rapida.count()) await rapida.click();
     const despachar = gaveta.getByRole('button', { name: 'Despachar caminhão', exact: true });
     await expect(despachar).toBeEnabled({ timeout: 20000 });
     const resposta = comando();
@@ -65,6 +71,7 @@ test('compra, frete, entrega e produção alteram o estado real e persistem apó
     expect(novas.reduce((n, s) => n + s.quantity, 0)).toBe(pedido.quantity);
     // Mercadoria só entra no estoque quando o caminhão chega.
     expect(fabrica(bought).inventory.iron).toBe(fabrica(before).inventory.iron);
+    const origem = bought.establishments.find((e) => e.id === novas[0].originId)!.name;
     // Depois do envio a gaveta perde o nome acessível (ver Achados da 001b); segue pelo papel.
     const enviado = page.getByRole('dialog').filter({ hasText: 'O caminhão saiu!' });
     await expect(enviado.getByRole('heading', { name: 'O caminhão saiu!' })).toBeVisible();
@@ -77,9 +84,7 @@ test('compra, frete, entrega e produção alteram o estado real e persistem apó
       .click();
     await page.getByRole('tab', { name: /^A caminho/ }).click();
     await expect(
-      page
-        .getByRole('article')
-        .filter({ hasText: 'Você recebe de Distribuidora Aurora em Indústria de Aço' }),
+      page.getByRole('article').filter({ hasText: `Você recebe de ${origem} em Indústria de Aço` }),
     ).not.toHaveCount(0);
 
     const ids = novas.map((s) => s.id);

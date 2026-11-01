@@ -228,3 +228,13 @@ O motor já cobre a parte de replantar com a própria cana: a colheita devolve 1
 - doença que obriga a renovar o plantio.
 
 Recomendação: avaliar depois do playtest 1. A ideia cria escolhas reais, mas acrescenta estado por talhão e exige equilíbrio próprio. Antes disso, o playtest precisa provar que as cadeias atuais fecham.
+
+### D-042 · Nova equipe, economia única e processo por specs (John, 30/10/2026)
+
+O projeto passa a ser desenvolvido pelo John e equipe, com lançamento de um playtest hospedado em janeiro de 2027. Decisões tomadas em cima da auditoria técnica de posse (`claude/auditoria-tecnica-e-plano-janeiro.md` no projeto Aftermarket):
+
+- **O mundo da economia 1 morre.** Só existe a economia 2 (catálogo de `catalog.ts`, 59 municípios, começo enxuto). O mundo salvo `.runtime/world.sqlite` da versão 1 é arquivado pelo dono fora do Git e não é migrado; `migrateWorld` recusa mundos v1 com mensagem. Spec 001.
+- **Ordem de trabalho:** enxugar antes de rebalancear, rebalancear antes de mexer em interface. Semana 1: specs 001 (economia única) e 002 (dieta de ferramental). Semana 2: régua honesta da prova, relógio por mundo, invariante de conservação. Semanas 3–6: exploits de preço e temporada versionada em paralelo com o servidor de jogo (login por convite, view privada). Interface, mapa pixelado e primeira hora só depois.
+- **Processo spec-driven:** toda mudança não trivial nasce em `specs/NNN-slug/{spec,plan,tasks}.md`, sob `specs/CONSTITUTION.md`. O fluxo Game-GSD de `docs/DEVELOPMENT.md` fica como histórico.
+- **Fora de janeiro:** genética, gado/frigorífico, leilões, contratos recorrentes, frete por jogador, modelo de grupo completo (D-035 além do limite de 40%), metas/medalhas persistidas, celular, Postgres/Supabase, perfil de caminhão, arte final.
+- **Pedido do John para depois do playtest:** mapa pixelado construído sobre o mapa atual (locais pixelados), junto com a identidade visual já definida.

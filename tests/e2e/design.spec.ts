@@ -26,7 +26,7 @@ test('recuperação explica atrasados, crédito, quitação e suspensão; gráfi
   expect(arrears(w, 'player')).toBeGreaterThan(0);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  await page.route('**/api/world', (route) => route.fulfill({ json: w }));
+  await page.route('**/api/world*', (route) => route.fulfill({ json: w }));
   await page.route('**/api/commands', async (route) => {
     try {
       execute(
@@ -35,6 +35,7 @@ test('recuperação explica atrasados, crédito, quitação e suspensão; gráfi
         route.request().postDataJSON() as Command,
         w.updatedAt,
       );
+      w.revision++;
       await route.fulfill({ json: w });
     } catch (error) {
       await route.fulfill({
@@ -43,41 +44,58 @@ test('recuperação explica atrasados, crédito, quitação e suspensão; gráfi
       });
     }
   });
-  await page.addInitScript(() => localStorage.setItem('aftermarket.page', 'company'));
+  await page.addInitScript((season) => {
+    localStorage.setItem('aftermarket.company', 'player');
+    localStorage.setItem('aftermarket.page', 'company');
+    localStorage.setItem(`aftermarket.welcome.${season}.player`, 'seen');
+  }, w.season.id);
   await page.goto('/jogar');
+  // Com atraso, o bloco de pagamentos já abre com as três saídas: pagar, crédito e cortar custos.
+  const pagamentos = page.getByRole('region', { name: 'Pagamentos atrasados', exact: true });
+  await expect(pagamentos).toBeVisible();
   await expect(
-    page.getByRole('heading', { name: 'Caixa, compromissos e recuperação', exact: true }),
+    pagamentos.getByRole('heading', { name: '1. Pagar o que está atrasado' }),
   ).toBeVisible();
-  await page.getByLabel('Estado do crédito', { exact: true }).selectOption('SP');
-  await page.getByLabel('Principal solicitado', { exact: true }).fill('100000');
-  await page.getByRole('button', { name: 'Revisar crédito e parcelas', exact: true }).click();
-  await page
+  const confirmar = page
     .getByRole('dialog')
-    .getByRole('button', { name: 'Confirmar operação', exact: true })
+    .getByRole('button', { name: 'Confirmar', exact: true });
+
+  await pagamentos
+    .getByRole('group', { name: 'Estado do crédito', exact: true })
+    .getByRole('button', { name: 'SP', exact: true })
     .click();
+  await pagamentos.getByRole('spinbutton', { name: /^Quanto pedir/ }).fill('100000');
+  await pagamentos.getByRole('button', { name: 'Revisar crédito', exact: true }).click();
+  await expect(
+    page.getByRole('dialog').getByRole('heading', { name: 'Contratar crédito de recuperação' }),
+  ).toBeVisible();
+  await confirmar.click();
   await expect.poll(() => outstandingLoans(w, 'player')).toBe(10000000);
-  await page
-    .getByLabel('Pagamento de atrasados', { exact: true })
+  await expect(page.getByRole('list', { name: 'Créditos abertos', exact: true })).toBeVisible();
+
+  await pagamentos
+    .getByRole('spinbutton', { name: /^Quanto pagar/ })
     .fill((arrears(w, 'player') / 100).toFixed(2));
-  await page.getByRole('button', { name: 'Revisar pagamento', exact: true }).click();
-  await page
-    .getByRole('dialog')
-    .getByRole('button', { name: 'Confirmar operação', exact: true })
-    .click();
+  await pagamentos.getByRole('button', { name: 'Revisar pagamento', exact: true }).click();
+  await confirmar.click();
   await expect.poll(() => arrears(w, 'player')).toBe(0);
-  const section = page.getByRole('row').filter({ hasText: 'Indústria de Aço' });
-  await section.getByRole('button', { name: 'Suspender estrutura', exact: true }).click();
-  await page
-    .getByRole('dialog')
-    .getByRole('button', { name: 'Confirmar operação', exact: true })
-    .click();
-  await expect(section.getByText('0 funcionários', { exact: true })).toBeVisible();
-  const chart = page.locator('.chart-frame').first();
-  await chart.locator('summary').click();
-  await chart.getByRole('button', { name: 'Ver valores', exact: true }).click();
-  await expect(chart.locator('table')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Pagamentos em dia', exact: true })).toBeVisible();
+
+  const fabrica = page.getByRole('listitem').filter({ hasText: 'Indústria de Aço' });
+  await fabrica.getByRole('button', { name: 'Suspender', exact: true }).click();
+  await expect(
+    page.getByRole('dialog').getByRole('heading', { name: 'Suspender estrutura' }),
+  ).toBeVisible();
+  await confirmar.click();
+  await expect(fabrica.getByText(/· 0 na equipe$/)).toBeVisible();
+  await expect(fabrica.getByRole('button', { name: 'Reativar', exact: true })).toBeVisible();
+  expect(w.establishments.find((e) => e.id === 'e-industry')?.mothballed).toBe(true);
+
+  // Gráfico do caixa vira tabela legível; o extrato da empresa sai em CSV.
+  await page.getByRole('button', { name: 'Ver valores', exact: true }).first().click();
+  await expect(page.getByRole('table', { name: /Variação do caixa/ })).toBeVisible();
   const download = page.waitForEvent('download');
-  await chart.getByRole('button', { name: 'CSV', exact: true }).click();
+  await page.getByRole('button', { name: 'Baixar extrato disponível', exact: true }).click();
   expect((await download).suggestedFilename()).toContain('.csv');
   await page.screenshot({ path: 'test-results/design/recovery-desktop.png', fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
@@ -115,20 +133,26 @@ test('servidor contrata rota curva, caminhão segue geometria e preserva contrat
   expect(s.routeSource).toBe('osrm');
   expect(s.routeKey).toBeTruthy();
   expect(shipmentRoute(after, s)).toEqual(route.coordinates);
-  await page.addInitScript(() => localStorage.setItem('aftermarket.page', 'logistics'));
+  await page.addInitScript((season) => {
+    localStorage.setItem('aftermarket.company', 'player');
+    localStorage.setItem('aftermarket.page', 'orders');
+    localStorage.setItem(`aftermarket.welcome.${season}.player`, 'seen');
+  }, after.season.id);
   await page.goto('/jogar');
-  await page.getByLabel('Buscar pedidos logísticos', { exact: true }).fill(s.batchId!.slice(0, 6));
-  await page.locator('.shipment-item').first().click();
+  await page.getByRole('tab', { name: /^A caminho/ }).click();
+  const carga = page
+    .getByRole('article')
+    .filter({ hasText: 'Você recebe de FerroVale Comercial em Indústria de Aço' })
+    .filter({ hasText: /Chegou\s*0 de 1 t/ });
+  await expect(carga).toHaveCount(1);
+  await carga.getByRole('button', { name: 'Ver no mapa', exact: true }).click();
   const marker = page.locator('[data-shipment-id="' + s.id + '"]');
-  await expect(marker).toHaveAttribute('data-route-source', 'osrm');
+  await expect(marker).toHaveAttribute('data-route-source', 'osrm', { timeout: 25000 });
   const p = Number(await marker.getAttribute('data-progress')),
     expected = positionAlongRoute(route.coordinates, p);
   expect(Number(await marker.getAttribute('data-longitude'))).toBeCloseTo(expected.position[0], 3);
   expect(Number(await marker.getAttribute('data-latitude'))).toBeCloseTo(expected.position[1], 3);
-  await page
-    .getByRole('button', { name: /Localizar / })
-    .first()
-    .click();
+  await carga.getByRole('button', { name: 'Localizar', exact: true }).click();
   await expect(marker).toHaveClass(/focused/);
   await page.screenshot({ path: 'test-results/design/road-geometry.png', fullPage: true });
   await page.reload();

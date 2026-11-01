@@ -3,7 +3,13 @@ import { createScenario } from '../packages/simulation/src/scenarios';
 import { advance } from '../packages/simulation/src/engine';
 import { GAME_DAY } from '../packages/simulation/src/operations';
 import { applyLabOpening } from '../packages/simulation/src/lab-experiments';
-import { cyclesPerDay, dailyFlows, designRecipes } from '../packages/simulation/src/economy-design';
+import {
+  analyzeDesign,
+  cyclesPerDay,
+  dailyFlows,
+  designRecipes,
+  designWorld,
+} from '../packages/simulation/src/economy-design';
 import type { ProductId, World } from '../packages/simulation/src/model';
 
 // Prova da economia: mundo jogável por N dias em várias sementes, medido contra a ECONOMIA-ALVO.
@@ -42,6 +48,34 @@ const out = arg('out', 'test-results/economy-proof.json');
 const scale = from[0]?.scale ?? Number(arg('scale', '1'));
 const AT = Date.UTC(2026, 9, 26, 12);
 const flows = dailyFlows();
+const design = analyzeDesign();
+
+// Alvos dos KPIs (spec 003, R4/R5): o documento lê daqui. Faixas fechadas [mín, máx].
+export const targets = {
+  coverageAll: { min: 0.55, note: 'procura atendida pelas lojas-bot (D-031: equipe para 60%)' },
+  idleStockDays: { min: 1, max: 7 },
+  concentration: {
+    max: 2500,
+    fromScale: 20,
+    note: 'HHI das vendas no atacado; alvo só na escala 20',
+  },
+  broke: { max: 0 },
+  governmentSteel: { minShare: 0.8, perDay: designWorld.government.steelTonnesPerDay },
+  moneyDrift: { max: 0 },
+  profitRatio: { min: 0.8, max: 1.2 },
+  utilization: { min: 0.7, max: 0.95 },
+};
+
+// KPIs por receita (R4). A receita alternativa (aço reciclado) roda nas unidades da receita base e
+// entra no grupo dela: utilização e resultado são das unidades, que trocam de receita lote a lote.
+interface RecipeKpi {
+  installedLines: number; // linhas de equipamento instaladas nas unidades da especialidade
+  utilization: number | null; // linhas-dia usadas ÷ linhas-dia instaladas na janela
+  profitPerLine: number | null; // resultado/dia dos bots da especialidade ÷ linhas observadas
+  projectProfitPerLine: number; // lucro de projeto da calculadora (utilização e preço realizado)
+  profitRatio: number | null; // observado ÷ projeto
+  realizedPrice: number | null; // preço médio das vendas no atacado dos produtores ÷ referência
+}
 
 interface SeedResult {
   seed: number;
@@ -55,6 +89,7 @@ interface SeedResult {
   trucksRetiredPerDay: number;
   broke: string[];
   margins: Record<string, number>;
+  recipes: Record<string, RecipeKpi>;
   uncostedStock: number;
   idleStockDays: Record<string, number>;
   concentration: Record<string, number>;
@@ -198,6 +233,64 @@ function run(seed: number): SeedResult {
     const stock = (endStock.get(c.id) ?? 0) - (startStock.get(c.id) ?? 0);
     margins[key] = (margins[key] ?? 0) + ((flowOf.get(c.id) ?? 0) + stock) / window;
   }
+  // KPIs por receita: utilização, lucro por linha observado ÷ projeto e preço realizado.
+  const keyOf = new Map(
+    w.companies.map((c) => {
+      const unit = w.establishments.find((e) => e.companyId === c.id);
+      return [c.id, unit ? (unit.specialization ?? unit.category) : ''];
+    }),
+  );
+  const recipes: Record<string, RecipeKpi> = {};
+  for (const r of designRecipes.filter((r) => !r.alternativeOf)) {
+    const group = designRecipes.filter((x) => x.id === r.id || x.alternativeOf === r.id);
+    const units = w.establishments.filter((e) => e.specialization === r.id);
+    const installedLines = units.reduce((n, e) => {
+      const area = w.properties.find((p) => p.id === e.propertyId)?.area ?? 0;
+      const profile = w.season.config.operations.profiles[r.id];
+      return (
+        n +
+        (e.installed === false
+          ? 0
+          : (e.equipmentLines ?? (profile ? Math.floor(area / profile.areaM2) : 0)))
+      );
+    }, 0);
+    const unitIds = new Set(units.map((e) => e.id));
+    const usedLineDays = w.jobs
+      .filter((j) => j.completed && j.finishesAt > from && unitIds.has(j.establishmentId))
+      .reduce((n, j) => {
+        const recipe = group.find((x) => x.id === j.recipeId);
+        return n + (recipe ? j.cycles / cyclesPerDay(recipe) : 0);
+      }, 0);
+    const observedLines = usedLineDays / window;
+    const projectProfitPerLine = design.recipes.find((x) => x.id === r.id)?.profit ?? 0;
+    const profitPerLine =
+      margins[r.id] !== undefined && observedLines > 0 ? margins[r.id] / observedLines : null;
+    let quantity = 0,
+      value = 0;
+    if (r.priced)
+      for (const l of recent)
+        if (
+          l.channel === 'wholesale' &&
+          l.product === r.priced &&
+          l.quantity &&
+          keyOf.get(l.to) === r.id
+        ) {
+          quantity += l.quantity;
+          value += l.amount;
+        }
+    const reference = r.priced ? w.season.config.wholesalePrices[r.priced as ProductId] : 0;
+    recipes[r.id] = {
+      installedLines,
+      utilization: installedLines ? usedLineDays / (installedLines * window) : null,
+      profitPerLine,
+      projectProfitPerLine,
+      profitRatio:
+        profitPerLine !== null && projectProfitPerLine
+          ? profitPerLine / projectProfitPerLine
+          : null,
+      realizedPrice: quantity && reference ? value / quantity / reference : null,
+    };
+  }
   // Estoque parado: dias de venda que o estoque total cobre, pelo atacado e varejo recentes.
   const idleStockDays: Record<string, number> = {};
   const moved: Record<string, number> = {};
@@ -248,6 +341,7 @@ function run(seed: number): SeedResult {
     trucksRetiredPerDay: retired / window,
     broke,
     margins,
+    recipes,
     uncostedStock: uncostedStock(w),
     idleStockDays,
     concentration,

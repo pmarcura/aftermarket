@@ -20,7 +20,10 @@ export default defineConfig({
     },
     {
       command: 'npm run dev',
+      // Mundo de referência inteiro (D-042): os testes que falam com o servidor usam as unidades,
+      // ofertas e lotes do `baseline`. O padrão do servidor (`playtest`) é o começo enxuto do jogador.
       env: {
+        AFTERMARKET_SCENARIO: 'baseline',
         AFTERMARKET_DB_FILE: `.runtime/e2e/season-${Date.now()}.sqlite`,
         AFTERMARKET_PORT: '3013',
         AFTERMARKET_WEB_PORT: '5183',

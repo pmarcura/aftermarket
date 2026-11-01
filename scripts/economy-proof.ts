@@ -6,9 +6,18 @@ import { applyLabOpening } from '../packages/simulation/src/lab-experiments';
 import { cyclesPerDay, dailyFlows, designRecipes } from '../packages/simulation/src/economy-design';
 import type { ProductId, World } from '../packages/simulation/src/model';
 
-// Prova da fatia 10: mundo versão 2 por N dias em várias sementes, medido contra a ECONOMIA-ALVO.
+// Prova da economia: mundo jogável por N dias em várias sementes, medido contra a ECONOMIA-ALVO.
 // Uso: npm run economy:proof -- --days=90 --seeds=0,1,2 [--write-doc]
 // Sementes em paralelo: rode uma por processo com --out e junte com --from=a.json,b.json --write-doc.
+//
+// Resultado por negócio (spec 003, R1), por empresa-bot e somado por especialidade, por dia da janela:
+//   caixa operacional da janela (entradas − saídas do extrato, sem imóvel e equipamento, crédito,
+//   verba do cenário, educação, caminhões comprados para a frota e venda de ativos)
+//   + Δ(estoque a custo médio + lotes em curso a custo + mercadoria comprada em trânsito a custo)
+// Nenhum preço de referência entra no resultado: o estoque vale o custo médio ponderado que o
+// motor mantém (`unitCosts`), o lote em curso vale o insumo e o processamento já pagos
+// (`Job.outputCosts`, totais por produto) e a carga em trânsito vale mercadoria + frete
+// (`Shipment.cost + freight`), exatamente o que entra no custo médio do destino na entrega.
 const arg = (name: string, fallback: string) =>
   process.argv.find((a) => a.startsWith(`--${name}=`))?.split('=')[1] ?? fallback;
 const from = arg('from', '')
@@ -46,22 +55,43 @@ interface SeedResult {
   trucksRetiredPerDay: number;
   broke: string[];
   margins: Record<string, number>;
+  uncostedStock: number;
   idleStockDays: Record<string, number>;
   concentration: Record<string, number>;
 }
 
 const money = (w: World) => w.companies.reduce((n, c) => n + c.balance, 0);
-// Estoque de cada empresa ao preço de referência: o caixa sozinho chama de prejuízo o estoque formado.
+// Ativo circulante de cada empresa a custo: estoque a custo médio, lotes em curso e cargas
+// compradas ainda na estrada. O caixa sozinho chama de prejuízo o estoque formado.
 const stockValue = (w: World) => {
   const value = new Map<string, number>();
+  const add = (company: string, v: number) => value.set(company, (value.get(company) ?? 0) + v);
+  const owner = new Map(w.establishments.map((e) => [e.id, e.companyId]));
   for (const e of w.establishments)
     for (const [id, q] of Object.entries(e.inventory) as [ProductId, number][])
-      value.set(
-        e.companyId,
-        (value.get(e.companyId) ?? 0) + q * (w.season.config.wholesalePrices[id] ?? 0),
+      add(e.companyId, q * (e.unitCosts[id] ?? 0));
+  // Lote em curso: o insumo já saiu do estoque e o processamento já foi pago.
+  for (const j of w.jobs)
+    if (!j.completed)
+      add(
+        owner.get(j.establishmentId) ?? '',
+        j.outputCosts ? Object.values(j.outputCosts).reduce((n, v) => n + (v ?? 0), 0) : j.cost,
       );
+  // Carga em trânsito: compra paga (ou custo do estoque transferido entre unidades) mais o frete.
+  for (const s of w.shipments)
+    if (!s.delivered && !s.infrastructureId) add(s.buyerId, s.cost + s.freight);
   return value;
 };
+// Estoque sem custo médio registrado: não deveria existir; medido para a régua não esconder valor.
+const uncostedStock = (w: World) =>
+  w.establishments.reduce(
+    (n, e) =>
+      n +
+      (Object.entries(e.inventory) as [ProductId, number][]).filter(
+        ([id, q]) => q > 0 && e.unitCosts[id] === undefined,
+      ).length,
+    0,
+  );
 
 function run(seed: number): SeedResult {
   const w = createScenario(AT, 'playtest', seed, { scale });
@@ -134,8 +164,7 @@ function run(seed: number): SeedResult {
   const bought = (re: RegExp) =>
     recent.filter((l) => (l.kind === 'trade' || l.kind === 'vehicle') && re.test(l.description))
       .length / window;
-  // Resultado operacional por especialidade dos rivais: entradas menos saídas mais o estoque
-  // formado, sem capital (imóveis, crédito, caminhões comprados e vendidos, educação da equipe).
+  // Resultado operacional por especialidade dos rivais (fórmula no topo do arquivo).
   // Uma vez por empresa: antes, empresa com duas unidades entrava duas vezes.
   const margins: Record<string, number> = {};
   const capital = new Set([
@@ -147,9 +176,17 @@ function run(seed: number): SeedResult {
     'vehicle',
     'education',
   ]);
+  // Caminhão montado comprado para a frota é capital do comprador (vai para a frota, não para o
+  // estoque); para a montadora continua sendo venda.
+  const fleetPurchase = (l: (typeof recent)[number]) =>
+    l.kind === 'trade' && /^Compra de Caminhão/.test(l.description);
   const flowOf = new Map<string, number>();
   for (const l of recent)
     if (!capital.has(l.kind)) {
+      if (fleetPurchase(l)) {
+        flowOf.set(l.to, (flowOf.get(l.to) ?? 0) + l.amount);
+        continue;
+      }
       flowOf.set(l.to, (flowOf.get(l.to) ?? 0) + l.amount);
       flowOf.set(l.from, (flowOf.get(l.from) ?? 0) - l.amount);
     }
@@ -211,6 +248,7 @@ function run(seed: number): SeedResult {
     trucksRetiredPerDay: retired / window,
     broke,
     margins,
+    uncostedStock: uncostedStock(w),
     idleStockDays,
     concentration,
   };

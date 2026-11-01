@@ -6,7 +6,7 @@ Atualizado em **30/10/2026**. Versão **0.4.0**. Uma página: o que é verdade a
 
 Etapas **A · Arrumar a casa** e **B · Redesenhar a economia** concluídas; parte da **E** (primeira hora) adiantada a pedido do Pedro. Próximas: **C · Motor que aguenta** e **D · Jogar junto** do [roteiro](ROADMAP.md), que faltam para o playtest com amigos. O panorama visual completo está em [`docs/raio-x.html`](../docs/raio-x.html).
 
-O jogo roda localmente: mapa do Centro-Sul, compra de imóveis, produção, estoque físico, mercado com negociação, frota, finanças com crédito e empresas-bot usando os mesmos comandos dos jogadores. O mundo jogável da economia versão 2 (`npm run dev:v2`) usa escala 20, com cerca de 500 empresas-bot, começo enxuto (loja vazia e R$ 1 milhão) e guia de primeiros passos. O frete da versão 2 usa estimativa identificada; rotas rodoviárias reais continuam no mundo principal. Build e 230 testes passam.
+O jogo roda localmente: mapa do Centro-Sul, compra de imóveis, produção, estoque físico, mercado com negociação, frota, finanças com crédito e empresas-bot usando os mesmos comandos dos jogadores. Existe uma única economia (D-042, spec 001). `npm run dev` abre o mundo `playtest`: começo enxuto (loja vazia e R$ 1 milhão) e guia de primeiros passos. Com `AFTERMARKET_WORLD_SCALE=20` o mundo tem cerca de 550 empresas-bot e o frete usa distância estimada identificada; na escala 1 o frete exige rota rodoviária real. Build e 242 testes passam.
 
 ## O que funciona
 
@@ -37,9 +37,9 @@ e limites em [VALIDAÇÃO DA INTERFACE](../docs/design/VALIDACAO-INTERFACE-2026-
 
 | Área        | Problema                                                                                                                                 | Onde está o detalhe                                                                       |
 | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| Economia v2 | Escala 20: arroz, feijão, utensílios e caminhão leve no vermelho; aço ao governo ~190 de 320 t/dia; procura atendida 51%                 | [PROVA-V2-ESCALA-20](../docs/product/PROVA-V2-ESCALA-20.md), D-036, D-038, D-039, HANDOFF |
-| Mundo v2    | Só 12 lotes livres e os dois jogadores de teste começam em Campinas                                                                      | etapa D (uma cidade e lotes por amigo)                                                    |
-| Economia v1 | O mundo principal salvo segue a economia antiga (aço só para o governo, farelo sobrando)                                                 | [ECONOMIA-HOJE](../docs/product/ECONOMIA-HOJE.md)                                         |
+| Economia    | Escala 20: arroz, feijão, utensílios e caminhão leve no vermelho; aço ao governo ~190 de 320 t/dia; procura atendida 51%                 | [PROVA-V2-ESCALA-20](../docs/product/PROVA-V2-ESCALA-20.md), D-036, D-038, D-039, HANDOFF |
+| Mundo       | Só 12 lotes livres e os dois jogadores de teste começam em Campinas                                                                      | etapa D (uma cidade e lotes por amigo)                                                    |
+| Mundo salvo | Mundos da economia antiga são recusados ao abrir, sem backup nem alteração; o dono arquiva `.runtime/world.sqlite` e começa um novo      | spec 001 (R6)                                                                             |
 | Desempenho  | Mundo salvo como um JSON único, regravado a cada 2 s; navegador baixa tudo a cada 3 s; ~2 s de cálculo por dia de jogo no fim de 90 dias | etapa C do roteiro                                                                        |
 | Multiplayer | Servidor só escuta `127.0.0.1`; perfis sem senha                                                                                         | etapa D do roteiro                                                                        |
 | Interface   | Sem mural de notícias nem ranking; fábricas e fazendas ainda sem o padrão novo da loja                                                   | etapa E do roteiro                                                                        |
@@ -54,19 +54,17 @@ Para o playtest com amigos faltam: **C** (desempenho do motor e do salvamento) e
 
 Decisões do Pedro em 27/10 (D-028, D-029): mundo semanal livre; realismo enxuto com cadeias completas; fechar metal e alimentos antes de crescer; aço vira caminhões e utensílios; sucata já; carne depois do playtest; relógio 1 h real = 6 h de jogo.
 
-Números da economia alvo em [ECONOMIA-ALVO](../docs/product/ECONOMIA-ALVO.md), calculados por `npm run economy:design` e protegidos por `tests/economy-design.test.ts`; valem no motor para mundos novos (versão 2). O mundo principal salvo continua na versão 1.
+Números da economia alvo em [ECONOMIA-ALVO](../docs/product/ECONOMIA-ALVO.md), calculados por `npm run economy:design` e protegidos por `tests/economy-design.test.ts`; valem no motor, que só tem esta economia.
 
 ## Como rodar
 
-| Comando                  | O que faz                                                                         |
-| ------------------------ | --------------------------------------------------------------------------------- |
-| `npm run dev`            | Mundo principal em http://127.0.0.1:5173 (`.runtime/world.sqlite`)                |
-| `npm run dev:starter`    | Campanha iniciante separada em http://127.0.0.1:5185 (`.runtime/starter.sqlite`)  |
-| `npm run dev:v2`         | Mundo da economia versão 2 em http://127.0.0.1:5186 (`.runtime/economy-2.sqlite`) |
-| `npm run lab`            | Laboratório de simulação em `/lab`                                                |
-| `npm run check`          | Build, testes e verificações de recursos e catálogo de telas                      |
-| `npm run economy:report` | Regera os três relatórios de economia de uma vez                                  |
-| `npm run world:backup`   | Backup do mundo principal                                                         |
+| Comando                  | O que faz                                                                                                            |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`            | Mundo `playtest` em http://127.0.0.1:5173 (`.runtime/world.sqlite`); escala por `AFTERMARKET_WORLD_SCALE` (padrão 1) |
+| `npm run lab`            | Laboratório de simulação em `/lab`                                                                                   |
+| `npm run check`          | Build, testes e verificações de recursos e catálogo de telas                                                         |
+| `npm run economy:report` | Regera os três relatórios de economia de uma vez                                                                     |
+| `npm run world:backup`   | Backup do mundo principal                                                                                            |
 
 ## Regras de segurança
 

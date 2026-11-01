@@ -1,10 +1,19 @@
 export type Category = 'retail' | 'industry' | 'farm' | 'mine' | 'warehouse' | 'logistics';
-import { designItems, itemCategory, referencePrice } from './catalog';
+import { designItems, itemCategory, type DesignItemId } from './catalog';
 
-// Produtos da economia original; mundos da versão 2 somam os itens novos do catálogo.
-export type LegacyProductId =
-  'iron' | 'coal' | 'steel' | 'soy' | 'soymeal' | 'oil' | 'rice' | 'beans' | 'sugar' | 'milk';
-export const newProductIds = [
+// Itens do jogo: o catálogo (catalog.ts) é a única fonte (D-042). A ordem abaixo é a de
+// iteração de `products`, mantida como estava para não mudar desempates na simulação.
+export const productIds = [
+  'iron',
+  'coal',
+  'steel',
+  'soy',
+  'soymeal',
+  'oil',
+  'rice',
+  'beans',
+  'sugar',
+  'milk',
   'scrap',
   'utensils',
   'truckHeavy',
@@ -15,8 +24,8 @@ export const newProductIds = [
   'riceSeed',
   'beanSeed',
   'caneSeedling',
-] as const;
-export type ProductId = LegacyProductId | (typeof newProductIds)[number];
+] as const satisfies readonly DesignItemId[];
+export type ProductId = (typeof productIds)[number];
 export type Position = [number, number];
 export interface Company {
   id: string;
@@ -469,155 +478,22 @@ export interface ProductInfo {
   unit: string;
   massT: number;
   volumeM3: number;
-  basePrice: number;
 }
-export const legacyProducts: Record<LegacyProductId, ProductInfo> = {
-  iron: {
-    name: 'Minério de ferro',
-    category: 'Matérias-primas',
-    unit: 't',
-    massT: 1,
-    volumeM3: 0.45,
-    basePrice: 50000,
-  },
-  coal: {
-    name: 'Carvão mineral',
-    category: 'Matérias-primas',
-    unit: 't',
-    massT: 1,
-    volumeM3: 1.3,
-    basePrice: 180000,
-  },
-  steel: {
-    name: 'Aço em barras',
-    category: 'Materiais',
-    unit: 't',
-    massT: 1,
-    volumeM3: 0.15,
-    basePrice: 480000,
-  },
-  soy: {
-    name: 'Soja em grão',
-    category: 'Agricultura',
-    unit: 't',
-    massT: 1,
-    volumeM3: 1.4,
-    basePrice: 250000,
-  },
-  soymeal: {
-    name: 'Farelo de soja',
-    category: 'Agricultura',
-    unit: 'kg',
-    massT: 0.001,
-    volumeM3: 0.0017,
-    basePrice: 230,
-  },
-  oil: {
-    name: 'Óleo de soja 1 L',
-    category: 'Alimentos',
-    unit: 'un',
-    massT: 0.00092,
-    volumeM3: 0.0013,
-    basePrice: 849,
-  },
-  rice: {
-    name: 'Arroz 5 kg',
-    category: 'Alimentos',
-    unit: 'un',
-    massT: 0.005,
-    volumeM3: 0.007,
-    basePrice: 2345,
-  },
-  beans: {
-    name: 'Feijão 1 kg',
-    category: 'Alimentos',
-    unit: 'un',
-    massT: 0.001,
-    volumeM3: 0.0015,
-    basePrice: 870,
-  },
-  sugar: {
-    name: 'Açúcar 5 kg',
-    category: 'Alimentos',
-    unit: 'un',
-    massT: 0.005,
-    volumeM3: 0.006,
-    basePrice: 1745,
-  },
-  milk: {
-    name: 'Leite 1 L',
-    category: 'Bebidas',
-    unit: 'un',
-    massT: 0.00103,
-    volumeM3: 0.0012,
-    basePrice: 549,
-  },
-};
-export const products: Record<ProductId, ProductInfo> = {
-  ...legacyProducts,
-  ...(Object.fromEntries(
-    newProductIds.map((id) => [
-      id,
-      {
-        name: designItems[id].name,
-        category: itemCategory[id],
-        unit: designItems[id].unit,
-        massT: designItems[id].massKg / 1000,
-        volumeM3: designItems[id].volumeM3,
-        basePrice: referencePrice(id),
-      },
-    ]),
-  ) as Record<(typeof newProductIds)[number], ProductInfo>),
-};
+export const products: Record<ProductId, ProductInfo> = Object.fromEntries(
+  productIds.map((id) => [
+    id,
+    {
+      name: designItems[id].name,
+      category: itemCategory[id],
+      unit: designItems[id].unit,
+      massT: designItems[id].massKg / 1000,
+      volumeM3: designItems[id].volumeM3,
+    },
+  ]),
+) as Record<ProductId, ProductInfo>;
 // Produtos existentes na temporada deste mundo (a configuração congelada define o conjunto).
 export const seasonProducts = (w: Pick<World, 'season'>) =>
   Object.keys(w.season.config.basePrices) as ProductId[];
-export const recipes: Recipe[] = [
-  {
-    id: 'steel-bars',
-    name: 'Aço em barras',
-    category: 'industry',
-    input: { iron: 12, coal: 3 },
-    output: { steel: 8 },
-    cost: 1200000,
-    duration: 3_600_000 / TIME_SCALE,
-    energyKwh: 4400,
-    waterM3: 24,
-  },
-  {
-    id: 'soy-oil',
-    name: 'Óleo de soja',
-    category: 'industry',
-    input: { soy: 1 },
-    output: { oil: 200, soymeal: 760 },
-    cost: 16000,
-    duration: 3_600_000 / TIME_SCALE,
-    energyKwh: 150,
-    waterM3: 0.5,
-  },
-  {
-    id: 'soy-harvest',
-    name: 'Colheita de soja',
-    category: 'farm',
-    input: { soy: 1 },
-    output: { soy: 26 },
-    cost: 1280000,
-    duration: 86_400_000 / TIME_SCALE,
-    energyKwh: 80,
-    waterM3: 25,
-  },
-  {
-    id: 'iron-extraction',
-    name: 'Extração de minério',
-    category: 'mine',
-    input: {},
-    output: { iron: 1 },
-    cost: 14500,
-    duration: 3000,
-    energyKwh: 30,
-    waterM3: 0.8,
-  },
-];
 export const categoryInfo: Record<Category, { label: string; color: string }> = {
   retail: { label: 'Comércio', color: '#df7165' },
   industry: { label: 'Indústria', color: '#82929b' },

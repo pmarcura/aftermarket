@@ -4,17 +4,18 @@ import * as metrics from '../packages/simulation/src/metrics';
 import {
   marketView,
   recordMarket,
+  regionsOf,
   withAppendOnlyMarketLedger,
 } from '../packages/simulation/src/metrics';
 import { createScenario } from '../packages/simulation/src/scenarios';
 import { advance } from '../packages/simulation/src/engine';
 import { seasonProducts, type MarketSample, type World } from '../packages/simulation/src/model';
 import { GAME_DAY } from '../packages/simulation/src/operations';
-import { regions } from '../packages/world/src/regions';
 
 // Query oracle: mirrors the previous recording contract only in the test.
 function queriedSamples(world: World, at: number): MarketSample[] {
   const result: MarketSample[] = [];
+  const regions = regionsOf(world);
   for (const product of seasonProducts(world))
     for (const regionId of [
       '',
@@ -37,13 +38,15 @@ function queriedSamples(world: World, at: number): MarketSample[] {
 }
 
 describe('laboratório headless', () => {
-  it('preserva a trajetória de 30 dias com e sem índice de leitura', () => {
-    const indexed = runLab({ days: 30 });
+  // Dez dias do mundo da economia 2 (~500 ms/dia) bastam para a trajetória divergir se o índice
+  // alterasse algum número; 30 dias passavam do tempo da suíte.
+  it('preserva a trajetória de 10 dias com e sem índice de leitura', () => {
+    const indexed = runLab({ days: 10 });
     const scope = vi
       .spyOn(metrics, 'withAppendOnlyMarketLedger')
       .mockImplementation((_world, run) => run());
     try {
-      const queried = runLab({ days: 30 });
+      const queried = runLab({ days: 10 });
       expect({ ...indexed, performance: undefined }).toEqual({
         ...queried,
         performance: undefined,
@@ -55,6 +58,7 @@ describe('laboratório headless', () => {
   it('mantém índice de leitura só dentro do escopo append-only e limpa em exceções', () => {
     const at = Date.UTC(2026, 9, 26, 12);
     const world = createScenario(at);
+    const regions = regionsOf(world);
     const assertQueries = () => {
       const oracle = structuredClone(world);
       for (const product of seasonProducts(world))
@@ -98,6 +102,7 @@ describe('laboratório headless', () => {
   it('agrega histórico com os mesmos números e ordem das consultas por produto e escopo', () => {
     const at = Date.UTC(2026, 9, 26, 12);
     const world = createScenario(at);
+    const regions = regionsOf(world);
     advance(world, at + GAME_DAY * 2);
     const farm = world.establishments.find((establishment) => establishment.category === 'farm')!;
     farm.automation = true;
@@ -225,13 +230,13 @@ describe('laboratório headless', () => {
     ])
       expect(() => validateLabOptions(input)).toThrow();
     expect(
-      validateLabOptions({ days: 365, seed: 10000, demandMultiplier: 0.1, scenario: 'starter' }),
+      validateLabOptions({ days: 365, seed: 10000, demandMultiplier: 0.1, scenario: 'playtest' }),
     ).toEqual({
       ...validateLabOptions(),
       days: 365,
       seed: 10000,
       demandMultiplier: 0.1,
-      scenario: 'starter',
+      scenario: 'playtest',
     });
   });
 
@@ -277,9 +282,10 @@ describe('laboratório headless', () => {
     expect(variant.observations[0].money).toBe(base.observations[0].money);
     expect(variant.metadata.routingMode).toBe('estimate');
     expect(variant.metadata.humanActions).toBe(false);
-    const low = runLab({ days: 1, scenario: 'low-demand', demandMultiplier: 2 });
-    expect(low.metadata.config.parameters.playableConsumerShare).toBe(
-      base.metadata.config.parameters.playableConsumerShare * 0.25 * 2,
+    // O mundo jogável (começo enxuto) tem a mesma procura; só a opção `demand` a altera.
+    const lean = runLab({ days: 1, scenario: 'playtest', demandMultiplier: 2 });
+    expect(lean.metadata.config.parameters.playableConsumerShare).toBe(
+      base.metadata.config.parameters.playableConsumerShare * 2,
     );
   });
 

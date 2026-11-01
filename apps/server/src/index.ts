@@ -16,16 +16,18 @@ const port = Number(process.env.AFTERMARKET_PORT ?? 3001);
 if (!Number.isInteger(port) || port < 1024 || port > 65535)
   throw new Error('Porta local inválida.');
 const scenario = z
-  .enum(['baseline', 'starter', 'low-demand', 'economy-2'])
-  .parse(process.env.AFTERMARKET_SCENARIO ?? 'baseline') as ScenarioName;
+  .enum(['baseline', 'playtest'])
+  .parse(process.env.AFTERMARKET_SCENARIO ?? 'playtest') as ScenarioName;
+// Escala do mundo: 1 é o mundo de referência da calculadora; 20 dá cerca de 500 empresas-bot.
+const scale = Number(process.env.AFTERMARKET_WORLD_SCALE ?? 1);
+if (!Number.isFinite(scale) || scale < 1) throw new Error('AFTERMARKET_WORLD_SCALE inválida.');
 const store = createStore(resolve(process.env.AFTERMARKET_DB_FILE ?? '.runtime/world.sqlite'), {
   // Todo mundo jogável valida o acesso dos imóveis e desenha rotas reais. O frete exige rota
-  // confirmada no mundo principal; no mundo versão 2, com ~500 bots, segue a distância estimada
-  // (D-034, D-036): esperar o serviço público de rotas (1 pedido a cada 1,2 s) travaria a economia.
-  requireRoadRoutes: scenario !== 'economy-2',
+  // confirmada só na escala 1; com ~500 bots segue a distância estimada (D-034, D-036): esperar
+  // o serviço público de rotas (1 pedido a cada 1,2 s) travaria a economia.
+  requireRoadRoutes: scale === 1,
   roadAccess: true,
-  // Escala do mundo versão 2: 20 dá cerca de 500 empresas-bot.
-  scale: Number(process.env.AFTERMARKET_WORLD_SCALE ?? 1),
+  scale,
   scenario,
 });
 const roadFetcher = createRoadFetcher();

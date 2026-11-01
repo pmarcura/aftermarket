@@ -35,8 +35,7 @@ const CARRIERS = ['transbrasil', 'rodoleste', 'expresso'];
 const SEARCH_CARRIERS = 4;
 const SEARCH_HAULERS = 2;
 const SEARCH_OFFERS = 6;
-const ROUGH_FREIGHT_PER_TKM = 15;
-// Versão 2: custo aproximado de um caminhão pesado por km (diesel, desgaste, motorista, pedágio).
+// Custo aproximado de um caminhão pesado por km (diesel, desgaste, motorista, pedágio).
 const TRUCK_COST_PER_KM = 480;
 const ROAD_FACTOR = 1.3;
 const nearbyByRound = new WeakMap<
@@ -91,15 +90,13 @@ export function supplySpent(w: World, e: Establishment, at: number) {
   const executed = (w.supplyHistory ?? [])
     .filter((h) => h.establishmentId === e.id && h.at >= start)
     .reduce((n, h) => n + h.cost, 0);
-  // Versão 2: pedido aberto sem vendedor nem proposta não é gasto. Contado, três anúncios parados
+  // Pedido aberto sem vendedor nem proposta não é gasto (D-038). Contado, três anúncios parados
   // de minério, carvão e sucata passavam do orçamento do dia e 11 de 12 usinas deixavam de comprar
   // das minas cheias a 100 km.
   const promised = w.orders
     .filter(
       (o) =>
-        o.destinationId === e.id &&
-        o.status === 'pending' &&
-        (!w.season.config.economyVersion || o.sellerId || o.proposals?.length),
+        o.destinationId === e.id && o.status === 'pending' && (o.sellerId || o.proposals?.length),
     )
     .reduce((n, o) => n + o.quantity * o.unitPrice + o.maxFreight, 0);
   return { executed, promised, total: executed + promised };
@@ -157,9 +154,6 @@ export function supplyCandidates(
   // livre mais perto. Antes eram cotadas todas, dezenas de milhares de cotações por rodada.
   // Transportadoras próximas de cada origem valem para a rodada inteira; a cotação ainda confere
   // se há caminhão livre no momento.
-  // Só nos mundos da versão 2: o mundo principal salvo (versão 1) mantém a busca completa para
-  // não mudar a temporada em andamento.
-  const scaled = Boolean(w.season.config.economyVersion);
   let round = nearbyByRound.get(w);
   if (!round || round.at !== traceAt) {
     round = { at: traceAt, map: new Map(), fleets: undefined };
@@ -170,16 +164,6 @@ export function supplyCandidates(
   const carriersFor = (origin: Establishment) => {
     if (policy.carrierId === 'own') return [e.companyId];
     if (policy.carrierId !== 'auto') return [policy.carrierId];
-    if (!scaled)
-      return [
-        e.companyId,
-        ...w.companies
-          .filter(
-            (c) =>
-              c.bot && w.vehicles.some((v) => v.companyId === c.id) && !c.id.startsWith('treasury'),
-          )
-          .map((c) => c.id),
-      ];
     const cached = nearby.get(origin.propertyId);
     if (cached) return [e.companyId, ...cached];
     const at = propertyOf(w, origin.propertyId)!.coordinates;
@@ -221,14 +205,13 @@ export function supplyCandidates(
     policy.rules.find((r) => r.product === product)?.maxFreightPerUnit ?? policy.maxFreightPerUnit;
   // Só as ofertas mais baratas contando uma estimativa de frete recebem cotação completa.
   const destination = propertyOf(w, e.propertyId)!.coordinates;
-  // Versão 2 (D-036): a viagem custa o mesmo com o caminhão meio vazio, então a estimativa divide
+  // D-036: a viagem custa o mesmo com o caminhão meio vazio, então a estimativa divide
   // o custo por km do caminhão pelas unidades que a compra leva. Supondo sempre carga cheia, a loja
   // que queria 100 sacos de arroz só cotava fazendas a 1.300 km e nunca o atacadista da cidade.
   // A carga também não passa do estoque que o vendedor tem.
   const truckload = Math.floor(vehicleModels.truckHeavy.capacityT / products[product].massT);
   const rough = (o: (typeof options)[number]) => {
     const km = distanceKm(propertyOf(w, o.origin.propertyId)!.coordinates, destination);
-    if (!scaled) return o.price + km * products[product].massT * ROUGH_FREIGHT_PER_TKM;
     const load = Math.max(
       1,
       Math.min(quantity, truckload, availableStock(w, o.origin, product), room),
@@ -240,7 +223,7 @@ export function supplyCandidates(
     .sort((a, b) => a[1] - b[1])
     .slice(0, SEARCH_OFFERS)
     .map(([o]) => o);
-  if (scaled) options.splice(0, options.length, ...options.filter((o) => o.internal), ...market);
+  options.splice(0, options.length, ...options.filter((o) => o.internal), ...market);
   if (tracing && !options.length)
     trace(
       pinned ? 'pinned-origin-unavailable' : 'no-stock-source',
@@ -528,7 +511,7 @@ export function runSupplyPolicies(w: World, at: number) {
       const incoming = w.shipments
           .filter((s) => s.destinationId === e.id && s.product === rule.product && !s.delivered)
           .reduce((n, s) => n + s.quantity, 0),
-        // Versão 2 (D-036): pedido aberto sem vendedor é só um anúncio de procura; contado como
+        // D-036: pedido aberto sem vendedor é só um anúncio de procura; contado como
         // compra feita, travava a reposição por dias quando ninguém respondia.
         ordered = w.orders
           .filter(
@@ -536,7 +519,7 @@ export function runSupplyPolicies(w: World, at: number) {
               o.destinationId === e.id &&
               o.product === rule.product &&
               o.status === 'pending' &&
-              (!w.season.config.economyVersion || o.sellerId || o.proposals?.length),
+              (o.sellerId || o.proposals?.length),
           )
           .reduce((n, o) => n + o.quantity, 0),
         position = (e.inventory[rule.product] ?? 0) + incoming + ordered;
@@ -574,9 +557,9 @@ export function runSupplyPolicies(w: World, at: number) {
         );
         continue;
       }
-      // Versão 2 (D-036): sem fornecedor elegível, a busca do produto espera meio dia. Repetida a
-      // cada rodada, a mesma busca vazia custava metade do tempo de simulação com 500 empresas.
-      const retry = w.season.config.economyVersion ? e.supplyRetryAt?.[rule.product] : undefined;
+      // D-036: sem fornecedor elegível, a busca do produto espera meio dia. Repetida a cada
+      // rodada, a mesma busca vazia custava metade do tempo de simulação com 500 empresas.
+      const retry = e.supplyRetryAt?.[rule.product];
       if (retry && at < retry) {
         trace(
           e,
@@ -588,11 +571,10 @@ export function runSupplyPolicies(w: World, at: number) {
         continue;
       }
       const found = supplyCandidates(w, e, rule.product, want, policy, at);
-      // Versão 2 (D-039): acima do mínimo, indústria e atacado só compram carga que valha a viagem
+      // D-039: acima do mínimo, indústria e atacado só compram carga que valha a viagem
       // (meio caminhão pesado ou tudo o que falta). Antes a fábrica de ração levava cada 1,5 t de
       // farelo que saía da esmagadora vizinha, a R$ 228/t por 48 km, cinco vezes o frete de carga cheia.
-      const consolidate =
-        w.season.config.economyVersion && e.category !== 'retail' && position > rule.minimum;
+      const consolidate = e.category !== 'retail' && position > rule.minimum;
       const worthwhile = Math.min(
         want,
         Math.floor(vehicleModels.truckHeavy.capacityT / products[rule.product].massT / 2),
@@ -611,8 +593,7 @@ export function runSupplyPolicies(w: World, at: number) {
       if (!best) {
         e.supplyStatus = `Sem origem elegível para ${products[rule.product].name}`;
         trace(e, 'no-eligible-source', e.supplyStatus, rule.product);
-        if (w.season.config.economyVersion)
-          (e.supplyRetryAt ??= {})[rule.product] = at + GAME_DAY / 2;
+        (e.supplyRetryAt ??= {})[rule.product] = at + GAME_DAY / 2;
         continue;
       }
       const cash = freeCash(w, e.companyId) - policy.cashReserve;

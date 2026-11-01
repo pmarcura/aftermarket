@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { useGame, cr, num } from '../lib/game';
-import { PageHeading, Modal } from '../components/ui';
+import { PageHeading } from '../components/ui';
 import { SecaoAbas } from '../components/SecaoAbas';
 import { PixelArt } from '../components/PixelArt';
 import { IconePixel } from '../components/IconePixel';
@@ -11,7 +11,6 @@ import { agoraDoMundo, horasDeJogo } from '../features/inicio/tempo';
 import { products, type Vehicle } from '../../../../packages/simulation/src/model';
 import { Stock } from '../features/business/Stock';
 import { Vendas } from '../features/business/producao/Vendas';
-import { freeCash } from '../../../../packages/simulation/src/design';
 import { vehicleWear } from '../../../../packages/simulation/src/engine';
 import { vehicleModels } from '../../../../packages/simulation/src/catalog';
 import { TruckPurchase } from '../components/TruckPurchase';
@@ -20,7 +19,7 @@ import '../design/item.css';
 import '../design/frota.css';
 
 export function CarrierPage() {
-  const { world, actor, navigate, run, pending } = useGame();
+  const { world, actor, navigate } = useGame();
   const [vehicle, setVehicle] = useState<Vehicle>(),
     [buy, setBuy] = useState(false);
   const fleet = world.vehicles.filter((v) => v.companyId === actor),
@@ -35,14 +34,10 @@ export function CarrierPage() {
   const logistics = world.establishments.find(
     (e) => e.companyId === actor && e.category === 'logistics',
   );
-  const v2 = !!world.season.config.economyVersion;
-  const vehiclePrice = 28000000;
-  const cashAvailable = freeCash(world, actor);
   const vehicleDepot =
     world.establishments.find(
       (e) => e.companyId === actor && (e.category === 'logistics' || e.category === 'warehouse'),
-    ) ?? (v2 ? world.establishments.find((e) => e.companyId === actor) : undefined);
-  const cashMissing = Math.max(0, vehiclePrice - cashAvailable);
+    ) ?? world.establishments.find((e) => e.companyId === actor);
   const capTotal = fleet.reduce((n, v) => n + v.capacityT, 0);
   const capLivre = available.reduce((n, v) => n + v.capacityT, 0);
 
@@ -109,7 +104,7 @@ export function CarrierPage() {
                       >
                         {vehicleStatus(v)}
                       </span>
-                      {v2 && lifeKm && (
+                      {lifeKm && (
                         <>
                           <div
                             className="item-medidor"
@@ -205,7 +200,7 @@ export function CarrierPage() {
           </section>
         )}
 
-        {v2 && logistics && (
+        {logistics && (
           <section className="fro-bloco" aria-labelledby="fro-patio">
             <header className="fro-bloco-cab">
               <h2 id="fro-patio">Pátio e sucata de {logistics.name}</h2>
@@ -217,45 +212,7 @@ export function CarrierPage() {
       </div>
 
       {vehicle && <VehicleDetails vehicle={vehicle} onClose={() => setVehicle(undefined)} />}
-      {buy && v2 && <TruckPurchase depot={vehicleDepot} onClose={() => setBuy(false)} />}
-      {buy && !v2 && (
-        <Modal title="Comprar caminhão pesado" onClose={() => setBuy(false)}>
-          <p>
-            Amplie sua frota com um veículo de <strong>30 t e 85 m³</strong>. O caminhão será
-            registrado em sua base logística.
-          </p>
-          <div className="lote-numeros">
-            <div className="lote-num">
-              <span>Preço do caminhão</span>
-              <b>{cr(vehiclePrice, 0)}</b>
-            </div>
-            <div className="lote-num area">
-              <span>Caixa livre</span>
-              <b>{cr(cashAvailable, 0)}</b>
-            </div>
-          </div>
-          {(cashMissing > 0 || !vehicleDepot) && (
-            <p id="vehicle-purchase-blocked" role="status" className="form-message error">
-              {!vehicleDepot
-                ? 'Adquira uma propriedade logística ou um armazém para receber o veículo.'
-                : `Faltam ${cr(cashMissing)} de caixa livre.`}
-            </p>
-          )}
-          <button
-            className="primary full"
-            disabled={pending || cashMissing > 0 || !vehicleDepot}
-            aria-describedby={
-              cashMissing > 0 || !vehicleDepot ? 'vehicle-purchase-blocked' : undefined
-            }
-            onClick={async () => {
-              if (await run({ type: 'buyVehicle' }, 'Veículo adquirido e adicionado à frota.'))
-                setBuy(false);
-            }}
-          >
-            Comprar por {cr(vehiclePrice)}
-          </button>
-        </Modal>
-      )}
+      {buy && <TruckPurchase depot={vehicleDepot} onClose={() => setBuy(false)} />}
     </>
   );
 }

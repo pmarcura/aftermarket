@@ -223,12 +223,8 @@ export function initializeCompetition(w: World, at = w.updatedAt) {
   }
   // Capital vem de contas existentes; os estoques inaugurais são finitos e pagos.
   const investors = w.companies.find((c) => c.id === 'consumers')!;
-  // Versão 2: os rivais nascem da carteira da economia alvo (opening-v2.ts), chamada pelo seed.
-  const missing = w.season.config.economyVersion
-    ? []
-    : Array.from({ length: competitionRules.botCount }, (_, i) => i).filter(
-        (i) => !w.companies.some((c) => c.id === `rival-${i + 1}`),
-      );
+  // Os rivais nascem da carteira da economia alvo (opening-v2.ts), chamada pelo seed.
+  const missing: number[] = [];
   const capital = Math.min(
     w.season.config.competition.botCapital,
     Math.floor((investors.balance * 0.6) / Math.max(1, missing.length)),

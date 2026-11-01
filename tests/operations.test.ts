@@ -22,31 +22,35 @@ const transferToTreasury = (w: World, value: number) => {
   w.companies.find((c) => c.id === 'player')!.balance -= value;
   w.companies.find((c) => c.id === 'treasury')!.balance += value;
 };
+// A Distribuidora Aurora (e-supplier) abre com 90 t de minério anunciadas (offer-aurora); as
+// minas abrem só com um ciclo de estoque, como os rivais.
+const steelRecipe = (w: World) => w.season.config.recipes.find((r) => r.id === 'steel-bars')!;
 const orderCommand = (w: World): Command => ({
   type: 'requestOrder',
-  offerId: 'offer-ferrovale',
+  offerId: 'offer-aurora',
   destinationId: 'e-industry',
   quantity: 65,
   carrierId: 'transbrasil',
-  maxFreight: quote(w, 'e-ferrovale', 'e-industry', 'iron', 65, 'transbrasil').price,
+  maxFreight: quote(w, 'e-supplier', 'e-industry', 'iron', 65, 'transbrasil').price,
   deliveryDays: 3,
-  expectedUnitPrice: w.offers.find((o) => o.id === 'offer-ferrovale')!.price,
+  expectedUnitPrice: w.offers.find((o) => o.id === 'offer-aurora')!.price,
 });
 
 describe('capacidade, automação e qualidade', () => {
   it('limita linhas por equipe e área, sem aumentar produção ao contratar além da área', () => {
     const w = createWorld(NOW),
       e = unit(w),
-      r = w.season.config.recipes[0];
-    e.employees = 36;
-    w.properties.find((p) => p.id === e.propertyId)!.area = 6000;
+      r = steelRecipe(w),
+      profile = w.season.config.operations.profiles[r.id];
+    e.employees = profile.workers * 2;
+    w.properties.find((p) => p.id === e.propertyId)!.area = profile.areaM2;
     expect(productionCapacity(w, e, r, 5)).toMatchObject({
       lines: 1,
       laborLines: 2,
       areaLines: 1,
       durationMs: r.duration * 5,
     });
-    e.employees = 17;
+    e.employees = profile.workers - 1;
     const before = structuredClone(w);
     expect(() =>
       execute(
@@ -60,19 +64,25 @@ describe('capacidade, automação e qualidade', () => {
   });
   it('usa linhas paralelas e não permite reduzir equipe comprometida com lotes', () => {
     const w = createWorld(NOW),
-      e = unit(w);
-    e.employees = 36;
+      e = unit(w),
+      workers = w.season.config.operations.profiles['steel-bars'].workers;
+    e.employees = workers * 2;
     execute(
       w,
       'player',
       { type: 'produce', establishmentId: e.id, recipeId: 'steel-bars', cycles: 2 },
       NOW,
     );
-    expect(w.jobs[0].finishesAt - NOW).toBe(w.season.config.recipes[0].duration);
+    expect(w.jobs[0].finishesAt - NOW).toBe(steelRecipe(w).duration);
     expect(() =>
-      execute(w, 'player', { type: 'setWorkforce', establishmentId: e.id, employees: 18 }, NOW),
+      execute(
+        w,
+        'player',
+        { type: 'setWorkforce', establishmentId: e.id, employees: workers },
+        NOW,
+      ),
     ).toThrow(/Conclua os lotes/);
-    expect(e.employees).toBe(36);
+    expect(e.employees).toBe(workers * 2);
   });
   it('qualidade dos insumos altera a saída e a qualidade congelada chega após o processamento', () => {
     const low = createWorld(NOW),
@@ -91,7 +101,7 @@ describe('capacidade, automação e qualidade', () => {
       );
     }
     expect(high.jobs[0].quality).toBeGreaterThan(low.jobs[0].quality!);
-    const expected = (24 * 70 + high.jobs[0].quality! * 8) / 32;
+    const expected = (24 * 70 + high.jobs[0].quality! * 1) / 25; // 1 t de aço por ciclo
     unit(high).quality!.iron = 0;
     advance(high, high.jobs[0].finishesAt);
     expect(inventoryQuality(unit(high), 'steel')).toBeCloseTo(expected);
@@ -117,7 +127,7 @@ describe('capacidade, automação e qualidade', () => {
     const total = money(w);
     advance(w, NOW + ECONOMIC_INTERVAL * 4);
     expect(e.reserve).toBe(0);
-    expect(e.inventory.iron).toBe(653);
+    expect(e.inventory.iron).toBe(650 + 3 * 1.5); // 1,5 t por ciclo de extração
     expect(w.jobs.filter((j) => j.establishmentId === e.id).reduce((n, j) => n + j.cycles, 0)).toBe(
       3,
     );
@@ -153,7 +163,9 @@ describe('capacidade, automação e qualidade', () => {
     unit(w, 'e-retail').employees = 1;
     advance(w, NOW + ECONOMIC_INTERVAL);
     const rows = w.consumptionHistory.filter((s) => s.establishmentId === 'e-retail');
-    expect(rows.reduce((n, s) => n + s.sold, 0)).toBeLessThanOrEqual(20);
+    expect(rows.reduce((n, s) => n + s.sold, 0)).toBeLessThanOrEqual(
+      w.season.config.operations.retailUnitsPerWorker,
+    );
     expect(rows.every((s) => s.desired >= s.sold)).toBe(true);
   });
 });
@@ -162,11 +174,11 @@ describe('cargas divididas e pedidos comerciais', () => {
   it('divide quantidade inteira por massa/volume, ocupa os veículos e conserva dinheiro/custo', () => {
     const w = createWorld(NOW);
     passiveOff(w);
-    const q = quote(w, 'e-ferrovale', 'e-industry', 'iron', 65, 'transbrasil');
+    const q = quote(w, 'e-supplier', 'e-industry', 'iron', 65, 'transbrasil');
     expect(q.compatible).toBe(true);
     expect(q.parts.map((p) => p.quantity)).toEqual([30, 30, 5]);
     expect(q.price).toBeGreaterThan(
-      quote(w, 'e-ferrovale', 'e-industry', 'iron', 30, 'transbrasil').price,
+      quote(w, 'e-supplier', 'e-industry', 'iron', 30, 'transbrasil').price,
     );
     const total = money(w),
       before = unit(w).inventory.iron!,
@@ -176,7 +188,7 @@ describe('cargas divididas e pedidos comerciais', () => {
       'player',
       {
         type: 'trade',
-        offerId: 'offer-ferrovale',
+        offerId: 'offer-aurora',
         quantity: 65,
         destinationId: 'e-industry',
         carrierId: 'transbrasil',
@@ -201,7 +213,7 @@ describe('cargas divididas e pedidos comerciais', () => {
       start = money(w),
       carrier = unit(w, 'e-logistics'),
       revenue = carrier.revenue;
-    const q = quote(w, 'e-ferrovale', 'e-industry', 'iron', 24, 'player');
+    const q = quote(w, 'e-supplier', 'e-industry', 'iron', 24, 'player');
     expect(q.ownFleet).toBe(true);
     expect(q.price).toBe(q.costs.operatingCost);
     execute(
@@ -209,7 +221,7 @@ describe('cargas divididas e pedidos comerciais', () => {
       'player',
       {
         type: 'trade',
-        offerId: 'offer-ferrovale',
+        offerId: 'offer-aurora',
         quantity: 24,
         destinationId: 'e-industry',
         carrierId: 'player',
@@ -228,8 +240,8 @@ describe('cargas divididas e pedidos comerciais', () => {
     const order = w.orders[0];
     expect(w.companies).toEqual(before.companies);
     expect(w.shipments).toHaveLength(0);
-    expect(unit(w, 'e-ferrovale').inventory).toEqual(unit(before, 'e-ferrovale').inventory);
-    w.offers.find((o) => o.id === 'offer-ferrovale')!.price *= 2;
+    expect(unit(w, 'e-supplier').inventory).toEqual(unit(before, 'e-supplier').inventory);
+    w.offers.find((o) => o.id === 'offer-aurora')!.price *= 2;
     execute(w, order.sellerId, { type: 'acceptOrder', orderId: order.id }, NOW);
     expect(order.status).toBe('accepted');
     expect(w.shipments.reduce((n, s) => n + s.cost, 0)).toBe(order.unitPrice * 65);

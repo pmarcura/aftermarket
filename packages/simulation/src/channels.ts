@@ -1,8 +1,16 @@
-import { seasonProducts, type ProductId, type World } from './model';
+import { productIds, seasonProducts, type ProductId, type World } from './model';
+import { designItems } from './catalog';
 
 // Canais executados pelo motor. Adicionar apenas consumo na configuração não cria comprador.
-export const householdProducts: readonly ProductId[] = ['oil', 'rice', 'beans', 'sugar', 'milk'];
-// Itens que as famílias compram nesta temporada (a versão 2 soma os utensílios).
+export const householdProducts: readonly ProductId[] = productIds.filter(
+  (id) => designItems[id].monthlyPerPerson,
+);
+// Caminhões saem do mundo como frota (comando buyVehicle), não por receita.
+export const fleetProducts: readonly ProductId[] = ['truckHeavy', 'truckLight'];
+// Sucata nasce do desmonte de caminhões (scrapVehicle) e do retorno urbano dos utensílios
+// vendidos (recycling.urbanScrapShare), não de receita.
+export const recycledProducts: readonly ProductId[] = ['scrap'];
+// Itens que as famílias compram nesta temporada.
 export const householdItems = (w: Pick<World, 'season'>) =>
   seasonProducts(w).filter((id) => (w.season.config.consumption[id] ?? 0) > 0);
 

@@ -4,6 +4,7 @@ import { execute, advance } from '../packages/simulation/src/engine';
 import { GAME_DAY } from '../packages/simulation/src/operations';
 import {
   arrears,
+  equipmentCostFor,
   freeCash,
   outstandingLoans,
   recoveryQuote,
@@ -19,7 +20,6 @@ import { operatingCosts } from '../packages/simulation/src/metrics';
 import { supplyForecast } from '../packages/simulation/src/supply';
 import { marketView } from '../packages/simulation/src/metrics';
 import { runBotDirector, botRecoveryPlan } from '../packages/simulation/src/director';
-import { createScenario } from '../packages/simulation/src/scenarios';
 import { migrateWorld } from '../packages/simulation/src/migrate';
 import { ECONOMIC_INTERVAL, type World } from '../packages/simulation/src/model';
 const NOW = Date.UTC(2026, 9, 27, 4);
@@ -37,26 +37,31 @@ function quiet() {
   return w;
 }
 const company = (w: World, id = 'player') => w.companies.find((c) => c.id === id)!;
+// Lotes livres são gerados por polo e cidade: o primeiro terreno industrial à venda em SP
+// (os testes de crédito pedem o tesouro paulista e recusam o mineiro).
+const freeLot = (w: World, category = 'industry') =>
+  w.properties.find((p) => p.ownerId === null && p.category === category && p.state === 'SP')!;
 function openFactory(w: World) {
+  const lot = freeLot(w);
   execute(
     w,
     'player2',
-    { type: 'buyProperty', propertyId: 'hortolandia', name: 'Fábrica Recuperável' },
+    { type: 'buyProperty', propertyId: lot.id, name: 'Fábrica Recuperável' },
     NOW,
   );
   execute(
     w,
     'player2',
-    { type: 'installBusiness', establishmentId: 'e-hortolandia', recipeId: 'steel-bars', lines: 1 },
+    { type: 'installBusiness', establishmentId: `e-${lot.id}`, recipeId: 'steel-bars', lines: 1 },
     NOW,
   );
   execute(
     w,
     'player2',
-    { type: 'setWorkforce', establishmentId: 'e-hortolandia', employees: 18 },
+    { type: 'setWorkforce', establishmentId: `e-${lot.id}`, employees: 18 },
     NOW,
   );
-  return w.establishments.find((e) => e.id === 'e-hortolandia')!;
+  return w.establishments.find((e) => e.id === `e-${lot.id}`)!;
 }
 describe('recuperação sem emissão', () => {
   it('estoque anunciado permanece à venda com produção suspensa', () => {
@@ -101,14 +106,10 @@ describe('recuperação sem emissão', () => {
   });
   it('compra imóvel sem contratar; equipamentos são pagos e limitam linhas antes da operação', () => {
     const w = quiet(),
-      total = money(w);
-    execute(
-      w,
-      'player2',
-      { type: 'buyProperty', propertyId: 'newindustry', name: 'Nova indústria' },
-      NOW,
-    );
-    const e = w.establishments.find((e) => e.id === 'e-newindustry')!;
+      total = money(w),
+      lot = freeLot(w);
+    execute(w, 'player2', { type: 'buyProperty', propertyId: lot.id, name: 'Nova indústria' }, NOW);
+    const e = w.establishments.find((e) => e.id === `e-${lot.id}`)!;
     expect(e.employees).toBe(0);
     expect(e.enabled).toBe(false);
     expect(e.installed).toBe(false);
@@ -120,7 +121,7 @@ describe('recuperação sem emissão', () => {
       NOW,
     );
     expect(e.employees).toBe(0);
-    expect(e.installationValue).toBe(w.season.config.design.equipmentCost.industry);
+    expect(e.installationValue).toBe(equipmentCostFor(w, 'industry', 'steel-bars'));
     expect(money(w)).toBe(total);
     const before = structuredClone(w);
     expect(() =>
@@ -299,18 +300,6 @@ describe('caixa vinculado a pedidos', () => {
   });
 });
 describe('referência protegida e informação', () => {
-  it('cenários isolados conservam moeda e não alteram a carteira demonstrativa', () => {
-    const regular = createScenario(NOW),
-      starter = createScenario(NOW, 'starter'),
-      low = createScenario(NOW, 'low-demand', 1);
-    expect(money(starter)).toBe(money(regular));
-    expect(company(starter).balance).toBe(12000000);
-    expect(starter.establishments.filter((e) => e.companyId === 'player')).toHaveLength(1);
-    expect(low.season.config.parameters.playableConsumerShare).toBe(
-      regular.season.config.parameters.playableConsumerShare * 0.25,
-    );
-    expect(company(regular).balance).toBeGreaterThan(company(starter).balance);
-  });
   it('anúncios coordenados e negócios concentrados não alteram a referência', () => {
     const w = quiet(),
       base = publicReference(w, 'steel');

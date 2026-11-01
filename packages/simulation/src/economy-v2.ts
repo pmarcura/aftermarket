@@ -6,8 +6,7 @@ import { infrastructurePrograms } from './channels';
 import { GAME_DAY } from './operations';
 import { cities } from '../../world/src/geography-v2';
 
-// Mundo versão 2 (etapa B): configuração congelada a partir do catálogo da economia alvo.
-export const ECONOMY_V2 = 2;
+// Configuração da temporada congelada a partir do catálogo da economia alvo (etapa B, D-042).
 
 export function v2Recipes(): Recipe[] {
   return designRecipes.map((r) => {
@@ -43,22 +42,13 @@ export function v2Recipes(): Recipe[] {
 
 export function v2SeasonConfig(scale = 1): SeasonConfig {
   const ids = Object.keys(products) as ProductId[];
-  const config = createSeasonConfig(
+  const base = createSeasonConfig(
     Object.fromEntries(ids.map((id) => [id, referencePrice(id as DesignItemId)])) as Record<
       ProductId,
       number
     >,
     v2Recipes(),
   );
-  config.economyVersion = ECONOMY_V2;
-  config.history = { keepDays: 15 };
-  config.wholesalePrices = Object.fromEntries(
-    Object.entries(priceList()).map(([id, price]) => [id, Math.round(price)]),
-  );
-  config.recycling = {
-    urbanScrapShare: designWorld.urbanScrapShare,
-    scrapPrice: referencePrice('scrap'),
-  };
   // Editais a 1/4 do tamanho original, para caber no estoque de uma siderúrgica, e oferta de
   // 2,2× o aço público alvo: na prova de 90 dias cerca de metade expira sem proposta válida.
   const lotScale = 0.25,
@@ -73,15 +63,34 @@ export function v2SeasonConfig(scale = 1): SeasonConfig {
   // tamanho da escala 1 e, com 20×, o governo pedia 1/20 do aço da calculadora.
   const contractsPerDay =
     (designWorld.government.steelTonnesPerDay * 2.2 * scale) / steelPerContract;
-  config.government = {
-    lotScale,
-    contractIntervalMs: Math.round((GAME_DAY * states) / contractsPerDay),
-  };
   // Centro-Sul real: a procura de jogo é a do mundo de referência vezes a escala, repartida
   // pelos municípios conforme a população.
   const population = cities.reduce((n, city) => n + city.population, 0);
-  config.regions = cities;
-  config.worldScale = scale;
+  const config: SeasonConfig = {
+    ...base,
+    history: { keepDays: 15 },
+    wholesalePrices: Object.fromEntries(
+      Object.entries(priceList()).map(([id, price]) => [id, Math.round(price)]),
+    ) as Record<ProductId, number>,
+    recycling: {
+      urbanScrapShare: designWorld.urbanScrapShare,
+      scrapPrice: referencePrice('scrap'),
+    },
+    government: {
+      lotScale,
+      contractIntervalMs: Math.round((GAME_DAY * states) / contractsPerDay),
+    },
+    regions: cities,
+    worldScale: scale,
+    design: {
+      ...base.design,
+      wholesaleMargin: designWorld.wholesaleMargin,
+      // Equipamento por receita, arredondado a R$ 1.000: é o botão que faz cada linha se pagar no prazo.
+      equipmentByRecipe: Object.fromEntries(
+        analyzeDesign().recipes.map((r) => [r.id, Math.round(r.equipment / 100000) * 100000]),
+      ),
+    },
+  };
   config.population = Object.fromEntries(cities.map((city) => [city.id, city.population]));
   config.parameters.playableConsumerShare = (designWorld.consumers * scale) / population;
   config.consumption = Object.fromEntries(
@@ -94,10 +103,5 @@ export function v2SeasonConfig(scale = 1): SeasonConfig {
   );
   // A loja de referência da calculadora atende por dia; o motor conta por rodada de duas horas.
   config.operations.retailUnitsPerWorker = designWorld.retail.unitsPerWorkerDay / 12;
-  // Equipamento por receita, arredondado a R$ 1.000: é o botão que faz cada linha se pagar no prazo.
-  config.design.wholesaleMargin = designWorld.wholesaleMargin;
-  config.design.equipmentByRecipe = Object.fromEntries(
-    analyzeDesign().recipes.map((r) => [r.id, Math.round(r.equipment / 100000) * 100000]),
-  );
   return config;
 }

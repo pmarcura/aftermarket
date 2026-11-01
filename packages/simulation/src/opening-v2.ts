@@ -49,7 +49,7 @@ export interface RivalTemplate {
 }
 export function v2PortfolioFor(w: World): RivalTemplate[] {
   const flows = dailyFlows(),
-    scale = w.season.config.worldScale ?? 1;
+    scale = w.season.config.worldScale;
   const out: RivalTemplate[] = [];
   for (const r of w.season.config.recipes.filter((x) => !x.alternativeOf)) {
     const total = Math.max(1, Math.round((flows.lines[r.id] ?? 0) * scale * BOT_SHARE));
@@ -217,7 +217,7 @@ const roundFor = (id: ProductId, q: number) =>
   products[id].unit === 'un' ? Math.ceil(q) : Math.round(q * 1000) / 1000;
 
 export function openV2Rivals(w: World, at: number) {
-  if (!w.season.config.economyVersion || w.companies.some((c) => c.id.startsWith('rival-'))) return;
+  if (w.companies.some((c) => c.id.startsWith('rival-'))) return;
   const config = w.season.config;
   const wholesaleShare = 1 - storeEconomics().grossMargin;
   const used = new Set(w.companies.map((c) => c.name));
@@ -331,9 +331,7 @@ export function openV2Rivals(w: World, at: number) {
     // Produtor custeia o estoque inicial na porta da fábrica; a loja, no preço de loja sem a margem.
     const unitCost = (id: ProductId) =>
       Math.round(
-        category === 'retail'
-          ? config.basePrices[id] * wholesaleShare
-          : (config.wholesalePrices?.[id] ?? config.basePrices[id]),
+        category === 'retail' ? config.basePrices[id] * wholesaleShare : config.wholesalePrices[id],
       );
     const stockCost = (Object.entries(stock) as [ProductId, number][]).reduce(
       (n, [id, q]) => n + Math.round(unitCost(id) * q),
@@ -464,7 +462,6 @@ export function prepareV2Fleet(w: World) {
 // estoque inicial de um ciclo. Sem isso produziam sem limite de linhas e abriam com estoques de
 // semanas, derrubando o preço de ferro, soja e óleo (prova da fatia 10).
 export function alignLegacyProducers(w: World) {
-  if (!w.season.config.economyVersion) return;
   for (const e of w.establishments) {
     const c = w.companies.find((x) => x.id === e.companyId)!;
     if (!c.bot || c.id.startsWith('rival-') || c.id.startsWith('treasury')) continue;
@@ -500,8 +497,8 @@ export const v2LotArea: Record<Property['category'], number> = {
   warehouse: 15000,
   logistics: 15000,
 };
-export function normalizeV2Lot(w: World, p: Property) {
-  if (!w.season.config.economyVersion || p.ownerId !== null) return;
+export function normalizeV2Lot(_w: World, p: Property) {
+  if (p.ownerId !== null) return;
   p.area = v2LotArea[p.category];
   p.price = Math.round(p.area * designWorld.landPerM2[p.category]);
 }
@@ -511,7 +508,6 @@ export function normalizeV2Lot(w: World, p: Property) {
 // a lotes em cada polo e em cada cidade, para os jogadores escolherem onde crescer.
 const LOTS_PER_HUB = 2;
 export function placeV2Geography(w: World) {
-  if (!w.season.config.regions) return;
   const legacy = (id: string) =>
     !id.startsWith('rival-') &&
     !id.startsWith('treasury') &&
@@ -591,8 +587,8 @@ const carrierBases = [
   'Vitória',
 ];
 export function openV2Carriers(w: World, at: number) {
-  if (!w.season.config.regions || w.companies.some((c) => c.id.startsWith('carrier-'))) return;
-  const scale = w.season.config.worldScale ?? 1;
+  if (w.companies.some((c) => c.id.startsWith('carrier-'))) return;
+  const scale = w.season.config.worldScale;
   const trucks = Math.min(10, Math.max(2, Math.round(scale / 2)));
   carrierBases.forEach((name, i) => {
     const base = cities.find((c) => c.name === name)!;

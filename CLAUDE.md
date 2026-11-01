@@ -11,5 +11,5 @@
 
 - Estado em uma página: `.planning/STATE.md`. Roteiro A–F: `.planning/ROADMAP.md`.
 - Economia em linguagem simples: `docs/product/ECONOMIA-HOJE.md`; relatórios técnicos regenerados por `npm run economy:report`.
-- Jogar sem tocar no mundo principal: `npm run dev:starter` (porta 5185) ou `npm run dev:v2` (economia versão 2, porta 5186). Configurações do painel de navegador em `.claude/launch.json`.
-- Não há repositório remoto; commits ficam locais em `main`.
+- Uma economia só (D-042). `npm run dev` abre o mundo `playtest` em `.runtime/world.sqlite`; `AFTERMARKET_WORLD_SCALE=20` dá o mundo grande (~550 bots). Para jogar sem tocar no mundo principal, use outro `AFTERMARKET_DB_FILE`. Configurações do painel de navegador em `.claude/launch.json`.
+- Repositório remoto: github.com/pmarcura/aftermarket. Cada spec tem seu branch (`spec/NNN-slug`) e vira um PR para `main`.

@@ -9,7 +9,7 @@ const NOW = Date.UTC(2026, 9, 27, 12);
 const money = (w: World) => w.companies.reduce((n, c) => n + c.balance, 0);
 
 function v2World() {
-  const w = createWorld(NOW, { economy: 2 });
+  const w = createWorld(NOW);
   w.nextEconomicAt = Infinity; // só produção: sem salários, varejo ou bots
   for (const c of w.companies) c.bot = false;
   for (const e of w.establishments) {
@@ -49,7 +49,7 @@ function produceAndFinish(w: World, e: Establishment, recipeId: string, cycles: 
   advance(w, w.jobs.at(-1)!.finishesAt);
 }
 
-describe('mundo versão 2 · sementes, rebanho e ração', () => {
+describe('sementes, rebanho e ração', () => {
   it('fazenda planta semente comprada e a colheita devolve 110% dela', () => {
     const w = v2World();
     const farm = unit(w, 'farm', 'soy-harvest', 1, { soySeed: 0.6 });

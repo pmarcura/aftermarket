@@ -1,10 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { auditResources } from '../packages/simulation/src/resource-audit';
 import { materialBoundaries } from '../packages/simulation/src/resource-policy';
-import { householdProducts, infrastructurePrograms } from '../packages/simulation/src/channels';
+import {
+  householdProducts,
+  infrastructurePrograms,
+  recycledProducts,
+} from '../packages/simulation/src/channels';
 import { createWorld } from '../packages/simulation/src/seed';
 import { advance, execute } from '../packages/simulation/src/engine';
-import { ECONOMIC_INTERVAL, type ProductId, type World } from '../packages/simulation/src/model';
+import {
+  ECONOMIC_INTERVAL,
+  type ProductId,
+  type Recipe,
+  type World,
+} from '../packages/simulation/src/model';
 import { GAME_DAY } from '../packages/simulation/src/operations';
 
 const NOW = Date.UTC(2026, 9, 27, 12);
@@ -22,6 +31,14 @@ function isolated() {
   }
   return w;
 }
+// Receita alternativa (reciclagem) roda na instalação da principal, lote a lote.
+const producerOf = (w: World, recipe: Recipe, bot = true) =>
+  w.establishments.find(
+    (e) =>
+      e.specialization === (recipe.alternativeOf ?? recipe.id) &&
+      e.category === recipe.category &&
+      (!bot || w.companies.find((c) => c.id === e.companyId)!.bot),
+  )!;
 
 describe('admissão de recursos', () => {
   it('audita sem mutação e distingue estrutura de equilíbrio', () => {
@@ -31,29 +48,46 @@ describe('admissão de recursos', () => {
     expect(w).toEqual(before);
     expect(report.structurallyValid).toBe(true);
     expect(report.balanced).toBe(false);
-    expect(report.items).toHaveLength(10);
-    expect(report.recipes).toHaveLength(9);
-    expect(report.items.every((p) => p.madeBy.length && p.finalPath?.length)).toBe(true);
-    expect(report.issues.some((i) => i.code === 'NEGATIVE_STANDARD_RESULT')).toBe(true);
+    expect(report.items).toHaveLength(20);
+    expect(report.recipes).toHaveLength(14);
+    // Sucata não tem receita: vem da coleta municipal dos utensílios vendidos.
+    expect(
+      report.items.every(
+        (p) => (p.madeBy.length || recycledProducts.includes(p.id)) && p.finalPath?.length,
+      ),
+    ).toBe(true);
+    expect(report.issues.some((i) => i.code === 'NEGATIVE_STANDARD_RESULT')).toBe(false);
+    // Linha que não cobre os fixos é apontada como aviso, sem invalidar a estrutura.
+    const loss = createWorld(NOW);
+    loss.season.config.basePrices.rice = 1;
+    const lossReport = auditResources(loss);
+    expect(
+      lossReport.issues.some(
+        (i) => i.code === 'NEGATIVE_STANDARD_RESULT' && i.subject === 'rice-harvest',
+      ),
+    ).toBe(true);
+    expect(lossReport.structurallyValid).toBe(true);
   });
   it('não confunde estoque de abertura com reposição produtiva', () => {
     const w = createWorld(NOW);
     w.season.config.recipes = w.season.config.recipes.filter((r) => r.id !== 'milk-production');
     expect(codes(w)).toContain('NO_RECIPE');
-    expect(codes(w)).toContain('NO_FINAL_SINK'); // Farelo perde seu único consumo líquido.
+    expect(codes(w)).toContain('NO_FINAL_SINK'); // Ração perde seu único consumo líquido.
   });
   it('identifica dependência de semente e bloqueia cadeia sem partida', () => {
     const w = createWorld(NOW);
-    expect(auditResources(w).items.find((p) => p.id === 'soy')!.bootstrapWithoutStock).toBe(false);
-    for (const e of w.establishments) e.inventory.soy = 0;
+    expect(auditResources(w).items.find((p) => p.id === 'soySeed')!.bootstrapWithoutStock).toBe(
+      false,
+    );
+    for (const e of w.establishments) e.inventory.soySeed = 0;
     expect(codes(w)).toContain('NO_BOOTSTRAP');
   });
   it('considera semente já comprometida em produção sem inventar sua chegada', () => {
     const w = isolated(),
       e = w.establishments.find((e) => e.specialization === 'rice-harvest')!;
-    e.inventory.rice = 1;
+    e.inventory.riceSeed = 100;
     for (const other of w.establishments.filter((other) => other.id !== e.id))
-      other.inventory.rice = 0;
+      other.inventory.riceSeed = 0;
     execute(
       w,
       e.companyId,
@@ -61,18 +95,34 @@ describe('admissão de recursos', () => {
       NOW,
     );
     const report = auditResources(w);
-    expect(report.issues.some((i) => i.code === 'NO_BOOTSTRAP' && i.subject === 'rice')).toBe(
+    expect(report.issues.some((i) => i.code === 'NO_BOOTSTRAP' && i.subject === 'riceSeed')).toBe(
       false,
     );
-    expect(report.items.find((p) => p.id === 'rice')!.inProduction).toBe(160);
-    expect(e.inventory.rice).toBe(0);
+    expect(report.items.find((p) => p.id === 'riceSeed')!.inProduction).toBe(110);
+    expect(e.inventory.riceSeed).toBe(0);
   });
   it('mede pressão do farelo pelas receitas e consumos efetivos', () => {
-    const link = auditResources(createWorld(NOW)).jointProduction[0];
+    // Na temporada, o farelo vai à ração e a ração ao leite: nenhuma família compra o elo seguinte
+    // direto, então não há pressão de coproduto a medir.
+    const report = auditResources(createWorld(NOW));
+    expect(report.jointProduction).toEqual([]);
+    expect(report.issues.some((i) => i.code === 'JOINT_DEMAND_MISMATCH')).toBe(false);
+    // Se as famílias comprassem ração, cada kg de óleo arrastaria 3,8 kg de farelo → 3,762 kg de ração.
+    const w = createWorld(NOW);
+    w.season.config.consumption.feed = 1;
+    const linked = auditResources(w, {
+      boundaries: materialBoundaries,
+      household: [...householdProducts, 'feed'],
+      programs: infrastructurePrograms,
+      recycled: recycledProducts,
+    });
+    const link = linked.jointProduction[0];
     expect(link.coproduct).toBe('soymeal');
-    expect(link.linkedOutputPerPrimary).toBeCloseTo(22.8);
-    expect(link.householdRatio).toBe(10);
-    expect(link.surplusFraction).toBeCloseTo(0.5614035);
+    expect(link.coproductPerPrimary).toBeCloseTo(3.8);
+    expect(link.linkedOutputPerPrimary).toBeCloseTo(3.762);
+    expect(link.householdRatio).toBeCloseTo(1.25);
+    expect(link.surplusFraction).toBeCloseTo(1 - 1.25 / 3.762);
+    expect(linked.issues.some((i) => i.code === 'JOINT_DEMAND_MISMATCH')).toBe(true);
   });
   it('não aceita consumo declarado sem execução no motor', () => {
     const w = createWorld(NOW);
@@ -90,7 +140,8 @@ describe('admissão de recursos', () => {
   });
   it('rejeita produto inexistente e quantidade incompatível com a unidade comercial', () => {
     const w = createWorld(NOW);
-    Object.assign(w.season.config.recipes[0].input, { unknown: 1, iron: 0.25 });
+    // Massa aceita fração; unidade contada (caminhão) não.
+    Object.assign(w.season.config.recipes[0].input, { unknown: 1, truckHeavy: 0.25 });
     expect(codes(w)).toEqual(expect.arrayContaining(['UNKNOWN_PRODUCT', 'RECIPE_QUANTITY']));
   });
   it('bloqueia alteração silenciosa do rendimento e fronteira ausente', () => {
@@ -126,14 +177,14 @@ describe('admissão de recursos', () => {
   it('usa horas virtuais, cadência dos ticks e custos do motor na comparação', () => {
     const report = auditResources(createWorld(NOW));
     const steel = report.recipes.find((r) => r.id === 'steel-bars')!;
-    expect(steel.hours).toBe(1);
-    expect(steel.cyclesPerDay).toBe(12);
-    expect(steel.charges.total).toBe(1652800);
-    expect(steel.variableCost).toBe(2792800);
+    expect(steel.hours).toBe(4);
+    expect(steel.cyclesPerDay).toBe(6);
+    expect(steel.charges.total).toBe(79000);
+    expect(steel.variableCost).toBe(251500);
     const rice = report.recipes.find((r) => r.id === 'rice-harvest')!;
-    expect(rice.hours).toBe(72);
-    expect(rice.cyclesPerDay).toBeCloseTo(1 / 3);
-    expect(rice.breakEvenUtilization).toBeGreaterThan(1);
+    expect(rice.hours).toBe(96);
+    expect(rice.cyclesPerDay).toBeCloseTo(1 / 4);
+    expect(rice.breakEvenUtilization).toBeCloseTo(0.2083, 3);
   });
 });
 
@@ -141,31 +192,35 @@ describe.each(createWorld(NOW).season.config.recipes)('produção e venda de $id
   it('consome entradas/reserva, entrega uma vez, aloca custos e vende cada saída com frete real do motor', () => {
     const w = isolated(),
       total = money(w);
-    const e = w.establishments.find(
-      (e) => e.specialization === recipe.id && w.companies.find((c) => c.id === e.companyId)!.bot,
-    )!;
+    const e = producerOf(w, recipe);
+    // Comércio é em unidades inteiras (t, kg, un): ciclos suficientes para cada saída render ao menos 1.
+    const cycles = Math.max(1, ...Object.values(recipe.output).map((q) => Math.ceil(1 / q!)));
+    // A alternativa (sucata) só roda com o insumo no pátio; o motor não o inventa.
+    for (const [id, n] of Object.entries(recipe.input) as [ProductId, number][])
+      e.inventory[id] = Math.max(e.inventory[id] ?? 0, n * cycles);
     const initial = { ...e.inventory },
       reserve = e.reserve;
     execute(
       w,
       e.companyId,
-      { type: 'produce', establishmentId: e.id, recipeId: recipe.id, cycles: 1 },
+      { type: 'produce', establishmentId: e.id, recipeId: recipe.id, cycles },
       NOW,
     );
     for (const [id, n] of Object.entries(recipe.input))
-      expect(e.inventory[id as ProductId]).toBe((initial[id as ProductId] ?? 0) - n!);
-    if (recipe.category === 'mine') expect(e.reserve).toBe(reserve! - 1);
+      expect(e.inventory[id as ProductId]).toBe((initial[id as ProductId] ?? 0) - n! * cycles);
+    if (recipe.category === 'mine') expect(e.reserve).toBe(reserve! - cycles);
     const job = w.jobs.at(-1)!;
     expect(Object.values(job.outputCosts!).reduce((n, q) => n + q!, 0)).toBe(job.cost);
     const reserved = { ...e.inventory };
     advance(w, job.finishesAt);
     for (const [id, n] of Object.entries(recipe.output))
-      expect(e.inventory[id as ProductId]).toBe((reserved[id as ProductId] ?? 0) + n!);
+      expect(e.inventory[id as ProductId]).toBe((reserved[id as ProductId] ?? 0) + n! * cycles);
     const produced = { ...e.inventory };
     advance(w, job.finishesAt);
     expect(e.inventory).toEqual(produced);
     const dest = w.establishments.find((e) => e.id === 'e-warehouse')!;
-    for (const [product, quantity] of Object.entries(recipe.output) as [ProductId, number][]) {
+    for (const [product, made] of Object.entries(recipe.output) as [ProductId, number][]) {
+      const quantity = Math.floor(made * cycles); // a fração produzida fica no estoque
       execute(
         w,
         e.companyId,
@@ -210,7 +265,7 @@ describe.each(createWorld(NOW).season.config.recipes)('produção e venda de $id
   });
   it('rejeita falta de entrada ou reserva sem mutação', () => {
     const w = isolated();
-    const e = w.establishments.find((e) => e.specialization === recipe.id)!;
+    const e = producerOf(w, recipe, false);
     if (recipe.category === 'mine') e.reserve = 0;
     else e.inventory[Object.keys(recipe.input)[0] as ProductId] = 0;
     const before = structuredClone(w);

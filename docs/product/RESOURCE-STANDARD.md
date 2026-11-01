@@ -195,7 +195,7 @@ Preencher a [ficha obrigatória](RESOURCE-TEMPLATE.md) antes do código. Uma sol
 
 ## 9. Próximos experimentos, nesta ordem
 
-A [auditoria matemática](MATHEMATICS-AUDIT.md) acrescenta uma precondição aos experimentos abaixo: corrigir a capacidade projetada/recuperação e a perda de frações na demanda, e explicitar a prioridade de serviço varejista. Caso contrário, mudar coeficientes pode compensar erros de fórmula. A prova de inviabilidade agrícola usa um teto ainda mais favorável que o comparativo de custo completo: ignora entradas físicas, utilidades, manutenção, frete e CAPEX, mas quatro receitas ainda não cobrem a folha mínima nos preços inaugurais de SP. `npm run mathematics:audit` reproduz esses casos e verifica o fingerprint da referência de 90 dias.
+A auditoria matemática acrescentou uma precondição aos experimentos abaixo: corrigir a capacidade projetada/recuperação e a perda de frações na demanda, e explicitar a prioridade de serviço varejista; caso contrário, mudar coeficientes pode compensar erros de fórmula. Essas correções estão feitas e cobertas por `tests/formula-fixes.test.ts` sobre as receitas do catálogo.
 
 | Prioridade | Experimento                                        | Medidas e saída                                                                                                                                                          |
 | ---------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |

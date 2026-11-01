@@ -10,7 +10,7 @@ import { worldView } from '../apps/server/src/view';
 const AT = Date.UTC(2026, 9, 26, 12);
 describe('histórico resumido', () => {
   it('arquiva o que passou do prazo sem mudar totais de atacado nem do jogador', () => {
-    const w = createScenario(AT, 'economy-2');
+    const w = createScenario(AT, 'playtest');
     for (let d = 1; d <= 6; d++) advance(w, AT + d * GAME_DAY);
     const trade = marketView(w, 'rice');
     const totals = worldView(w, 'player').view!.totals;

@@ -17,6 +17,8 @@ npm run dev
 
 Abra **http://127.0.0.1:5173**. API: http://127.0.0.1:3001/api/health.
 
+Existe uma única economia (D-042). `npm run dev` abre o mundo `playtest`: começo enxuto (uma loja vazia em Campinas e R$ 1 milhão), 59 municípios e cerca de 90 empresas-bot. Para o mundo grande, com cerca de 550 empresas-bot e frete por distância estimada, use `AFTERMARKET_WORLD_SCALE=20 npm run dev`. Testes e laboratório usam o cenário `baseline` (mesma economia, sem começo enxuto).
+
 O mundo fica em `.runtime/world.sqlite`. Fechar o navegador não perde o progresso. Ao reiniciar o servidor, os eventos vencidos são processados. Não apague `.runtime` para atualizar o código. Faça backup antes de alterar o formato do estado.
 
 ```powershell
@@ -34,17 +36,13 @@ Nesse modo, interface e API usam http://127.0.0.1:3001.
 
 ## Primeiro teste de jogo
 
-1. Explore a região de Campinas. Clique em uma propriedade para consultar área, categoria e aquisição.
-2. Abra **Mercado**, escolha carvão ou minério, selecione uma oferta, informe quantidade e escolha **Indústria de Aço** como destino. Os filtros começam vazios.
-3. Compare o custo completo. Continue para frete, escolha uma transportadora e confirme o pagamento.
-4. Em **Logística**, acompanhe a carga. O inventário só recebe o material depois da entrega.
-5. Em **Meus Negócios → Indústria de Aço → Produção**, adicione um ciclo. Ele consome 12 t de minério e 3 t de carvão para produzir 8 t de aço, com custo industrial e tempo de processamento.
-6. Em **Estoque**, traga material de outra unidade ou crie uma conexão de reposição automática. Compare veículos livres, máximo por produto, frete e espaço de destino nos cartões de frota. Em **Abastecimento**, configure mínimos/alvos e consulte a projeção antes de salvar.
-7. Em **Mercado**, abra **Pedidos e negociações**, **Contratos de infraestrutura** e **Concorrentes e movimento do mundo**. A logística reúne os caminhões de cada pedido.
-8. Em **Funcionários**, planeje folha e educação; a qualidade dos novos lotes melhora ao concluir o treinamento.
-9. Em **Configurações**, alterne entre João Silva e Marina Costa. As duas empresas veem a mesma titularidade e os mesmos estoques de mercado.
+1. Ao entrar, o guia de primeiros passos mostra o caminho: comprar mercadoria para a loja, receber a entrega, fazer a primeira venda, abrir um negócio de produção e colocá-lo para rodar.
+2. Em **Mercado**, escolha uma oferta, informe quantidade, destino e transportadora. Compare o custo completo antes de pagar.
+3. Em **Logística**, acompanhe a carga. O estoque só recebe o material depois da entrega.
+4. Em **Oportunidades**, compre um imóvel livre, instale o equipamento de uma receita e contrate a equipe. A produção consome os insumos ao começar e entrega a saída ao terminar.
+5. Em **Configurações**, alterne entre João Silva e Marina Costa. As duas empresas veem a mesma titularidade e os mesmos estoques de mercado.
 
-O relógio do laboratório usa **120×**: um segundo real equivale a dois minutos do jogo. Um ciclo siderúrgico de uma hora do jogo leva 30 segundos reais. Custos e consumo são processados a cada duas horas do jogo. O botão de pausa impede novos ciclos; lotes já reservados terminam normalmente, e contratos fixos continuam sendo cobrados. Água e energia são pagas por consumo.
+O relógio do laboratório usa **120×**: um segundo real equivale a dois minutos do jogo. Um ciclo siderúrgico de quatro horas do jogo leva dois minutos reais. Custos e consumo são processados a cada duas horas do jogo. O botão de pausa impede novos ciclos; lotes já reservados terminam normalmente, e contratos fixos continuam sendo cobrados. Água e energia são pagas por consumo.
 
 ## Temporadas e balanceamento
 
@@ -56,7 +54,7 @@ Para balancear os recursos, comece pelo [catálogo de itens, receitas e forneced
 
 O [relatório das mecânicas](docs/product/MECHANICS-REPORT.md) reúne origem/valor das sementes e dos estoques iniciais, óleo/farelo/leite, custos, capacidade, demanda, transporte, finanças e fluxos incompletos. Para atualizar a leitura e os anexos de configuração/números do código: `npm run mechanics:report -- --world=.runtime/world.sqlite --write-doc`. O comando lê o banco sem avançar ou alterar a season.
 
-A [auditoria matemática](docs/product/MATHEMATICS-AUDIT.md) reproduz os erros de cadência, recuperação e arredondamento de demanda, separando-os de calibração agrícola e políticas de estoque/varejo. `npm run mathematics:audit -- --write-doc` gera as provas em mundos isolados e consulta os resultados existentes do laboratório, sem abrir SQLite. O comando comprova os achados atuais; não aprova equilíbrio nem altera a economia.
+As correções de fórmula da auditoria matemática (cadência executável, frações da demanda, prioridade do varejo, meta de estoque repartida) são provas de regressão em `tests/formula-fixes.test.ts`, sobre as receitas do catálogo. O relatório que reproduzia os achados sobre as receitas antigas foi retirado com a economia 1 (spec 001).
 
 ```powershell
 npm run resources:catalog
@@ -79,12 +77,6 @@ Esse comando simula um cenário separado, conserva o dinheiro e grava relatório
 - **Frota**: cartões com busca, capacidade em t/m³ e unidades, máximo da operação, ação Usar máximo, prazo/custo e detalhamento por caminhão. Confirmação sempre revalida disponibilidade.
 - **Alertas**: erros permanecem visíveis dentro da janela ativa até fechar ou outra ação atualizar a mensagem.
 - **Empresa**: caixa livre/vinculado, obrigações e recuperação; gráficos com tabela, exportações e tela cheia.
-
-```powershell
-npm run dev:starter
-```
-
-Abre um cenário iniciante separado em http://127.0.0.1:5185, banco `.runtime/starter.sqlite`, API 3015. O mundo principal continua em 5173/3001.
 
 O roteador pode ser configurado por `AFTERMARKET_ROUTER_URL`. O padrão público é para desenvolvimento; produção requer capacidade própria e perfil de caminhão. Ver [contrato de roteamento](docs/research/ROUTING.md).
 
@@ -118,12 +110,12 @@ Os testes de navegador usam Chromium: instale com `npx playwright install chromi
 ## Cartografia e dados
 
 - MapLibre renderiza dados do OpenStreetMap via OpenFreeMap, mantendo os créditos no mapa.
-- Há **5.571 municípios** no catálogo IBGE importado e uma malha GeoJSON de Campinas. `npm run data:sync` atualiza dados e proveniência; a economia ativa começa em dez municípios de referência.
+- Há **5.571 municípios** no catálogo IBGE importado e uma malha GeoJSON de Campinas. `npm run data:sync` atualiza dados e proveniência; a economia ativa usa 59 municípios.
 - As rotas consultam OSRM e são armazenadas em cache no banco. Novos despachos aguardam uma rota válida: indisponibilidade não contrata uma linha reta nem cobra. Remessas antigas podem receber correção apenas visual, preservando datas e valores. O perfil OSRM atual é automotivo; restrições para caminhões e pedágios exigem Valhalla/infraestrutura própria na fase geográfica.
 - Propriedades, infraestrutura econômica, reservas, demanda, preços e empresas são **simulados**. Não representam ofertas imobiliárias nem licenças de exploração reais.
 
 ## Limites desta versão
 
-Bots compram, transportam, produzem e ajustam ofertas com recursos finitos e regras comuns. Lojas e produtores têm abastecimento configurável, transferências próprias e educação da equipe. Trinta novos bots negociam pedidos e disputam contratos municipais financiados por tesouros estaduais. Oportunidades apresenta preços/estoque/negócios internos e demanda modelada, com mapa, filtros vazios e análise simples/avançada. Fretes humanos, aluguel, contratos recorrentes, planejamento completo e validação territorial nacional continuam planejados. Recuperação inclui obrigações, suspensão, crédito estadual com garantia/verba finita e venda de veículos. Referências de editais usam negócios qualificados com limite diário. Cenários de 30/90 dias conservam dinheiro, mas ainda apresentam concentração e empresas suspensas; não há prova de equilíbrio de uma season pública. A API só escuta o computador local; os perfis sem senha existem para testar concorrência entre empresas.
+Bots compram, transportam, produzem e ajustam ofertas com recursos finitos e regras comuns. Lojas e produtores têm abastecimento configurável, transferências próprias e educação da equipe. Empresas-bot negociam pedidos e disputam contratos municipais financiados por tesouros estaduais. Oportunidades apresenta preços/estoque/negócios internos e demanda modelada, com mapa, filtros vazios e análise simples/avançada. Fretes humanos, aluguel, contratos recorrentes, planejamento completo e validação territorial nacional continuam planejados. Recuperação inclui obrigações, suspensão, crédito estadual com garantia/verba finita e venda de veículos. Referências de editais usam negócios qualificados com limite diário. Cenários de 30/90 dias conservam dinheiro, mas ainda apresentam concentração e empresas suspensas; não há prova de equilíbrio de uma season pública. A API só escuta o computador local; os perfis sem senha existem para testar concorrência entre empresas.
 
 O repositório Git está na branch `main`. Histórico substitui cópias `old`, `backup`, `final2` ou projetos paralelos. Dependências estão fixadas no `package-lock.json`.

@@ -173,9 +173,6 @@ export function initializeOperations(w: World) {
   w.season.config.operations ??= structuredClone(operationRules);
   for (const [id, profile] of Object.entries(operationRules.profiles))
     w.season.config.operations.profiles[id] ??= structuredClone(profile);
-  for (const r of expansionRecipes)
-    if (!w.season.config.recipes.some((x) => x.id === r.id))
-      w.season.config.recipes.push(structuredClone(r));
   for (const e of w.establishments) {
     e.quality ??= Object.fromEntries(Object.keys(e.inventory).map((id) => [id, 70]));
     e.specialization ??= defaultSpecialization(e);
@@ -197,7 +194,7 @@ export function initializeOperations(w: World) {
       water: true,
       energyConnected: true,
     });
-  if (w.season.config.recycling) initializeScrapCollection(w);
+  initializeScrapCollection(w);
   if (!w.establishments.some((e) => e.id === 'e-public-works'))
     w.establishments.push({
       id: 'e-public-works',
@@ -261,64 +258,6 @@ function initializeScrapCollection(w: World) {
       id: 'offer-scrap-collection',
       establishmentId: SCRAP_COLLECTION,
       product: 'scrap',
-      price: w.season.config.recycling!.scrapPrice,
+      price: w.season.config.recycling.scrapPrice,
     });
 }
-// Cadeias agregadas do laboratório: cultivo e processamento local no mesmo estabelecimento.
-export const expansionRecipes: Recipe[] = [
-  {
-    id: 'coal-extraction',
-    name: 'Extração de carvão',
-    category: 'mine',
-    input: {},
-    output: { coal: 1 },
-    cost: 70000,
-    duration: 6000,
-    energyKwh: 50,
-    waterM3: 1,
-  },
-  {
-    id: 'rice-harvest',
-    name: 'Cultivo e beneficiamento de arroz',
-    category: 'farm',
-    input: { rice: 1 },
-    output: { rice: 160 },
-    cost: 190000,
-    duration: GAME_DAY * 3,
-    energyKwh: 160,
-    waterM3: 50,
-  },
-  {
-    id: 'beans-harvest',
-    name: 'Cultivo e embalagem de feijão',
-    category: 'farm',
-    input: { beans: 1 },
-    output: { beans: 400 },
-    cost: 160000,
-    duration: GAME_DAY * 3,
-    energyKwh: 90,
-    waterM3: 25,
-  },
-  {
-    id: 'sugar-harvest',
-    name: 'Cana e processamento integrado',
-    category: 'farm',
-    input: { sugar: 1 },
-    output: { sugar: 180 },
-    cost: 150000,
-    duration: GAME_DAY * 3,
-    energyKwh: 160,
-    waterM3: 30,
-  },
-  {
-    id: 'milk-production',
-    name: 'Produção e envase de leite',
-    category: 'farm',
-    input: { soymeal: 50 },
-    output: { milk: 300 },
-    cost: 70000,
-    duration: GAME_DAY,
-    energyKwh: 90,
-    waterM3: 4,
-  },
-];

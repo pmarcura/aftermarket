@@ -1,6 +1,5 @@
 import type { LabOptions } from '../../../../packages/simulation/src/lab';
-import { recipes } from '../../../../packages/simulation/src/model';
-import { expansionRecipes } from '../../../../packages/simulation/src/operations';
+import { designRecipes } from '../../../../packages/simulation/src/catalog';
 
 export type LabParametersValue = Pick<
   LabOptions,
@@ -58,7 +57,7 @@ export function LabParameters({
           }
         >
           <option value="">Todas as receitas</option>
-          {[...recipes, ...expansionRecipes].map((recipe) => (
+          {designRecipes.map((recipe) => (
             <option key={recipe.id} value={recipe.id}>
               {recipe.name}
             </option>

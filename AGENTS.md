@@ -20,6 +20,7 @@ Usar o processo em `docs/DEVELOPMENT.md`. Questionar internamente necessidade, c
 - Informação real, parâmetro simulado e estimativa devem ser identificados.
 - Não criar controles que só exibam uma notificação sem executar a ação anunciada.
 - Empresas não se fundem, mas grupos podem comprar empresas inteiras de outros grupos (D-035). Nenhuma construção de cidade nem renderização 3D obrigatória.
+- Uma única economia (D-042): o catálogo (`packages/simulation/src/catalog.ts`) é a fonte de itens e receitas. Não reintroduzir versões de economia nem ramos condicionados a elas.
 - Não introduzir novas dependências ou infraestrutura sem justificar o problema resolvido.
 - Antes de adicionar/alterar item ou receita, seguir `docs/product/RESOURCE-STANDARD.md`, preencher `RESOURCE-TEMPLATE.md`, regenerar o catálogo e executar `npm run resources:check`. Explicar origem/semente, destino de cada coproduto, unidades, custo completo e efeito na season. Estrutura válida não significa economia balanceada.
 

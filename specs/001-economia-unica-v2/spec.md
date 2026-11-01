@@ -1,6 +1,6 @@
 # Spec 001 · Economia única: fim do mundo v1
 
-Estado: **aprovada** (John, 30/10/2026 · D-042). Semana 1. Branch `spec/001-economia-unica-v2`.
+Estado: **verificada** (aprovada por John em 30/10/2026 · D-042; evidência em `tasks.md`). Semana 1. Branch `spec/001-economia-unica-v2`.
 
 ## Problema
 

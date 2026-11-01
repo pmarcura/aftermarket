@@ -6,7 +6,12 @@ import {
   type World,
   seasonProducts,
 } from './model';
-import { householdProducts, infrastructurePrograms } from './channels';
+import {
+  fleetProducts,
+  householdProducts,
+  infrastructurePrograms,
+  recycledProducts,
+} from './channels';
 import { GAME_DAY, availableStock, productionCapacity } from './operations';
 import { operatingCosts, productionCharges } from './metrics';
 import { materialBoundaries, type MaterialBoundary } from './resource-policy';
@@ -21,11 +26,17 @@ export interface AuditPolicy {
   boundaries: Record<string, MaterialBoundary>;
   household: readonly ProductId[];
   programs: typeof infrastructurePrograms;
+  // Itens que saem do mundo por comando (frota), não por receita nem varejo.
+  fleet?: readonly ProductId[];
+  // Itens que o motor repõe fora de receita (desmonte de caminhões, retorno urbano).
+  recycled?: readonly ProductId[];
 }
 const defaultPolicy: AuditPolicy = {
   boundaries: materialBoundaries,
   household: householdProducts,
   programs: infrastructurePrograms,
+  fleet: fleetProducts,
+  recycled: recycledProducts,
 };
 const entries = (q: Partial<Record<ProductId, number>>) =>
   Object.entries(q) as [ProductId, number][];
@@ -110,11 +121,15 @@ export function auditResources(w: World, policy: AuditPolicy = defaultPolicy) {
     if (!Object.keys(r.output).length) error('EMPTY_OUTPUT', r.id, 'Receita sem saída.');
     for (const [id, quantity] of [...entries(r.input), ...entries(r.output)]) {
       if (!products[id]) error('UNKNOWN_PRODUCT', r.id, `Produto desconhecido: ${id}.`);
-      if (!Number.isSafeInteger(quantity) || quantity <= 0)
+      // Unidades contadas (un) são inteiras; massa (t, kg) aceita fração, como o motor.
+      else if (
+        !positive(quantity) ||
+        (products[id].unit === 'un' && !Number.isSafeInteger(quantity))
+      )
         error(
           'RECIPE_QUANTITY',
           r.id,
-          `Quantidade de ${id} deve ser inteira positiva na unidade comercial.`,
+          `Quantidade de ${id} deve ser positiva e, em unidades contadas, inteira.`,
         );
     }
     const profile = cfg.operations.profiles[r.id];
@@ -130,15 +145,16 @@ export function auditResources(w: World, policy: AuditPolicy = defaultPolicy) {
         r.id,
         'Perfil precisa de 1–1.000 trabalhadores e área positiva por linha.',
       );
+    // Receita alternativa roda na instalação da principal, lote a lote (reciclagem).
     const producers = w.establishments.filter(
-      (e) => e.specialization === r.id && e.category === r.category,
+      (e) => e.specialization === (r.alternativeOf ?? r.id) && e.category === r.category,
     );
     if (!producers.some((e) => w.companies.some((c) => c.id === e.companyId && c.bot)))
       error('BOT_PRODUCER', r.id, 'Não existe produtor bot desta receita no cenário.');
     const boundary = policy.boundaries[r.id];
     if (
       !boundary ||
-      !['extraction', 'transformation', 'biological'].includes(boundary.kind) ||
+      !['extraction', 'transformation', 'assembly', 'biological'].includes(boundary.kind) ||
       !nonnegative(boundary.externalMassT) ||
       !nonnegative(boundary.residualMassT) ||
       !boundary.note
@@ -169,12 +185,6 @@ export function auditResources(w: World, policy: AuditPolicy = defaultPolicy) {
           r.id,
           'Extração e categoria mine precisam coincidir para consumir reserva.',
         );
-      if (r.category === 'mine' && entries(r.output).reduce((n, [, q]) => n + q, 0) !== 1)
-        error(
-          'RESERVE_UNIT',
-          r.id,
-          'O motor debita uma unidade de reserva por ciclo; revise a semântica antes de mudar o rendimento mineral.',
-        );
       if (boundary.kind !== 'extraction') warning('AGGREGATE_BOUNDARY', r.id, boundary.note);
     }
   }
@@ -202,19 +212,27 @@ export function auditResources(w: World, policy: AuditPolicy = defaultPolicy) {
         0,
       );
 
+  // Rebanho: a receita exige o animal na linha e o repõe por nascimentos (herd), fora de input/output.
+  const herdOutputs = (r: (typeof cfg.recipes)[number]) =>
+    r.herd && r.herd.births > 0 ? [r.herd.product] : [];
+  const herdInputs = (r: (typeof cfg.recipes)[number]) =>
+    Object.keys(r.requires ?? {}) as ProductId[];
   const closure = (initial: Set<ProductId>) => {
     const result = new Set(initial);
     let changed = true;
     while (changed) {
       changed = false;
       for (const r of cfg.recipes) {
-        if (!entries(r.input).every(([id]) => result.has(id))) continue;
+        if (
+          ![...entries(r.input).map(([id]) => id), ...herdInputs(r)].every((id) => result.has(id))
+        )
+          continue;
         if (
           r.category === 'mine' &&
           !w.establishments.some((e) => e.category === 'mine' && (e.reserve ?? 0) > 0)
         )
           continue;
-        for (const [id] of entries(r.output))
+        for (const id of [...entries(r.output).map(([id]) => id), ...herdOutputs(r)])
           if (!result.has(id)) {
             result.add(id);
             changed = true;
@@ -231,11 +249,15 @@ export function auditResources(w: World, policy: AuditPolicy = defaultPolicy) {
         inProduction(id) > 0,
     ),
   );
-  const reachable = closure(opening),
-    independent = closure(new Set());
+  const recycled = new Set(policy.recycled ?? []);
+  const reachable = closure(new Set([...opening, ...recycled])),
+    independent = closure(recycled);
   const final = new Set<ProductId>([
     ...policy.household.filter((id) => (cfg.consumption[id] ?? 0) > 0),
     ...policy.programs.map((p) => p.product),
+    ...(policy.fleet ?? []),
+    // Aposentadoria do rebanho consome o animal fora de qualquer receita.
+    ...cfg.recipes.flatMap((r) => (r.herd && r.herd.retirements > 0 ? [r.herd.product] : [])),
   ]);
   const finalPath = (start: ProductId): ProductId[] | null => {
     const queue: ProductId[][] = [[start]],
@@ -244,7 +266,8 @@ export function auditResources(w: World, policy: AuditPolicy = defaultPolicy) {
       const path = queue.shift()!,
         id = path.at(-1)!;
       if (final.has(id)) return path;
-      for (const r of cfg.recipes.filter((r) => (r.input[id] ?? 0) > (r.output[id] ?? 0)))
+      // Consumo bruto: a semente é gasta na colheita mesmo quando a colheita a devolve.
+      for (const r of cfg.recipes.filter((r) => (r.input[id] ?? 0) > 0))
         for (const [next] of entries(r.output))
           if (!visited.has(next)) {
             visited.add(next);
@@ -255,9 +278,10 @@ export function auditResources(w: World, policy: AuditPolicy = defaultPolicy) {
   };
   const items = ids.map((id) => {
     const p = products[id],
-      madeBy = cfg.recipes.filter((r) => (r.output[id] ?? 0) > 0),
+      madeBy = cfg.recipes.filter((r) => (r.output[id] ?? 0) > 0 || herdOutputs(r).includes(id)),
       path = finalPath(id);
-    if (!madeBy.length) error('NO_RECIPE', id, 'Não há extração/produção para repor este item.');
+    if (!madeBy.length && !recycled.has(id))
+      error('NO_RECIPE', id, 'Não há extração/produção para repor este item.');
     if (!reachable.has(id))
       error(
         'NO_BOOTSTRAP',

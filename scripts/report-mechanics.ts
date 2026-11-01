@@ -618,7 +618,7 @@ add(
     ]),
   ),
   'O calendário virtual usa dia UTC. Por tick: demanda/dia × fator/12. Score = (abertura/preço)^1,4 × (0,5 + qualidade/100). Desejado = piso(demanda × score/soma de scores × min(1,2; score)). Vendido = mínimo de desejado, estoque, atendimento restante e caixa das famílias/preço.',
-  `Atendimento/tick = piso(min(equipe × ${cfg.operations.retailUnitsPerWorker}, área × ${cfg.operations.retailUnitsPerM2})); é compartilhado entre produtos. Loja starter: até 120 unidades/tick ou 1.440/dia, antes da demanda. Ordem: ${householdProducts.join(' → ')}. Pisos, capacidade e ordem podem afetar vendas.`,
+  `Atendimento/tick = piso(min(equipe × ${cfg.operations.retailUnitsPerWorker}, área × ${cfg.operations.retailUnitsPerM2})); é compartilhado entre produtos. Ordem: ${householdProducts.join(' → ')}. Pisos, capacidade e ordem podem afetar vendas.`,
   'Demanda industrial de marketView = entrada × min(24; dia/duração) × linhas; não é pedido pago. dailyNeed usa min(12 × ciclos automáticos; linhas × dia/duração). A execução real ainda depende de fila, orçamento, caixa, chegada e planos. Cobertura = oferta/demanda modelada. Recortes municipais usam raio padrão de 120 km e podem sobrepor fornecedores; não somar praças sobrepostas.',
 );
 

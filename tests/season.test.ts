@@ -8,14 +8,11 @@ import {
   marketView,
   productionCharges,
   seasonPrice,
+  utilityTariff,
 } from '../packages/simulation/src/metrics';
 import { calibration } from '../packages/simulation/src/calibration';
-import {
-  products,
-  recipes,
-  ECONOMIC_INTERVAL,
-  type Command,
-} from '../packages/simulation/src/model';
+import { designItems, designRecipes } from '../packages/simulation/src/catalog';
+import { ECONOMIC_INTERVAL, type Command } from '../packages/simulation/src/model';
 import { positionAlongRoute } from '../packages/simulation/src/geometry';
 import { shipmentStatus } from '../packages/simulation/src/shipment';
 
@@ -32,23 +29,25 @@ describe('temporada e indicadores auditáveis', () => {
     const w = createWorld(NOW),
       before = structuredClone(w.season.config),
       fetchMock = vi.spyOn(globalThis, 'fetch');
-    const oldPrice = products.iron.basePrice,
-      oldCost = recipes[0].cost,
+    // Mexer no catálogo em memória depois da abertura não pode alterar a temporada congelada.
+    const steel = designRecipes.find((r) => r.id === 'steel-bars')!;
+    const oldBand = designItems.iron.band,
+      oldCost = steel.processing,
       oldDiesel = calibration.dieselPerLiter;
     try {
-      products.iron.basePrice = 999;
-      recipes[0].cost = 99;
+      designItems.iron.band = [1, 2];
+      steel.processing = 99;
       calibration.dieselPerLiter = 1;
       expect(seasonPrice(w, 'iron')).toBe(before.basePrices.iron);
       expect(productionCharges(w, w.establishments[1], 'steel-bars', 1).processing).toBe(
-        before.recipes[0].cost,
+        before.recipes.find((r) => r.id === 'steel-bars')!.cost,
       );
       advance(w, NOW + ECONOMIC_INTERVAL * 2);
       expect(w.season.config).toEqual(before);
       expect(fetchMock).not.toHaveBeenCalled();
     } finally {
-      products.iron.basePrice = oldPrice;
-      recipes[0].cost = oldCost;
+      designItems.iron.band = oldBand;
+      steel.processing = oldCost;
       calibration.dieselPerLiter = oldDiesel;
       fetchMock.mockRestore();
     }
@@ -94,17 +93,25 @@ describe('temporada e indicadores auditáveis', () => {
       { type: 'produce', establishmentId: e.id, recipeId: 'soy-oil', cycles: 1 },
       NOW,
     );
-    const j = w.jobs[0];
+    const j = w.jobs[0],
+      r = w.season.config.recipes.find((r) => r.id === 'soy-oil')!,
+      rates = utilityTariff(
+        w,
+        w.properties.find((p) => p.id === e.propertyId)!,
+      );
     expect(j.output).toEqual({ oil: 200, soymeal: 760 });
     expect(Object.values(j.outputCosts!).reduce((n, c) => n + c!, 0)).toBe(j.cost);
-    expect(w.ledger.find((l) => l.kind === 'energy')!.amount).toBe(150 * 92);
-    expect(w.ledger.find((l) => l.kind === 'water')!.amount).toBe(0.5 * 2000);
+    expect(w.ledger.find((l) => l.kind === 'energy')!.amount).toBe(r.energyKwh * rates.electricity);
+    expect(w.ledger.find((l) => l.kind === 'water')!.amount).toBe(r.waterM3 * rates.water);
     expect(w.companies.reduce((n, c) => n + c.balance, 0)).toBe(money);
-    const frozen = structuredClone(j.output);
-    w.season.config.recipes.find((r) => r.id === 'soy-oil')!.output.oil = 999;
+    const frozen = structuredClone(j.output),
+      oilBefore = e.inventory.oil!,
+      soymealBefore = e.inventory.soymeal ?? 0;
+    r.output.oil = 999;
+    w.nextEconomicAt = Infinity; // só o lote termina; nenhuma venda dos bots no meio
     advance(w, j.finishesAt);
-    expect(e.inventory.oil).toBe(12000 + frozen!.oil!);
-    expect(e.inventory.soymeal).toBe(760);
+    expect(e.inventory.oil).toBe(oilBefore + frozen!.oil!);
+    expect(e.inventory.soymeal).toBe(soymealBefore + 760);
   });
   it('uma cotação alterada não cobra nem reserva e a remessa congela a rota', () => {
     const w = createWorld(NOW),
@@ -199,33 +206,20 @@ describe('tempo de transporte e migração', () => {
     advance(w, s.arrivesAt);
     expect(shipmentStatus(s, s.arrivesAt).phase).toBe('Entregue');
   });
-  it('preserva capital, estoque, titularidade e produções antigas sem novas cobranças', () => {
+  it('recusa um mundo da economia 1 com mensagem clara e sem tocar no objeto', () => {
     const w = createWorld(NOW);
-    execute(w, 'player', trade, NOW);
-    execute(
-      w,
-      'player',
-      { type: 'produce', establishmentId: 'e-industry', recipeId: 'steel-bars', cycles: 1 },
-      NOW,
-    );
-    const old = structuredClone(w) as unknown as Record<string, any>;
+    const old = structuredClone(w) as unknown as Record<string, unknown>;
     old.version = 1;
     delete old.season;
     delete old.marketHistory;
     delete old.currency;
-    old.jobs[0].output = undefined;
-    old.jobs[0].outputCosts = undefined;
-    const { world: m } = migrateWorld(old, NOW + 1000);
-    expect(m.companies).toEqual(w.companies);
-    expect(m.establishments.map((e) => e.inventory)).toEqual(
-      w.establishments.map((e) => e.inventory),
+    const before = JSON.stringify(old);
+    expect(() => migrateWorld(old, NOW + 1000)).toThrow(
+      'Mundo da economia 1 não é mais suportado. Crie um mundo novo; o arquivo salvo não foi alterado.',
     );
-    expect(m.properties.filter((p) => p.ownerId).map((p) => [p.ownerId, p.price])).toEqual(
-      w.properties.filter((p) => p.ownerId).map((p) => [p.ownerId, p.price]),
+    expect(JSON.stringify(old)).toBe(before);
+    expect(() => migrateWorld({ ...old, version: 3 }, NOW + 1000)).toThrow(
+      'Versão de mundo não suportada',
     );
-    expect(m.ledger).toEqual(w.ledger);
-    expect(m.jobs[0].output).toEqual({ steel: 8 });
-    expect(m.nextEconomicAt).toBeGreaterThanOrEqual(NOW + 1000 + ECONOMIC_INTERVAL);
-    expect(migrateWorld(m).changed).toBe(false);
   });
 });

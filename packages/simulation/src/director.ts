@@ -151,7 +151,7 @@ export function runBotDirector(w: World, at: number) {
       const key = `${h.establishmentId}:${h.product}`;
       desiredToday.set(key, (desiredToday.get(key) ?? 0) + h.desired);
     }
-  // Versão 2: frota como mercadoria. Conta as rodadas com a frota toda ocupada; uma vez por dia
+  // Frota como mercadoria (D-028). Conta as rodadas com a frota toda ocupada; uma vez por dia
   // desmonta o que passou da vida útil e compra um caminhão se a frota ficou ocupada a maior parte do dia.
   const fleetDecision = (c: World['companies'][number]) => {
     const fleet = w.vehicles.filter((v) => v.companyId === c.id);
@@ -227,7 +227,7 @@ export function runBotDirector(w: World, at: number) {
     propertyOf(w, w.establishments.find((e) => e.id === o.destinationId)!.propertyId)!.coordinates;
   for (const o of w.orders.filter((o) => o.status === 'pending' && o.deadline > at)) {
     if (!o.sellerId) {
-      const to = w.season.config.economyVersion ? destinationAt(o) : undefined;
+      const to = destinationAt(o);
       const candidates = w.establishments
         .filter(
           (e) =>
@@ -235,13 +235,12 @@ export function runBotDirector(w: World, at: number) {
             botIds.has(e.companyId) &&
             (e.inventory[o.product] ?? 0) >= o.quantity,
         )
-        .sort((a, b) =>
-          // Versão 2: no Brasil real os quatro vendedores de menor custo podiam estar a 1.500 km e
+        .sort(
+          // D-038: no Brasil real os quatro vendedores de menor custo podiam estar a 1.500 km e
           // nenhum cabia na verba de frete; responde quem está mais perto do comprador.
-          to
-            ? distanceKm(propertyOf(w, a.propertyId)!.coordinates, to) -
-              distanceKm(propertyOf(w, b.propertyId)!.coordinates, to)
-            : (a.unitCosts[o.product] ?? 0) - (b.unitCosts[o.product] ?? 0),
+          (a, b) =>
+            distanceKm(propertyOf(w, a.propertyId)!.coordinates, to) -
+            distanceKm(propertyOf(w, b.propertyId)!.coordinates, to),
         );
       if (tracing && !candidates.length)
         trace(
@@ -381,7 +380,7 @@ export function runBotDirector(w: World, at: number) {
   }
   for (const c of bots) {
     c.behaviorVersion = 2;
-    if (w.season.config.economyVersion) fleetDecision(c);
+    fleetDecision(c);
     for (const e of w.establishments.filter((e) => e.companyId === c.id && e.installed === false)) {
       if (
         act(
@@ -556,12 +555,11 @@ export function runBotDirector(w: World, at: number) {
           )
         ) {
           // Pedido só aceita quantidade inteira; estoque em toneladas fica quebrado após produzir.
-          // Versão 2 (D-036): no máximo duas cargas de caminhão pesado. Um pedido aberto do alvo
-          // inteiro (400 t de arroz) não achava vendedor, ficava pendente por dias e, contado como
-          // já pedido, travava a reposição normal da unidade.
-          const loads = w.season.config.economyVersion
-            ? 2 * Math.floor(vehicleModels.truckHeavy.capacityT / products[rule.product].massT)
-            : Infinity;
+          // D-036: no máximo duas cargas de caminhão pesado. Um pedido aberto do alvo inteiro
+          // (400 t de arroz) não achava vendedor, ficava pendente por dias e, contado como já
+          // pedido, travava a reposição normal da unidade.
+          const loads =
+            2 * Math.floor(vehicleModels.truckHeavy.capacityT / products[rule.product].massT);
           const qty = Math.ceil(
             Math.min(rule.maxBuy, loads, rule.target - (e.inventory[rule.product] ?? 0)),
           );
@@ -687,17 +685,15 @@ export function runBotDirector(w: World, at: number) {
         const previousPrice = tracing ? e.prices[id] : undefined;
         const cost =
           (e.unitCosts[id] ?? w.season.config.basePrices[id]) + fixed / Math.max(100, demand * 5);
-        // Versão 2 (D-033): a loja mira o preço de prateleira de referência conforme a estratégia e
-        // só sobe acima dele para não vender abaixo do custo.
-        e.prices[id] = w.season.config.wholesalePrices
-          ? Math.max(
-              Math.round(cost * 1.02),
-              Math.round(
-                w.season.config.basePrices[id] *
-                  (c.strategy === 'quality' ? 1.06 : c.strategy === 'value' ? 0.95 : 1),
-              ),
-            )
-          : Math.max(1, Math.round(cost * (c.strategy === 'quality' ? 1.25 : 1.14)));
+        // D-033: a loja mira o preço de prateleira de referência conforme a estratégia e só
+        // sobe acima dele para não vender abaixo do custo.
+        e.prices[id] = Math.max(
+          Math.round(cost * 1.02),
+          Math.round(
+            w.season.config.basePrices[id] *
+              (c.strategy === 'quality' ? 1.06 : c.strategy === 'value' ? 0.95 : 1),
+          ),
+        );
         if (tracing && previousPrice !== e.prices[id]) {
           pricing!.add(c.id);
           emitDecisionTrace(w, {
@@ -727,26 +723,16 @@ export function runBotDirector(w: World, at: number) {
           0,
         ) * Math.min(12 * (e.automationCycles ?? 1), (lines * GAME_DAY) / r.duration)
       : 0;
-    const v2 = !!w.season.config.wholesalePrices;
     for (const o of w.offers.filter((o) => o.establishmentId === e.id)) {
-      // Versão 2: distribuidor sem receita não rateia custo fixo por um estoque pequeno (gerava
-      // preços absurdos); o piso do produtor é o custo pleno, sem margem, pois o preço já mira a referência.
+      // Distribuidor sem receita não rateia custo fixo por um estoque pequeno (gerava preços
+      // absurdos); o piso do produtor é o custo pleno, sem margem, pois o preço já mira a referência.
       const overhead = dailyOutputValue
         ? (operatingCosts(w, e).total * w.season.config.basePrices[o.product]) / dailyOutputValue
-        : v2
-          ? 0
-          : operatingCosts(w, e).total / Math.max(1, (e.inventory[o.product] ?? 0) / 3);
-      const margin = v2
-        ? 1
-        : w.companies.find((c) => c.id === e.companyId)!.strategy === 'value'
-          ? 1.1
-          : 1.18;
+        : 0;
       const previousPrice = tracing ? o.price : undefined;
       o.price = Math.max(
         o.price,
-        Math.round(
-          ((e.unitCosts[o.product] ?? w.season.config.basePrices[o.product]) + overhead) * margin,
-        ),
+        Math.round((e.unitCosts[o.product] ?? w.season.config.basePrices[o.product]) + overhead),
       );
       if (tracing && previousPrice !== o.price) {
         pricing!.add(e.companyId);

@@ -38,6 +38,12 @@ export function createStore(
     (db.prepare('SELECT state FROM worlds WHERE id=1').get() as { state: string }).state,
   );
   if (needsMigration(existing)) {
+    // Mundo que o motor não aceita mais (economia 1) é recusado antes de qualquer escrita:
+    // nem backup nem conversão; o arquivo fica como está (D-042).
+    if ((existing as { version?: number }).version !== 2) {
+      db.close();
+      migrateWorld(existing);
+    }
     if (path !== ':memory:') {
       const backup = resolve(dirname(path), 'backups', `pre-operations-${Date.now()}.sqlite`);
       mkdirSync(dirname(backup), { recursive: true });
@@ -76,10 +82,10 @@ export function createStore(
     shipments: db.prepare('INSERT OR IGNORE INTO history_shipments VALUES(?,?,?)'),
   };
   const writeWorld = () => {
-    // Mundos com histórico resumido (versão 2) levam o que passou do prazo para o arquivo,
-    // na mesma transação da gravação: nada é apagado.
-    const keepDays = world.season.config.history?.keepDays;
-    if (keepDays && world.updatedAt - lastArchive >= GAME_DAY / 4) {
+    // O que passou do prazo do histórico vai para o arquivo, na mesma transação da gravação:
+    // nada é apagado.
+    const keepDays = world.season.config.history.keepDays;
+    if (world.updatedAt - lastArchive >= GAME_DAY / 4) {
       const old = archiveHistory(world, world.updatedAt, keepDays);
       for (const l of old.ledger) archiveRows.ledger.run(l.id, l.at, JSON.stringify(l));
       for (const j of old.jobs) archiveRows.jobs.run(j.id, j.finishesAt, JSON.stringify(j));

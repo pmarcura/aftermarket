@@ -17,7 +17,6 @@ export const vehicleType = (v: Vehicle) =>
 export function VehicleDetails({ vehicle: v, onClose }: { vehicle: Vehicle; onClose: () => void }) {
   const { world, actor, run, pending } = useGame();
   const [confirm, setConfirm] = useState<{ text: string; label: string; command: Command }>();
-  const v2 = !!world.season.config.economyVersion;
   const place = world.properties.find((p) => p.id === v.propertyId);
   const yard = world.establishments.find(
     (e) => e.propertyId === v.propertyId && e.companyId === actor,
@@ -57,7 +56,7 @@ export function VehicleDetails({ vehicle: v, onClose }: { vehicle: Vehicle; onCl
             <dt>Valor de revenda hoje</dt>
             <dd>{cr(sale, 0)}</dd>
           </div>
-          {v2 && v.model && (
+          {v.model && (
             <>
               <div>
                 <dt>Quilometragem rodada</dt>
@@ -72,7 +71,7 @@ export function VehicleDetails({ vehicle: v, onClose }: { vehicle: Vehicle; onCl
             </>
           )}
         </dl>
-        {v2 && v.model && (
+        {v.model && (
           <div className="fro-vida">
             <div className="fro-vida-topo">
               <span>Desgaste acumulado</span>
@@ -122,34 +121,32 @@ export function VehicleDetails({ vehicle: v, onClose }: { vehicle: Vehicle; onCl
                 </span>
               </button>
             </li>
-            {v2 && (
-              <li>
-                <button
-                  type="button"
-                  className="gaveta-opcao"
-                  disabled={pending || !free || !yard}
-                  onClick={() =>
-                    setConfirm({
-                      text: `Desmontar ${v.name} em ${yard!.name}. Ficam ${num(scrapT, 1)} t de sucata no estoque da unidade, para vender a uma siderúrgica ou reciclar. O caminhão deixa de existir.`,
-                      label: 'Caminhão desmontado; a sucata está no estoque.',
-                      command: { type: 'scrapVehicle', vehicleId: v.id },
-                    })
-                  }
-                >
-                  <strong>Desmontar em sucata</strong>
-                  <span className="gaveta-preco">
-                    <IconePixel nome="caixa" tamanho={22} />
-                    <b>{num(scrapT, 1)} t de sucata</b>
-                    <small>vale cerca de {cr(scrapValue, 0)}</small>
+            <li>
+              <button
+                type="button"
+                className="gaveta-opcao"
+                disabled={pending || !free || !yard}
+                onClick={() =>
+                  setConfirm({
+                    text: `Desmontar ${v.name} em ${yard!.name}. Ficam ${num(scrapT, 1)} t de sucata no estoque da unidade, para vender a uma siderúrgica ou reciclar. O caminhão deixa de existir.`,
+                    label: 'Caminhão desmontado; a sucata está no estoque.',
+                    command: { type: 'scrapVehicle', vehicleId: v.id },
+                  })
+                }
+              >
+                <strong>Desmontar em sucata</strong>
+                <span className="gaveta-preco">
+                  <IconePixel nome="caixa" tamanho={22} />
+                  <b>{num(scrapT, 1)} t de sucata</b>
+                  <small>vale cerca de {cr(scrapValue, 0)}</small>
+                </span>
+                {free && !yard && (
+                  <span className="gaveta-prazo">
+                    Para desmontar, o caminhão precisa estar numa unidade sua.
                   </span>
-                  {free && !yard && (
-                    <span className="gaveta-prazo">
-                      Para desmontar, o caminhão precisa estar numa unidade sua.
-                    </span>
-                  )}
-                </button>
-              </li>
-            )}
+                )}
+              </button>
+            </li>
           </ul>
         )}
         {!free && (

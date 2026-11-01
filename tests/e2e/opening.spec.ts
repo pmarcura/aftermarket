@@ -26,31 +26,34 @@ async function fixture(page: Page, world: World, destination: 'map' | 'industry'
   });
   // Tiles e roteador externos já são bloqueados por ./fixtures (bloquearRedeExterna).
   await page.addInitScript(
-    ({ season, destination }) => {
+    ({ season, destination, business }) => {
       localStorage.setItem('aftermarket.company', 'player');
       localStorage.setItem('aftermarket.page', destination);
-      localStorage.setItem('aftermarket.business', 'e-newindustry');
+      localStorage.setItem('aftermarket.business', business);
       localStorage.setItem(`aftermarket.welcome.${season}.player`, 'seen');
     },
-    { season: world.season.id, destination },
+    { season: world.season.id, destination, business: UNIT },
   );
   await page.goto('/jogar');
   return { commands, errors };
 }
 
 const totalMoney = (world: World) => world.companies.reduce((total, c) => total + c.balance, 0);
+// Lote industrial livre do mundo de referência (São Paulo); a unidade comprada leva o id do lote.
+const LOT = 'lot-industry-3550308-0',
+  UNIT = `e-${LOT}`;
 
 test('nova unidade separa imóvel, equipamento e equipe sem contratar automaticamente', async ({
   page,
 }, testInfo) => {
   const world = createWorld(Date.now());
-  const property = world.properties.find((p) => p.id === 'newindustry')!;
+  const property = world.properties.find((p) => p.id === LOT)!;
   const player = world.companies.find((c) => c.id === 'player')!;
   const beforeMoney = totalMoney(world),
     beforeBalance = player.balance;
   const { commands, errors } = await fixture(page, world);
 
-  const propertyButton = page.locator('.main-map [data-property="newindustry"]');
+  const propertyButton = page.locator(`.main-map [data-property="${LOT}"]`);
   await propertyButton.focus();
   await page.keyboard.press('Enter');
   await page.getByRole('button', { name: /^Comprar terreno ·/ }).click();
@@ -62,7 +65,7 @@ test('nova unidade separa imóvel, equipamento e equipe sem contratar automatica
   await purchase.getByRole('button', { name: /^Comprar por / }).click();
 
   await expect(page.getByRole('heading', { name: 'Fábrica em etapas', exact: true })).toBeVisible();
-  const unit = world.establishments.find((e) => e.id === 'e-newindustry')!;
+  const unit = world.establishments.find((e) => e.id === UNIT)!;
   expect(property.ownerId).toBe('player');
   expect(unit.employees).toBe(0);
   expect(unit.installed).toBe(false);
@@ -108,10 +111,10 @@ test('especialidade que não cabe explica a área e não envia instalação nem 
   execute(
     world,
     'player',
-    { type: 'buyProperty', propertyId: 'newindustry', name: 'Galpão pequeno' },
+    { type: 'buyProperty', propertyId: LOT, name: 'Galpão pequeno' },
     world.updatedAt,
   );
-  const property = world.properties.find((p) => p.id === 'newindustry')!;
+  const property = world.properties.find((p) => p.id === LOT)!;
   const profile = world.season.config.operations.profiles['steel-bars'];
   property.area = profile.areaM2 - 1;
   const before = structuredClone(world);
@@ -141,15 +144,15 @@ test('unidade sem espaço para ampliar mantém as linhas e bloqueia nova cobran�
   execute(
     world,
     'player',
-    { type: 'buyProperty', propertyId: 'newindustry', name: 'Unidade completa' },
+    { type: 'buyProperty', propertyId: LOT, name: 'Unidade completa' },
     world.updatedAt,
   );
-  const property = world.properties.find((p) => p.id === 'newindustry')!;
+  const property = world.properties.find((p) => p.id === LOT)!;
   property.area = world.season.config.operations.profiles['steel-bars'].areaM2;
   execute(
     world,
     'player',
-    { type: 'installBusiness', establishmentId: 'e-newindustry', recipeId: 'steel-bars', lines: 1 },
+    { type: 'installBusiness', establishmentId: UNIT, recipeId: 'steel-bars', lines: 1 },
     world.updatedAt,
   );
   const before = structuredClone(world);

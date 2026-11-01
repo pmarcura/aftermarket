@@ -6,7 +6,7 @@ export const mechanicsGaps = [
     'Não existe item semente: soja em grão e alimentos embalados são as entradas agrícolas. As primeiras unidades são inseridas na abertura.',
     'Origem biológica e preço específico da semente não existem.',
     'Decidir representação da semente e sua origem paga/finita antes de alterar receitas.',
-    'model.ts; operations.ts: expansionRecipes; seed.ts; competition.ts: portfolio',
+    'catalog.ts; seed.ts; opening-v2.ts',
   ],
   [
     'Recuperação da última semente',
@@ -30,7 +30,7 @@ export const mechanicsGaps = [
     'Nenhum item fertilizante, muda de cana, frasco, saco, tampa ou embalagem é exigido.',
     'Processamento pago não representa fornecedores físicos desses insumos.',
     'Decidir o que continuará agregado e o que merece cadeia própria.',
-    'model.ts: ProductId; operations.ts: expansionRecipes',
+    'model.ts: ProductId; catalog.ts: designRecipes',
   ],
   [
     'Rebanho e produção de leite',

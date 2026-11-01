@@ -25,20 +25,36 @@ test('caminhão avança com o relógio contratado e mantém progresso após reca
   s.roadDepartureAt = now - 10000;
   s.roadArrivalAt = now + 60000;
   s.arrivesAt = s.roadArrivalAt;
+  // D-036: o mapa só desenha caminhão sobre estrada confirmada. A fixture dá à remessa um trajeto
+  // de estrada (as pontas reais da compra); o cálculo do frete e da rota tem testes de motor.
+  s.routeSource = 'osrm';
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  await page.route('**/api/world', (route) => route.fulfill({ json: world }));
-  await page.addInitScript(() => localStorage.setItem('aftermarket.page', 'logistics'));
-  await page.goto('/jogar');
+  await page.route('**/api/world*', (route) => route.fulfill({ json: world }));
+  await page.addInitScript((season) => {
+    localStorage.setItem('aftermarket.company', 'player');
+    localStorage.setItem('aftermarket.page', 'orders');
+    localStorage.setItem(`aftermarket.welcome.${season}.player`, 'seen');
+  }, world.season.id);
+
   const marker = page.locator(`[data-shipment-id="${s.id}"]`);
-  await expect(marker).toBeVisible({ timeout: 25000 });
+  const abrirMapa = async () => {
+    await page.getByRole('tab', { name: /^A caminho/ }).click();
+    const carga = page.getByRole('article').filter({ hasText: 'Você recebe de' });
+    await expect(carga).toHaveCount(1);
+    await carga.getByRole('button', { name: 'Ver no mapa', exact: true }).click();
+    await expect(marker).toBeVisible({ timeout: 25000 });
+  };
+
+  await page.goto('/jogar');
+  await abrirMapa();
   await expect(marker).toHaveAttribute('title', /Em trânsito/);
   const first = Number(await marker.getAttribute('data-progress'));
   await expect
     .poll(async () => Number(await marker.getAttribute('data-progress')), { intervals: [200] })
     .toBeGreaterThan(first + 0.005);
   await page.reload();
-  await expect(marker).toBeVisible({ timeout: 25000 });
+  await abrirMapa();
   await expect
     .poll(async () => Number(await marker.getAttribute('data-progress')))
     .toBeGreaterThan(first);

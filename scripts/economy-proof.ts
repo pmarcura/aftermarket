@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+import { execSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createScenario } from '../packages/simulation/src/scenarios';
 import { advance } from '../packages/simulation/src/engine';
@@ -39,6 +41,7 @@ const from = arg('from', '')
         days: number;
         window?: number;
         scale?: number;
+        commit?: string;
         results: SeedResult[];
       },
   );
@@ -88,6 +91,7 @@ interface RecipeKpi {
 
 interface SeedResult {
   seed: number;
+  seasonHash: string; // sha256 do season.config do mundo criado (12 primeiros dígitos)
   msPerDay: number;
   moneyDrift: number;
   coverage: Record<string, number>;
@@ -139,6 +143,10 @@ const uncostedStock = (w: World) =>
 
 function run(seed: number): SeedResult {
   const w = createScenario(AT, 'playtest', seed, { scale });
+  const seasonHash = createHash('sha256')
+    .update(JSON.stringify(w.season.config))
+    .digest('hex')
+    .slice(0, 12);
   applyLabOpening(w, {
     seed,
     seedMode: 'conditions',
@@ -336,6 +344,7 @@ function run(seed: number): SeedResult {
     );
   return {
     seed,
+    seasonHash,
     msPerDay,
     moneyDrift: drift,
     coverage,
@@ -421,6 +430,20 @@ function summarize(results: SeedResult[]) {
 }
 
 const results: SeedResult[] = from.flatMap((f) => f.results);
+// Código medido: commit do repositório (com "+alterações" se a árvore não estiver limpa).
+const commit =
+  from[0]?.commit ??
+  (() => {
+    try {
+      const head = execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim();
+      const dirty = execSync('git status --porcelain -- packages scripts', {
+        encoding: 'utf8',
+      }).trim();
+      return dirty ? `${head}+alterações` : head;
+    } catch {
+      return 'desconhecido';
+    }
+  })();
 const range = (x: Stat, f: (n: number) => string) =>
   x.median === null ? '—' : `${f(x.median)} [${f(x.min!)}–${f(x.max!)}]`;
 for (const seed of from.length ? [] : seeds) {
@@ -439,7 +462,10 @@ if (results.length > 1) {
   );
 }
 mkdirSync('test-results', { recursive: true });
-writeFileSync(out, JSON.stringify({ days, window, scale, seeds, results, summary }, null, 2));
+writeFileSync(
+  out,
+  JSON.stringify({ days, window, scale, seeds, commit, results, summary }, null, 2),
+);
 console.log(`Relatório completo em ${out}`);
 if (process.argv.includes('--write-doc')) writeDoc();
 

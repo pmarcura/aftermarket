@@ -13,6 +13,7 @@ import { distanceKm } from './geometry';
 import { hasRoadAccess, routeMatchesProperties } from './road-access';
 import { householdItems, infrastructurePrograms } from './channels';
 import { committedStorage, fleetAvailability } from './transport';
+import { assertMoney, recordBotError } from './invariants';
 import {
   jobsAt,
   openJobs,
@@ -122,13 +123,15 @@ function transfer(
   metadata: Partial<
     Pick<Entry, 'product' | 'quantity' | 'unitPrice' | 'regionId' | 'channel'>
   > = {},
+  // Pedido cuja reserva paga esta transferência: não conta como caixa vinculado (spec 005, R4).
+  exceptOrder?: string,
 ) {
   ensure(Number.isSafeInteger(amount) && amount >= 0, 'Valor financeiro inválido.');
   if (to === 'treasury') to = treasuryId(actorState(w, from, establishmentId));
   const sender = company(w, from),
     receiver = company(w, to);
   ensure(
-    freeCash(w, from) >= amount,
+    freeCash(w, from, exceptOrder) >= amount,
     'Saldo insuficiente ou vinculado a pedidos. Libere a reserva ou reduza a operação.',
   );
   sender.balance -= amount;
@@ -325,10 +328,11 @@ function dispatch(
     q.ownFleet || freeCash(w, carrierId) + q.price >= q.costs.operatingCost,
     'Transportador sem caixa para os custos da viagem.',
   );
-  if (orderId) {
-    const order = w.orders.find((o) => o.id === orderId);
-    if (order) order.escrowReserved = 0;
-  }
+  // A reserva do pedido paga mercadoria e frete: as transferências do comprador não a contam como
+  // caixa vinculado, e ela só é zerada depois de todas (antes era zerada primeiro, e uma recusa
+  // numa transferência deixava o pedido sem reserva).
+  const order = orderId ? w.orders.find((o) => o.id === orderId) : undefined,
+    reserved = order ? orderId : undefined;
   if (!internal)
     transfer(
       w,
@@ -346,6 +350,7 @@ function dispatch(
         regionId: regionFor(w, dpOf(w, dest).coordinates).id,
         channel: 'wholesale',
       },
+      reserved,
     );
   if (!q.ownFleet)
     transfer(
@@ -357,6 +362,8 @@ function dispatch(
       'freight',
       now,
       dest.id,
+      {},
+      reserved,
     );
   const payer = q.ownFleet ? buyerId : carrierId;
   const carrierUnit = w.establishments.find(
@@ -371,6 +378,8 @@ function dispatch(
     'payroll',
     now,
     q.ownFleet ? dest.id : carrierUnit?.id,
+    {},
+    payer === buyerId ? reserved : undefined,
   );
   transfer(
     w,
@@ -381,7 +390,10 @@ function dispatch(
     q.ownFleet ? 'freight' : 'operation',
     now,
     q.ownFleet ? dest.id : carrierUnit?.id,
+    {},
+    payer === buyerId ? reserved : undefined,
   );
+  if (order) order.escrowReserved = 0;
   if (carrierUnit && !q.ownFleet) {
     carrierUnit.revenue += q.price;
     carrierUnit.expenses += q.costs.operatingCost;
@@ -442,14 +454,17 @@ function dispatch(
 
 // O chamador envolve cada comando em uma transação. Bots usam esta mesma função.
 export function execute(w: World, actor: string, command: Command, now = Date.now()): void {
-  if (!hasDecisionTrace(w)) return executeCommand(w, actor, command, now);
   try {
     executeCommand(w, actor, command, now);
   } catch (error) {
-    if (error instanceof RuleError) traceCommand(w, actor, command, now, error);
+    // Comando recusado também não pode ter criado nem destruído dinheiro (spec 005, R3).
+    assertMoney(w, `${command.type} recusado de ${actor}`);
+    if (error instanceof RuleError && hasDecisionTrace(w))
+      traceCommand(w, actor, command, now, error);
     throw error;
   }
-  traceCommand(w, actor, command, now);
+  assertMoney(w, `${command.type} de ${actor}`);
+  if (hasDecisionTrace(w)) traceCommand(w, actor, command, now);
 }
 
 function executeCommand(w: World, actor: string, command: Command, now: number): void {
@@ -1836,8 +1851,9 @@ function runAutomations(w: World, at: number) {
       withDecisionSource(w, 'production', () => execute(w, actor, command, at));
       return true;
     } catch (e) {
-      if (!(e instanceof RuleError)) throw e;
-      return e.message;
+      if (e instanceof RuleError) return e.message;
+      recordBotError(w, at, actor, 'automação', e, command);
+      return 'Erro interno registrado na atividade dos bots.';
     }
   };
   const restock = (e: Establishment, product: ProductId, target: number) => {
@@ -1973,126 +1989,130 @@ function runAutomations(w: World, at: number) {
         );
     }
   for (const e of w.establishments.filter((e) => e.enabled && e.automation)) {
-    const bot = company(w, e.companyId).bot;
-    if (e.category === 'retail' && !e.supplyPolicy?.enabled)
-      for (const product of householdItems(w)) {
-        const region = regionFor(w, dpOf(w, e).coordinates, dpOf(w, e).city);
-        const competitors = Math.max(
-          1,
-          w.establishments.filter(
-            (x) => x.enabled && x.category === 'retail' && dpOf(w, x).city === dpOf(w, e).city,
-          ).length,
-        );
-        const target = Math.ceil((householdDemand(w, region.id, product) / competitors) * 3);
-        if ((e.inventory[product] ?? 0) < target / 3) restock(e, product, target);
-        if (bot && (e.inventory[product] ?? 0) > 0)
-          e.prices[product] = Math.round(
-            Math.max((e.unitCosts[product] ?? 0) * 1.25, seasonPrice(w, product) * 0.9),
+    try {
+      const bot = company(w, e.companyId).bot;
+      if (e.category === 'retail' && !e.supplyPolicy?.enabled)
+        for (const product of householdItems(w)) {
+          const region = regionFor(w, dpOf(w, e).coordinates, dpOf(w, e).city);
+          const competitors = Math.max(
+            1,
+            w.establishments.filter(
+              (x) => x.enabled && x.category === 'retail' && dpOf(w, x).city === dpOf(w, e).city,
+            ).length,
           );
-      }
-    if (e.category === 'retail') continue;
-    if (openJobsAt(w, e.id).length > 0) {
-      e.automationStatus = 'Lote em processamento';
-      trace(e, 'batch-in-progress', e.automationStatus, 'produce', 'idle');
-      continue;
-    }
-    {
-      const r = w.season.config.recipes.find(
-        (r) => r.id === e.specialization && r.category === e.category,
-      );
-      if (!r) {
-        trace(
-          e,
-          'recipe-unavailable',
-          'Nenhuma receita corresponde à especialidade e categoria desta unidade.',
-        );
+          const target = Math.ceil((householdDemand(w, region.id, product) / competitors) * 3);
+          if ((e.inventory[product] ?? 0) < target / 3) restock(e, product, target);
+          if (bot && (e.inventory[product] ?? 0) > 0)
+            e.prices[product] = Math.round(
+              Math.max((e.unitCosts[product] ?? 0) * 1.25, seasonPrice(w, product) * 0.9),
+            );
+        }
+      if (e.category === 'retail') continue;
+      if (openJobsAt(w, e.id).length > 0) {
+        e.automationStatus = 'Lote em processamento';
+        trace(e, 'batch-in-progress', e.automationStatus, 'produce', 'idle');
         continue;
       }
-      const outputProduct = Object.keys(r.output)[0] as ProductId;
-      // Auditoria M07: três dias da demanda das famílias, repartidos entre os produtores ativos.
-      const producers = w.establishments.filter(
-        (x) => x.enabled && !x.mothballed && x.specialization === r.id,
-      ).length;
-      // Três dias da procura do mundo por produtor, mais o prazo do próprio lote.
-      const daily = (demandCache[outputProduct] ??= dailyDemand(w, outputProduct));
-      const target = Math.max(
-        r.output[outputProduct]! * (e.automationCycles ?? 1) * 2,
-        (daily / Math.max(1, producers)) * (3 + r.duration / GAME_DAY),
-        ...w.infrastructure
-          .filter((c) => c.status === 'open' && c.product === outputProduct)
-          .map((c) => c.quantity),
-      );
-      if (!bot || (e.inventory[outputProduct] ?? 0) < target) {
-        const cycles = Math.min(
-          e.automationCycles ?? 1,
-          e.category === 'mine' ? (e.reserve ?? 0) : 100,
+      {
+        const r = w.season.config.recipes.find(
+          (r) => r.id === e.specialization && r.category === e.category,
         );
-        if (!cycles) {
-          e.automationStatus = 'Reserva mineral esgotada';
-          trace(e, 'mineral-depleted', e.automationStatus);
-          continue;
-        }
-        const dayStart = w.createdAt + Math.floor((at - w.createdAt) / GAME_DAY) * GAME_DAY;
-        const productionSpent = jobsAt(w, e.id)
-          .filter((j) => j.startedAt >= dayStart)
-          .reduce(
-            (n, j) =>
-              n + (j.charges ? j.charges.processing + j.charges.energy + j.charges.water : 0),
-            0,
+        if (!r) {
+          trace(
+            e,
+            'recipe-unavailable',
+            'Nenhuma receita corresponde à especialidade e categoria desta unidade.',
           );
-        const purchasingSpent = 0; // orçamento de reposição é configurado separadamente
-        const charges = productionCharges(w, e, r.id, cycles);
-        if (
-          productionSpent + purchasingSpent + charges.total >
-          (e.automationDailyBudget ?? 10000000)
-        ) {
-          e.automationStatus = 'Limite diário de automação atingido';
-          trace(e, 'production-daily-budget', e.automationStatus);
           continue;
         }
-        // Receita alternativa da mesma instalação (ex.: aço de sucata) quando há insumos para o lote.
-        const run =
-          w.season.config.recipes.find(
-            (x) =>
-              x.alternativeOf === r.id &&
-              x.category === e.category &&
-              Object.entries(x.input).every(
-                ([id, q]) => (e.inventory[id as ProductId] ?? 0) >= q! * cycles,
-              ),
-          ) ?? r;
-        let ready = true;
-        for (const [id, q] of Object.entries(run.input))
-          if ((e.inventory[id as ProductId] ?? 0) < q! * cycles) {
-            // Automação humana produz estoque existente; reposição industrial automática é uma escolha dos bots.
-            if (bot && !e.supplyPolicy?.enabled) restock(e, id as ProductId, q! * cycles * 4);
-            ready = false;
-            trace(
-              e,
-              'inputs-missing',
-              `${products[id as ProductId].name}: estoque ${e.inventory[id as ProductId] ?? 0}; lote exige ${q! * cycles}.`,
-              'produce',
-              'blocked',
-              id,
-            );
-          }
-        if (ready) {
-          const result = attempt(e.companyId, {
-            type: 'produce',
-            establishmentId: e.id,
-            recipeId: run.id,
-            cycles,
-          });
-          e.automationStatus = result === true ? 'Lote iniciado' : result;
-        } else e.automationStatus = 'Aguardando insumos no estoque';
-      } else
-        trace(
-          e,
-          'target-stock-reached',
-          'O estoque do produto principal atingiu o alvo usado pela automação do bot.',
-          'produce',
-          'idle',
-          outputProduct,
+        const outputProduct = Object.keys(r.output)[0] as ProductId;
+        // Auditoria M07: três dias da demanda das famílias, repartidos entre os produtores ativos.
+        const producers = w.establishments.filter(
+          (x) => x.enabled && !x.mothballed && x.specialization === r.id,
+        ).length;
+        // Três dias da procura do mundo por produtor, mais o prazo do próprio lote.
+        const daily = (demandCache[outputProduct] ??= dailyDemand(w, outputProduct));
+        const target = Math.max(
+          r.output[outputProduct]! * (e.automationCycles ?? 1) * 2,
+          (daily / Math.max(1, producers)) * (3 + r.duration / GAME_DAY),
+          ...w.infrastructure
+            .filter((c) => c.status === 'open' && c.product === outputProduct)
+            .map((c) => c.quantity),
         );
+        if (!bot || (e.inventory[outputProduct] ?? 0) < target) {
+          const cycles = Math.min(
+            e.automationCycles ?? 1,
+            e.category === 'mine' ? (e.reserve ?? 0) : 100,
+          );
+          if (!cycles) {
+            e.automationStatus = 'Reserva mineral esgotada';
+            trace(e, 'mineral-depleted', e.automationStatus);
+            continue;
+          }
+          const dayStart = w.createdAt + Math.floor((at - w.createdAt) / GAME_DAY) * GAME_DAY;
+          const productionSpent = jobsAt(w, e.id)
+            .filter((j) => j.startedAt >= dayStart)
+            .reduce(
+              (n, j) =>
+                n + (j.charges ? j.charges.processing + j.charges.energy + j.charges.water : 0),
+              0,
+            );
+          const purchasingSpent = 0; // orçamento de reposição é configurado separadamente
+          const charges = productionCharges(w, e, r.id, cycles);
+          if (
+            productionSpent + purchasingSpent + charges.total >
+            (e.automationDailyBudget ?? 10000000)
+          ) {
+            e.automationStatus = 'Limite diário de automação atingido';
+            trace(e, 'production-daily-budget', e.automationStatus);
+            continue;
+          }
+          // Receita alternativa da mesma instalação (ex.: aço de sucata) quando há insumos para o lote.
+          const run =
+            w.season.config.recipes.find(
+              (x) =>
+                x.alternativeOf === r.id &&
+                x.category === e.category &&
+                Object.entries(x.input).every(
+                  ([id, q]) => (e.inventory[id as ProductId] ?? 0) >= q! * cycles,
+                ),
+            ) ?? r;
+          let ready = true;
+          for (const [id, q] of Object.entries(run.input))
+            if ((e.inventory[id as ProductId] ?? 0) < q! * cycles) {
+              // Automação humana produz estoque existente; reposição industrial automática é uma escolha dos bots.
+              if (bot && !e.supplyPolicy?.enabled) restock(e, id as ProductId, q! * cycles * 4);
+              ready = false;
+              trace(
+                e,
+                'inputs-missing',
+                `${products[id as ProductId].name}: estoque ${e.inventory[id as ProductId] ?? 0}; lote exige ${q! * cycles}.`,
+                'produce',
+                'blocked',
+                id,
+              );
+            }
+          if (ready) {
+            const result = attempt(e.companyId, {
+              type: 'produce',
+              establishmentId: e.id,
+              recipeId: run.id,
+              cycles,
+            });
+            e.automationStatus = result === true ? 'Lote iniciado' : result;
+          } else e.automationStatus = 'Aguardando insumos no estoque';
+        } else
+          trace(
+            e,
+            'target-stock-reached',
+            'O estoque do produto principal atingiu o alvo usado pela automação do bot.',
+            'produce',
+            'idle',
+            outputProduct,
+          );
+      }
+    } catch (error) {
+      recordBotError(w, at, e.companyId, `automação de ${e.id}`, error);
     }
   }
   // Uma leitura de mercado por produto na rodada, não uma por vendedor.
@@ -2102,40 +2122,44 @@ function runAutomations(w: World, at: number) {
     return markets.get(id)!;
   };
   for (const e of w.establishments.filter((e) => e.enabled && company(w, e.companyId).bot)) {
-    const recipe = w.season.config.recipes.find((r) => r.id === e.specialization);
-    // Insumos comprados para a própria receita não voltam à venda.
-    const keep = new Set<string>(recipe ? purchasedInputs(w, recipe).map((x) => x.product) : []);
-    for (const [id, quantity] of Object.entries(e.inventory) as [ProductId, number][]) {
-      if (
-        quantity <= 0 ||
-        keep.has(id) ||
-        // A coleta municipal mantém o preço de sucata da temporada; o estoque dela não tem custo.
-        e.id === SCRAP_COLLECTION ||
-        (e.category === 'retail' && id !== 'scrap') ||
-        (e.category === 'industry' && ['soy', 'iron', 'coal'].includes(id))
-      )
-        continue;
-      const market = marketOf(id),
-        daily = market.demand;
-      // D-036: falta é o estoque do mercado inteiro abaixo de 3 dias de procura. Antes cada
-      // vendedor comparava o próprio estoque com a procura do país e, com 500 empresas, todos
-      // se achavam em falta e cobravam 8% acima da referência.
-      const scarce = daily > 0 ? Math.max(0, 1 - market.stock / Math.max(daily * 3, 1)) : 0;
-      const cost = e.unitCosts[id] ?? 0,
-        margin = w.season.config.design.wholesaleMargin;
-      // D-033: mira a referência de fábrica, 8% abaixo com estoque sobrando e 8% acima quando
-      // falta, nunca abaixo do custo. O atacadista (D-036) vende pelo custo posto, que já inclui
-      // o frete longo, mais a própria margem.
-      const price =
-        e.category === 'warehouse' && cost > 0
-          ? Math.round(cost * (1 + margin + scarce * 0.04))
-          : Math.max(
-              Math.round(cost * 1.02),
-              Math.round(wholesaleReference(w, id) * (0.92 + scarce * 0.16)),
-            );
-      const offer = w.offers.find((o) => o.establishmentId === e.id && o.product === id);
-      if (offer) offer.price = price;
-      else w.offers.push({ id: randomUUID(), establishmentId: e.id, product: id, price });
+    try {
+      const recipe = w.season.config.recipes.find((r) => r.id === e.specialization);
+      // Insumos comprados para a própria receita não voltam à venda.
+      const keep = new Set<string>(recipe ? purchasedInputs(w, recipe).map((x) => x.product) : []);
+      for (const [id, quantity] of Object.entries(e.inventory) as [ProductId, number][]) {
+        if (
+          quantity <= 0 ||
+          keep.has(id) ||
+          // A coleta municipal mantém o preço de sucata da temporada; o estoque dela não tem custo.
+          e.id === SCRAP_COLLECTION ||
+          (e.category === 'retail' && id !== 'scrap') ||
+          (e.category === 'industry' && ['soy', 'iron', 'coal'].includes(id))
+        )
+          continue;
+        const market = marketOf(id),
+          daily = market.demand;
+        // D-036: falta é o estoque do mercado inteiro abaixo de 3 dias de procura. Antes cada
+        // vendedor comparava o próprio estoque com a procura do país e, com 500 empresas, todos
+        // se achavam em falta e cobravam 8% acima da referência.
+        const scarce = daily > 0 ? Math.max(0, 1 - market.stock / Math.max(daily * 3, 1)) : 0;
+        const cost = e.unitCosts[id] ?? 0,
+          margin = w.season.config.design.wholesaleMargin;
+        // D-033: mira a referência de fábrica, 8% abaixo com estoque sobrando e 8% acima quando
+        // falta, nunca abaixo do custo. O atacadista (D-036) vende pelo custo posto, que já inclui
+        // o frete longo, mais a própria margem.
+        const price =
+          e.category === 'warehouse' && cost > 0
+            ? Math.round(cost * (1 + margin + scarce * 0.04))
+            : Math.max(
+                Math.round(cost * 1.02),
+                Math.round(wholesaleReference(w, id) * (0.92 + scarce * 0.16)),
+              );
+        const offer = w.offers.find((o) => o.establishmentId === e.id && o.product === id);
+        if (offer) offer.price = price;
+        else w.offers.push({ id: randomUUID(), establishmentId: e.id, product: id, price });
+      }
+    } catch (error) {
+      recordBotError(w, at, e.companyId, `preços de ${e.id}`, error);
     }
   }
   for (const contract of w.infrastructure.filter((c) => c.status === 'open' && !c.biddingEndsAt)) {
@@ -2263,6 +2287,7 @@ export function advance(w: World, now = Date.now()) {
   if (changed) {
     w.updatedAt = now;
     w.revision++;
+    assertMoney(w, `advance até ${new Date(now).toISOString()}`);
   }
   return changed;
 }

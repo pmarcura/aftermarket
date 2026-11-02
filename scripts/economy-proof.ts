@@ -5,6 +5,8 @@ import { createScenario } from '../packages/simulation/src/scenarios';
 import { advance } from '../packages/simulation/src/engine';
 import { GAME_DAY } from '../packages/simulation/src/operations';
 import { applyLabOpening } from '../packages/simulation/src/lab-experiments';
+import { archiveHistory } from '../packages/simulation/src/history';
+import type { Entry, Job } from '../packages/simulation/src/model';
 import {
   analyzeDesign,
   cyclesPerDay,
@@ -55,6 +57,9 @@ const seeds = from.length
 const window = from[0]?.window ?? Number(arg('window', String(Math.min(30, Math.ceil(days / 2)))));
 const out = arg('out', 'test-results/economy-proof.json');
 const scale = from[0]?.scale ?? Number(arg('scale', '1'));
+// Arquiva o histórico como o servidor (padrão). --no-archive mantém tudo na memória: os resultados
+// são idênticos (provado na spec 003, escala 1, 60 dias, sementes 0 e 3), só mais lentos.
+const archive = !process.argv.includes('--no-archive');
 if (
   from.some((f) => f.days !== days || (f.window ?? window) !== window || (f.scale ?? 1) !== scale)
 )
@@ -173,10 +178,19 @@ function run(seed: number): SeedResult {
     drift = 0;
   let fleet = new Map(w.vehicles.map((v) => [v.id, v.companyId]));
   let startStock = stockValue(w);
+  // Arquivo do histórico como no servidor (extrato, lotes e entregas com mais de keepDays dias saem
+  // do mundo); a prova guarda o que cai dentro da janela para medir.
+  const archivedLedger: Entry[] = [],
+    archivedJobs: Job[] = [];
   const started = performance.now();
   for (let d = 1; d <= days; d++) {
     const dayStart = AT + (d - 1) * GAME_DAY;
     advance(w, AT + d * GAME_DAY);
+    if (archive) {
+      const old = archiveHistory(w, AT + d * GAME_DAY, w.season.config.history.keepDays);
+      archivedLedger.push(...old.ledger.filter((l) => l.at > from));
+      archivedJobs.push(...old.jobs.filter((j) => j.finishesAt > from));
+    }
     // Progresso a cada 5 dias (stderr), para acompanhar rodadas longas na escala 20.
     if (d % 5 === 0 && d < days)
       console.error(
@@ -207,7 +221,8 @@ function run(seed: number): SeedResult {
     fleet = now;
   }
   const msPerDay = (performance.now() - started) / days;
-  const recent = w.ledger.filter((l) => l.at > from);
+  const recent = [...archivedLedger, ...w.ledger].filter((l) => l.at > from);
+  const jobs = [...archivedJobs, ...w.jobs];
   const coverage = Object.fromEntries(
     Object.keys(desired).map((id) => [id, sold[id]! / desired[id]!]),
   );
@@ -215,7 +230,7 @@ function run(seed: number): SeedResult {
   const totalSold = Object.values(sold).reduce((n, v) => n + v, 0);
   const lines: SeedResult['lines'] = {};
   for (const r of designRecipes) {
-    const cycles = w.jobs
+    const cycles = jobs
       .filter((j) => j.recipeId === r.id && j.completed && j.finishesAt > from)
       .reduce((n, j) => n + j.cycles, 0);
     lines[r.id] = {
@@ -282,7 +297,7 @@ function run(seed: number): SeedResult {
       );
     }, 0);
     const unitIds = new Set(units.map((e) => e.id));
-    const usedLineDays = w.jobs
+    const usedLineDays = jobs
       .filter((j) => j.completed && j.finishesAt > from && unitIds.has(j.establishmentId))
       .reduce((n, j) => {
         const recipe = group.find((x) => x.id === j.recipeId);

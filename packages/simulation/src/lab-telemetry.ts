@@ -1,6 +1,6 @@
 import type { ProductId, World } from './model';
 import type { DecisionTrace } from './decision-trace';
-import { GAME_DAY } from './operations';
+import { gameDay } from './clock';
 
 export interface LabTraceBucket {
   day: number;
@@ -52,7 +52,7 @@ export class LabTraceCollector {
     private startAt: number,
   ) {}
   observe = (event: DecisionTrace) => {
-    const day = Math.max(1, Math.ceil((event.at - this.startAt) / GAME_DAY));
+    const day = Math.max(1, Math.ceil((event.at - this.startAt) / gameDay(this.world)));
     const productId = event.productId;
     const message = stableText(event.message),
       code = stableText(event.code);

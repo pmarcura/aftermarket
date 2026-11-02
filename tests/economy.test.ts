@@ -139,7 +139,7 @@ describe('integridade econômica', () => {
     advance(w, w.jobs[0].finishesAt);
     expect(e.inventory.iron).toBe(650 + 20 * 1.5); // 1,5 t por ciclo (catálogo)
     expect(() =>
-      execute(w, 'player', { type: 'extract', establishmentId: e.id, quantity: 0 }, NOW + 60000),
+      execute(w, 'player', { type: 'extract', establishmentId: e.id, quantity: 0 }, NOW + ROUND),
     ).toThrow(/inteiro positivo/);
   });
   it('consumidores têm orçamento e só compram estoque existente', () => {

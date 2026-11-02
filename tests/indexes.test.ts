@@ -13,7 +13,7 @@ import {
 import { createScenario } from '../packages/simulation/src/scenarios';
 import { advance } from '../packages/simulation/src/engine';
 import { createWorld } from '../packages/simulation/src/seed';
-import { createClock, gameDay } from '../packages/simulation/src/clock';
+import { createClock, economicInterval, gameDay } from '../packages/simulation/src/clock';
 
 // Os mundos destes testes nascem no relógio padrão (120×).
 const DAY = gameDay(createClock());
@@ -139,7 +139,7 @@ describe('advance com muitos eventos abertos (spec 005, R6)', () => {
         completed: false,
         cost: 0,
       });
-    expect(() => advance(w, NOW + 60_000)).not.toThrow();
+    expect(() => advance(w, NOW + economicInterval(w))).not.toThrow();
     expect(w.jobs.filter((j) => j.completed && j.establishmentId === 'fantasma')).toHaveLength(0);
   }, 60000);
 });

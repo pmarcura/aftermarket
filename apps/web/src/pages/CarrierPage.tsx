@@ -149,7 +149,13 @@ export function CarrierPage() {
                               {products[carga.product].name}
                             </BotaoProduto>{' '}
                             para {destinoDe(carga.destinationId)} · chega em ~
-                            {num(Math.max(1, horasDeJogo(carga.arrivesAt - agoraDoMundo(world))))} h
+                            {num(
+                              Math.max(
+                                1,
+                                horasDeJogo(world, carga.arrivesAt - agoraDoMundo(world)),
+                              ),
+                            )}{' '}
+                            h
                           </span>
                         </>
                       ) : (

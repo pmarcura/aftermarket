@@ -20,7 +20,8 @@ import {
   useAusencia,
   useResumoDoCaixa,
 } from '../features/inicio/tempo';
-import { GAME_DAY, gameCalendar } from '../../../../packages/simulation/src/operations';
+import { gameCalendar } from '../../../../packages/simulation/src/operations';
+import { gameDay } from '../../../../packages/simulation/src/clock';
 import '../design/inicio.css';
 
 // A contagem anima só na primeira vez que cada número aparece na sessão.
@@ -122,7 +123,7 @@ function Ausencia({ caixa, periodo }: { caixa: Caixa; periodo: Periodo }) {
     <section className="ini-fora" aria-labelledby="ini-fora-titulo">
       <h2 id="ini-fora-titulo">
         {ausente
-          ? `Enquanto você esteve fora, ${num(horasDeJogo(agora - desde))} h de jogo`
+          ? `Enquanto você esteve fora, ${num(horasDeJogo(world, agora - desde))} h de jogo`
           : 'Hoje'}
       </h2>
       <ul>
@@ -270,11 +271,11 @@ function VendasDaSemana({ porDia }: { porDia: number[] }) {
   const { world } = useGame();
   // Com menos de 3 dias de vendas, as barras vazias não dizem nada.
   if (porDia.filter((v) => v > 0).length < 3) return null;
-  const fim = comecoDoDia(world) + GAME_DAY;
+  const fim = comecoDoDia(world) + gameDay(world);
   const rotulos = porDia.map((_, i) =>
     i === 6
       ? 'hoje'
-      : gameCalendar(world, fim - (7 - i) * GAME_DAY + GAME_DAY / 2)
+      : gameCalendar(world, fim - (7 - i) * gameDay(world) + gameDay(world) / 2)
           .label.slice(0, 3)
           .toLocaleLowerCase('pt-BR'),
   );
@@ -317,7 +318,7 @@ function SeusNegocios({
           const motivo = problema
             ? problema.titulo.replace(`${e.name} `, '')
             : lote
-              ? `Produzindo, pronto em ~${num(Math.max(1, horasDeJogo(lote.finishesAt - agora)))} h`
+              ? `Produzindo, pronto em ~${num(Math.max(1, horasDeJogo(world, lote.finishesAt - agora)))} h`
               : vendas > 0 || e.category === 'retail'
                 ? `Vendeu ${cr(vendas, 0)} hoje`
                 : 'Sem produção agora';

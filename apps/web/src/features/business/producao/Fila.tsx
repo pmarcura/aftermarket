@@ -27,7 +27,7 @@ function LoteCard({ j, agora }: { j: Job; agora: number }) {
   const progresso = naFila
     ? 0
     : Math.min(1, (agora - j.startedAt) / Math.max(1, j.finishesAt - j.startedAt));
-  const horas = horasDeJogo(j.finishesAt - agora);
+  const horas = horasDeJogo(world, j.finishesAt - agora);
   return (
     <li>
       <article className="lote" style={{ ['--h' as string]: matizDoProduto(principal) }}>

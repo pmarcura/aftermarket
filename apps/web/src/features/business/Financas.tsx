@@ -13,12 +13,12 @@ import {
   type World,
 } from '../../../../../packages/simulation/src/model';
 import {
-  GAME_DAY,
   gameCalendar,
   inventoryQuality,
   weekdayNames,
 } from '../../../../../packages/simulation/src/operations';
 import { householdDemand, regionFor } from '../../../../../packages/simulation/src/metrics';
+import { economicInterval, gameDay } from '../../../../../packages/simulation/src/clock';
 import '../../design/financas.css';
 
 type Grupo = 'mercadoria' | 'frete' | 'equipe' | 'energia' | 'operacao';
@@ -61,10 +61,10 @@ const dia2 = (n: number) => String(n).padStart(2, '0');
 
 /** Uma passada pelo histórico: entradas e saídas por dia de jogo e saídas por assunto. */
 function resumoDaUnidade(world: World, e: Establishment, dias: number) {
-  const fim = comecoDoDia(world) + GAME_DAY;
+  const fim = comecoDoDia(world) + gameDay(world);
   // Não conta dias antes de o mundo existir.
-  const n = Math.max(1, Math.min(dias, Math.ceil((fim - world.economyStartedAt) / GAME_DAY)));
-  const inicio = fim - n * GAME_DAY;
+  const n = Math.max(1, Math.min(dias, Math.ceil((fim - world.economyStartedAt) / gameDay(world))));
+  const inicio = fim - n * gameDay(world);
   const entrou = new Array<number>(n).fill(0);
   const saiu = new Array<number>(n).fill(0);
   const porGrupo: Record<Grupo, number> = {
@@ -74,7 +74,7 @@ function resumoDaUnidade(world: World, e: Establishment, dias: number) {
     energia: 0,
     operacao: 0,
   };
-  const balde = (at: number) => Math.min(n - 1, Math.floor((at - inicio) / GAME_DAY));
+  const balde = (at: number) => Math.min(n - 1, Math.floor((at - inicio) / gameDay(world)));
   for (const l of world.ledger) {
     if (l.at < inicio || l.establishmentId !== e.id) continue;
     if (l.to === e.companyId && l.kind === 'retail') entrou[balde(l.at)] += l.amount;
@@ -87,7 +87,8 @@ function resumoDaUnidade(world: World, e: Establishment, dias: number) {
   for (const s of world.shipments)
     if (s.originId === e.id && s.buyerId !== e.companyId && s.departedAt >= inicio)
       entrou[balde(s.departedAt)] += s.cost;
-  const dataDoDia = (i: number) => gameCalendar(world, inicio + i * GAME_DAY + GAME_DAY / 2);
+  const dataDoDia = (i: number) =>
+    gameCalendar(world, inicio + i * gameDay(world) + gameDay(world) / 2);
   return { n, entrou, saiu, porGrupo, dataDoDia };
 }
 
@@ -273,7 +274,7 @@ export function Consumption({ establishment: e }: { establishment: Establishment
   const itens = Object.keys(e.inventory) as ProductId[];
   const [escolhido, setEscolhido] = useState<ProductId | undefined>(itens[0]);
   const product = escolhido && itens.includes(escolhido) ? escolhido : itens[0];
-  const calendario = gameCalendar(world, world.nextEconomicAt - 60_000);
+  const calendario = gameCalendar(world, world.nextEconomicAt - economicInterval(world));
   if (!product)
     return (
       <div className="fin">

@@ -95,7 +95,14 @@ export function OperationPage() {
   const line = recipe ? productionCapacity(world, e, recipe, cycles) : null;
   const line1 = recipe ? productionCapacity(world, e, recipe, 1) : null;
   const daily = operatingCosts(world, e);
-  const estado = estadoDaUnidade(e, recipe, jobs, now, (id) => products[id as ProductId].name);
+  const estado = estadoDaUnidade(
+    world,
+    e,
+    recipe,
+    jobs,
+    now,
+    (id) => products[id as ProductId].name,
+  );
   const armazem = e.category === 'warehouse';
   const abas = armazem
     ? ['Estoque', 'Vendas', 'Equipe', 'Finanças', 'Abastecimento']
@@ -293,14 +300,14 @@ export function OperationPage() {
                 </h4>
                 <b className="recibo-grande">
                   {Number.isFinite(line.durationMs)
-                    ? `~${num(Math.max(1, horasDeJogo(line.durationMs)))} h`
+                    ? `~${num(Math.max(1, horasDeJogo(world, line.durationMs)))} h`
                     : '—'}
                 </b>
                 <small>{Number.isFinite(line.durationMs) ? 'de jogo' : line.bottleneck}</small>
                 {espera > 0 && (
                   <small>
-                    Mais ~{num(Math.max(1, horasDeJogo(espera)))} h de jogo aguardando os lotes
-                    anteriores.
+                    Mais ~{num(Math.max(1, horasDeJogo(world, espera)))} h de jogo aguardando os
+                    lotes anteriores.
                   </small>
                 )}
               </section>

@@ -1,4 +1,9 @@
-import type { Establishment, Recipe, Job } from '../../../../../../packages/simulation/src/model';
+import type {
+  Establishment,
+  Recipe,
+  Job,
+  World,
+} from '../../../../../../packages/simulation/src/model';
 import { horasDeJogo } from '../../inicio/tempo';
 import { num } from '../../../lib/game';
 
@@ -69,6 +74,7 @@ export interface EstadoUnidade {
 
 /** Em que pé a unidade está: produzindo, parada por falta de algo, pausada ou pronta. */
 export function estadoDaUnidade(
+  world: World,
   e: Establishment,
   recipe: Recipe | undefined,
   jobs: Job[],
@@ -80,7 +86,10 @@ export function estadoDaUnidade(
   if (!e.enabled) return { tom: 'ouro', texto: 'Pausada', detalhe: 'Não começa novos ciclos.' };
   const andando = jobs.filter((j) => agora >= j.startedAt);
   if (andando.length) {
-    const horas = Math.max(1, horasDeJogo(Math.min(...andando.map((j) => j.finishesAt)) - agora));
+    const horas = Math.max(
+      1,
+      horasDeJogo(world, Math.min(...andando.map((j) => j.finishesAt)) - agora),
+    );
     return {
       tom: 'lavoura',
       texto: 'Produzindo',

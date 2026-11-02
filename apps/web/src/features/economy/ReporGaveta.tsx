@@ -55,9 +55,7 @@ function Gaveta() {
   const [mexeu, setMexeu] = useState(false);
   const [quantidade, setQuantidade] = useState(() => Math.max(1, Math.ceil(porDia * 7)));
   const [escolhida, setEscolhida] = useState('');
-  const [enviado, setEnviado] = useState<{ minutos: number; horas: number; total: number } | null>(
-    null,
-  );
+  const [enviado, setEnviado] = useState<{ horas: number; total: number } | null>(null);
 
   useEffect(() => {
     const no = ref.current!;
@@ -105,7 +103,7 @@ function Gaveta() {
         propriedadeId: p.id,
         aval,
         distanciaKm: aval.frete.distanceKm,
-        horas: Math.max(1, horasDeJogo(aval.frete.durationMs)),
+        horas: Math.max(1, horasDeJogo(world, aval.frete.durationMs)),
       });
     }
     return lista.sort((a, b) => a.aval.naPorta - b.aval.naPorta).slice(0, 3);
@@ -166,7 +164,6 @@ function Gaveta() {
     );
     if (ok)
       setEnviado({
-        minutos: Math.max(1, Math.round(frete.durationMs / 60000)),
         horas: atual.horas,
         total: atual.aval.total,
       });

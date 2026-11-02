@@ -13,12 +13,12 @@ import { BusinessIdeas, useNegocios } from './BusinessIdeas';
 import {
   products,
   seasonProducts,
-  TIME_SCALE,
   type MarketSample,
   type ProductId,
+  type World,
 } from '../../../../../packages/simulation/src/model';
 import { seasonPrice } from '../../../../../packages/simulation/src/metrics';
-import { GAME_DAY } from '../../../../../packages/simulation/src/operations';
+import { HOUR_MS, gameDay, realToGame } from '../../../../../packages/simulation/src/clock';
 import '../../design/cotacoes.css';
 
 // A análise com zoom e velas pesa; só carrega quando o jogador abre a seção avançada.
@@ -69,8 +69,8 @@ function useHistorico(ids: ProductId[]) {
 }
 
 /** Tempo de jogo decorrido, em palavras curtas. */
-function haQuanto(at: number) {
-  const horas = ((Date.now() - at) * TIME_SCALE) / 3600000;
+function haQuanto(world: World, at: number) {
+  const horas = realToGame(world, Date.now() - at) / HOUR_MS;
   if (horas < 1) return 'agora';
   if (horas < 24) return `há ${Math.round(horas)} h`;
   return `há ${Math.round(horas / 24)} d`;
@@ -98,7 +98,7 @@ export function CotacoesPage() {
       undefined,
     );
     const preco = ultima?.price ?? menor;
-    const umDia = amostras.filter((s) => s.at <= world.updatedAt - GAME_DAY).pop();
+    const umDia = amostras.filter((s) => s.at <= world.updatedAt - gameDay(world)).pop();
     const variacao = preco && umDia?.price ? preco / umDia.price - 1 : 0;
     const estoque = ofertas.reduce((n, o) => {
       const e = world.establishments.find((x) => x.id === o.establishmentId);
@@ -315,7 +315,7 @@ export function CotacoesPage() {
                       </em>
                     )}
                   </span>
-                  <small>{haQuanto(m.at)}</small>
+                  <small>{haQuanto(world, m.at)}</small>
                 </li>
               ))}
               {!movimento.length && (

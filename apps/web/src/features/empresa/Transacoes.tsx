@@ -2,11 +2,12 @@ import { useGame, cr } from '../../lib/game';
 import { IconePixel } from '../../components/IconePixel';
 import { gameCalendar } from '../../../../../packages/simulation/src/operations';
 import { ICONE_DO_TIPO } from './resumo';
+import { DAY_MS } from '../../../../../packages/simulation/src/clock';
 
 /** "Dia 83 · 14h": o horário do jogo de um lançamento. */
 export function momentoDoJogo(world: Parameters<typeof gameCalendar>[0], at: number) {
   const data = gameCalendar(world, at).date;
-  const dia = Math.floor((data.getTime() - world.season.startedAt) / 86_400_000) + 1;
+  const dia = Math.floor((data.getTime() - world.season.startedAt) / DAY_MS) + 1;
   return { dia, hora: data.getUTCHours(), data };
 }
 

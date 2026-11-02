@@ -8,6 +8,7 @@ import {
   seasonPrice,
 } from '../../../../../packages/simulation/src/metrics';
 import { gameCalendar, inventoryQuality } from '../../../../../packages/simulation/src/operations';
+import { economicInterval } from '../../../../../packages/simulation/src/clock';
 
 export interface Concorrente {
   loja: Establishment;
@@ -30,7 +31,7 @@ export function mercadoDaCidade(world: World, loja: Establishment, product: Prod
     .map((e) => ({ loja: e, preco: e.prices[product]! }))
     .sort((a, b) => a.preco - b.preco);
   const regiao = regionFor(world, p.coordinates, cidade);
-  const calendario = gameCalendar(world, world.nextEconomicAt - 60000);
+  const calendario = gameCalendar(world, world.nextEconomicAt - economicInterval(world));
   const procuraDia = householdDemand(world, regiao.id, product) * calendario.factor;
   const justo = seasonPrice(world, product);
   const peso = (e: Establishment, preco: number) =>

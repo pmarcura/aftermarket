@@ -7,9 +7,10 @@ import { useGame, cr, num } from '../../lib/game';
 import { Badge, Empty, Modal, PageHeading, Panel, Rows } from '../../components/ui';
 import { SecaoAbas } from '../../components/SecaoAbas';
 import { WorldMap } from '../../components/WorldMap';
-import { products, TIME_SCALE } from '../../../../../packages/simulation/src/model';
+import { products } from '../../../../../packages/simulation/src/model';
 import { quote } from '../../../../../packages/simulation/src/engine';
 import { useRouteStatus } from '../../lib/routing';
+import { MINUTE_MS, realToGame } from '../../../../../packages/simulation/src/clock';
 import '../../economy.css';
 
 /**
@@ -139,7 +140,7 @@ function ContratarFrete() {
                   </div>
                   <div>
                     <span>Prazo no jogo</span>
-                    <strong>{num((preview.durationMs * TIME_SCALE) / 60000)} min</strong>
+                    <strong>{num(realToGame(world, preview.durationMs) / MINUTE_MS)} min</strong>
                   </div>
                   <div>
                     <span>Tempo real</span>

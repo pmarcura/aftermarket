@@ -19,9 +19,10 @@ import {
 import { GameProvider, useGame, cr, type Page } from './lib/game';
 import { Modal, Badge, Rows } from './components/ui';
 import { IconePixel } from './components/IconePixel';
+import { timeScaleOf } from '../../../packages/simulation/src/clock';
 import './business.css';
 import { regionsOf } from '../../../packages/simulation/src/metrics';
-import { products, TIME_SCALE, type Position } from '../../../packages/simulation/src/model';
+import { products, type Position } from '../../../packages/simulation/src/model';
 import { freeCash } from '../../../packages/simulation/src/design';
 import { comecoDoDia, relogio, useMarcarVisita, useResumoDoCaixa } from './features/inicio/tempo';
 import { ReporGaveta } from './features/economy/ReporGaveta';
@@ -436,7 +437,10 @@ function Shell() {
           </div>
           <Rows
             rows={[
-              { label: 'Ritmo do mundo', value: `1 minuto real = ${TIME_SCALE} minutos no jogo` },
+              {
+                label: 'Ritmo do mundo',
+                value: `1 minuto real = ${timeScaleOf(world)} minutos no jogo`,
+              },
               { label: 'Progresso', value: 'Salvo automaticamente' },
               { label: 'Economia e lotes', value: 'Dados simulados' },
               { label: 'Cartografia', value: 'OpenFreeMap / OpenStreetMap' },

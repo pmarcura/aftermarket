@@ -7,7 +7,6 @@ import { ProdutoArte } from '../../economy/Vitrine';
 import { matizDoProduto, spriteDoNegocio } from '../../../design/arte';
 import {
   products,
-  TIME_SCALE,
   type Establishment,
   type ProductId,
   type Recipe,
@@ -17,6 +16,7 @@ import {
   type productionCapacity,
 } from '../../../../../../packages/simulation/src/operations';
 import { ChipEstado, matizDaCategoria, type Tom } from './pecas';
+import { HOUR_MS, realToGame } from '../../../../../../packages/simulation/src/clock';
 
 type Capacidade = ReturnType<typeof productionCapacity>;
 
@@ -44,7 +44,7 @@ export function Fluxo({
 }) {
   const { world, openRepor } = useGame();
   const linhas = e.equipmentLines ?? 1;
-  const horas = (receita.duration * TIME_SCALE) / 3600000;
+  const horas = realToGame(world, receita.duration) / HOUR_MS;
   const entradas = dosIds(receita.input);
   const rebanho = dosIds(receita.requires ?? {});
   const saidas = dosIds(receita.output);

@@ -7,7 +7,8 @@ import {
   type SupplyPolicy,
 } from './model';
 import { companyOf, establishmentOf, propertyOf, regionsOf } from './metrics';
-import { GAME_DAY, defaultSpecialization } from './operations';
+import { defaultSpecialization } from './operations';
+import { HOUR_MS, gameDay, gameToReal } from './clock';
 import { householdItems } from './channels';
 
 export const stateFactors: Record<string, number> = {
@@ -400,7 +401,7 @@ export function updateWages(w: World, at: number) {
     return found;
   };
   for (const [state, market] of Object.entries(w.stateWages ?? {})) {
-    while (at - market.updatedAt >= GAME_DAY * 7) {
+    while (at - market.updatedAt >= gameDay(w) * 7) {
       const paid = w.ledger
         .filter(
           (l) =>
@@ -411,7 +412,7 @@ export function updateWages(w: World, at: number) {
         .reduce((n, l) => n + l.amount, 0);
       const growth = Math.min(0.02, 0.002 + paid / 1e11);
       market.index = Math.round(market.index * (1 + growth) * 1000000) / 1000000;
-      market.updatedAt += GAME_DAY * 7;
+      market.updatedAt += gameDay(w) * 7;
       market.history.push({ at: market.updatedAt, index: market.index });
       market.history = market.history.slice(-104);
     }
@@ -425,7 +426,7 @@ export function trainingQuote(w: World, e: Establishment) {
   return {
     targetLevel,
     cost: e.employees * w.season.config.competition.educationPerWorker * targetLevel,
-    durationMs: (w.season.config.competition.educationHours * 3600000) / 120,
+    durationMs: gameToReal(w, w.season.config.competition.educationHours * HOUR_MS),
     qualityGain: (targetLevel - (e.education ?? 0)) * 3,
   };
 }

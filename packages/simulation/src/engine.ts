@@ -1,7 +1,6 @@
+import { HOUR_MS, MINUTE_MS, economicInterval, gameDay, gameToReal } from './clock';
 import {
-  ECONOMIC_INTERVAL,
   products,
-  TIME_SCALE,
   type World,
   type Command,
   type ProductId,
@@ -51,7 +50,6 @@ import {
   updatePublicBenchmarks,
 } from './design';
 import {
-  GAME_DAY,
   gameCalendar,
   inventoryQuality,
   availableStock,
@@ -213,10 +211,12 @@ export function quote(
     if (units <= 0) continue;
     const relocation = gap.get(vehicle.id)! * 1.3;
     const totalKm = km + relocation;
-    const relocationMs = ((relocation / cfg.averageSpeedKmH) * 3600000) / TIME_SCALE;
-    const loadingMs = (cfg.loadingMinutes * 60000) / TIME_SCALE;
-    const roadMs =
-      ((route?.durationSeconds ?? (km / cfg.averageSpeedKmH) * 3600) * 1000) / TIME_SCALE;
+    const relocationMs = gameToReal(w, (relocation / cfg.averageSpeedKmH) * HOUR_MS);
+    const loadingMs = gameToReal(w, cfg.loadingMinutes * MINUTE_MS);
+    const roadMs = gameToReal(
+      w,
+      (route?.durationSeconds ?? (km / cfg.averageSpeedKmH) * 3600) * 1000,
+    );
     const fuel = Math.round((totalKm / cfg.kmPerLiter) * cfg.dieselPerLiter);
     // Versão 2: a manutenção por km cresce com os quilômetros já rodados pelo caminhão.
     const wear = 1 + vehicleWear(w, vehicle);
@@ -538,7 +538,7 @@ function executeCommand(w: World, actor: string, command: Command, now: number):
       ensure(
         !w.loans!.some(
           (l) =>
-            l.companyId === actor && l.principal > l.repaid && now - l.createdAt > GAME_DAY * 30,
+            l.companyId === actor && l.principal > l.repaid && now - l.createdAt > gameDay(w) * 30,
         ),
         'Regularize o crédito vencido antes de tomar outro.',
       );
@@ -569,7 +569,7 @@ function executeCommand(w: World, actor: string, command: Command, now: number):
         repaid: 0,
         fee: q.fee,
         createdAt: now,
-        nextDueAt: now + GAME_DAY,
+        nextDueAt: now + gameDay(w),
         installment: q.installment,
         durationDays: q.days,
       });
@@ -981,7 +981,7 @@ function executeCommand(w: World, actor: string, command: Command, now: number):
         'Frete indisponível ou acima do teto autorizado.',
       );
       ensure(
-        q.durationMs <= command.deliveryDays * GAME_DAY,
+        q.durationMs <= command.deliveryDays * gameDay(w),
         'Prazo menor que o tempo estimado de transporte.',
       );
       ensure(
@@ -1001,7 +1001,7 @@ function executeCommand(w: World, actor: string, command: Command, now: number):
         carrierId: command.carrierId,
         maxFreight: command.maxFreight,
         createdAt: now,
-        deadline: now + command.deliveryDays * GAME_DAY,
+        deadline: now + command.deliveryDays * gameDay(w),
         status: 'pending',
         escrowReserved: command.reserveFunds
           ? command.quantity * offer.price + command.maxFreight
@@ -1146,7 +1146,7 @@ function executeCommand(w: World, actor: string, command: Command, now: number):
         carrierId: 'transbrasil',
         maxFreight: command.maxFreight,
         createdAt: now,
-        deadline: now + command.deliveryDays * GAME_DAY,
+        deadline: now + command.deliveryDays * gameDay(w),
         status: 'pending',
         escrowReserved: command.reserveFunds
           ? command.quantity * command.unitPrice + command.maxFreight
@@ -1186,7 +1186,10 @@ function executeCommand(w: World, actor: string, command: Command, now: number):
         q.compatible && q.price <= command.maxFreight,
         'Frota ou teto de frete incompatível com a proposta.',
       );
-      ensure(command.deliveryDays * GAME_DAY >= q.durationMs, 'O prazo não comporta o transporte.');
+      ensure(
+        command.deliveryDays * gameDay(w) >= q.durationMs,
+        'O prazo não comporta o transporte.',
+      );
       o.proposals ??= [];
       o.proposals.push({
         id: randomUUID(),
@@ -1197,7 +1200,7 @@ function executeCommand(w: World, actor: string, command: Command, now: number):
         quantity: command.quantity,
         maxFreight: command.maxFreight,
         carrierId: command.carrierId,
-        deadline: now + command.deliveryDays * GAME_DAY,
+        deadline: now + command.deliveryDays * gameDay(w),
         createdAt: now,
       });
       break;
@@ -1578,7 +1581,7 @@ function economicTick(w: World, at: number) {
     const total = parts.reduce((n, p) => n + p.amount, 0);
     if (freeCash(w, e.companyId) < total) {
       e.enabled = false;
-      const day = Math.floor((at - w.season.startedAt) / GAME_DAY);
+      const day = Math.floor((at - w.season.startedAt) / gameDay(w));
       for (const part of parts.filter((p) => p.amount > 0)) {
         const id = `${e.id}:${part.kind}:${day}`,
           prior = w.obligations!.find((o) => o.id === id);
@@ -1621,7 +1624,7 @@ function economicTick(w: World, at: number) {
   updatePublicBenchmarks(w, at);
   for (const loan of w.loans ?? []) {
     if (loan.repaid >= loan.principal || at < loan.nextDueAt) continue;
-    const days = Math.min(loan.durationDays, Math.floor((at - loan.createdAt) / GAME_DAY));
+    const days = Math.min(loan.durationDays, Math.floor((at - loan.createdAt) / gameDay(w)));
     const due = Math.max(0, Math.floor((loan.principal * days) / loan.durationDays) - loan.repaid);
     const amount = Math.min(due, freeCash(w, loan.companyId));
     if (amount > 0) {
@@ -1636,7 +1639,7 @@ function economicTick(w: World, at: number) {
       );
       loan.repaid += amount;
     }
-    loan.nextDueAt = loan.createdAt + (days + 1) * GAME_DAY;
+    loan.nextDueAt = loan.createdAt + (days + 1) * gameDay(w);
   }
   regionalizeTreasury(w, at);
   publicSpending(w, at);
@@ -1652,7 +1655,7 @@ function economicTick(w: World, at: number) {
 // e o orçamento das famílias seca em poucas semanas.
 export const publicSpendingRules = { dailyShare: 0.3, reservePerState: 150000000 };
 function publicSpending(w: World, at: number) {
-  const share = 1 - (1 - publicSpendingRules.dailyShare) ** (ECONOMIC_INTERVAL / GAME_DAY);
+  const share = 1 - (1 - publicSpendingRules.dailyShare) ** (economicInterval(w) / gameDay(w));
   for (const c of w.companies.filter((c) => c.id.startsWith('treasury:'))) {
     // A reserva das obras cresce com a escala do mundo, como os editais (D-036).
     const free =
@@ -1810,8 +1813,8 @@ function openInfrastructure(w: World, at: number) {
       maxFreight,
       reserved,
       createdAt: at,
-      biddingEndsAt: at + (w.season.config.competition.biddingHours * 3600000) / TIME_SCALE,
-      deadline: at + GAME_DAY * 4,
+      biddingEndsAt: at + gameToReal(w, w.season.config.competition.biddingHours * HOUR_MS),
+      deadline: at + gameDay(w) * 4,
       destinationId: destination.id,
       status: 'open',
       deliveredQuantity: 0,
@@ -1857,7 +1860,7 @@ function runAutomations(w: World, at: number) {
     }
   };
   const restock = (e: Establishment, product: ProductId, target: number) => {
-    const dayLength = 86400000 / TIME_SCALE,
+    const dayLength = gameDay(w),
       dayStart = w.createdAt + Math.floor((at - w.createdAt) / dayLength) * dayLength;
     const budget = e.automationDailyBudget ?? (e.category === 'industry' ? 10000000 : 3000000);
     const spent =
@@ -2034,7 +2037,7 @@ function runAutomations(w: World, at: number) {
         const daily = (demandCache[outputProduct] ??= dailyDemand(w, outputProduct));
         const target = Math.max(
           r.output[outputProduct]! * (e.automationCycles ?? 1) * 2,
-          (daily / Math.max(1, producers)) * (3 + r.duration / GAME_DAY),
+          (daily / Math.max(1, producers)) * (3 + r.duration / gameDay(w)),
           ...w.infrastructure
             .filter((c) => c.status === 'open' && c.product === outputProduct)
             .map((c) => c.quantity),
@@ -2049,7 +2052,7 @@ function runAutomations(w: World, at: number) {
             trace(e, 'mineral-depleted', e.automationStatus);
             continue;
           }
-          const dayStart = w.createdAt + Math.floor((at - w.createdAt) / GAME_DAY) * GAME_DAY;
+          const dayStart = w.createdAt + Math.floor((at - w.createdAt) / gameDay(w)) * gameDay(w);
           const productionSpent = jobsAt(w, e.id)
             .filter((j) => j.startedAt >= dayStart)
             .reduce(
@@ -2280,7 +2283,7 @@ export function advance(w: World, now = Date.now()) {
     }
     if (w.nextEconomicAt <= next) {
       economicTick(w, next);
-      w.nextEconomicAt += ECONOMIC_INTERVAL;
+      w.nextEconomicAt += economicInterval(w);
     }
     changed = true;
   }

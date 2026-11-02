@@ -1,5 +1,5 @@
 import type { Category, Establishment, ProductId, Recipe, World } from './model';
-import { ECONOMIC_INTERVAL, TIME_SCALE } from './model';
+import { DAY_MS, DEFAULT_TIME_SCALE, economicInterval, gameDay, realToGame } from './clock';
 
 // Parâmetros de jogo, copiados para a temporada. Não são estatísticas reais.
 export const operationRules = {
@@ -19,10 +19,11 @@ export const operationRules = {
   retailUnitsPerM2: 2,
   expansionReserveDays: 30,
 };
-export const GAME_DAY = 86400000 / TIME_SCALE;
+// Provisório (spec 004): dia de jogo a 120×; sai quando o último uso passar a gameDay(w).
+export const GAME_DAY = DAY_MS / DEFAULT_TIME_SCALE;
 export const weekdayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 export function gameCalendar(w: World, at: number) {
-  const date = new Date(w.season.startedAt + (at - w.season.startedAt) * TIME_SCALE);
+  const date = new Date(w.season.startedAt + realToGame(w, at - w.season.startedAt));
   const weekday = date.getUTCDay();
   return {
     date,
@@ -118,8 +119,9 @@ export function automationCyclesPerDay(
   const { lines } = productionCapacity(w, e, r, batch);
   if (!lines || batch <= 0) return 0;
   const batchMs = r.duration * Math.ceil(batch / lines);
-  const period = ECONOMIC_INTERVAL * Math.ceil(batchMs / ECONOMIC_INTERVAL);
-  return (batch * GAME_DAY) / period;
+  const round = economicInterval(w);
+  const period = round * Math.ceil(batchMs / round);
+  return (batch * gameDay(w)) / period;
 }
 export function productionQuality(w: World, e: Establishment, r: Recipe) {
   const site = w.properties.find((p) => p.id === e.propertyId)!;

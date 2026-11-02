@@ -1,5 +1,5 @@
 import type { Category, Establishment, ProductId, Recipe, World } from './model';
-import { DAY_MS, DEFAULT_TIME_SCALE, economicInterval, gameDay, realToGame } from './clock';
+import { economicInterval, gameDay, realToGame } from './clock';
 
 // Parâmetros de jogo, copiados para a temporada. Não são estatísticas reais.
 export const operationRules = {
@@ -19,8 +19,6 @@ export const operationRules = {
   retailUnitsPerM2: 2,
   expansionReserveDays: 30,
 };
-// Provisório (spec 004): dia de jogo a 120×; sai quando o último uso passar a gameDay(w).
-export const GAME_DAY = DAY_MS / DEFAULT_TIME_SCALE;
 export const weekdayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 export function gameCalendar(w: World, at: number) {
   const date = new Date(w.season.startedAt + realToGame(w, at - w.season.startedAt));

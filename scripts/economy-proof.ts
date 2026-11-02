@@ -177,6 +177,11 @@ function run(seed: number): SeedResult {
   for (let d = 1; d <= days; d++) {
     const dayStart = AT + (d - 1) * GAME_DAY;
     advance(w, AT + d * GAME_DAY);
+    // Progresso a cada 5 dias (stderr), para acompanhar rodadas longas na escala 20.
+    if (d % 5 === 0 && d < days)
+      console.error(
+        `semente ${seed}: dia ${d}/${days} · ${((performance.now() - started) / 1000).toFixed(0)} s`,
+      );
     drift = Math.max(drift, Math.abs(money(w) - opening));
     if (AT + d * GAME_DAY === from) startStock = stockValue(w);
     if (dayStart < from) {

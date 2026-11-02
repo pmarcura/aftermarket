@@ -26,6 +26,7 @@ import { laborMarket } from '../packages/simulation/src/metrics';
 import { ECONOMIC_INTERVAL, type World } from '../packages/simulation/src/model';
 import { migrateWorld } from '../packages/simulation/src/migrate';
 import { v2PortfolioFor } from '../packages/simulation/src/opening-v2';
+import { rebaseMoney } from '../packages/simulation/src/invariants';
 const NOW = Date.UTC(2026, 9, 26, 12),
   sum = (w: World) => w.companies.reduce((n, c) => n + c.balance, 0),
   unit = (w: World, id = 'e-industry') => w.establishments.find((e) => e.id === id)!;
@@ -239,6 +240,7 @@ describe('propostas e contrapropostas', () => {
   it('pedidos pendentes não permitem comprometer mais dinheiro do que o caixa', () => {
     const w = quiet();
     w.companies.find((c) => c.id === 'player')!.balance = 5000000;
+    rebaseMoney(w);
     publicOrder(w);
     expect(() => publicOrder(w)).toThrow(/caixa livre/);
   });

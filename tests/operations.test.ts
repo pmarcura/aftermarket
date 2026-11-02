@@ -11,6 +11,7 @@ import {
 } from '../packages/simulation/src/operations';
 import { migrateWorld } from '../packages/simulation/src/migrate';
 import { createStore } from '../apps/server/src/store';
+import { rebaseMoney } from '../packages/simulation/src/invariants';
 const NOW = Date.UTC(2026, 9, 26, 12);
 const money = (w: World) => w.companies.reduce((n, c) => n + c.balance, 0);
 const unit = (w: World, id = 'e-industry') => w.establishments.find((e) => e.id === id)!;
@@ -264,6 +265,7 @@ describe('cargas divididas e pedidos comerciais', () => {
       /outra empresa/,
     );
     w.companies.find((c) => c.id === 'player')!.balance = 0;
+    rebaseMoney(w);
     const before = structuredClone(w);
     expect(() =>
       execute(w, order.sellerId, { type: 'acceptOrder', orderId: order.id }, NOW),

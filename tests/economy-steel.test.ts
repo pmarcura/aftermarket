@@ -19,6 +19,7 @@ import {
   referencePrice,
   vehicleModels,
 } from '../packages/simulation/src/catalog';
+import { rebaseMoney } from '../packages/simulation/src/invariants';
 
 // Fatias 6 e 7 da etapa B: aço para bens, sucata, reciclagem e caminhão como mercadoria.
 const NOW = Date.UTC(2026, 9, 27, 12);
@@ -57,6 +58,7 @@ function unit(
     capacityM3: 1e9,
   });
   w.companies.find((c) => c.id === e.companyId)!.balance = 1e12;
+  rebaseMoney(w);
   return e;
 }
 const truckFactory = (w: World) => unit(w, 'e-industry', 'truck-heavy', { truckHeavy: 1 });
@@ -110,6 +112,7 @@ describe('aço para bens e caminhões', () => {
     });
     const buyer = w.establishments.find((e) => e.id === 'e-logistics')!;
     w.companies.find((c) => c.id === buyer.companyId)!.balance = 1e12;
+    rebaseMoney(w);
     // Vendedor e comprador da mesma empresa transferem sem preço: usar outra empresa vendedora.
     factory.companyId = 'agro';
     const before = money(w),
@@ -146,6 +149,7 @@ describe('aço para bens e caminhões', () => {
     const buyer = w.establishments.find((e) => e.id === 'e-logistics')!;
     const company = w.companies.find((c) => c.id === buyer.companyId)!;
     company.balance = 1e12;
+    rebaseMoney(w);
     execute(w, buyer.companyId, { type: 'buyVehicle', model: 'truckLight' }, NOW);
     expect(1e12 - company.balance).toBe(
       Math.round(referencePrice('truckLight') * dealershipMarkup),

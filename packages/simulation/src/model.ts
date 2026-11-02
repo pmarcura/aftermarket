@@ -268,6 +268,8 @@ export interface World {
   view?: WorldViewSummary;
   // Totais do histórico arquivado no banco (history.ts); ausente enquanto nada foi arquivado.
   history?: import('./history').HistoryBaseline;
+  // Invariantes gravados na criação (spec 005, R3): soma dos saldos de todas as empresas.
+  invariants: { totalMoney: number };
 }
 export type Health = {
   all: number;

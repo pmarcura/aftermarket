@@ -22,6 +22,7 @@ import { marketView } from '../packages/simulation/src/metrics';
 import { runBotDirector, botRecoveryPlan } from '../packages/simulation/src/director';
 import { migrateWorld } from '../packages/simulation/src/migrate';
 import { ECONOMIC_INTERVAL, type World } from '../packages/simulation/src/model';
+import { rebaseMoney } from '../packages/simulation/src/invariants';
 const NOW = Date.UTC(2026, 9, 27, 4);
 const money = (w: World) => w.companies.reduce((n, c) => n + c.balance, 0);
 function quiet() {
@@ -266,6 +267,7 @@ describe('caixa vinculado a pedidos', () => {
     expect(freeCash(w, 'player')).toBe(before - 1500000);
     expect(w.ledger.filter((l) => l.from === 'player')).toHaveLength(0);
     company(w).balance = o.escrowReserved!;
+    rebaseMoney(w);
     const snapshot = structuredClone(w);
     expect(() =>
       execute(w, 'player', { type: 'trainWorkforce', establishmentId: 'e-industry' }, NOW),

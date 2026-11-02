@@ -1,6 +1,7 @@
 import type { SeasonConfig } from './calibration';
 import { arrears, economyHealth, outstandingLoans } from './design';
 import { advance } from './engine';
+import { setInvariantChecks } from './invariants';
 import { marketView, withAppendOnlyMarketLedger } from './metrics';
 import { products, TIME_SCALE, type ProductId, type World, seasonProducts } from './model';
 import { GAME_DAY, treasuryReserved } from './operations';
@@ -552,7 +553,16 @@ function summarize(observations: LabSnapshot[], activityLimited: boolean): LabSu
  * Runs the actual economic commands in a new isolated world, without persistence or network.
  * Synchronous by design: use a Web Worker for UI work; terminate that worker for immediate cancellation.
  */
+// O laboratório sempre verifica os invariantes do motor (spec 005, R3).
 export function runLab(input: Partial<LabOptions> = {}, hooks: LabHooks = {}): LabReport {
+  const previous = setInvariantChecks(true);
+  try {
+    return runCheckedLab(input, hooks);
+  } finally {
+    setInvariantChecks(previous);
+  }
+}
+function runCheckedLab(input: Partial<LabOptions>, hooks: LabHooks): LabReport {
   const options = validateLabOptions(input);
   checkCancelled(hooks);
   const started = performance.now();

@@ -5,19 +5,22 @@ import * as ts from 'typescript/unstable/ast';
 import { API } from 'typescript/unstable/sync';
 import { format, resolveConfig } from 'prettier';
 import { createWorld } from '../packages/simulation/src/seed';
-import {
-  products,
-  ECONOMIC_INTERVAL,
-  TIME_SCALE,
-  type Category,
-  type ProductId,
-} from '../packages/simulation/src/model';
+import { products, type Category, type ProductId } from '../packages/simulation/src/model';
 import { auditResources } from '../packages/simulation/src/resource-audit';
 import { materialBoundaries } from '../packages/simulation/src/resource-policy';
 import { householdProducts, infrastructurePrograms } from '../packages/simulation/src/channels';
 import { economyHealth } from '../packages/simulation/src/design';
 import { execute } from '../packages/simulation/src/engine';
-import { availableStock, GAME_DAY, openingWorkers } from '../packages/simulation/src/operations';
+import { availableStock, openingWorkers } from '../packages/simulation/src/operations';
+import {
+  HOUR_MS,
+  MINUTE_MS,
+  createClock,
+  economicInterval,
+  gameDay,
+  realToGame,
+  timeScaleOf,
+} from '../packages/simulation/src/clock';
 import { householdDemand, operatingCosts } from '../packages/simulation/src/metrics';
 import { regions } from '../packages/world/src/regions';
 import { readSavedWorld } from './lib/read-world';
@@ -30,6 +33,8 @@ const worldArg = args.find((a) => a.startsWith('--world='));
 const outputRoot = `.runtime/mechanics/${worldArg ? 'saved-world' : 'opening'}`;
 const opening = createWorld(Date.UTC(2026, 9, 27, 12));
 const w = worldArg ? readSavedWorld(worldArg.slice('--world='.length)) : opening;
+// Mundo salvo antes da spec 004 nasceu a 120× (a migração do servidor grava o mesmo); só na memória.
+w.season.config.clock ??= createClock();
 const hash = (value: unknown) => createHash('sha256').update(JSON.stringify(value)).digest('hex');
 const before = hash(w),
   audit = auditResources(w),
@@ -417,8 +422,8 @@ add(
     .filter((r) => r.category === 'mine')
     .map((r) => {
       const duration = cfg.recipes.find((x) => x.id === r.id)!.duration * 10;
-      const cycles =
-        (10 * GAME_DAY) / (Math.ceil(duration / ECONOMIC_INTERVAL) * ECONOMIC_INTERVAL);
+      const round = economicInterval(w);
+      const cycles = (10 * gameDay(w)) / (Math.ceil(duration / round) * round);
       return `Uma linha de ${r.id} em lotes de **dez ciclos**: ${num(cycles)} ciclos/dia, resultado teórico **${money(r.contribution * cycles - r.fixedPerDay)}/dia**, mesma hipótese de venda. Reserva de 15.000 duraria ${num(15000 / cycles)} dias. Prejuízo no lote unitário não significa prejuízo em qualquer escala.`;
     }),
   'Custo médio = (valor anterior + custo recebido/produzido)/quantidade total. Frete é capitalizado no destino. Fixos não são automaticamente capitalizados nos jobs; são despesa da estrutura. Margem sobre venda m exige preço = custo completo/(1−m); custo × (1+m) é markup.',
@@ -450,11 +455,11 @@ add(
     [
       [
         'Relógio',
-        `${TIME_SCALE}×; 1 s real = ${TIME_SCALE / 60} min virtuais; um dia virtual = ${num(GAME_DAY / 60000)} min reais`,
+        `${timeScaleOf(w)}×; 1 s real = ${timeScaleOf(w) / 60} min virtuais; um dia virtual = ${num(gameDay(w) / MINUTE_MS)} min reais`,
       ],
       [
         'Tick econômico',
-        `${ECONOMIC_INTERVAL / 1000} s reais = ${(ECONOMIC_INTERVAL * TIME_SCALE) / 3600000} h virtuais; ${GAME_DAY / ECONOMIC_INTERVAL} ticks/dia`,
+        `${economicInterval(w) / 1000} s reais = ${realToGame(w, economicInterval(w)) / HOUR_MS} h virtuais; ${gameDay(w) / economicInterval(w)} ticks/dia`,
       ],
       [
         'Versões salvas',

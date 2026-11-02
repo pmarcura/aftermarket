@@ -15,6 +15,7 @@ const options = horizons.map((days) =>
     days,
     seed: Number(arg('seed', '0')),
     scenario: arg('scenario', 'baseline'),
+    ...(arg('timeScale', '') ? { timeScale: Number(arg('timeScale', '')) } : {}),
   }),
 );
 const sourceFingerprint = labSourceFingerprint();

@@ -3,7 +3,8 @@ import { resolve } from 'node:path';
 import { createScenario, type ScenarioName } from '../packages/simulation/src/scenarios';
 import { economyHealth, outstandingLoans } from '../packages/simulation/src/design';
 import { advance } from '../packages/simulation/src/engine';
-import { products, TIME_SCALE, type ProductId } from '../packages/simulation/src/model';
+import { products, type ProductId } from '../packages/simulation/src/model';
+import { gameDay } from '../packages/simulation/src/clock';
 import { marketView } from '../packages/simulation/src/metrics';
 import { treasuryReserved } from '../packages/simulation/src/operations';
 
@@ -14,12 +15,16 @@ if (!Number.isInteger(days) || days < 1 || days > 365)
 const scenario = (process.argv.find((a) => a.startsWith('--scenario='))?.split('=')[1] ??
   'baseline') as ScenarioName;
 const seed = Number(process.argv.find((a) => a.startsWith('--seed='))?.split('=')[1] ?? 0);
+// Velocidade do relógio (spec 004); os dias contados são de jogo.
+const timeScale = process.argv.find((a) => a.startsWith('--timeScale='))?.split('=')[1];
 const at = Date.UTC(2026, 9, 26 + seed, 12),
-  world = createScenario(at, scenario, seed);
+  world = createScenario(at, scenario, seed, {
+    timeScale: timeScale === undefined ? undefined : Number(timeScale),
+  });
 const money = world.companies.reduce((n, c) => n + c.balance, 0),
   output = [];
 for (let day = 0; day <= days; day++) {
-  if (day) advance(world, at + (day * 86400000) / TIME_SCALE);
+  if (day) advance(world, at + day * gameDay(world));
   const total = world.companies.reduce((n, c) => n + c.balance, 0);
   if (
     total !== money ||

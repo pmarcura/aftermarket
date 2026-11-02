@@ -23,10 +23,12 @@ import {
   operatingCosts,
   productionCharges,
   propertyOf,
+  establishmentOf,
+  companyOf,
 } from './metrics';
 import { freeCash } from './design';
 import { storageQuantity } from './transport';
-import { openShipmentsTo, pendingOrdersTo } from './indexes';
+import { openShipmentsTo, pendingOrdersTo, supplyHistoryOf } from './indexes';
 import { vehicleModels } from './catalog';
 
 // Busca de fornecedor em escala: transportadoras profissionais sempre cotam; das demais, só as
@@ -88,8 +90,8 @@ export function validateSupplyPolicy(policy: SupplyPolicy) {
 }
 export function supplySpent(w: World, e: Establishment, at: number) {
   const start = w.season.startedAt + Math.floor((at - w.season.startedAt) / GAME_DAY) * GAME_DAY;
-  const executed = (w.supplyHistory ?? [])
-    .filter((h) => h.establishmentId === e.id && h.at >= start)
+  const executed = supplyHistoryOf(w, e.id)
+    .filter((h) => h.at >= start)
     .reduce((n, h) => n + h.cost, 0);
   // Pedido aberto sem vendedor nem proposta não é gasto (D-038). Contado, três anúncios parados
   // de minério, carvão e sucata passavam do orçamento do dia e 11 de 12 usinas deixavam de comprar
@@ -137,7 +139,7 @@ export function supplyCandidates(
       options.push({ origin, price: 0, internal: true });
   if (!pinned && policy.source !== 'internal-only')
     for (const o of w.offers.filter((o) => o.product === product)) {
-      const origin = w.establishments.find((x) => x.id === o.establishmentId)!;
+      const origin = establishmentOf(w, o.establishmentId)!;
       if (
         origin.companyId !== e.companyId &&
         (origin.inventory[product] ?? 0) > 0 &&
@@ -157,8 +159,7 @@ export function supplyCandidates(
     round = { at: traceAt, map: new Map(), fleets: undefined };
     nearbyByRound.set(w, round);
   }
-  const nearby = round.map,
-    companies = new Map(w.companies.map((c) => [c.id, c]));
+  const nearby = round.map;
   const carriersFor = (origin: Establishment) => {
     if (policy.carrierId === 'own') return [e.companyId];
     if (policy.carrierId !== 'auto') return [policy.carrierId];
@@ -192,7 +193,7 @@ export function supplyCandidates(
       .slice(0, SEARCH_HAULERS)
       .map((x) => x.company);
     const shared = [...new Set([...CARRIERS, origin.companyId, ...near, ...haulers])].filter(
-      (id) => companies.get(id)?.bot,
+      (id) => companyOf(w, id)?.bot,
     );
     nearby.set(origin.propertyId, shared);
     return [e.companyId, ...shared];
@@ -252,7 +253,7 @@ export function supplyCandidates(
           o.origin.id,
         );
       const quotes = [...new Set(carriersFor(o.origin))]
-        .filter((c) => w.companies.some((x) => x.id === c))
+        .filter((c) => companyOf(w, c) !== undefined)
         .map((c) => quote(w, o.origin.id, e.id, product, amount, c))
         .map((q) => {
           const allocated = amount - q.unallocated;

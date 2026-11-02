@@ -11,12 +11,12 @@ import {
 import { distanceKm } from './geometry';
 import { emitDecisionTrace, hasDecisionTrace, withDecisionSource } from './decision-trace';
 import {
-  GAME_DAY,
   automationCyclesPerDay,
   inventoryQuality,
   retailCapacity,
   availableStock,
 } from './operations';
+import { gameDay } from './clock';
 import {
   householdDemand,
   regionFor,
@@ -90,7 +90,8 @@ export function validateSupplyPolicy(policy: SupplyPolicy) {
       );
 }
 export function supplySpent(w: World, e: Establishment, at: number) {
-  const start = w.season.startedAt + Math.floor((at - w.season.startedAt) / GAME_DAY) * GAME_DAY;
+  const start =
+    w.season.startedAt + Math.floor((at - w.season.startedAt) / gameDay(w)) * gameDay(w);
   const executed = supplyHistoryOf(w, e.id)
     .filter((h) => h.at >= start)
     .reduce((n, h) => n + h.cost, 0);
@@ -355,12 +356,12 @@ export function supplyProjection(
 ) {
   const events = openShipmentsTo(w, e.id, product).map((s) => ({
     quantity: s.quantity,
-    day: Math.max(0, (s.arrivesAt - w.updatedAt) / GAME_DAY),
+    day: Math.max(0, (s.arrivesAt - w.updatedAt) / gameDay(w)),
   }));
   if (extra)
     events.push({
       quantity: extra.quantity,
-      day: Math.max(0, (extra.arrivalAt - w.updatedAt) / GAME_DAY),
+      day: Math.max(0, (extra.arrivalAt - w.updatedAt) / gameDay(w)),
     });
   events.sort((a, b) => a.day - b.day);
   let stock = e.inventory[product] ?? 0,
@@ -578,7 +579,7 @@ export function runSupplyPolicies(w: World, at: number) {
         if (!best) {
           e.supplyStatus = `Sem origem elegível para ${products[rule.product].name}`;
           trace(e, 'no-eligible-source', e.supplyStatus, rule.product);
-          (e.supplyRetryAt ??= {})[rule.product] = at + GAME_DAY / 2;
+          (e.supplyRetryAt ??= {})[rule.product] = at + gameDay(w) / 2;
           continue;
         }
         const cash = freeCash(w, e.companyId) - policy.cashReserve;

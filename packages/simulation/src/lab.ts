@@ -3,8 +3,9 @@ import { arrears, economyHealth, outstandingLoans } from './design';
 import { advance } from './engine';
 import { setInvariantChecks } from './invariants';
 import { marketView, withAppendOnlyMarketLedger } from './metrics';
-import { products, TIME_SCALE, type ProductId, type World, seasonProducts } from './model';
-import { GAME_DAY, treasuryReserved } from './operations';
+import { products, type ProductId, type World, seasonProducts } from './model';
+import { treasuryReserved } from './operations';
+import { createClock, gameDay, timeScaleOf } from './clock';
 import { createScenario, scenarioNames, type ScenarioName } from './scenarios';
 import { withDecisionTrace } from './decision-trace';
 import {
@@ -25,6 +26,8 @@ export interface LabOptions extends LabExperimentSettings {
   demandMultiplier: number;
   // Escala do mundo (spec 003): 1 é o mundo de referência; o playtest grande usa 20.
   scale?: number;
+  // Velocidade do relógio (spec 004): padrão 120; o playtest lento usa 6. Dias são de jogo.
+  timeScale?: number;
 }
 export interface LabProgress {
   day: number;
@@ -173,6 +176,7 @@ export function validateLabOptions(input: unknown = {}): LabOptions {
     'shock',
     'capacityRecipe',
     'scale',
+    'timeScale',
   ]);
   if (Object.keys(record).some((key) => !allowed.has(key)))
     throw new Error('Opção de laboratório desconhecida.');
@@ -189,6 +193,7 @@ export function validateLabOptions(input: unknown = {}): LabOptions {
     ...(record.shock === undefined ? {} : { shock: record.shock }),
     ...(record.capacityRecipe === undefined ? {} : { capacityRecipe: record.capacityRecipe }),
     ...(record.scale === undefined ? {} : { scale: record.scale }),
+    ...(record.timeScale === undefined ? {} : { timeScale: record.timeScale }),
   };
   if (!labScenarios.includes(options.scenario as ScenarioName))
     throw new Error('Cenário inválido: use baseline ou playtest.');
@@ -225,6 +230,7 @@ export function validateLabOptions(input: unknown = {}): LabOptions {
     (!Number.isInteger(options.scale) || Number(options.scale) < 1 || Number(options.scale) > 50)
   )
     throw new Error('A escala do mundo deve ser um inteiro de 1 a 50.');
+  if (options.timeScale !== undefined) createClock(options.timeScale as number);
   if (options.shock !== undefined) {
     if (!options.shock || typeof options.shock !== 'object' || Array.isArray(options.shock))
       throw new Error('Choque deve ser um objeto.');
@@ -323,7 +329,7 @@ function snapshot(
   openingPhysical: Partial<Record<ProductId, number>>,
 ): LabSnapshot {
   const money = checkInvariants(world, openingMoney, day, at);
-  const since = Math.max(world.createdAt, at - GAME_DAY * 7);
+  const since = Math.max(world.createdAt, at - gameDay(world) * 7);
   // Same product unit within each market; company grouping prevents counting branches as competitors.
   const salesByProduct = new Map<ProductId, Map<string, number>>();
   const flow = new Map(
@@ -568,7 +574,10 @@ function runCheckedLab(input: Partial<LabOptions>, hooks: LabHooks): LabReport {
   const started = performance.now();
   // A fixed epoch keeps A/B runs on the same weekdays. The seed rotates rival strategies.
   const at = Date.UTC(2026, 9, 26, 12);
-  const world = createScenario(at, options.scenario, options.seed, { scale: options.scale });
+  const world = createScenario(at, options.scenario, options.seed, {
+    scale: options.scale,
+    timeScale: options.timeScale,
+  });
   if (
     options.capacityRecipe &&
     !world.season.config.recipes.some((r) => r.id === options.capacityRecipe)
@@ -594,9 +603,9 @@ function runCheckedLab(input: Partial<LabOptions>, hooks: LabHooks): LabReport {
       hooks.onProgress?.({ day: 0, days: options.days, percent: 0 });
       for (let day = 1; day <= options.days; day++) {
         checkCancelled(hooks);
-        const target = at + day * GAME_DAY;
+        const target = at + day * gameDay(world);
         if (options.shock?.day === day)
-          applyLabShock(world, options.shock, at + (day - 1) * GAME_DAY, experiment);
+          applyLabShock(world, options.shock, at + (day - 1) * gameDay(world), experiment);
         // Capture at each economic tick, before the director's rolling activity history can be lost.
         while (world.nextEconomicAt <= target) {
           checkCancelled(hooks);
@@ -614,7 +623,7 @@ function runCheckedLab(input: Partial<LabOptions>, hooks: LabHooks): LabReport {
             stats.decisions++;
             stats.decisionKinds[action.kind] = (stats.decisionKinds[action.kind] ?? 0) + 1;
             stats.lastActions.push({
-              day: (action.at - at) / GAME_DAY,
+              day: (action.at - at) / gameDay(world),
               kind: action.kind,
               // The director records only six UUID characters, which can collide.
               // Omit that ephemeral display reference instead of inventing identity.
@@ -639,7 +648,7 @@ function runCheckedLab(input: Partial<LabOptions>, hooks: LabHooks): LabReport {
         metadata: {
           engineVersion: `world:${world.version}/operations:${world.operationsVersion}/competition:${world.competitionVersion}/design:${world.designVersion}/calibration:${config.version}`,
           simulationStartedAt: at,
-          timeScale: TIME_SCALE,
+          timeScale: timeScaleOf(world),
           currency: 'BRL',
           moneyUnit: 'centavos',
           routingMode: 'estimate',

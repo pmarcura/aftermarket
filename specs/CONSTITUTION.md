@@ -37,4 +37,6 @@ Um mundo hospedado, com login por convite, em que 5–50 pessoas jogam ao mesmo 
 
 ## 5. O que o laboratório é
 
-`/lab` (simulações, A/B, telemetria) e `scripts/economy-proof.ts` são a ferramenta oficial de balanceamento. A régua é: 5 sementes, 60 dias de jogo, janela de 30, escala do mundo jogável; aceitar uma mudança só se a mediana melhora e o pior caso não piora nos KPIs definidos na spec 003. A cadeia de "evidência visual de interface" (`capture-lab`, `ui-catalog`, `ui-flows`) está congelada e fora do `check` (spec 002).
+`/lab` (simulações, A/B, telemetria) e `scripts/economy-proof.ts` são a ferramenta oficial de balanceamento. A régua é: 5 sementes, 60 dias de jogo, janela de 30, escala do mundo jogável (`npm run economy:proof -- --scale=20`, uma semente por processo; a escala 1 serve para iterar).
+
+**Regra de aceitação de mudanças de balanceamento (spec 003, R8):** rodar a régua antes e depois com as mesmas sementes e aceitar a mudança só se, em todos os KPIs com alvo (`targets` em `scripts/economy-proof.ts`, tabelas de `docs/product/PROVA.md`), a mediana entre sementes melhora e o pior caso não piora. Resultado por negócio a custo (nunca a preço de referência), números em mediana [mín–máx] (nunca média), e o baseline vigente é o publicado em `docs/product/PROVA.md`. A cadeia de "evidência visual de interface" (`capture-lab`, `ui-catalog`, `ui-flows`) está congelada e fora do `check` (spec 002).

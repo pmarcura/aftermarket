@@ -227,6 +227,11 @@ describe('laboratório headless', () => {
       { demandMultiplier: Infinity },
       { demandMultiplier: 2.1 },
       { database: 'world.sqlite' },
+      { scale: 0 },
+      { scale: 51 },
+      { scale: 1.5 },
+      { scale: '20' },
+      { scale: null },
     ])
       expect(() => validateLabOptions(input)).toThrow();
     expect(
@@ -238,6 +243,14 @@ describe('laboratório headless', () => {
       demandMultiplier: 0.1,
       scenario: 'playtest',
     });
+    expect(validateLabOptions({ scale: 20 })).toEqual({ ...validateLabOptions(), scale: 20 });
+  });
+
+  it('repassa a escala do mundo ao cenário', () => {
+    const report = runLab({ days: 1, scenario: 'playtest', scale: 2 });
+    expect(report.options.scale).toBe(2);
+    expect(report.metadata.config.worldScale).toBe(2);
+    expect(runLab({ days: 1, scenario: 'playtest' }).metadata.config.worldScale).toBe(1);
   });
 
   it('reproduz a trajetória numérica e decisões sem rede nem relógio real', () => {

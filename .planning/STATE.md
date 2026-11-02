@@ -35,20 +35,20 @@ e limites em [VALIDAÇÃO DA INTERFACE](../docs/design/VALIDACAO-INTERFACE-2026-
 
 ## Furos conhecidos
 
-| Área        | Problema                                                                                                                                 | Onde está o detalhe                                                                       |
-| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| Economia    | Escala 20: arroz, feijão, utensílios e caminhão leve no vermelho; aço ao governo ~190 de 320 t/dia; procura atendida 51%                 | [PROVA-V2-ESCALA-20](../docs/product/PROVA-V2-ESCALA-20.md), D-036, D-038, D-039, HANDOFF |
-| Mundo       | Só 12 lotes livres e os dois jogadores de teste começam em Campinas                                                                      | etapa D (uma cidade e lotes por amigo)                                                    |
-| Mundo salvo | Mundos da economia antiga são recusados ao abrir, sem backup nem alteração; o dono arquiva `.runtime/world.sqlite` e começa um novo      | spec 001 (R6)                                                                             |
-| Desempenho  | Mundo salvo como um JSON único, regravado a cada 2 s; navegador baixa tudo a cada 3 s; ~2 s de cálculo por dia de jogo no fim de 90 dias | etapa C do roteiro                                                                        |
-| Multiplayer | Servidor só escuta `127.0.0.1`; perfis sem senha                                                                                         | etapa D do roteiro                                                                        |
-| Interface   | Sem mural de notícias nem ranking; fábricas e fazendas ainda sem o padrão novo da loja                                                   | etapa E do roteiro                                                                        |
+| Área        | Problema                                                                                                                                 | Onde está o detalhe                                             |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| Economia    | Escala 20: arroz, feijão, utensílios e caminhão leve no vermelho; aço ao governo ~190 de 320 t/dia; procura atendida 51%                 | [PROVA](../docs/product/PROVA.md), D-036, D-038, D-039, HANDOFF |
+| Mundo       | Só 12 lotes livres e os dois jogadores de teste começam em Campinas                                                                      | etapa D (uma cidade e lotes por amigo)                          |
+| Mundo salvo | Mundos da economia antiga são recusados ao abrir, sem backup nem alteração; o dono arquiva `.runtime/world.sqlite` e começa um novo      | spec 001 (R6)                                                   |
+| Desempenho  | Mundo salvo como um JSON único, regravado a cada 2 s; navegador baixa tudo a cada 3 s; ~2 s de cálculo por dia de jogo no fim de 90 dias | etapa C do roteiro                                              |
+| Multiplayer | Servidor só escuta `127.0.0.1`; perfis sem senha                                                                                         | etapa D do roteiro                                              |
+| Interface   | Sem mural de notícias nem ranking; fábricas e fazendas ainda sem o padrão novo da loja                                                   | etapa E do roteiro                                              |
 
 ## Próximo passo
 
 **Continuação em outra conversa:** tudo o que falta, na ordem combinada com o Pedro, está em [HANDOFF](HANDOFF.md) (calibrar o Brasil real com ~500 bots, modelo de grupo D-035, telas da proposta de UX, laboratório, genética, gado e frigorífico, interação entre jogadores, Claude jogar contra os bots, depois C e D).
 
-Etapa **B** concluída em 28/10: as dez fatias do [B-PLAN](phases/B-economia/B-PLAN.md) e a prova de 90 dias em 3 sementes ([PROVA-V2](../docs/product/PROVA-V2.md), `npm run economy:proof`). O balanceamento da fatia 10 está em D-033: bots miram o preço de referência, empresas antigas alinhadas, bots sem compra de imóveis, lotes livres baratos, editais menores e caminhões com vida útil comprimida.
+Etapa **B** concluída em 28/10: as dez fatias do [B-PLAN](phases/B-economia/B-PLAN.md) e a prova de 90 dias em 3 sementes (PROVA-V2 de 28/10, hoje no histórico do Git; a prova vigente é a [PROVA](../docs/product/PROVA.md), `npm run economy:proof`). O balanceamento da fatia 10 está em D-033: bots miram o preço de referência, empresas antigas alinhadas, bots sem compra de imóveis, lotes livres baratos, editais menores e caminhões com vida útil comprimida.
 
 Para o playtest com amigos faltam: **C** (desempenho do motor e do salvamento) e **D** (login simples, uma empresa e uma cidade por amigo, servidor acessível de fora). Recomendação: fazer C e D juntas no mínimo necessário para 5 pessoas, antes de mais interface.
 

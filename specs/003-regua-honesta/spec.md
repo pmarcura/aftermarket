@@ -1,6 +1,6 @@
 # Spec 003 · Régua honesta da prova econômica e KPIs de balanceamento
 
-Estado: **rascunho**. Semana 2. Depende da 001.
+Estado: **verificada** (John, 01/11/2026). Semana 2. Branch `spec/003-regua-honesta`. Depende da 001 (mergeada).
 
 ## Problema
 

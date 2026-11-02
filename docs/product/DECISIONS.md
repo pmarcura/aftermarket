@@ -116,7 +116,7 @@ Decisões de rotina da fatia 9, reversíveis:
 
 ### D-033 · Balanceamento da versão 2 e começo do jogo (28/10/2026)
 
-Pedido do Pedro: "faça todos os balanceamentos necessários e deixe a interface mais intuitiva e boa para começar o jogo". Decisões de rotina da fatia 10, reversíveis e válidas só no mundo versão 2, medidas por `npm run economy:proof` (resultado em [PROVA-V2](PROVA-V2.md)):
+Pedido do Pedro: "faça todos os balanceamentos necessários e deixe a interface mais intuitiva e boa para começar o jogo". Decisões de rotina da fatia 10, reversíveis e válidas só no mundo versão 2, medidas por `npm run economy:proof` (resultado na PROVA-V2 de 28/10, no histórico do Git; prova vigente em [PROVA](PROVA.md)):
 
 - **Preço dos bots mira a referência de fábrica.** O bot vende 8% abaixo do preço de referência quando tem estoque sobrando e até 8% acima quando falta, nunca abaixo do próprio custo. Antes cobrava custo mais margem: o arroz no atacado passava do preço de prateleira (R$ 31,92 contra R$ 24,50) e o leite despencava para R$ 2,16 (referência R$ 5,08). A loja-bot mira o preço de prateleira da referência. O estoque inicial dos produtores passou a ser custeado pelo preço de fábrica.
 - **Empresas antigas alinhadas.** As minas, a fazenda e a fábrica de óleo das empresas da versão 1 passam a ter uma linha de equipamento e a equipe do perfil, como os rivais. Produziam sem limite e abriam com semanas de estoque, derrubando o preço do ferro e da soja.
@@ -156,7 +156,7 @@ Detalhes de implementação e números no documento de passagem (`.planning/HAND
 
 ### D-036 · Frete do Brasil real nos preços e defeitos de escala (30/10/2026)
 
-Pedido do Pedro: calibrar a economia versão 2 no Brasil real com cerca de 500 bots (escala 20). Decisões de rotina, válidas para mundos novos; o mundo principal salvo não muda. Medição em [PROVA-V2-ESCALA-20](PROVA-V2-ESCALA-20.md).
+Pedido do Pedro: calibrar a economia versão 2 no Brasil real com cerca de 500 bots (escala 20). Decisões de rotina, válidas para mundos novos; o mundo principal salvo não muda. Medição na PROVA-V2-ESCALA-20 da época (histórico do Git; prova vigente em [PROVA](PROVA.md)).
 
 - **Preço de fábrica desconta o frete real.** A calculadora supunha 110 km por carga; no mapa real a média é perto de 730 km. Agora cada item tem a distância média entre os polos que produzem e os que compram (cada polo manda para o comprador mais perto que ainda precisa) e o frete de caminhão pesado cheio (R$ 0,28 por tonelada-km com metade da volta vazia, mais carga e descarga; consumo final paga ainda a entrega na cidade). Arroz viaja ~1.530 km, carvão ~1.400 km, farelo ~580 km, leite ~430 km. Como no mundo real, a porta da fazenda longe do mercado vale menos: arroz R$ 17,37 (era R$ 20,39), leite R$ 4,75 por litro na fábrica.
 - **Ajustes de faixa para manter 8% de margem:** soja na porta da fazenda no ponto 0,4 da faixa (R$ 2.340/t), ração no ponto 0,75 (R$ 2,98/kg, paga o farelo de longe) e leite no ponto 0,62 da faixa de varejo (R$ 6,17). Todas as verificações da calculadora passam.

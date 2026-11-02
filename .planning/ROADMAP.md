@@ -30,7 +30,7 @@ Cada etapa termina em algo que dá para ver ou jogar e tem um critério de "pron
 2. [x] **Números da proposta.** Calculadora `npm run economy:design` e resumo em [ECONOMIA-ALVO](../docs/product/ECONOMIA-ALVO.md); todas as verificações passam.
 3. [x] **Corrigir as fórmulas** que enganam os bots (auditoria M02–M05 e M07), com provas de regressão.
 4. [x] **Levar ao motor** os nove itens, as receitas, o rebanho e o caminhão como mercadoria, num mundo novo, nunca na season salva. Dez fatias em [B-PLAN](phases/B-economia/B-PLAN.md).
-5. [x] **Provar** 90 dias em 3 sementes com `npm run economy:proof`: margem por cadeia, estoque parado, empresas quebradas e concentração por produto. Resultado e desvios explicados em [PROVA-V2](../docs/product/PROVA-V2.md) e D-033.
+5. [x] **Provar** 90 dias em 3 sementes com `npm run economy:proof`: margem por cadeia, estoque parado, empresas quebradas e concentração por produto. Resultado e desvios explicados na PROVA-V2 de 28/10 (histórico do Git; a prova vigente é a [PROVA](../docs/product/PROVA.md)) e D-033.
 
 ## Etapa E · adiantado em 28/10
 

@@ -1,0 +1,94 @@
+name: Prova econômica
+
+# Régua oficial de balanceamento (constituição §5, spec 003). Disparo manual: Actions →
+# Prova econômica → Run workflow. Cada semente roda numa máquina própria, em paralelo; o
+# último job junta as sementes, gera a seção da escala em docs/product/PROVA.md e publica
+# o documento e os JSON como artefato. Nada é commitado automaticamente.
+
+on:
+  workflow_dispatch:
+    inputs:
+      scale:
+        description: 'Escala do mundo (1 = referência; 20 = playtest, ~550 bots)'
+        required: true
+        default: '20'
+      days:
+        description: 'Dias de jogo simulados'
+        required: true
+        default: '60'
+      window:
+        description: 'Janela medida (últimos N dias)'
+        required: true
+        default: '30'
+      seeds:
+        description: 'Sementes separadas por vírgula'
+        required: true
+        default: '0,1,2,3,4'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: prova-economica-${{ github.ref }}-${{ inputs.scale }}
+  cancel-in-progress: false
+
+jobs:
+  sementes:
+    name: Semente ${{ matrix.seed }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        seed: ${{ fromJSON(format('[{0}]', inputs.seeds)) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Simular
+        run: >
+          npx tsx scripts/economy-proof.ts
+          --days=${{ inputs.days }} --window=${{ inputs.window }}
+          --seeds=${{ matrix.seed }} --scale=${{ inputs.scale }}
+          --out=test-results/prova-s${{ matrix.seed }}.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: prova-semente-${{ matrix.seed }}
+          path: test-results/prova-s${{ matrix.seed }}.json
+
+  relatorio:
+    name: Relatório
+    needs: sementes
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: prova-semente-*
+          path: test-results
+          merge-multiple: true
+      - name: Juntar sementes e gerar PROVA.md
+        run: |
+          files=$(ls test-results/prova-s*.json | paste -sd, -)
+          echo "Sementes concluídas: $files"
+          npx tsx scripts/economy-proof.ts --from="$files" --write-doc
+      - uses: actions/upload-artifact@v4
+        with:
+          name: prova-economica-escala-${{ inputs.scale }}
+          path: |
+            docs/product/PROVA.md
+            test-results/prova-s*.json

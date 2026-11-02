@@ -1,6 +1,8 @@
 import { analyzeDesign } from '../packages/simulation/src/economy-design';
 
 // Mostra os números da proposta de economia (etapa B). `--json` imprime o resultado completo.
+// Lucro de projeto com utilização e preço realizado (spec 003); as falhas conhecidas estão em
+// `knownBalanceDebt` (tests/economy-design.test.ts) até a spec 006.
 const result = analyzeDesign();
 if (process.argv.includes('--json')) {
   console.log(JSON.stringify(result, null, 2));
@@ -11,9 +13,12 @@ if (process.argv.includes('--json')) {
     result.recipes.map((r) => ({
       receita: r.name,
       linhas: Number(r.lines.toFixed(1)),
-      'lucro/dia': reais(r.profit),
+      'lucro/dia a plena capacidade': reais(r.profitAtCapacity),
+      'lucro/dia de projeto': reais(r.profit),
       margem: `${(r.margin * 100).toFixed(0)}%`,
       'equipamento/linha': reais(r.equipment),
+      'equipamento sugerido': reais(r.suggestedEquipment),
+      'retorno (dias)': Number.isFinite(r.paybackDays) ? Number(r.paybackDays.toFixed(0)) : '—',
     })),
   );
   for (const c of result.checks) console.log(c.ok ? 'ok   ' : 'FALHA', c.detail);

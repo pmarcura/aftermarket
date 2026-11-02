@@ -52,19 +52,19 @@ Etapa **B** concluída em 28/10: as dez fatias do [B-PLAN](phases/B-economia/B-P
 
 Para o playtest com amigos faltam: **C** (desempenho do motor e do salvamento) e **D** (login simples, uma empresa e uma cidade por amigo, servidor acessível de fora). Recomendação: fazer C e D juntas no mínimo necessário para 5 pessoas, antes de mais interface.
 
-Decisões do Pedro em 27/10 (D-028, D-029): mundo semanal livre; realismo enxuto com cadeias completas; fechar metal e alimentos antes de crescer; aço vira caminhões e utensílios; sucata já; carne depois do playtest; relógio 1 h real = 6 h de jogo.
+Decisões do Pedro em 27/10 (D-028, D-029): mundo semanal livre; realismo enxuto com cadeias completas; fechar metal e alimentos antes de crescer; aço vira caminhões e utensílios; sucata já; carne depois do playtest; relógio 1 h real = 6 h de jogo. Desde a spec 004 a velocidade é do mundo (`season.config.clock`): `AFTERMARKET_TIME_SCALE=6` cria o mundo do playtest lento, em que **um dia de jogo dura 4 h reais**; o padrão continua 120× (dia de jogo = 12 min reais) e mundos salvos antes da 004 ficam a 120×. A prova a 120× e a 6× dá a mesma economia pelos mesmos dias de jogo.
 
 Números da economia alvo em [ECONOMIA-ALVO](../docs/product/ECONOMIA-ALVO.md), calculados por `npm run economy:design` e protegidos por `tests/economy-design.test.ts`; valem no motor, que só tem esta economia.
 
 ## Como rodar
 
-| Comando                  | O que faz                                                                                                            |
-| ------------------------ | -------------------------------------------------------------------------------------------------------------------- |
-| `npm run dev`            | Mundo `playtest` em http://127.0.0.1:5173 (`.runtime/world.sqlite`); escala por `AFTERMARKET_WORLD_SCALE` (padrão 1) |
-| `npm run lab`            | Laboratório de simulação em `/lab`                                                                                   |
-| `npm run check`          | Build, testes e verificações de recursos e catálogo de telas                                                         |
-| `npm run economy:report` | Regera os três relatórios de economia de uma vez                                                                     |
-| `npm run world:backup`   | Backup do mundo principal                                                                                            |
+| Comando                  | O que faz                                                                                                                                                                                                  |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`            | Mundo `playtest` em http://127.0.0.1:5173 (`.runtime/world.sqlite`); escala por `AFTERMARKET_WORLD_SCALE` (padrão 1); velocidade de mundo novo por `AFTERMARKET_TIME_SCALE` (padrão 120; playtest lento 6) |
+| `npm run lab`            | Laboratório de simulação em `/lab`                                                                                                                                                                         |
+| `npm run check`          | Build, testes e verificações de recursos e catálogo de telas                                                                                                                                               |
+| `npm run economy:report` | Regera os três relatórios de economia de uma vez                                                                                                                                                           |
+| `npm run world:backup`   | Backup do mundo principal                                                                                                                                                                                  |
 
 ## Regras de segurança
 

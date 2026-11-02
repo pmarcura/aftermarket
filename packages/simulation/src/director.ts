@@ -1,15 +1,7 @@
 import { execute, quote, RuleError } from './engine';
-import {
-  ECONOMIC_INTERVAL,
-  products,
-  type Command,
-  type ProductId,
-  type World,
-  type Establishment,
-} from './model';
+import { products, type Command, type ProductId, type World, type Establishment } from './model';
 import { institutional, publicReference, trainingQuote } from './competition';
 import {
-  GAME_DAY,
   automationCyclesPerDay,
   inventoryQuality,
   productionCapacity,
@@ -18,6 +10,7 @@ import {
 import { operatingCosts, productionCharges, marketView, propertyOf, companyOf } from './metrics';
 import { openShipmentsTo, pendingOrdersTo } from './indexes';
 import { recordBotError } from './invariants';
+import { HOUR_MS, economicInterval, gameDay, gameToReal } from './clock';
 import { distanceKm } from './geometry';
 import { arrears, freeCash, recoveryQuote, outstandingLoans } from './design';
 import { emitDecisionTrace, hasDecisionTrace, withDecisionSource } from './decision-trace';
@@ -75,7 +68,7 @@ export function botRecoveryPlan(w: World, e: Establishment, at: number) {
   const cadence = automationCyclesPerDay(w, preview, r);
   const sales = (Object.entries(r.output) as [ProductId, number][]).map(([id, quantity]) => {
     const qualified = w.infrastructure.filter(
-      (c) => c.product === id && c.createdAt >= at - GAME_DAY * 14,
+      (c) => c.product === id && c.createdAt >= at - gameDay(w) * 14,
     );
     const view = marketView(w, id);
     const publicPrice = qualified.length
@@ -149,7 +142,7 @@ export function runBotDirector(w: World, at: number) {
   // histórico inteiro para cada produto).
   const desiredToday = new Map<string, number>();
   for (const h of w.consumptionHistory)
-    if (h.at > at - GAME_DAY) {
+    if (h.at > at - gameDay(w)) {
       const key = `${h.establishmentId}:${h.product}`;
       desiredToday.set(key, (desiredToday.get(key) ?? 0) + h.desired);
     }
@@ -159,7 +152,7 @@ export function runBotDirector(w: World, at: number) {
     const fleet = w.vehicles.filter((v) => v.companyId === c.id);
     if (fleet.length && fleet.every((v) => v.status !== 'available'))
       c.fleetBusyRounds = (c.fleetBusyRounds ?? 0) + 1;
-    if (at - (c.lastFleetAt ?? w.season.startedAt) < GAME_DAY) return;
+    if (at - (c.lastFleetAt ?? w.season.startedAt) < gameDay(w)) return;
     const busy = c.fleetBusyRounds ?? 0;
     c.lastFleetAt = at;
     c.fleetBusyRounds = 0;
@@ -185,7 +178,7 @@ export function runBotDirector(w: World, at: number) {
           );
     const units = w.establishments.filter((e) => e.companyId === c.id);
     const cap = units.reduce((n, e) => n + (e.category === 'logistics' ? 10 : 2), 0);
-    const rounds = GAME_DAY / ECONOMIC_INTERVAL;
+    const rounds = gameDay(w) / economicInterval(w);
     if (
       !units.length ||
       busy < rounds * 0.66 ||
@@ -295,7 +288,8 @@ export function runBotDirector(w: World, at: number) {
         }
       }
       const buyer = bots.find((b) => b.id === o.buyerId);
-      if (buyer && at - o.createdAt >= 60000) {
+      // O bot comprador espera 2 h de jogo por propostas antes de escolher (era 1 minuto real a 120×).
+      if (buyer && at - o.createdAt >= gameToReal(w, 2 * HOUR_MS)) {
         const best = o.proposals
           ?.filter(
             (p) =>
@@ -352,7 +346,7 @@ export function runBotDirector(w: World, at: number) {
                 maxFreight: latest.maxFreight,
                 deliveryDays: Math.max(
                   1,
-                  Math.min(14, Math.ceil((latest.deadline - at) / GAME_DAY)),
+                  Math.min(14, Math.ceil((latest.deadline - at) / gameDay(w))),
                 ),
                 carrierId: latest.carrierId,
               },
@@ -439,7 +433,7 @@ export function runBotDirector(w: World, at: number) {
           { type: 'payObligations', amount: debt },
           'Regularizou salários e serviços em atraso',
         );
-      if (debt > 0 && at - w.season.startedAt >= GAME_DAY * 3) {
+      if (debt > 0 && at - w.season.startedAt >= gameDay(w) * 3) {
         const fixed = allUnits.reduce((n, e) => n + operatingCosts(w, e).total, 0),
           place = w.properties.find((p) => p.id === allUnits[0]?.propertyId);
         const operatingProfit = allUnits.reduce((n, e) => n + e.revenue - e.expenses, 0);
@@ -481,7 +475,7 @@ export function runBotDirector(w: World, at: number) {
               'Retomou operação após regularização',
             );
       }
-      if (at - (c.lastRecoveryAt ?? w.season.startedAt) >= GAME_DAY * 7) {
+      if (at - (c.lastRecoveryAt ?? w.season.startedAt) >= gameDay(w) * 7) {
         for (const e of allUnits.filter((e) => e.mothballed)) {
           const plan = botRecoveryPlan(w, e, at);
           if (!plan) {
@@ -552,7 +546,7 @@ export function runBotDirector(w: World, at: number) {
       );
       for (const e of units) {
         // Os registros de receitas conduzem o plano; treinamento e estoque não recebem bônus ocultos.
-        if (e.enabled && e.supplyPolicy?.enabled && at - w.season.startedAt >= GAME_DAY / 4) {
+        if (e.enabled && e.supplyPolicy?.enabled && at - w.season.startedAt >= gameDay(w) / 4) {
           const rule = e.supplyPolicy.rules.find(
             (r) =>
               (e.inventory[r.product] ?? 0) <= r.minimum &&
@@ -565,7 +559,7 @@ export function runBotDirector(w: World, at: number) {
               (a) =>
                 a.companyId === c.id &&
                 a.kind === 'createPurchaseRequest' &&
-                a.at > at - GAME_DAY / 2,
+                a.at > at - gameDay(w) / 2,
             )
           ) {
             // Pedido só aceita quantidade inteira; estoque em toneladas fica quebrado após produzir.
@@ -625,7 +619,7 @@ export function runBotDirector(w: World, at: number) {
             .sort((a, b) => a.price - b.price)[0];
           if (!q) continue;
           const relevant = w.infrastructure.filter(
-            (x) => x.product === contract.product && x.createdAt >= at - GAME_DAY * 14,
+            (x) => x.product === contract.product && x.createdAt >= at - gameDay(w) * 14,
           );
           const producers = Math.max(
             1,
@@ -737,7 +731,7 @@ export function runBotDirector(w: World, at: number) {
         ? Object.entries(r.output).reduce(
             (n, [id, q]) => n + q! * w.season.config.basePrices[id as ProductId],
             0,
-          ) * Math.min(12 * (e.automationCycles ?? 1), (lines * GAME_DAY) / r.duration)
+          ) * Math.min(12 * (e.automationCycles ?? 1), (lines * gameDay(w)) / r.duration)
         : 0;
       for (const o of w.offers.filter((o) => o.establishmentId === e.id)) {
         // Distribuidor sem receita não rateia custo fixo por um estoque pequeno (gerava preços

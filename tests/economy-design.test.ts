@@ -83,7 +83,10 @@ describe('proposta de economia da etapa B', () => {
 
   it('conta as vacas do rebanho de referência', () => {
     expect(Number.isFinite(result.flows.cows)).toBe(true);
-    expect(result.flows.cows).toBeCloseTo(150 * (result.flows.lines['milk-production'] ?? Number.NaN), 9);
+    expect(result.flows.cows).toBeCloseTo(
+      150 * (result.flows.lines['milk-production'] ?? Number.NaN),
+      9,
+    );
   });
 
   it('conserva massa nas indústrias, declarando a perda', () => {

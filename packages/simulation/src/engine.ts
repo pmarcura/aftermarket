@@ -13,6 +13,7 @@ import { distanceKm } from './geometry';
 import { hasRoadAccess, routeMatchesProperties } from './road-access';
 import { householdItems, infrastructurePrograms } from './channels';
 import { committedStorage, fleetAvailability } from './transport';
+import { jobsAt, openJobsAt, openShipmentsTo, pendingOrdersTo } from './indexes';
 import {
   actorState,
   treasuryId,
@@ -64,6 +65,7 @@ import {
   seasonPrice,
   propertyOf,
   establishmentOf,
+  companyOf,
   vehiclesOf,
   wholesaleReference,
 } from './metrics';
@@ -86,7 +88,7 @@ function integer(value: number, label: string, max = 1000000) {
   );
 }
 function company(w: World, id: string) {
-  const c = w.companies.find((x) => x.id === id);
+  const c = companyOf(w, id);
   ensure(c, 'Empresa não encontrada.');
   return c;
 }
@@ -461,10 +463,7 @@ function executeCommand(w: World, actor: string, command: Command, now: number):
         (r) => r.id === command.recipeId && r.category === e.category,
       );
       ensure(!productive || r, 'Escolha uma especialidade compatível com a unidade.');
-      ensure(
-        !w.jobs.some((j) => j.establishmentId === e.id && !j.completed),
-        'Conclua os lotes antes de alterar equipamentos.',
-      );
+      ensure(openJobsAt(w, e.id).length === 0, 'Conclua os lotes antes de alterar equipamentos.');
       const maximum = r ? Math.floor(p.area / w.season.config.operations.profiles[r.id].areaM2) : 1;
       const current = e.installed === false ? 0 : (e.equipmentLines ?? maximum);
       ensure(
@@ -607,7 +606,7 @@ function executeCommand(w: World, actor: string, command: Command, now: number):
     case 'mothball': {
       const e = owned(w, command.establishmentId, actor);
       ensure(
-        !w.jobs.some((j) => j.establishmentId === e.id && !j.completed) &&
+        openJobsAt(w, e.id).length === 0 &&
           !w.training?.some((t) => t.establishmentId === e.id && !t.completed),
         'Conclua produção e educação antes de suspender a estrutura.',
       );
@@ -789,9 +788,7 @@ function executeCommand(w: World, actor: string, command: Command, now: number):
         e.inventory[p as ProductId] = e.inventory[p as ProductId]! - q! * command.cycles;
       }
       if (recipe.category === 'mine') e.reserve! -= command.cycles;
-      const previous = w.jobs
-        .filter((x) => x.establishmentId === e.id && !x.completed)
-        .reduce((n, j) => Math.max(n, j.finishesAt), now);
+      const previous = openJobsAt(w, e.id).reduce((n, j) => Math.max(n, j.finishesAt), now);
       const output = Object.fromEntries(
         Object.entries(recipe.output).map(([id, q]) => [id, q! * command.cycles]),
       );
@@ -900,8 +897,7 @@ function executeCommand(w: World, actor: string, command: Command, now: number):
       integer(command.cycles, 'Ciclos automáticos', 100);
       integer(command.dailyBudget, 'Orçamento diário', 1000000000);
       ensure(
-        !w.jobs.some((j) => j.establishmentId === e.id && !j.completed) ||
-          e.specialization === r.id,
+        openJobsAt(w, e.id).length === 0 || e.specialization === r.id,
         'Conclua os lotes antes de trocar a especialidade.',
       );
       e.specialization = r.id;
@@ -921,8 +917,7 @@ function executeCommand(w: World, actor: string, command: Command, now: number):
         'Informe de 0 a 1.000 funcionários.',
       );
       ensure(
-        command.employees >= e.employees ||
-          !w.jobs.some((j) => j.establishmentId === e.id && !j.completed),
+        command.employees >= e.employees || openJobsAt(w, e.id).length === 0,
         'Conclua os lotes reservados antes de reduzir a equipe.',
       );
       ensure(
@@ -1854,19 +1849,15 @@ function runAutomations(w: World, at: number) {
         .reduce((n, l) => n + l.amount, 0) +
       (e.category === 'retail'
         ? 0
-        : w.jobs
-            .filter((j) => j.establishmentId === e.id && j.startedAt >= dayStart)
+        : jobsAt(w, e.id)
+            .filter((j) => j.startedAt >= dayStart)
             .reduce(
               (n, j) =>
                 n + (j.charges ? j.charges.processing + j.charges.energy + j.charges.water : 0),
               0,
             ));
-    const incoming = w.shipments
-      .filter((s) => s.destinationId === e.id && s.product === product && !s.delivered)
-      .reduce((n, s) => n + s.quantity, 0);
-    const ordered = w.orders
-      .filter((o) => o.destinationId === e.id && o.product === product && o.status === 'pending')
-      .reduce((n, o) => n + o.quantity, 0);
+    const incoming = openShipmentsTo(w, e.id, product).reduce((n, s) => n + s.quantity, 0);
+    const ordered = pendingOrdersTo(w, e.id, product).reduce((n, o) => n + o.quantity, 0);
     const shortage = Math.floor(target - (e.inventory[product] ?? 0) - incoming - ordered);
     if (shortage <= 0) {
       trace(
@@ -1993,7 +1984,7 @@ function runAutomations(w: World, at: number) {
           );
       }
     if (e.category === 'retail') continue;
-    if (w.jobs.some((j) => j.establishmentId === e.id && !j.completed)) {
+    if (openJobsAt(w, e.id).length > 0) {
       e.automationStatus = 'Lote em processamento';
       trace(e, 'batch-in-progress', e.automationStatus, 'produce', 'idle');
       continue;
@@ -2035,8 +2026,8 @@ function runAutomations(w: World, at: number) {
           continue;
         }
         const dayStart = w.createdAt + Math.floor((at - w.createdAt) / GAME_DAY) * GAME_DAY;
-        const productionSpent = w.jobs
-          .filter((j) => j.establishmentId === e.id && j.startedAt >= dayStart)
+        const productionSpent = jobsAt(w, e.id)
+          .filter((j) => j.startedAt >= dayStart)
           .reduce(
             (n, j) =>
               n + (j.charges ? j.charges.processing + j.charges.energy + j.charges.water : 0),

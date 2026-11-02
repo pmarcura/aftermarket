@@ -1,4 +1,4 @@
-import { TIME_SCALE, products, type ProductId, type Recipe } from './model';
+import { products, type ProductId, type Recipe } from './model';
 import { createSeasonConfig, type SeasonConfig } from './calibration';
 import {
   designItems,
@@ -9,12 +9,13 @@ import {
 } from './catalog';
 import { designWorld, priceList } from './economy-design';
 import { infrastructurePrograms } from './channels';
-import { GAME_DAY } from './operations';
+import { HOUR_MS, createClock, gameDay, gameToReal, type WorldClock } from './clock';
 import { cities } from '../../world/src/geography-v2';
 
 // Configuração da temporada congelada a partir do catálogo da economia alvo (etapa B, D-042).
 
-export function v2Recipes(): Recipe[] {
+// Durações em ms reais na velocidade do relógio do mundo.
+export function v2Recipes(clock: WorldClock): Recipe[] {
   return designRecipes.map((r) => {
     // Itens exigidos na linha (vacas) não entram como insumo: nascem e se aposentam pelo rebanho.
     const herdItem = Object.keys(r.requires ?? {})[0] as DesignItemId | undefined;
@@ -37,7 +38,7 @@ export function v2Recipes(): Recipe[] {
           }
         : {}),
       cost: r.processing,
-      duration: (r.hours * 3_600_000) / TIME_SCALE,
+      duration: gameToReal(clock, r.hours * HOUR_MS),
       energyKwh: r.energyKwh,
       waterM3: r.waterM3,
       lossKg: r.lossKg,
@@ -46,14 +47,14 @@ export function v2Recipes(): Recipe[] {
   });
 }
 
-export function v2SeasonConfig(scale = 1): SeasonConfig {
+export function v2SeasonConfig(scale = 1, clock: WorldClock = createClock()): SeasonConfig {
   const ids = Object.keys(products) as ProductId[];
   const base = createSeasonConfig(
     Object.fromEntries(ids.map((id) => [id, referencePrice(id as DesignItemId)])) as Record<
       ProductId,
       number
     >,
-    v2Recipes(),
+    v2Recipes(clock),
   );
   // Editais a 1/4 do tamanho original, para caber no estoque de uma siderúrgica, e oferta de
   // 2,2× o aço público alvo: na prova de 90 dias cerca de metade expira sem proposta válida.
@@ -74,6 +75,7 @@ export function v2SeasonConfig(scale = 1): SeasonConfig {
   const population = cities.reduce((n, city) => n + city.population, 0);
   const config: SeasonConfig = {
     ...base,
+    clock,
     history: { keepDays: 15 },
     wholesalePrices: Object.fromEntries(
       Object.entries(priceList()).map(([id, price]) => [id, Math.round(price)]),
@@ -84,7 +86,7 @@ export function v2SeasonConfig(scale = 1): SeasonConfig {
     },
     government: {
       lotScale,
-      contractIntervalMs: Math.round((GAME_DAY * states) / contractsPerDay),
+      contractIntervalMs: Math.round((gameDay(clock) * states) / contractsPerDay),
     },
     regions: cities,
     worldScale: scale,

@@ -105,6 +105,9 @@ export const economicSources = [
 ];
 
 export interface SeasonConfig {
+  // Velocidade do relógio deste mundo (spec 004). As durações gravadas em ms reais na temporada
+  // (receitas, intervalo dos editais) foram calculadas com ela; mudar a velocidade é outro mundo.
+  clock: import('./clock').WorldClock;
   // Sucata urbana devolvida pelos utensílios vendidos e preço da coleta municipal.
   recycling: { urbanScrapShare: number; scrapPrice: number };
   // Editais menores e espaçados, dimensionados pelo aço público da economia alvo.
@@ -139,7 +142,14 @@ export interface SeasonConfig {
 // municípios, escala) entra em `v2SeasonConfig` (economy-v2.ts).
 export type SeasonBase = Omit<
   SeasonConfig,
-  'recycling' | 'government' | 'wholesalePrices' | 'history' | 'regions' | 'worldScale' | 'design'
+  | 'clock'
+  | 'recycling'
+  | 'government'
+  | 'wholesalePrices'
+  | 'history'
+  | 'regions'
+  | 'worldScale'
+  | 'design'
 > & { design: typeof designRules };
 // Cópia persistida na abertura da temporada. Nenhuma cotação externa é consultada pelo motor.
 export function createSeasonConfig(

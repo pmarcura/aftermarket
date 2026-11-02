@@ -4,14 +4,18 @@ import { advance, execute } from '../packages/simulation/src/engine';
 import { runBotDirector } from '../packages/simulation/src/director';
 import { runSupplyPolicies } from '../packages/simulation/src/supply';
 import { defaultSupplyPolicy } from '../packages/simulation/src/competition';
-import { ECONOMIC_INTERVAL, type World } from '../packages/simulation/src/model';
-import { GAME_DAY } from '../packages/simulation/src/operations';
+import { type World } from '../packages/simulation/src/model';
 import {
   hasDecisionTrace,
   withDecisionSource,
   withDecisionTrace,
   type DecisionTrace,
 } from '../packages/simulation/src/decision-trace';
+import { createClock, economicInterval, gameDay } from '../packages/simulation/src/clock';
+
+// Os mundos destes testes nascem no relógio padrão (120×).
+const DAY = gameDay(createClock());
+const ROUND = economicInterval(createClock());
 
 const NOW = Date.UTC(2026, 9, 26, 12);
 const unit = (world: World, id = 'e-botfactory') => world.establishments.find((e) => e.id === id)!;
@@ -54,13 +58,13 @@ describe('observação opcional das decisões', () => {
       .spyOn(globalThis.crypto, 'randomUUID')
       .mockImplementation(() => `00000000-0000-4000-8000-${String(++sequence).padStart(12, '0')}`);
     try {
-      advance(plain, NOW + ECONOMIC_INTERVAL * 4);
+      advance(plain, NOW + ROUND * 4);
       sequence = 0;
       withDecisionTrace(
         observed,
         (event) => events.push(event),
         () => {
-          advance(observed, NOW + ECONOMIC_INTERVAL * 4);
+          advance(observed, NOW + ROUND * 4);
         },
       );
       expect(observed).toEqual(plain);
@@ -173,7 +177,7 @@ describe('observação opcional das decisões', () => {
     withDecisionTrace(
       world,
       (event) => events.push(event),
-      () => runSupplyPolicies(world, NOW + ECONOMIC_INTERVAL),
+      () => runSupplyPolicies(world, NOW + ROUND),
     );
     expect(
       events.some(
@@ -190,10 +194,10 @@ describe('observação opcional das decisões', () => {
     withDecisionTrace(
       world,
       (event) => events.push(event),
-      () => runSupplyPolicies(world, NOW + ECONOMIC_INTERVAL * 2),
+      () => runSupplyPolicies(world, NOW + ROUND * 2),
     );
     expect(events.some((event) => event.code === 'fleet-unavailable')).toBe(true);
-    expect(events.every((event) => event.at === NOW + ECONOMIC_INTERVAL * 2)).toBe(true);
+    expect(events.every((event) => event.at === NOW + ROUND * 2)).toBe(true);
     world.vehicles.forEach((vehicle) => {
       vehicle.status = 'available';
     });
@@ -204,16 +208,16 @@ describe('observação opcional das decisões', () => {
     withDecisionTrace(
       world,
       (event) => events.push(event),
-      () => runSupplyPolicies(world, NOW + ECONOMIC_INTERVAL * 3),
+      () => runSupplyPolicies(world, NOW + ROUND * 3),
     );
     expect(events.some((event) => event.code === 'supply-retry-wait')).toBe(true);
-    expect(destination.supplyRetryAt?.iron).toBe(NOW + ECONOMIC_INTERVAL * 2 + GAME_DAY / 2);
+    expect(destination.supplyRetryAt?.iron).toBe(NOW + ROUND * 2 + DAY / 2);
     destination.supplyRetryAt = {};
     events.length = 0;
     withDecisionTrace(
       world,
       (event) => events.push(event),
-      () => runSupplyPolicies(world, NOW + ECONOMIC_INTERVAL * 3),
+      () => runSupplyPolicies(world, NOW + ROUND * 3),
     );
     expect(events.some((event) => event.code === 'destination-storage-full')).toBe(true);
     expect(world.shipments).toHaveLength(0);
@@ -259,7 +263,7 @@ describe('observação opcional das decisões', () => {
     withDecisionTrace(
       world,
       (event) => events.push(event),
-      () => advance(world, NOW + ECONOMIC_INTERVAL),
+      () => advance(world, NOW + ROUND),
     );
     expect(
       events.some(
@@ -275,7 +279,7 @@ describe('observação opcional das decisões', () => {
     withDecisionTrace(
       world,
       (event) => events.push(event),
-      () => advance(world, NOW + ECONOMIC_INTERVAL * 2),
+      () => advance(world, NOW + ROUND * 2),
     );
     expect(
       events.some(

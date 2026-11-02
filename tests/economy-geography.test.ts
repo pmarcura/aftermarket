@@ -9,8 +9,11 @@ import {
 } from '../packages/simulation/src/economy-design';
 import { vehicleModels } from '../packages/simulation/src/catalog';
 import { products } from '../packages/simulation/src/model';
-import { GAME_DAY } from '../packages/simulation/src/operations';
 import { supplySpent } from '../packages/simulation/src/supply';
+import { createClock, gameDay } from '../packages/simulation/src/clock';
+
+// Os mundos destes testes nascem no relógio padrão (120×).
+const DAY = gameDay(createClock());
 
 const NOW = Date.UTC(2026, 9, 27, 12);
 
@@ -88,7 +91,7 @@ describe('economia versão 2 no mapa real', () => {
       carrierId: 'transbrasil',
       maxFreight: 200000,
       createdAt: NOW,
-      deadline: NOW + 3 * GAME_DAY,
+      deadline: NOW + 3 * DAY,
       status: 'pending' as const,
       proposals: [],
     };

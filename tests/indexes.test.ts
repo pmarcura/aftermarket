@@ -13,7 +13,10 @@ import {
 import { createScenario } from '../packages/simulation/src/scenarios';
 import { advance } from '../packages/simulation/src/engine';
 import { createWorld } from '../packages/simulation/src/seed';
-import { GAME_DAY } from '../packages/simulation/src/operations';
+import { createClock, gameDay } from '../packages/simulation/src/clock';
+
+// Os mundos destes testes nascem no relógio padrão (120×).
+const DAY = gameDay(createClock());
 
 const ship = (id: string, destinationId: string, product = 'rice', delivered = false) =>
   ({ id, destinationId, product, quantity: 1, delivered }) as unknown as Shipment;
@@ -111,7 +114,7 @@ describe('índices incrementais do mundo (spec 005)', () => {
     const w = createScenario(AT, 'playtest', 0, { scale: 1 });
     expectSameAsScan(w);
     for (let d = 1; d <= 2; d++) {
-      advance(w, AT + d * GAME_DAY);
+      advance(w, AT + d * DAY);
       expectSameAsScan(w);
     }
     expect(w.shipments.length).toBeGreaterThan(0);
@@ -123,7 +126,7 @@ describe('advance com muitos eventos abertos (spec 005, R6)', () => {
   it('acha o próximo evento sem estourar o limite de argumentos', () => {
     const NOW = Date.UTC(2026, 9, 27, 4);
     const w = createWorld(NOW);
-    const far = NOW + 1000 * GAME_DAY;
+    const far = NOW + 1000 * DAY;
     // 200 mil lotes abertos de um estabelecimento que não existe: só a busca do próximo evento os lê.
     for (let i = 0; i < 200000; i++)
       w.jobs.push({

@@ -2,8 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { createScenario, leanStartCash } from '../packages/simulation/src/scenarios';
 import { createWorld } from '../packages/simulation/src/seed';
 import { advance } from '../packages/simulation/src/engine';
-import { GAME_DAY } from '../packages/simulation/src/operations';
 import { v2LotArea } from '../packages/simulation/src/opening-v2';
+import { createClock, gameDay } from '../packages/simulation/src/clock';
+
+// Os mundos destes testes nascem no relógio padrão (120×).
+const DAY = gameDay(createClock());
 
 // Começo enxuto do mundo jogável da versão 2 (D-033).
 const NOW = Date.UTC(2026, 9, 26, 12);
@@ -43,7 +46,7 @@ describe('começo enxuto do mundo jogável', () => {
     expect(money(w)).toBe(money(createWorld(NOW)));
     const before = money(w),
       free = w.properties.filter((p) => p.ownerId === null).map((p) => p.id);
-    advance(w, NOW + GAME_DAY * 2);
+    advance(w, NOW + DAY * 2);
     expect(money(w)).toBe(before);
     expect(w.properties.filter((p) => p.ownerId === null).map((p) => p.id)).toEqual(free);
   });

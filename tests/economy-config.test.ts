@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createWorld } from '../packages/simulation/src/seed';
-import { seasonProducts, products, TIME_SCALE } from '../packages/simulation/src/model';
+import { seasonProducts, products } from '../packages/simulation/src/model';
+import { HOUR_MS, gameToReal } from '../packages/simulation/src/clock';
 import { householdItems } from '../packages/simulation/src/channels';
 import { equipmentCostFor } from '../packages/simulation/src/design';
 import { householdDemand } from '../packages/simulation/src/metrics';
@@ -38,7 +39,7 @@ describe('configuração da economia alvo', () => {
           retirements: r.input[herd as keyof typeof r.input],
         });
       expect(recipe.cost).toBe(r.processing);
-      expect(recipe.duration).toBe((r.hours * 3_600_000) / TIME_SCALE);
+      expect(recipe.duration).toBe(gameToReal(v2, r.hours * HOUR_MS));
       expect(v2.season.config.operations.profiles[r.id]).toEqual({
         workers: r.workers,
         areaM2: r.areaM2,

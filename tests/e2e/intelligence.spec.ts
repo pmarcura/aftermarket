@@ -1,7 +1,10 @@
 import { test, expect } from './fixtures';
 import { createWorld } from '../../packages/simulation/src/seed';
 import { advance } from '../../packages/simulation/src/engine';
-import { ECONOMIC_INTERVAL } from '../../packages/simulation/src/model';
+import { createClock, economicInterval } from '../../packages/simulation/src/clock';
+
+// Os mundos destes testes nascem no relógio padrão (120×).
+const ROUND = economicInterval(createClock());
 
 test('titularidade, filtros vazios e análise profissional usam dados internos', async ({
   page,
@@ -10,7 +13,7 @@ test('titularidade, filtros vazios e análise profissional usam dados internos',
   // Mundo de referência com algumas rodadas do motor: o histórico de preços e os negócios do
   // gráfico saem do próprio motor, não de números escritos no teste.
   const now = Date.now(),
-    world = createWorld(now - 6 * ECONOMIC_INTERVAL);
+    world = createWorld(now - 6 * ROUND);
   advance(world, now);
   expect(world.marketHistory.some((s) => s.product === 'iron')).toBe(true);
   const errors: string[] = [];

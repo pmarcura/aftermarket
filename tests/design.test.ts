@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createWorld } from '../packages/simulation/src/seed';
 import { execute, advance } from '../packages/simulation/src/engine';
-import { GAME_DAY } from '../packages/simulation/src/operations';
 import {
   arrears,
   equipmentCostFor,
@@ -21,8 +20,13 @@ import { supplyForecast } from '../packages/simulation/src/supply';
 import { marketView } from '../packages/simulation/src/metrics';
 import { runBotDirector, botRecoveryPlan } from '../packages/simulation/src/director';
 import { migrateWorld } from '../packages/simulation/src/migrate';
-import { ECONOMIC_INTERVAL, type World } from '../packages/simulation/src/model';
+import { type World } from '../packages/simulation/src/model';
 import { rebaseMoney } from '../packages/simulation/src/invariants';
+import { createClock, economicInterval, gameDay } from '../packages/simulation/src/clock';
+
+// Os mundos destes testes nascem no relógio padrão (120×).
+const DAY = gameDay(createClock());
+const ROUND = economicInterval(createClock());
 const NOW = Date.UTC(2026, 9, 27, 4);
 const money = (w: World) => w.companies.reduce((n, c) => n + c.balance, 0);
 function quiet() {
@@ -34,7 +38,7 @@ function quiet() {
   for (const c of w.companies)
     if (!institutional(c.id) && !['transbrasil', 'rodoleste', 'expresso'].includes(c.id))
       c.bot = false;
-  w.nextEconomicAt = NOW + GAME_DAY * 100;
+  w.nextEconomicAt = NOW + DAY * 100;
   return w;
 }
 const company = (w: World, id = 'player') => w.companies.find((c) => c.id === id)!;
@@ -82,17 +86,17 @@ describe('recuperação sem emissão', () => {
     e.employees = 0;
     e.automation = false;
     e.supplyPolicy!.enabled = false;
-    const at = NOW + GAME_DAY * 8;
-    w.nextEconomicAt = NOW + ECONOMIC_INTERVAL;
-    advance(w, NOW + ECONOMIC_INTERVAL);
+    const at = NOW + DAY * 8;
+    w.nextEconomicAt = NOW + ROUND;
+    advance(w, NOW + ROUND);
     const template = w.infrastructure.find((c) => c.product === 'steel')!;
     for (let i = 0; i < 20; i++)
       w.infrastructure.push({
         ...structuredClone(template),
         id: `opportunity-${i}`,
-        createdAt: at - GAME_DAY,
+        createdAt: at - DAY,
         biddingEndsAt: at - 1,
-        deadline: at + GAME_DAY,
+        deadline: at + DAY,
         status: 'expired',
         bids: [],
       });
@@ -142,15 +146,13 @@ describe('recuperação sem emissão', () => {
     company(w, 'player2').balance = 0;
     const total = money(w),
       prior = e.expenses;
-    w.nextEconomicAt = NOW + ECONOMIC_INTERVAL;
-    advance(w, NOW + ECONOMIC_INTERVAL);
+    w.nextEconomicAt = NOW + ROUND;
+    advance(w, NOW + ROUND);
     expect(e.enabled).toBe(false);
     expect(arrears(w, 'player2')).toBeGreaterThan(0);
     expect(e.expenses - prior).toBe(arrears(w, 'player2'));
     expect(money(w)).toBe(total);
-    expect(
-      w.ledger.filter((l) => l.from === 'player2' && l.at === NOW + ECONOMIC_INTERVAL),
-    ).toHaveLength(0);
+    expect(w.ledger.filter((l) => l.from === 'player2' && l.at === NOW + ROUND)).toHaveLength(0);
   });
   it('suspensão zera equipe, reduz manutenção e preserva estoques; reativação não contrata grátis', () => {
     const w = quiet(),
@@ -238,8 +240,8 @@ describe('recuperação sem emissão', () => {
     openFactory(w);
     execute(w, 'player2', { type: 'takeRecoveryLoan', state: 'SP', amount: 3000000 }, NOW);
     const total = money(w);
-    w.nextEconomicAt = NOW + GAME_DAY;
-    advance(w, NOW + GAME_DAY);
+    w.nextEconomicAt = NOW + DAY;
+    advance(w, NOW + DAY);
     expect(w.loans![0].repaid).toBe(100000);
     expect(money(w)).toBe(total);
   });
@@ -320,7 +322,7 @@ describe('referência protegida e informação', () => {
         unitPrice: base * 100,
         channel: 'wholesale',
       });
-    updatePublicBenchmarks(w, NOW + GAME_DAY);
+    updatePublicBenchmarks(w, NOW + DAY);
     expect(publicReference(w, 'steel')).toBe(base);
   });
   it('negócios de várias empresas atualizam no máximo 5% ao dia, sem aumentar pelo número de consultas', () => {
@@ -340,9 +342,9 @@ describe('referência protegida e informação', () => {
         unitPrice: base * 10,
         channel: 'wholesale',
       });
-    updatePublicBenchmarks(w, NOW + GAME_DAY);
+    updatePublicBenchmarks(w, NOW + DAY);
     expect(publicReference(w, 'steel')).toBe(Math.floor(base * 1.05));
-    updatePublicBenchmarks(w, NOW + GAME_DAY + 100);
+    updatePublicBenchmarks(w, NOW + DAY + 100);
     expect(publicReference(w, 'steel')).toBe(Math.floor(base * 1.05));
   });
   it('projeção não eleva produção industrial acima do plano e saúde preserva total por setor', () => {
@@ -360,7 +362,7 @@ describe('referência protegida e informação', () => {
     delete w.loans;
     delete w.publicBenchmarks;
     const before = structuredClone(w);
-    const m = migrateWorld(w, NOW + GAME_DAY * 3).world;
+    const m = migrateWorld(w, NOW + DAY * 3).world;
     expect(m.obligations).toEqual([]);
     expect(m.loans).toEqual([]);
     expect(m.ledger).toEqual(before.ledger);

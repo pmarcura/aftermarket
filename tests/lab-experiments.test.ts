@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { runLab, validateLabOptions } from '../packages/simulation/src/lab';
 import { applyLabOpening, applyLabShock } from '../packages/simulation/src/lab-experiments';
 import { createScenario } from '../packages/simulation/src/scenarios';
-import { GAME_DAY } from '../packages/simulation/src/operations';
+import { createClock, gameDay } from '../packages/simulation/src/clock';
+
+// Os mundos destes testes nascem no relógio padrão (120×).
+const DAY = gameDay(createClock());
 
 const at = Date.UTC(2026, 9, 26, 12);
 describe('experimentos do laboratório', () => {
@@ -56,8 +59,8 @@ describe('experimentos do laboratório', () => {
     expect(world.companies.reduce((n, c) => n + c.balance, 0)).toBe(beforeMoney);
     expect(createScenario(at).season.config).toEqual(baseline);
     expect(log.changes).toHaveLength(3);
-    applyLabShock(world, { day: 2, type: 'demand', multiplier: 0.5 }, at + GAME_DAY, log);
-    expect(log.events).toEqual([{ day: 2, type: 'demand', multiplier: 0.5, at: at + GAME_DAY }]);
+    applyLabShock(world, { day: 2, type: 'demand', multiplier: 0.5 }, at + DAY, log);
+    expect(log.events).toEqual([{ day: 2, type: 'demand', multiplier: 0.5, at: at + DAY }]);
     expect(world.season.config.parameters.playableConsumerShare).toBe(
       baseline.parameters.playableConsumerShare * 0.5,
     );
@@ -86,7 +89,7 @@ describe('experimentos do laboratório', () => {
     expect(changed.observations[1]).toEqual(base.observations[1]);
     expect(changed.metadata.config).toEqual(base.metadata.config);
     expect(changed.metadata.experiment.events).toEqual([
-      { day: 2, type: 'demand', multiplier: 0.5, at: at + GAME_DAY },
+      { day: 2, type: 'demand', multiplier: 0.5, at: at + DAY },
     ]);
     expect(changed.summary.moneyConserved).toBe(true);
     for (const group of changed.trace) expect(group.count).toBeGreaterThan(0);

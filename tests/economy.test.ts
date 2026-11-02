@@ -1,9 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { createWorld } from '../packages/simulation/src/seed';
 import { advance, execute, quote, loadOf } from '../packages/simulation/src/engine';
-import { ECONOMIC_INTERVAL, type World, type Command } from '../packages/simulation/src/model';
+import { type World, type Command } from '../packages/simulation/src/model';
 import { createStore } from '../apps/server/src/store';
 import { rebaseMoney } from '../packages/simulation/src/invariants';
+import { createClock, economicInterval } from '../packages/simulation/src/clock';
+
+// Os mundos destes testes nascem no relógio padrão (120×).
+const ROUND = economicInterval(createClock());
 const NOW = 1_000_000;
 const balance = (w: World, id = 'player') => w.companies.find((c) => c.id === id)!.balance;
 const totalMoney = (w: World) => w.companies.reduce((n, c) => n + c.balance, 0);
@@ -142,14 +146,14 @@ describe('integridade econômica', () => {
     const w = createWorld(NOW);
     unit(w, 'e-retail').inventory.milk = 3;
     const money = totalMoney(w);
-    advance(w, NOW + ECONOMIC_INTERVAL);
+    advance(w, NOW + ROUND);
     expect(unit(w, 'e-retail').inventory.milk).toBeGreaterThanOrEqual(0);
     expect(totalMoney(w)).toBe(money);
     const consumer = w.companies.find((c) => c.id === 'consumers')!;
     consumer.balance = 0;
     rebaseMoney(w);
     const revenue = unit(w, 'e-retail').revenue;
-    advance(w, NOW + ECONOMIC_INTERVAL * 2);
+    advance(w, NOW + ROUND * 2);
     expect(unit(w, 'e-retail').revenue).toBe(revenue);
   });
   it('processa o tempo offline com os mesmos saldos e estoques do tempo online', () => {

@@ -10,8 +10,13 @@ Prefixo `spec-003:`. Marcar `[x]` só com evidência (commit + comando + resulta
 - [x] T5 Padrões 60/30/5 sementes; mediana/mín/máx; `runLab` com `scale`. — R2, R3
 - [x] T6 `PROVA.md` (apagar `PROVA-V2*.md`, atualizar referências); regra de aceitação na constituição. — R7, R8
 - [ ] T7 Determinismo: mesma semente duas vezes, JSON idêntico (exceto tempo). — A2
-- [ ] T8 Baseline escala 1 e escala 20 publicado em `PROVA.md`; tempo medido. — A1, A4
+- [ ] T8 Baseline escala 1 (60/30/5) e escala 20 **preliminar** (20/10/2) publicados em `PROVA.md`; tempo medido. — A1, A4 (ver decisão de 01/11)
+- [ ] T8b Workflow `Prova econômica` no GitHub Actions (disparo manual, uma semente por máquina, relatório como artefato) para a régua completa na escala 20. — A4
 - [ ] T9 `npm run check`, `prettier --check .`; `specs/README.md` → verificada. — A3
+
+## Decisão de 01/11/2026 (John): escala 20 preliminar e prova pesada fora da máquina de desenvolvimento
+
+A régua completa na escala 20 (60 dias, 5 sementes) é inviável na máquina de desenvolvimento (2 núcleos): o custo por dia de jogo cresce com o tempo (medido, semente 0, um processo sozinho: dias 1–5 = 14 s/dia, 6–10 = 41 s/dia, 11–15 = 84 s/dia), o que projeta mais de 1 h por semente. Não é regressão das specs 001–003: 10 dias na escala 20 levaram 294 s no código original (`2e5858f`), 291 s no `main` (`4143495`) e 272 s neste branch, com resultados idênticos. Por isso: (1) a 003 fecha com a escala 1 completa e a escala 20 preliminar (20 dias, janela 10, 2 sementes); (2) a régua completa na escala 20 roda no GitHub Actions (T8b); (3) a spec 005 (fila de eventos e históricos por tempo, que ataca esse crescimento) passa à frente da 004.
 
 ## Evidência
 

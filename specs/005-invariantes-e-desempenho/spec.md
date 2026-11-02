@@ -1,6 +1,6 @@
 # Spec 005 · Invariantes em runtime e desempenho do motor
 
-Estado: **aprovada** (John, 01/11/2026). Branch `spec/005-invariantes-e-desempenho`. Passou à frente da 004 (decisão registrada na 003).
+Estado: **verificada** (R7 retirado em 01/11/2026; ver `tasks.md`) (John, 01/11/2026). Branch `spec/005-invariantes-e-desempenho`. Passou à frente da 004 (decisão registrada na 003).
 
 ## Problema
 
@@ -28,7 +28,7 @@ Causa: para cada estabelecimento com reposição (~500) e cada regra, `runSupply
 - **R4 Comandos de bots atômicos.** Em `dispatch`, nenhuma mutação antes da última verificação (`escrowReserved` zerado depois das transferências). Comando de bot/reposição que falhar não deixa estado parcial (validar antes de mutar, ou aplicar sobre cópia rasa do que é tocado).
 - **R5 Erro isolado.** `TypeError` (ou qualquer erro que não seja `RuleError`) num bot ou numa política de reposição é registrado com ids e não derruba o tick; o bot pula a rodada.
 - **R6 `advance` sem `Math.min(...spread)`.** Laço simples ou fila ordenada; sem limite de argumentos.
-- **R7 Históricos por tempo.** `supplyHistory`, `consumptionHistory`, `marketHistory` e `botActivity` cortados por janela de dias de jogo (na temporada); `supplySpent` vira contador diário por estabelecimento. Se isso mudar algum número da régua (porque o corte por contagem já alterava decisões), registrar a diferença e decidir antes de aceitar.
+- **R7 Históricos por tempo.** _(Retirado em 01/11/2026: a medição mostrou que o corte por contagem nunca descartou dado usado por decisão de bot; ver `tasks.md` T7.)_ `supplyHistory`, `consumptionHistory`, `marketHistory` e `botActivity` cortados por janela de dias de jogo (na temporada); `supplySpent` vira contador diário por estabelecimento. Se isso mudar algum número da régua (porque o corte por contagem já alterava decisões), registrar a diferença e decidir antes de aceitar.
 
 ## Critérios de aceite
 

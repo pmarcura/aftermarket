@@ -1,6 +1,6 @@
 import { economyHealth } from '../../../packages/simulation/src/design';
 import { tradeTotalsByScope } from '../../../packages/simulation/src/metrics';
-import { GAME_DAY } from '../../../packages/simulation/src/operations';
+import { gameDay } from '../../../packages/simulation/src/clock';
 import { simplifyPath } from '../../../packages/simulation/src/geometry';
 import {
   seasonProducts,
@@ -50,21 +50,23 @@ function sharedSummary(w: World) {
 
 // O extrato só recebe registros no fim e em ordem de tempo (com pequenas inversões entre
 // comando e rodada); lê de trás para frente com um dia de folga.
-function recentEntries(ledger: Entry[], since: number, keep: (l: Entry) => boolean) {
+function recentEntries(ledger: Entry[], since: number, day: number, keep: (l: Entry) => boolean) {
   const out: Entry[] = [];
   for (let i = ledger.length - 1; i >= 0; i--) {
     const l = ledger[i];
-    if (l.at < since - GAME_DAY) break;
+    if (l.at < since - day) break;
     if (l.at >= since && keep(l)) out.push(l);
   }
   return out.reverse();
 }
 
 export function worldView(w: World, actor: string): World {
+  // O pacote leva season.config.clock: o navegador converte o tempo pelo relógio deste mundo.
   const now = w.updatedAt,
-    recent = now - GAME_DAY * RECENT_DAYS;
+    day = gameDay(w),
+    recent = now - day * RECENT_DAYS;
   const mine = (l: Entry) => l.from === actor || l.to === actor;
-  const ledger = recentEntries(w.ledger, now - GAME_DAY * VIEW_LEDGER_DAYS, mine).slice(
+  const ledger = recentEntries(w.ledger, now - day * VIEW_LEDGER_DAYS, day, mine).slice(
     -MAX_LEDGER,
   );
   const units = new Set(w.establishments.filter((e) => e.companyId === actor).map((e) => e.id));

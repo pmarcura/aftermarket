@@ -26,6 +26,7 @@ import {
 } from './metrics';
 import { freeCash } from './design';
 import { storageQuantity } from './transport';
+import { openShipmentsTo, pendingOrdersTo } from './indexes';
 import { vehicleModels } from './catalog';
 
 // Busca de fornecedor em escala: transportadoras profissionais sempre cotam; das demais, só as
@@ -93,11 +94,8 @@ export function supplySpent(w: World, e: Establishment, at: number) {
   // Pedido aberto sem vendedor nem proposta não é gasto (D-038). Contado, três anúncios parados
   // de minério, carvão e sucata passavam do orçamento do dia e 11 de 12 usinas deixavam de comprar
   // das minas cheias a 100 km.
-  const promised = w.orders
-    .filter(
-      (o) =>
-        o.destinationId === e.id && o.status === 'pending' && (o.sellerId || o.proposals?.length),
-    )
+  const promised = pendingOrdersTo(w, e.id)
+    .filter((o) => o.sellerId || o.proposals?.length)
     .reduce((n, o) => n + o.quantity * o.unitPrice + o.maxFreight, 0);
   return { executed, promised, total: executed + promised };
 }
@@ -353,12 +351,10 @@ export function supplyProjection(
   need: number,
   extra?: { quantity: number; arrivalAt: number },
 ) {
-  const events = w.shipments
-    .filter((s) => s.destinationId === e.id && s.product === product && !s.delivered)
-    .map((s) => ({
-      quantity: s.quantity,
-      day: Math.max(0, (s.arrivesAt - w.updatedAt) / GAME_DAY),
-    }));
+  const events = openShipmentsTo(w, e.id, product).map((s) => ({
+    quantity: s.quantity,
+    day: Math.max(0, (s.arrivesAt - w.updatedAt) / GAME_DAY),
+  }));
   if (extra)
     events.push({
       quantity: extra.quantity,
@@ -382,14 +378,8 @@ export function supplyProjection(
 export function supplyForecast(w: World, e: Establishment, policy: SupplyPolicy) {
   const rows = policy.rules.map((rule) => {
     const current = e.inventory[rule.product] ?? 0,
-      incoming = w.shipments
-        .filter((s) => s.destinationId === e.id && s.product === rule.product && !s.delivered)
-        .reduce((n, s) => n + s.quantity, 0),
-      promised = w.orders
-        .filter(
-          (o) => o.destinationId === e.id && o.product === rule.product && o.status === 'pending',
-        )
-        .reduce((n, o) => n + o.quantity, 0);
+      incoming = openShipmentsTo(w, e.id, rule.product).reduce((n, s) => n + s.quantity, 0),
+      promised = pendingOrdersTo(w, e.id, rule.product).reduce((n, o) => n + o.quantity, 0);
     const need = dailyNeed(w, e, rule.product),
       want =
         current + incoming + promised <= rule.minimum ||
@@ -508,19 +498,11 @@ export function runSupplyPolicies(w: World, at: number) {
     const policy = e.supplyPolicy!;
     e.supplyStatus = 'Estoque acima dos mínimos';
     for (const rule of policy.rules) {
-      const incoming = w.shipments
-          .filter((s) => s.destinationId === e.id && s.product === rule.product && !s.delivered)
-          .reduce((n, s) => n + s.quantity, 0),
+      const incoming = openShipmentsTo(w, e.id, rule.product).reduce((n, s) => n + s.quantity, 0),
         // D-036: pedido aberto sem vendedor é só um anúncio de procura; contado como
         // compra feita, travava a reposição por dias quando ninguém respondia.
-        ordered = w.orders
-          .filter(
-            (o) =>
-              o.destinationId === e.id &&
-              o.product === rule.product &&
-              o.status === 'pending' &&
-              (o.sellerId || o.proposals?.length),
-          )
+        ordered = pendingOrdersTo(w, e.id, rule.product)
+          .filter((o) => o.sellerId || o.proposals?.length)
           .reduce((n, o) => n + o.quantity, 0),
         position = (e.inventory[rule.product] ?? 0) + incoming + ordered;
       e.supplyReorder ??= [];

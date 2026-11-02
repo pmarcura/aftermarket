@@ -1,5 +1,6 @@
 import { type World, type ProductId, type Health, seasonProducts } from './model';
-import { GAME_DAY, treasuryAvailable } from './operations';
+import { treasuryAvailable } from './operations';
+import { gameDay } from './clock';
 import { pendingOrdersBy } from './indexes';
 import { companyOf } from './metrics';
 
@@ -160,12 +161,12 @@ export function recoveryQuote(w: World, actor: string, state: string, amount: nu
 export function updatePublicBenchmarks(w: World, at: number) {
   initializeDesign(w, at);
   const dueProducts = seasonProducts(w).filter(
-    (id) => at - w.publicBenchmarks![id]!.at >= GAME_DAY,
+    (id) => at - w.publicBenchmarks![id]!.at >= gameDay(w),
   );
   if (!dueProducts.length) return;
   const due = new Set(dueProducts);
   const tradesByProduct = new Map<ProductId, World['ledger']>();
-  const since = at - GAME_DAY * w.season.config.design.referenceWindowDays;
+  const since = at - gameDay(w) * w.season.config.design.referenceWindowDays;
   // One read of the ledger for all references due today; grouping preserves
   // each product's original ledger order and the existing median/limit rules.
   for (const entry of w.ledger) {
@@ -228,7 +229,7 @@ export function economyHealth(w: World, at = w.updatedAt, product?: ProductId): 
   // No navegador, os indicadores vêm calculados pelo servidor com o extrato completo.
   const ready = w.view?.health[product ?? ''];
   if (ready) return ready;
-  const since = at - GAME_DAY * 7,
+  const since = at - gameDay(w) * 7,
     recent = w.ledger.filter((l) => l.at >= since && l.at <= at && l.kind !== 'budget');
   const all = w.companies.reduce((n, c) => n + c.balance, 0);
   const families = w.companies.find((c) => c.id === 'consumers')?.balance ?? 0;

@@ -12,6 +12,7 @@ import {
 } from '../packages/simulation/src/indexes';
 import { createScenario } from '../packages/simulation/src/scenarios';
 import { advance } from '../packages/simulation/src/engine';
+import { createWorld } from '../packages/simulation/src/seed';
 import { GAME_DAY } from '../packages/simulation/src/operations';
 
 const ship = (id: string, destinationId: string, product = 'rice', delivered = false) =>
@@ -115,5 +116,27 @@ describe('índices incrementais do mundo (spec 005)', () => {
     }
     expect(w.shipments.length).toBeGreaterThan(0);
     expect(w.jobs.length).toBeGreaterThan(0);
+  }, 60000);
+});
+
+describe('advance com muitos eventos abertos (spec 005, R6)', () => {
+  it('acha o próximo evento sem estourar o limite de argumentos', () => {
+    const NOW = Date.UTC(2026, 9, 27, 4);
+    const w = createWorld(NOW);
+    const far = NOW + 1000 * GAME_DAY;
+    // 200 mil lotes abertos de um estabelecimento que não existe: só a busca do próximo evento os lê.
+    for (let i = 0; i < 200000; i++)
+      w.jobs.push({
+        id: `fantasma-${i}`,
+        establishmentId: 'fantasma',
+        recipeId: 'rice',
+        cycles: 1,
+        startedAt: NOW,
+        finishesAt: far + i,
+        completed: false,
+        cost: 0,
+      });
+    expect(() => advance(w, NOW + 60_000)).not.toThrow();
+    expect(w.jobs.filter((j) => j.completed && j.establishmentId === 'fantasma')).toHaveLength(0);
   }, 60000);
 });

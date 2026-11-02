@@ -13,7 +13,14 @@ import { distanceKm } from './geometry';
 import { hasRoadAccess, routeMatchesProperties } from './road-access';
 import { householdItems, infrastructurePrograms } from './channels';
 import { committedStorage, fleetAvailability } from './transport';
-import { jobsAt, openJobsAt, openShipmentsTo, pendingOrdersTo } from './indexes';
+import {
+  jobsAt,
+  openJobs,
+  openJobsAt,
+  openShipments,
+  openShipmentsTo,
+  pendingOrdersTo,
+} from './indexes';
 import {
   actorState,
   treasuryId,
@@ -2169,14 +2176,15 @@ export function advance(w: World, now = Date.now()) {
   let changed = false;
   // Eventos ordenados asseguram o mesmo resultado online e offline, com limite por lote.
   for (let count = 0; count < 5000; count++) {
-    const next = Math.min(
-      w.nextEconomicAt,
-      ...w.shipments.filter((x) => !x.delivered).map((x) => x.arrivesAt),
-      ...w.jobs.filter((x) => !x.completed).map((x) => x.finishesAt),
-      ...(w.training ?? []).filter((t) => !t.completed).map((t) => t.finishesAt),
-    );
+    // Próximo evento por laço sobre os abertos (spec 005, R6): `Math.min(...lista)` estourava o
+    // limite de argumentos acima de ~65 mil itens e varria as listas inteiras a cada evento.
+    const shipments = openShipments(w);
+    let next = w.nextEconomicAt;
+    for (const x of shipments) if (x.arrivesAt < next) next = x.arrivesAt;
+    for (const x of openJobs(w)) if (x.finishesAt < next) next = x.finishesAt;
+    for (const t of w.training ?? []) if (!t.completed && t.finishesAt < next) next = t.finishesAt;
     if (next > now) break;
-    for (const s of w.shipments.filter((x) => !x.delivered && x.arrivesAt <= next)) {
+    for (const s of shipments.filter((x) => x.arrivesAt <= next)) {
       const dest = establishment(w, s.destinationId),
         previous = dest.inventory[s.product] ?? 0;
       if (s.infrastructureId) {
@@ -2206,7 +2214,7 @@ export function advance(w: World, now = Date.now()) {
           order.status = 'delivered';
       }
     }
-    for (const j of w.jobs.filter((x) => !x.completed && x.finishesAt <= next)) {
+    for (const j of openJobs(w).filter((x) => x.finishesAt <= next)) {
       const e = establishment(w, j.establishmentId),
         r = w.season.config.recipes.find((x) => x.id === j.recipeId)!;
       const output =

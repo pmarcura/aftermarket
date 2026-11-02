@@ -15,7 +15,8 @@ import {
   productionCapacity,
   productionQuality,
 } from './operations';
-import { operatingCosts, productionCharges, marketView, propertyOf } from './metrics';
+import { operatingCosts, productionCharges, marketView, propertyOf, companyOf } from './metrics';
+import { openShipmentsTo, pendingOrdersTo } from './indexes';
 import { distanceKm } from './geometry';
 import { arrears, freeCash, recoveryQuote, outstandingLoans } from './design';
 import { emitDecisionTrace, hasDecisionTrace, withDecisionSource } from './decision-trace';
@@ -538,12 +539,8 @@ export function runBotDirector(w: World, at: number) {
         const rule = e.supplyPolicy.rules.find(
           (r) =>
             (e.inventory[r.product] ?? 0) <= r.minimum &&
-            !w.orders.some(
-              (o) => o.destinationId === e.id && o.product === r.product && o.status === 'pending',
-            ) &&
-            !w.shipments.some(
-              (s) => s.destinationId === e.id && s.product === r.product && !s.delivered,
-            ),
+            pendingOrdersTo(w, e.id, r.product).length === 0 &&
+            openShipmentsTo(w, e.id, r.product).length === 0,
         );
         if (
           rule &&
@@ -616,9 +613,7 @@ export function runBotDirector(w: World, at: number) {
         const producers = Math.max(
           1,
           w.establishments.filter(
-            (x) =>
-              x.specialization === e.specialization &&
-              w.companies.find((z) => z.id === x.companyId)?.bot,
+            (x) => x.specialization === e.specialization && companyOf(w, x.companyId)?.bot,
           ).length,
         );
         const expectedDaily = Math.max(

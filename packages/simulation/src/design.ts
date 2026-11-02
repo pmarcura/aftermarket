@@ -1,5 +1,7 @@
 import { type World, type ProductId, type Health, seasonProducts } from './model';
 import { GAME_DAY, treasuryAvailable } from './operations';
+import { pendingOrdersBy } from './indexes';
+import { companyOf } from './metrics';
 
 export const designRules = {
   loanFee: 0.02,
@@ -102,15 +104,12 @@ export function initializeDesign(w: World, at = w.updatedAt) {
   w.designVersion = 2;
 }
 export function reservedCash(w: World, actor: string, exceptOrder?: string) {
-  return w.orders
-    .filter((o) => o.buyerId === actor && o.status === 'pending' && o.id !== exceptOrder)
+  return pendingOrdersBy(w, actor)
+    .filter((o) => o.id !== exceptOrder)
     .reduce((n, o) => n + (o.escrowReserved ?? 0), 0);
 }
 export function freeCash(w: World, actor: string, exceptOrder?: string) {
-  return Math.max(
-    0,
-    (w.companies.find((c) => c.id === actor)?.balance ?? 0) - reservedCash(w, actor, exceptOrder),
-  );
+  return Math.max(0, (companyOf(w, actor)?.balance ?? 0) - reservedCash(w, actor, exceptOrder));
 }
 export function arrears(w: World, actor: string) {
   let total = 0;

@@ -3,6 +3,7 @@ import { v2SeasonConfig } from './economy-v2';
 import { initializeOperations } from './operations';
 import { initializeCompetition } from './competition';
 import { initializeDesign } from './design';
+import { totalMoney } from './invariants';
 
 // Campos da temporada que todo mundo salvo precisa ter (D-042: só existe a economia 2).
 const seasonFields = [
@@ -28,6 +29,7 @@ export function needsMigration(input: unknown) {
     w.competitionVersion !== 1 ||
     !w.orders ||
     !w.infrastructure ||
+    !w.invariants ||
     !w.season?.config ||
     seasonFields.some((field) => w.season.config[field] === undefined)
   );
@@ -52,6 +54,8 @@ export function migrateWorld(input: unknown, now = Date.now()): { world: World; 
   initializeOperations(w);
   initializeCompetition(w, now);
   initializeDesign(w, now);
+  // Mundo salvo antes da spec 005: a soma dos saldos de agora vira a referência de conservação.
+  w.invariants ??= { totalMoney: totalMoney(w) };
   // Atualização de regras não deve cobrar retroativamente manutenção/automação nova.
   // Entregas, lotes e treinamentos mantêm seus horários e são liquidados normalmente.
   w.nextEconomicAt = Math.max(w.nextEconomicAt, now);

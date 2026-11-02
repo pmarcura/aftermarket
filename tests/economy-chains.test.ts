@@ -3,6 +3,7 @@ import { createWorld } from '../packages/simulation/src/seed';
 import { advance, execute, RuleError } from '../packages/simulation/src/engine';
 import type { Category, Establishment, ProductId, World } from '../packages/simulation/src/model';
 import { availableStock, productionCapacity } from '../packages/simulation/src/operations';
+import { rebaseMoney } from '../packages/simulation/src/invariants';
 
 // Fatias 3–5 da etapa B: sementes, rebanho e ração no mundo versão 2.
 const NOW = Date.UTC(2026, 9, 27, 12);
@@ -42,6 +43,7 @@ function unit(
     capacityM3: 1e9,
   });
   w.companies.find((c) => c.id === e.companyId)!.balance = 1e12;
+  rebaseMoney(w);
   return e;
 }
 function produceAndFinish(w: World, e: Establishment, recipeId: string, cycles: number) {

@@ -3,6 +3,7 @@ import { createWorld } from '../packages/simulation/src/seed';
 import { advance, execute, quote, loadOf } from '../packages/simulation/src/engine';
 import { ECONOMIC_INTERVAL, type World, type Command } from '../packages/simulation/src/model';
 import { createStore } from '../apps/server/src/store';
+import { rebaseMoney } from '../packages/simulation/src/invariants';
 const NOW = 1_000_000;
 const balance = (w: World, id = 'player') => w.companies.find((c) => c.id === id)!.balance;
 const totalMoney = (w: World) => w.companies.reduce((n, c) => n + c.balance, 0);
@@ -36,6 +37,7 @@ describe('integridade econômica', () => {
     const w = createWorld(NOW),
       lot = freeLot(w);
     w.companies[0].balance = 0;
+    rebaseMoney(w);
     expect(() =>
       execute(w, 'player', { type: 'buyProperty', propertyId: lot.id, name: 'Teste' }, NOW),
     ).toThrow(/Saldo insuficiente/);
@@ -145,6 +147,7 @@ describe('integridade econômica', () => {
     expect(totalMoney(w)).toBe(money);
     const consumer = w.companies.find((c) => c.id === 'consumers')!;
     consumer.balance = 0;
+    rebaseMoney(w);
     const revenue = unit(w, 'e-retail').revenue;
     advance(w, NOW + ECONOMIC_INTERVAL * 2);
     expect(unit(w, 'e-retail').revenue).toBe(revenue);

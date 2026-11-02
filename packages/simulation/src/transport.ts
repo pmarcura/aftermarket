@@ -1,5 +1,6 @@
 import { products, type World, type ProductId, type Establishment } from './model';
 import { vehiclesOf } from './metrics';
+import { openJobsAt, openShipmentsTo } from './indexes';
 
 // Limite por veículo: somar capacidades antes de arredondar criaria unidades impossíveis.
 export function fleetAvailability(w: World, companyId: string, product: ProductId) {
@@ -30,9 +31,9 @@ export function fleetAvailability(w: World, companyId: string, product: ProductI
 
 export function committedStorage(w: World, e: Establishment) {
   const inv = { ...e.inventory };
-  for (const s of w.shipments.filter((s) => s.destinationId === e.id && !s.delivered))
-    inv[s.product] = (inv[s.product] ?? 0) + s.quantity;
-  for (const j of w.jobs.filter((j) => j.establishmentId === e.id && !j.completed)) {
+  // Índices na ordem da lista (spec 005): mesma ordem de soma da varredura que substituem.
+  for (const s of openShipmentsTo(w, e.id)) inv[s.product] = (inv[s.product] ?? 0) + s.quantity;
+  for (const j of openJobsAt(w, e.id)) {
     const output =
       j.output ??
       Object.fromEntries(

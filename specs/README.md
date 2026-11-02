@@ -9,7 +9,7 @@ Como trabalhar: ler `CONSTITUTION.md`, depois a spec ativa. Cada pasta tem `spec
 | 002  | [Dieta de ferramental: lab de interfaces fora do `check`, e2e em Chromium, versões travadas](002-dieta-ferramental/spec.md) | verificada (A3 pendente de execução no GitHub)               | 1      | —          |
 | 003  | [Régua honesta da prova econômica e KPIs de balanceamento](003-regua-honesta/spec.md)                                       | verificada (escala 20 preliminar; régua completa no Actions) | 2      | 001        |
 | 004  | Relógio por mundo (`timeScale` na temporada)                                                                                | rascunho                                                     | 3      | 001        |
-| 005  | Invariante de conservação em runtime e fila de eventos no `advance`                                                         | rascunho                                                     | 2      | 001        |
+| 005  | [Invariantes em runtime e desempenho do motor](005-invariantes-e-desempenho/spec.md)                                        | verificada (R7 retirado)                                     | 2      | 001        |
 | 006  | Fechar exploits de preço e temporada versionada `balance/season-2026-01`                                                    | rascunho                                                     | 3–4    | 003, 004   |
 | 007  | Servidor de jogo: login por convite, autorização por empresa, view pública/privada                                          | rascunho                                                     | 3–6    | 001        |
 

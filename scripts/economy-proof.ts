@@ -6,6 +6,7 @@ import { advance } from '../packages/simulation/src/engine';
 import { GAME_DAY } from '../packages/simulation/src/operations';
 import { applyLabOpening } from '../packages/simulation/src/lab-experiments';
 import { archiveHistory } from '../packages/simulation/src/history';
+import { setInvariantChecks } from '../packages/simulation/src/invariants';
 import type { Entry, Job } from '../packages/simulation/src/model';
 import {
   analyzeDesign,
@@ -66,6 +67,8 @@ if (
   throw new Error('Os arquivos de --from precisam ter os mesmos dias, janela e escala.');
 if (new Set(seeds).size !== seeds.length) throw new Error('Semente repetida na prova.');
 const AT = Date.UTC(2026, 9, 26, 12);
+// A prova é ferramenta do laboratório: conservação do dinheiro verificada a cada comando e evento.
+setInvariantChecks(true);
 const flows = dailyFlows();
 const design = analyzeDesign();
 

@@ -6,7 +6,7 @@ import {
   type Category,
   type SupplyPolicy,
 } from './model';
-import { regionsOf } from './metrics';
+import { companyOf, establishmentOf, propertyOf, regionsOf } from './metrics';
 import { GAME_DAY, defaultSpecialization } from './operations';
 import { householdItems } from './channels';
 
@@ -55,12 +55,14 @@ export const treasuryId = (state: string) => `treasury:${state}`;
 export const institutional = (id: string) =>
   id === 'treasury' || id === 'consumers' || id.startsWith('treasury:');
 export function actorState(w: World, actor: string, establishmentId?: string) {
+  // Buscas por id pelos índices do motor (ids são únicos); a primeira unidade da empresa continua
+  // pela ordem da lista.
   const unit =
-    w.establishments.find((e) => e.id === establishmentId) ??
+    (establishmentId === undefined ? undefined : establishmentOf(w, establishmentId)) ??
     w.establishments.find((e) => e.companyId === actor);
   return (
-    w.properties.find((p) => p.id === unit?.propertyId)?.state ??
-    w.companies.find((c) => c.id === actor)?.homeState ??
+    (unit ? propertyOf(w, unit.propertyId)?.state : undefined) ??
+    companyOf(w, actor)?.homeState ??
     'SP'
   );
 }
@@ -385,6 +387,18 @@ export function initializeCompetition(w: World, at = w.updatedAt) {
   w.operationsVersion = 3;
 }
 export function updateWages(w: World, at: number) {
+  // O estado de cada pagador não muda durante a atualização: calculado uma vez por pagador e
+  // unidade, não uma vez por lançamento e por estado (spec 005; era 7% do tempo de simulação).
+  const states = new Map<string, string>();
+  const stateOf = (from: string, establishmentId?: string) => {
+    const key = `${from}\u0000${establishmentId ?? ''}`;
+    let found = states.get(key);
+    if (found === undefined) {
+      found = actorState(w, from, establishmentId);
+      states.set(key, found);
+    }
+    return found;
+  };
   for (const [state, market] of Object.entries(w.stateWages ?? {})) {
     while (at - market.updatedAt >= GAME_DAY * 7) {
       const paid = w.ledger
@@ -392,7 +406,7 @@ export function updateWages(w: World, at: number) {
           (l) =>
             l.kind === 'payroll' &&
             l.at >= market.updatedAt &&
-            actorState(w, l.from, l.establishmentId) === state,
+            stateOf(l.from, l.establishmentId) === state,
         )
         .reduce((n, l) => n + l.amount, 0);
       const growth = Math.min(0.02, 0.002 + paid / 1e11);

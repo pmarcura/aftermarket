@@ -6,6 +6,7 @@ import { operatingCosts, recordMarket } from './metrics';
 import { initializeOperations } from './operations';
 import { initializeCompetition } from './competition';
 import { initializeDesign } from './design';
+import { totalMoney } from './invariants';
 import {
   alignLegacyProducers,
   normalizeV2Lot,
@@ -331,6 +332,7 @@ export function createWorld(now = Date.now(), options: { scale?: number } = {}):
     jobs: [],
     ledger: [],
     routes: {},
+    invariants: { totalMoney: 0 },
     currency: 'BRL',
     economyStartedAt: now,
     marketHistory: [],
@@ -365,6 +367,7 @@ export function createWorld(now = Date.now(), options: { scale?: number } = {}):
   for (const p of world.properties) normalizeV2Lot(world, p);
   initializeDesign(world, now);
   recordMarket(world, now);
+  world.invariants = { totalMoney: totalMoney(world) };
   return world;
 }
 

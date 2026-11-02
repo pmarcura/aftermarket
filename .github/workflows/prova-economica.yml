@@ -86,6 +86,11 @@ jobs:
           files=$(ls test-results/prova-s*.json | paste -sd, -)
           echo "Sementes concluídas: $files"
           npx tsx scripts/economy-proof.ts --from="$files" --write-doc
+      - name: Publicar o resumo na página da execução
+        run: |
+          section=$(sed -n '/<!-- escala:${{ inputs.scale }} início -->/,/<!-- escala:${{ inputs.scale }} fim -->/p' docs/product/PROVA.md)
+          echo "$section" >> "$GITHUB_STEP_SUMMARY"
+          echo "$section"
       - uses: actions/upload-artifact@v4
         with:
           name: prova-economica-escala-${{ inputs.scale }}

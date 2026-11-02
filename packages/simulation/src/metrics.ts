@@ -190,7 +190,11 @@ export function vehiclesOf(w: World, companyId: string): World['vehicles'] {
   let index = fleetIndexes.get(w);
   if (!index || index.length !== w.vehicles.length || index.revision !== w.revision) {
     const map = new Map<string, World['vehicles']>();
-    for (const v of w.vehicles) map.set(v.companyId, [...(map.get(v.companyId) ?? []), v]);
+    for (const v of w.vehicles) {
+      const fleet = map.get(v.companyId);
+      if (fleet) fleet.push(v);
+      else map.set(v.companyId, [v]);
+    }
     index = { length: w.vehicles.length, revision: w.revision, map };
     fleetIndexes.set(w, index);
   }
@@ -201,6 +205,9 @@ export function propertyOf(w: World, id: string) {
 }
 export function establishmentOf(w: World, id: string) {
   return byId(w.establishments).get(id);
+}
+export function companyOf(w: World, id: string) {
+  return byId(w.companies).get(id);
 }
 
 /**

@@ -82,11 +82,15 @@ const isOpenShipment = (s: Shipment) => !s.delivered;
 const isOpenJob = (j: Job) => !j.completed;
 const isPendingOrder = (o: PurchaseOrder) => o.status === 'pending';
 
+type SupplyRecord = NonNullable<World['supplyHistory']>[number];
+
 interface WorldIndexes {
   shipmentsTo: KeyedIndex<Shipment>;
   jobsAt: KeyedIndex<Job>;
   openJobsAt: KeyedIndex<Job>;
   ordersTo: KeyedIndex<PurchaseOrder>;
+  ordersBy: KeyedIndex<PurchaseOrder>;
+  supplyOf: KeyedIndex<SupplyRecord>;
   openShipments: OpenList<Shipment>;
   openJobs: OpenList<Job>;
 }
@@ -99,6 +103,8 @@ function of(w: World): WorldIndexes {
       jobsAt: new KeyedIndex<Job>((j) => j.establishmentId),
       openJobsAt: new KeyedIndex<Job>((j) => j.establishmentId, isOpenJob),
       ordersTo: new KeyedIndex<PurchaseOrder>((o) => o.destinationId, isPendingOrder),
+      ordersBy: new KeyedIndex<PurchaseOrder>((o) => o.buyerId, isPendingOrder),
+      supplyOf: new KeyedIndex<SupplyRecord>((h) => h.establishmentId),
       openShipments: new OpenList<Shipment>(isOpenShipment),
       openJobs: new OpenList<Job>(isOpenJob),
     };
@@ -124,6 +130,15 @@ export function jobsAt(w: World, establishmentId: string) {
 export function pendingOrdersTo(w: World, destinationId: string, product?: string) {
   const all = of(w).ordersTo.get(w.orders, destinationId);
   return product === undefined ? all : all.filter((o) => o.product === product);
+}
+// Pedidos de compra pendentes feitos pela empresa (comprador).
+export function pendingOrdersBy(w: World, buyerId: string) {
+  return of(w).ordersBy.get(w.orders, buyerId);
+}
+// Compras da reposição registradas para o estabelecimento (histórico ainda na lista).
+const noSupply: SupplyRecord[] = [];
+export function supplyHistoryOf(w: World, establishmentId: string) {
+  return of(w).supplyOf.get(w.supplyHistory ?? noSupply, establishmentId);
 }
 // Todas as remessas não entregues e todos os lotes não concluídos do mundo, na ordem da lista.
 export function openShipments(w: World) {

@@ -6,7 +6,9 @@ import {
   openJobsAt,
   openShipments,
   openShipmentsTo,
+  pendingOrdersBy,
   pendingOrdersTo,
+  supplyHistoryOf,
 } from '../packages/simulation/src/indexes';
 import { createScenario } from '../packages/simulation/src/scenarios';
 import { advance } from '../packages/simulation/src/engine';
@@ -43,7 +45,14 @@ function expectSameAsScan(w: World) {
     expect(ids(pendingOrdersTo(w, k))).toEqual(
       ids(w.orders.filter((o) => o.destinationId === k && o.status === 'pending')),
     );
+    expect(supplyHistoryOf(w, k)).toEqual(
+      (w.supplyHistory ?? []).filter((h) => h.establishmentId === k),
+    );
   }
+  for (const c of w.companies ?? [])
+    expect(ids(pendingOrdersBy(w, c.id))).toEqual(
+      ids(w.orders.filter((o) => o.buyerId === c.id && o.status === 'pending')),
+    );
   expect(ids(openShipments(w))).toEqual(ids(w.shipments.filter((s) => !s.delivered)));
   expect(ids(openJobs(w))).toEqual(ids(w.jobs.filter((j) => !j.completed)));
 }

@@ -36,6 +36,12 @@ Custos alteram salários/manutenção/utilidades/processamento; velocidade divid
 
 `economy:proof` é a régua de aceitação: 5 sementes, 60 dias, janela de 30, escala do mundo jogável; aceitar uma mudança só se a mediana melhora e o pior caso não piora nos KPIs com alvo (constituição §5, spec 003). Resultado por negócio a custo médio, com lotes em curso e cargas em trânsito; cada métrica em mediana [mín–máx]. Resultados em `test-results/economy-proof.json` e, com `--write-doc`, na seção da escala em `docs/product/PROVA.md`. `runLab` também aceita `scale`.
 
+## Custo de simulação e invariantes
+
+Medido na máquina de desenvolvimento (2 núcleos), escala 20, semente 0, um processo sozinho, depois da spec 005 (índices incrementais de remessas, lotes e pedidos em `packages/simulation/src/indexes.ts`): dias 1–5 = 5,2 s/dia, 6–10 = 6,0 s/dia, 11–15 = 6,8 s/dia (90 s para 15 dias). Antes: 13,6 / 39,6 / 71,0 s/dia (621 s). Na escala 1, 0,5–0,6 s/dia. O resultado da simulação é idêntico ao de antes (mesmo JSON da prova e mesma impressão digital do mundo); só o custo mudou.
+
+A bancada (`runLab`), a prova econômica e os testes verificam a conservação do dinheiro ao fim de cada comando e de cada `advance` (`w.invariants.totalMoney`, gravado na criação do mundo); no servidor, só com `AFTERMARKET_CHECK_INVARIANTS=1`. Erro inesperado de um bot (que não seja regra do jogo) fica na atividade dos bots com `kind: 'error'` e os ids envolvidos, e a rodada segue.
+
 ## Arquivos gerados
 
 | Artefato                                  | Uso                                                                  |

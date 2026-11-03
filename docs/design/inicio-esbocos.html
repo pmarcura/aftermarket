@@ -1,0 +1,1299 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Início · três esboços</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..100,400..900&family=IBM+Plex+Mono:wght@500;600&family=Caveat+Brush&display=swap"
+    />
+    <style>
+      /* Esboços do Início na língua do jogo (Livro-caixa). Números do mundo de teste do inventário, dia 1. */
+      :root {
+        --noite: #12140f;
+        --chapa: #1b1e17;
+        --chapa-2: #23271f;
+        --chapa-3: #2c3127;
+        --linha: #343a2e;
+        --papel: #f1e6c8;
+        --papel-2: #e6d8b2;
+        --tinta: #1d1a14;
+        --tinta-2: #5a5140;
+        --ferrugem: #8a3b12;
+        --texto: #e8e6dc;
+        --suave: #a9ad9c;
+        --lavoura: #8fd14f;
+        --lavoura-escura: #2f5a12;
+        --ouro: #e6b54a;
+        --brasa: #f07a55;
+        --brasa-escura: #a8341a;
+        --ceu: #6fb7e6;
+        --fita: #b8933a;
+        --display: 'Archivo', 'Arial Narrow', system-ui, sans-serif;
+        --mono: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
+        --mao: 'Caveat Brush', cursive;
+        color-scheme: dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--noite);
+        color: var(--texto);
+        font: 400 16px/1.55 var(--display);
+        background-image:
+          linear-gradient(var(--chapa) 1px, transparent 1px),
+          linear-gradient(90deg, var(--chapa) 1px, transparent 1px);
+        background-size: 48px 48px;
+      }
+      img.px {
+        image-rendering: pixelated;
+      }
+      .wrap {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 48px 16px 96px;
+        display: grid;
+        gap: 64px;
+      }
+      h1,
+      h2,
+      h3,
+      h4 {
+        font-stretch: 68%;
+        font-weight: 900;
+        line-height: 1;
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.01em;
+      }
+      h1 {
+        font-size: clamp(2.6rem, 7vw, 4.2rem);
+      }
+      h2 {
+        font-size: clamp(1.9rem, 4vw, 2.6rem);
+      }
+      p {
+        margin: 0;
+      }
+      .rotulo {
+        font: 600 0.76rem/1.2 var(--mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--ouro);
+      }
+      .mao {
+        font-family: var(--mao);
+        line-height: 1.15;
+      }
+      .suave {
+        color: var(--suave);
+      }
+      .ler {
+        max-width: 72ch;
+        display: grid;
+        gap: 12px;
+      }
+      section.esboco {
+        display: grid;
+        gap: 22px;
+      }
+      .intro {
+        display: grid;
+        grid-template-columns: 1.3fr 1fr;
+        gap: 28px;
+        align-items: start;
+      }
+      .intro ul {
+        margin: 0;
+        padding-left: 18px;
+        display: grid;
+        gap: 4px;
+      }
+      .prosecontra {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+      }
+      .prosecontra div {
+        background: var(--chapa);
+        border: 2px solid var(--linha);
+        padding: 12px 14px;
+      }
+      .prosecontra h4 {
+        font: 600 0.72rem/1 var(--mono);
+        letter-spacing: 0.06em;
+        margin-bottom: 6px;
+      }
+      .prosecontra .bom h4 {
+        color: var(--lavoura);
+      }
+      .prosecontra .ruim h4 {
+        color: var(--brasa);
+      }
+      .prosecontra ul {
+        font-size: 0.93rem;
+      }
+      .recomendo {
+        border: 2px solid var(--lavoura);
+        background: #1d2814;
+        padding: 14px 18px;
+        display: grid;
+        gap: 6px;
+      }
+
+      .placa {
+        background: var(--chapa-2);
+        border: 2px solid var(--linha);
+        padding: 28px 32px;
+        transform: rotate(-0.6deg);
+        box-shadow: 6px 6px 0 #0006;
+        display: grid;
+        gap: 14px;
+        position: relative;
+      }
+      .placa::before {
+        content: '';
+        position: absolute;
+        top: -12px;
+        left: 40px;
+        width: 110px;
+        height: 24px;
+        background: var(--fita);
+        opacity: 0.85;
+        transform: rotate(-3deg);
+      }
+      .jornada {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+      }
+      .jornada div {
+        background: var(--chapa);
+        border: 2px solid var(--linha);
+        border-top: 4px solid var(--ceu);
+        padding: 12px 14px;
+        display: grid;
+        gap: 4px;
+      }
+      .jornada b {
+        font: 900 1.25rem/1.05 var(--display);
+        font-stretch: 68%;
+        text-transform: uppercase;
+      }
+      .jornada span {
+        font-size: 0.9rem;
+        color: var(--suave);
+        line-height: 1.35;
+      }
+
+      /* moldura do jogo, simplificada */
+      .rolar {
+        overflow-x: auto;
+        border: 2px solid var(--linha);
+        box-shadow: 8px 8px 0 #0007;
+      }
+      .jogo {
+        width: 1120px;
+        background: #12140f;
+        display: grid;
+        grid-template-columns: 168px 1fr;
+        grid-template-rows: 54px auto;
+        font-size: 15px;
+      }
+      .jogo-topo {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: stretch;
+        border-bottom: 2px solid var(--linha);
+        background: #0e100c;
+      }
+      .jogo-topo .marca {
+        width: 168px;
+        display: flex;
+        align-items: center;
+        padding: 0 14px;
+        font: 900 1.05rem/1 var(--display);
+        font-stretch: 75%;
+        letter-spacing: 0.02em;
+      }
+      .jogo-topo .busca {
+        flex: 1;
+        margin: 10px 14px;
+        border: 2px solid var(--linha);
+        color: var(--suave);
+        font-size: 0.82rem;
+        display: flex;
+        align-items: center;
+        padding: 0 10px;
+      }
+      .jogo-topo .chip {
+        border-left: 2px solid var(--linha);
+        padding: 8px 14px;
+        display: grid;
+        align-content: center;
+        min-width: 112px;
+      }
+      .jogo-topo .chip b {
+        font: 900 1.05rem/1 var(--display);
+        font-stretch: 70%;
+      }
+      .jogo-topo .chip small {
+        font-size: 0.7rem;
+        color: var(--suave);
+      }
+      .jogo-menu {
+        border-right: 2px solid var(--linha);
+        padding: 14px 0;
+        display: grid;
+        align-content: start;
+        gap: 2px;
+        background: #10120d;
+      }
+      .jogo-menu span {
+        padding: 10px 16px;
+        font-weight: 600;
+        font-size: 0.92rem;
+        color: var(--suave);
+        border-left: 3px solid transparent;
+      }
+      .jogo-menu span.on {
+        color: var(--lavoura);
+        border-left-color: var(--lavoura);
+        background: #1b2216;
+      }
+      .jogo-conteudo {
+        padding: 26px 30px 34px;
+        display: grid;
+        gap: 22px;
+        align-content: start;
+        min-height: 640px;
+      }
+
+      /* peças do Livro-caixa */
+      .lv-placa {
+        justify-self: start;
+        background: var(--chapa-2);
+        border: 2px solid var(--linha);
+        padding: 14px 22px 12px;
+        transform: rotate(-1deg);
+        position: relative;
+        box-shadow: 4px 4px 0 #0007;
+      }
+      .lv-placa::before {
+        content: '';
+        position: absolute;
+        top: -9px;
+        left: 26px;
+        width: 70px;
+        height: 16px;
+        background: var(--fita);
+        opacity: 0.9;
+        transform: rotate(-4deg);
+      }
+      .lv-placa h3 {
+        font-size: 2.3rem;
+      }
+      .lv-placa small {
+        font: 600 0.72rem/1 var(--mono);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--suave);
+        display: block;
+        margin-top: 6px;
+      }
+      .papel {
+        background: var(--papel);
+        color: var(--tinta);
+        position: relative;
+      }
+      .rasgado {
+        clip-path: polygon(
+          0 0,
+          100% 0,
+          100% calc(100% - 8px),
+          95% 100%,
+          88% calc(100% - 6px),
+          78% 100%,
+          66% calc(100% - 7px),
+          54% 100%,
+          42% calc(100% - 6px),
+          30% 100%,
+          18% calc(100% - 7px),
+          7% 100%,
+          0 calc(100% - 5px)
+        );
+      }
+      .carimbo {
+        display: inline-block;
+        font: 600 0.68rem/1 var(--mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 5px 7px;
+        border: 2px solid currentColor;
+        transform: rotate(-3deg);
+        background: transparent;
+      }
+      .c-brasa {
+        color: var(--brasa-escura);
+      }
+      .c-ouro {
+        color: #8a6312;
+      }
+      .c-lavoura {
+        color: var(--lavoura-escura);
+      }
+      .sobre-escuro .c-brasa {
+        color: var(--brasa);
+      }
+      .sobre-escuro .c-ouro {
+        color: var(--ouro);
+      }
+      .botao {
+        font: 600 0.78rem/1 var(--mono);
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        padding: 11px 14px;
+        border: 2px solid #0d0f0a;
+        background: var(--lavoura);
+        color: #0d1a05;
+        box-shadow: 3px 3px 0 #0d0f0a;
+        white-space: nowrap;
+      }
+      .botao.sec {
+        background: var(--chapa-3);
+        color: var(--texto);
+        border-color: var(--linha);
+        box-shadow: 3px 3px 0 #0008;
+      }
+      .botao.tinta {
+        background: var(--tinta);
+        color: var(--papel);
+        border-color: var(--tinta);
+        box-shadow: 3px 3px 0 #0005;
+      }
+      .num {
+        font: 900 2.6rem/0.95 var(--display);
+        font-stretch: 66%;
+        font-variant-numeric: tabular-nums;
+      }
+      .rot {
+        font: 600 0.7rem/1.2 var(--mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      /* A · Caderno do dia */
+      .a-grade {
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 22px;
+        align-items: start;
+      }
+      .a-lista {
+        padding: 24px 26px 34px;
+        display: grid;
+        gap: 4px;
+        transform: rotate(-0.3deg);
+        box-shadow: 6px 6px 0 #0008;
+      }
+      .a-lista header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 8px;
+      }
+      .a-lista header h4 {
+        font-size: 1.9rem;
+      }
+      .a-lista header .mao {
+        color: var(--ferrugem);
+        font-size: 1.35rem;
+      }
+      .a-item {
+        display: grid;
+        grid-template-columns: 26px 64px 1fr 168px;
+        gap: 6px 14px;
+        align-items: center;
+        padding: 14px 0;
+        border-bottom: 2px dashed #cbb98a;
+      }
+      .a-item > .a-caixa,
+      .a-item > .a-arte,
+      .a-item > div:not(.a-perda) {
+        grid-row: 1 / 3;
+      }
+      .a-item > .a-perda {
+        grid-column: 4;
+        grid-row: 1;
+        align-self: end;
+      }
+      .a-item > .botao {
+        grid-column: 4;
+        grid-row: 2;
+        justify-self: end;
+        align-self: start;
+      }
+      .a-item:last-child {
+        border-bottom: 0;
+      }
+      .a-caixa {
+        width: 22px;
+        height: 22px;
+        border: 2px solid var(--tinta);
+      }
+      .a-arte {
+        width: 64px;
+        height: 64px;
+        display: grid;
+        place-items: center;
+      }
+      .a-arte img {
+        max-width: 60px;
+        max-height: 60px;
+      }
+      .a-arte.trio {
+        position: relative;
+      }
+      .a-arte.trio img {
+        position: absolute;
+        width: 40px;
+      }
+      .a-arte.trio img:nth-child(1) {
+        left: 0;
+        top: 4px;
+        transform: rotate(-8deg);
+      }
+      .a-arte.trio img:nth-child(2) {
+        left: 14px;
+        top: 16px;
+      }
+      .a-arte.trio img:nth-child(3) {
+        left: 26px;
+        top: 2px;
+        transform: rotate(7deg);
+      }
+      .a-item strong {
+        font: 800 1.2rem/1.1 var(--display);
+        font-stretch: 75%;
+        display: block;
+      }
+      .a-item small {
+        color: var(--tinta-2);
+        font-size: 0.9rem;
+        line-height: 1.3;
+        display: block;
+        margin-top: 2px;
+      }
+      .a-perda {
+        text-align: right;
+      }
+      .a-perda b {
+        font: 900 1.45rem/1 var(--display);
+        font-stretch: 68%;
+        color: var(--brasa-escura);
+        display: block;
+      }
+      .a-perda span {
+        font-size: 0.72rem;
+        color: var(--tinta-2);
+      }
+      .a-lado {
+        display: grid;
+        gap: 18px;
+      }
+      .recibo {
+        padding: 18px 20px 26px;
+        display: grid;
+        gap: 8px;
+        box-shadow: 5px 5px 0 #0008;
+        transform: rotate(0.8deg);
+        border-top: 6px dotted var(--noite);
+      }
+      .recibo .linha {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        border-bottom: 1px dashed #c4b386;
+        padding: 4px 0;
+        font-size: 0.95rem;
+      }
+      .recibo .linha b {
+        font-variant-numeric: tabular-nums;
+      }
+      .recibo .total {
+        border-bottom: 0;
+        font-weight: 800;
+        font-size: 1.1rem;
+      }
+      .meta {
+        background: var(--chapa);
+        border: 2px solid var(--linha);
+        border-top: 4px solid var(--ouro);
+        padding: 16px 18px;
+        display: grid;
+        gap: 10px;
+      }
+      .trilho {
+        height: 14px;
+        background: var(--chapa-3);
+        border: 2px solid var(--linha);
+        position: relative;
+      }
+      .trilho i {
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 24%;
+        background: var(--ouro);
+      }
+      .trilho em {
+        position: absolute;
+        top: -6px;
+        bottom: -6px;
+        left: 24%;
+        width: 3px;
+        background: var(--texto);
+      }
+      .a-proximo {
+        display: grid;
+        grid-template-columns: 80px 1fr auto;
+        gap: 18px;
+        align-items: center;
+        background: var(--chapa);
+        border: 2px solid var(--linha);
+        border-left: 6px solid var(--lavoura);
+        padding: 14px 18px;
+      }
+      .a-proximo img {
+        width: 76px;
+      }
+
+      /* B · Rua dos negócios */
+      .b-rua {
+        position: relative;
+        height: 270px;
+        border: 2px solid var(--linha);
+        overflow: hidden;
+        background: linear-gradient(
+          #17241a 0 62%,
+          #2b2f25 62% 64%,
+          #3a3e32 64% 82%,
+          #2b2f25 82% 84%,
+          #1a1d16 84%
+        );
+      }
+      .b-rua::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 72%;
+        height: 4px;
+        background: repeating-linear-gradient(90deg, var(--ouro) 0 28px, transparent 28px 56px);
+        opacity: 0.7;
+      }
+      .b-predio {
+        position: absolute;
+        bottom: 36%;
+        display: grid;
+        justify-items: center;
+        gap: 6px;
+      }
+      .b-predio img {
+        width: 150px;
+      }
+      .b-predio .placa-nome {
+        font: 800 0.95rem/1 var(--display);
+        font-stretch: 75%;
+        text-transform: uppercase;
+        background: var(--chapa-2);
+        border: 2px solid var(--linha);
+        padding: 5px 8px;
+      }
+      .b-aviso {
+        position: absolute;
+        display: grid;
+        gap: 6px;
+        justify-items: start;
+      }
+      .b-aviso .papel {
+        padding: 8px 10px;
+        font-size: 0.85rem;
+        line-height: 1.25;
+        box-shadow: 3px 3px 0 #0008;
+        max-width: 190px;
+      }
+      .b-aviso .papel::before {
+        content: '';
+        position: absolute;
+        top: -7px;
+        left: 50%;
+        width: 34px;
+        height: 12px;
+        margin-left: -17px;
+        background: var(--fita);
+        opacity: 0.9;
+      }
+      .b-lote {
+        position: absolute;
+        bottom: 37%;
+        width: 150px;
+        height: 92px;
+        border: 3px dashed #59604c;
+        display: grid;
+        place-items: center;
+        text-align: center;
+        color: var(--suave);
+        font-size: 0.85rem;
+        line-height: 1.2;
+      }
+      .b-lote b {
+        display: block;
+        color: var(--lavoura);
+        font: 900 1.6rem/1 var(--display);
+      }
+      .b-caminhao {
+        position: absolute;
+        top: 66%;
+        width: 70px;
+      }
+      .b-baixo {
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 22px;
+        align-items: start;
+      }
+      .b-tarefas {
+        display: grid;
+        gap: 10px;
+      }
+      .b-tarefa {
+        display: grid;
+        grid-template-columns: 56px 1fr auto;
+        gap: 14px;
+        align-items: center;
+        background: var(--chapa);
+        border: 2px solid var(--linha);
+        padding: 12px 14px;
+      }
+      .b-tarefa.urgente {
+        border-left: 6px solid var(--brasa);
+      }
+      .b-tarefa.atencao {
+        border-left: 6px solid var(--ouro);
+      }
+      .b-tarefa img {
+        width: 52px;
+      }
+      .b-tarefa strong {
+        font: 800 1.15rem/1.1 var(--display);
+        font-stretch: 75%;
+        display: block;
+      }
+      .b-tarefa small {
+        color: var(--suave);
+        font-size: 0.88rem;
+      }
+
+      /* C · Jornal da manhã */
+      .c-jornal {
+        padding: 22px 28px 34px;
+        display: grid;
+        gap: 16px;
+        box-shadow: 8px 8px 0 #0008;
+        transform: rotate(-0.25deg);
+      }
+      .c-cabeca {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: end;
+        border-bottom: 4px double var(--tinta);
+        padding-bottom: 8px;
+      }
+      .c-cabeca h4 {
+        font-size: 3rem;
+        text-align: center;
+        letter-spacing: 0.02em;
+      }
+      .c-cabeca span {
+        font: 600 0.7rem/1.3 var(--mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--tinta-2);
+      }
+      .c-cabeca span:last-child {
+        text-align: right;
+      }
+      .c-manchete {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr;
+        gap: 22px;
+        border-bottom: 2px solid var(--tinta);
+        padding-bottom: 16px;
+      }
+      .c-manchete h5 {
+        margin: 0;
+        font: 900 2.5rem/0.95 var(--display);
+        font-stretch: 64%;
+        text-transform: uppercase;
+      }
+      .c-manchete p {
+        font-size: 1rem;
+        color: var(--tinta-2);
+        margin-top: 8px;
+      }
+      .c-foto {
+        background: #20241b;
+        border: 3px solid var(--tinta);
+        display: grid;
+        place-items: center;
+        padding: 12px;
+        position: relative;
+      }
+      .c-foto img {
+        width: 170px;
+      }
+      .c-foto .carimbo {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: var(--papel);
+      }
+      .c-colunas {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0;
+      }
+      .c-colunas > div {
+        padding: 0 18px;
+        border-left: 1px solid #b9a77a;
+        display: grid;
+        gap: 8px;
+        align-content: start;
+      }
+      .c-colunas > div:first-child {
+        padding-left: 0;
+        border-left: 0;
+      }
+      .c-colunas h6 {
+        margin: 0;
+        font: 600 0.72rem/1 var(--mono);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ferrugem);
+      }
+      .c-colunas strong {
+        font: 800 1.2rem/1.1 var(--display);
+        font-stretch: 75%;
+        display: block;
+      }
+      .c-colunas p {
+        font-size: 0.92rem;
+        color: var(--tinta-2);
+        line-height: 1.4;
+      }
+      .c-rodape {
+        border-top: 2px solid var(--tinta);
+        padding-top: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 24px;
+        font: 600 0.74rem/1.3 var(--mono);
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--tinta-2);
+      }
+
+      .decidir {
+        display: grid;
+        gap: 14px;
+      }
+      .decidir ol {
+        margin: 0;
+        padding-left: 22px;
+        display: grid;
+        gap: 8px;
+      }
+      footer {
+        color: var(--suave);
+        font-size: 0.85rem;
+      }
+      a:focus-visible {
+        outline: 3px solid var(--lavoura);
+        outline-offset: 2px;
+      }
+      @media (max-width: 760px) {
+        .intro,
+        .prosecontra,
+        .jornada {
+          grid-template-columns: 1fr;
+        }
+        .placa {
+          padding: 22px 18px;
+          transform: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="placa">
+        <span class="rotulo">Spec 008 · tela 1 · esboços · 03/11/2026</span>
+        <h1>Início: três caminhos</h1>
+        <p style="max-width: 72ch">
+          Três jeitos de responder à mesma pergunta. Os números são do mundo de teste do inventário,
+          no dia 1: uma loja em Campinas com 3 de 11 funcionários e arroz, feijão e açúcar
+          esgotados. São esboços para escolher a direção, não a tela final. Escolha uma, misture
+          partes ou recuse as três.
+        </p>
+      </header>
+
+      <section class="esboco">
+        <div class="ler">
+          <span class="rotulo">Entender</span>
+          <h2>Quem chega no Início e o que quer saber</h2>
+          <p>
+            O Início é a primeira tela cada vez que um amigo abre o jogo. Na maioria das vezes ele
+            volta depois de horas fora, e o mundo andou sem ele. Em ordem de urgência, ele quer
+            saber:
+          </p>
+        </div>
+        <div class="jornada">
+          <div>
+            <b>1 · O que está me custando dinheiro?</b
+            ><span>Esgotado, falta de gente, conta atrasada, proposta esperando resposta.</span>
+          </div>
+          <div>
+            <b>2 · O que aconteceu enquanto eu estava fora?</b
+            ><span>Quanto entrou e saiu, o que chegou, o que foi produzido.</span>
+          </div>
+          <div>
+            <b>3 · Estou indo bem?</b
+            ><span
+              >Uma régua de progresso: de empresa pequena a média. Hoje ela está escondida na
+              Empresa.</span
+            >
+          </div>
+          <div>
+            <b>4 · Qual é o próximo passo?</b
+            ><span>Na primeira hora, o guia. Depois, a melhor oportunidade do momento.</span>
+          </div>
+        </div>
+        <div class="ler">
+          <p class="suave">
+            Regras da spec 008 que valem para os três: os alertas precisam ser verdadeiros (hoje o
+            Início não olha a equipe nem os produtos esgotados fora da prateleira). Vendas de hoje e
+            caixa livre ficam só na barra do topo. Os cartões dos negócios moram em Negócios; o
+            Início mostra um negócio só quando ele pede decisão. Todo alerta traz o botão que
+            resolve.
+          </p>
+        </div>
+      </section>
+
+      <!-- ================= A ================= -->
+      <section class="esboco">
+        <div class="intro">
+          <div class="ler">
+            <span class="rotulo">Esboço A</span>
+            <h2>Caderno do dia</h2>
+            <p>
+              O Início vira a lista de tarefas do dono, escrita num papel pautado. Cada linha é um
+              problema com a perda estimada em reais e o botão que resolve. Ao lado, o recibo do que
+              aconteceu enquanto você esteve fora e a régua de porte da empresa. Embaixo, um próximo
+              passo só.
+            </p>
+          </div>
+          <div class="prosecontra">
+            <div class="bom">
+              <h4>Ganha</h4>
+              <ul>
+                <li>O mais claro: em 3 segundos se sabe o que fazer.</li>
+                <li>A perda em R$ ordena a lista sozinha.</li>
+                <li>Cresce bem com 10 negócios.</li>
+              </ul>
+            </div>
+            <div class="ruim">
+              <h4>Perde</h4>
+              <ul>
+                <li>Menos cena; o jogo aparece menos.</li>
+                <li>Com tudo em dia, sobra pouco na tela.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="rolar">
+          <div class="jogo">
+            <div class="jogo-topo">
+              <div class="marca">AFTERMARKET</div>
+              <div class="busca">Buscar cidade, empresa, recurso…</div>
+              <div class="chip"><b>R$ 902.607</b><small>Caixa livre</small></div>
+              <div class="chip"><b>R$ 1.398</b><small>Vendas hoje</small></div>
+              <div class="chip"><b>Dia 1 · 00h</b><small>Quarta</small></div>
+            </div>
+            <nav class="jogo-menu">
+              <span class="on">Início</span><span>Mapa</span><span>Negócios</span
+              ><span>Mercado</span><span>Empresa</span>
+            </nav>
+            <div class="jogo-conteudo">
+              <div class="lv-placa">
+                <h3>Silva Participações</h3>
+                <small>Dia 1 · quarta · 00h no jogo</small>
+              </div>
+              <div class="a-grade">
+                <div class="papel rasgado a-lista">
+                  <header>
+                    <h4>Hoje você precisa</h4>
+                    <span class="mao">3 coisas, a 1ª é a que mais custa</span>
+                  </header>
+                  <div class="a-item">
+                    <i class="a-caixa"></i>
+                    <span class="a-arte trio"
+                      ><img class="px" src="assets/arte/produto-arroz.png" alt="" /><img
+                        class="px"
+                        src="assets/arte/produto-feijao.png"
+                        alt="" /><img class="px" src="assets/arte/produto-acucar.png" alt=""
+                    /></span>
+                    <div>
+                      <span class="carimbo c-brasa">Esgotado</span
+                      ><strong>Arroz, feijão e açúcar acabaram na Loja Campinas</strong
+                      ><small>A cidade procura os três; a loja não tem nenhum.</small>
+                    </div>
+                    <div class="a-perda"><b>−R$ 25 mil</b><span>por dia, estimativa</span></div>
+                    <span class="botao">Mandar buscar</span>
+                  </div>
+                  <div class="a-item">
+                    <i class="a-caixa"></i>
+                    <span class="a-arte"><img class="px" src="assets/arte/loja.png" alt="" /></span>
+                    <div>
+                      <span class="carimbo c-brasa">Falta gente</span
+                      ><strong>A loja atende 150 de 532 clientes por rodada</strong
+                      ><small>3 pessoas contratadas; o ideal agora é 11.</small>
+                    </div>
+                    <div class="a-perda"><b>−R$ 9 mil</b><span>por dia, estimativa</span></div>
+                    <span class="botao">Contratar 8</span>
+                  </div>
+                  <div class="a-item">
+                    <i class="a-caixa"></i>
+                    <span class="a-arte"
+                      ><img class="px" src="assets/arte/produto-leite.png" alt=""
+                    /></span>
+                    <div>
+                      <span class="carimbo c-ouro">Preço</span
+                      ><strong>Ajustar 2 preços rende mais na prateleira</strong
+                      ><small>Leite e óleo estão longe do ponto de maior lucro.</small>
+                    </div>
+                    <div class="a-perda">
+                      <b style="color: var(--lavoura-escura)">+R$ 246</b
+                      ><span>por dia, estimativa</span>
+                    </div>
+                    <span class="botao tinta">Usar os melhores</span>
+                  </div>
+                </div>
+                <div class="a-lado">
+                  <div class="papel recibo">
+                    <span class="rot" style="color: var(--tinta-2)"
+                      >Enquanto você esteve fora · 10 h</span
+                    >
+                    <div class="linha"><span>Vendas</span><b>+R$ 1.398</b></div>
+                    <div class="linha"><span>Equipe, energia, água</span><b>−R$ 41</b></div>
+                    <div class="linha"><span>Chegaram 2 cargas</span><b>leite e óleo</b></div>
+                    <div class="linha total"><span>Sobrou</span><b>+R$ 1.357</b></div>
+                  </div>
+                  <div class="meta sobre-escuro">
+                    <span class="rotulo">Porte da empresa</span>
+                    <div
+                      style="display: flex; justify-content: space-between; align-items: baseline"
+                    >
+                      <b class="num" style="font-size: 2rem">R$ 1,19 mi</b
+                      ><span class="suave" style="font-size: 0.85rem">de R$ 5 mi</span>
+                    </div>
+                    <div class="trilho"><i></i><em></em></div>
+                    <span class="suave" style="font-size: 0.88rem"
+                      >Pequena → <b style="color: var(--texto)">média</b>. Faltam R$ 3,8 mi.</span
+                    >
+                  </div>
+                </div>
+              </div>
+              <div class="a-proximo">
+                <img class="px" src="assets/arte/fazenda-leite.png" alt="" />
+                <div>
+                  <span class="rotulo">Próximo passo · 3 de 5</span>
+                  <p style="font-weight: 800; font-size: 1.15rem">Abra um negócio de produção</p>
+                  <p class="suave" style="font-size: 0.9rem">
+                    Ordenha em Sorocaba: R$ 517 mil, se paga em ~38 dias e abastece a sua loja de
+                    leite.
+                  </p>
+                </div>
+                <span class="botao">Ver onde abrir</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= B ================= -->
+      <section class="esboco">
+        <div class="intro">
+          <div class="ler">
+            <span class="rotulo">Esboço B</span>
+            <h2>Rua dos negócios</h2>
+            <p>
+              No alto, uma rua em pixel art com os seus prédios lado a lado. Cada problema é um
+              bilhete preso com fita no prédio que tem o problema, e os caminhões a caminho andam na
+              estrada. Embaixo, os mesmos problemas em lista, com os botões. A rua mostra todos os
+              negócios, mas só em miniatura; os detalhes ficam em Negócios.
+            </p>
+          </div>
+          <div class="prosecontra">
+            <div class="bom">
+              <h4>Ganha</h4>
+              <ul>
+                <li>Cara de jogo e identidade própria.</li>
+                <li>Ver o império crescer na rua é recompensa.</li>
+                <li>Usa a pixel art que já temos.</li>
+              </ul>
+            </div>
+            <div class="ruim">
+              <h4>Perde</h4>
+              <ul>
+                <li>Com mais de 6 negócios, a rua precisa rolar ou agrupar.</li>
+                <li>Precisa de arte nova por tipo de prédio.</li>
+                <li>Ocupa metade da tela antes da primeira ação.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="rolar">
+          <div class="jogo">
+            <div class="jogo-topo">
+              <div class="marca">AFTERMARKET</div>
+              <div class="busca">Buscar cidade, empresa, recurso…</div>
+              <div class="chip"><b>R$ 902.607</b><small>Caixa livre</small></div>
+              <div class="chip"><b>R$ 1.398</b><small>Vendas hoje</small></div>
+              <div class="chip"><b>Dia 1 · 00h</b><small>Quarta</small></div>
+            </div>
+            <nav class="jogo-menu">
+              <span class="on">Início</span><span>Mapa</span><span>Negócios</span
+              ><span>Mercado</span><span>Empresa</span>
+            </nav>
+            <div class="jogo-conteudo">
+              <div class="lv-placa">
+                <h3>Silva Participações</h3>
+                <small>Dia 1 · quarta · 00h no jogo</small>
+              </div>
+              <div class="b-rua">
+                <div class="b-predio" style="left: 120px">
+                  <img class="px" src="assets/arte/loja.png" alt="" /><span class="placa-nome"
+                    >Loja Campinas</span
+                  >
+                </div>
+                <div class="b-aviso" style="left: 290px; top: 18px">
+                  <div class="papel">
+                    <span class="carimbo c-brasa">Esgotado</span><br />Arroz, feijão e açúcar
+                  </div>
+                </div>
+                <div class="b-aviso" style="left: 22px; top: 22px">
+                  <div class="papel">
+                    <span class="carimbo c-brasa">Falta gente</span><br />3 de 11
+                  </div>
+                </div>
+                <div class="b-lote" style="left: 520px">
+                  <span><b>+</b>Terreno livre<br />abrir negócio</span>
+                </div>
+                <div class="b-lote" style="left: 720px; opacity: 0.45">
+                  <span><b>+</b></span>
+                </div>
+                <img
+                  class="px b-caminhao"
+                  style="left: 800px"
+                  src="assets/arte/caminhao.png"
+                  alt=""
+                />
+              </div>
+              <div class="b-baixo">
+                <div class="b-tarefas">
+                  <div class="b-tarefa urgente">
+                    <img class="px" src="assets/arte/produto-arroz.png" alt="" />
+                    <div>
+                      <strong>Arroz, feijão e açúcar esgotados</strong
+                      ><small>Loja Campinas · deixa de vender ~R$ 25 mil por dia</small>
+                    </div>
+                    <span class="botao">Mandar buscar</span>
+                  </div>
+                  <div class="b-tarefa urgente">
+                    <img class="px" src="assets/arte/loja.png" alt="" />
+                    <div>
+                      <strong>Falta gente: 3 de 11</strong
+                      ><small>Loja Campinas · atende 150 de 532 por rodada</small>
+                    </div>
+                    <span class="botao">Contratar 8</span>
+                  </div>
+                  <div class="b-tarefa atencao">
+                    <img class="px" src="assets/arte/produto-leite.png" alt="" />
+                    <div>
+                      <strong>2 preços longe do ponto de lucro</strong
+                      ><small>+R$ 246 por dia ao ajustar</small>
+                    </div>
+                    <span class="botao sec">Usar os melhores</span>
+                  </div>
+                </div>
+                <div class="a-lado">
+                  <div class="papel recibo">
+                    <span class="rot" style="color: var(--tinta-2)"
+                      >Enquanto você esteve fora · 10 h</span
+                    >
+                    <div class="linha"><span>Vendas</span><b>+R$ 1.398</b></div>
+                    <div class="linha"><span>Custos</span><b>−R$ 41</b></div>
+                    <div class="linha total"><span>Sobrou</span><b>+R$ 1.357</b></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= C ================= -->
+      <section class="esboco">
+        <div class="intro">
+          <div class="ler">
+            <span class="rotulo">Esboço C</span>
+            <h2>Jornal da manhã</h2>
+            <p>
+              O Início é a primeira página de um jornal do dia. A manchete é o problema que mais
+              custa; as colunas trazem o seu negócio, o mercado e o mundo (prefeituras, rivais). É o
+              começo do mural de notícias que o roteiro já pede, e dá vida ao mundo lá fora.
+            </p>
+          </div>
+          <div class="prosecontra">
+            <div class="bom">
+              <h4>Ganha</h4>
+              <ul>
+                <li>A identidade mais forte e mais nossa.</li>
+                <li>Abre espaço para o mundo vivo: notícias e ranking.</li>
+                <li>Cada volta ao jogo tem uma "edição" nova.</li>
+              </ul>
+            </div>
+            <div class="ruim">
+              <h4>Perde</h4>
+              <ul>
+                <li>Mais leitura; o botão fica menos óbvio.</li>
+                <li>As notícias do mundo precisam de engenharia (o John).</li>
+                <li>Risco de virar texto genérico se as notícias forem fracas.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="rolar">
+          <div class="jogo">
+            <div class="jogo-topo">
+              <div class="marca">AFTERMARKET</div>
+              <div class="busca">Buscar cidade, empresa, recurso…</div>
+              <div class="chip"><b>R$ 902.607</b><small>Caixa livre</small></div>
+              <div class="chip"><b>R$ 1.398</b><small>Vendas hoje</small></div>
+              <div class="chip"><b>Dia 1 · 00h</b><small>Quarta</small></div>
+            </div>
+            <nav class="jogo-menu">
+              <span class="on">Início</span><span>Mapa</span><span>Negócios</span
+              ><span>Mercado</span><span>Empresa</span>
+            </nav>
+            <div class="jogo-conteudo">
+              <div class="papel rasgado c-jornal">
+                <div class="c-cabeca">
+                  <span>Dia 1 · quarta-feira<br />Edição das 00h</span>
+                  <h4>Gazeta da Silva</h4>
+                  <span>Silva Participações<br />Empresa pequena</span>
+                </div>
+                <div class="c-manchete">
+                  <div>
+                    <span class="carimbo c-brasa">Urgente</span>
+                    <h5>Loja Campinas fica sem arroz, feijão e açúcar</h5>
+                    <p>
+                      Sem os três, a loja deixa de vender cerca de R$ 25 mil por dia (estimativa).
+                      Os fornecedores de Campinas têm estoque e entregam no mesmo dia.
+                    </p>
+                    <div style="display: flex; gap: 10px; margin-top: 14px">
+                      <span class="botao">Mandar buscar</span
+                      ><span class="botao tinta">Ver a loja</span>
+                    </div>
+                  </div>
+                  <div class="c-foto">
+                    <img class="px" src="assets/arte/loja.png" alt="" /><span
+                      class="carimbo c-brasa"
+                      >Esgotado</span
+                    >
+                  </div>
+                </div>
+                <div class="c-colunas">
+                  <div>
+                    <h6>Seu negócio</h6>
+                    <strong>Falta gente no balcão</strong>
+                    <p>
+                      3 pessoas atendem 150 de 532 clientes por rodada. Contratar 8 custa R$ 1,2 mil
+                      por dia.
+                    </p>
+                    <span class="botao tinta" style="justify-self: start">Contratar 8</span>
+                  </div>
+                  <div>
+                    <h6>Mercado</h6>
+                    <strong>Leite 18% abaixo do preço justo</strong>
+                    <p>82 empresas vendem; bom momento para encher o armazém da loja.</p>
+                  </div>
+                  <div>
+                    <h6>O mundo</h6>
+                    <strong>11 prefeituras compram aço</strong>
+                    <p>
+                      R$ 75 mil cada, por 12 t. Ninguém propôs ainda. Rival Planalto Comercial
+                      procura 65 mil garrafas de óleo.
+                    </p>
+                  </div>
+                </div>
+                <div class="c-rodape">
+                  <span>Enquanto você esteve fora: +R$ 1.398 em vendas · −R$ 41 em custos</span
+                  ><span>Porte: R$ 1,19 mi de R$ 5 mi</span
+                  ><span>Próximo passo: abrir um negócio de produção</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="esboco">
+        <div class="recomendo">
+          <span class="rotulo" style="color: var(--lavoura)">Minha recomendação</span>
+          <p>
+            <b>A, o Caderno do dia, como base.</b> Ele resolve o que o inventário mostrou de pior: o
+            Início precisa dizer a verdade e o botão certo em 3 segundos, para 1 ou para 10
+            negócios. Da B eu traria só a arte de cada problema; da C, guardaria o jornal para o
+            mural de notícias, quando o mundo tiver notícias de verdade (isso é engenharia do John).
+            A primeira hora do amigo novo pesa mais que a cena.
+          </p>
+        </div>
+        <div class="decidir ler">
+          <span class="rotulo">Depois que você escolher</span>
+          <ol>
+            <li>
+              Desenho fino da direção escolhida, em computador e celular, com os estados: tudo em
+              dia, primeiro dia, depois de horas fora e 10 negócios.
+            </li>
+            <li>
+              Construção no jogo, com os alertas novos (equipe, esgotados fora da prateleira,
+              procura sem atender) e testes de navegador.
+            </li>
+            <li>Revisão independente e a sua aprovação.</li>
+          </ol>
+        </div>
+      </section>
+
+      <footer>
+        Esboços estáticos; nada foi alterado no jogo. Perdas em R$ são estimativas montadas para o
+        esboço a partir do inventário de 03/11; os números reais virão da mesma conta da prateleira
+        e da equipe.
+      </footer>
+    </div>
+  </body>
+</html>

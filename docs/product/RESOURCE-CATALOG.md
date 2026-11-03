@@ -13,19 +13,19 @@ Estrutura: **válida**. Equilíbrio: **não demonstrado**. 20 itens / 14 receita
 | Minério de ferro / `iron`            | t; 1.000; 0,45   |     R$ 500,00 | iron-extraction             | steel-bars                         | iron → steel             | 976,7; 148,5; 4                 |
 | Carvão mineral / `coal`              | t; 1.000; 1,3    |   R$ 1.850,00 | coal-extraction             | steel-bars, steel-recycling        | coal → steel             | 237; 80; 1                      |
 | Aço em barras / `steel`              | t; 1.000; 0,15   |   R$ 5.000,00 | steel-bars, steel-recycling | utensils, truck-heavy, truck-light | steel                    | 89,8; 0; 0                      |
-| Soja em grão / `soy`                 | t; 1.000; 1,4    |   R$ 2.340,00 | soy-harvest                 | soy-oil                            | soy → oil                | 280,5; 37,5; 1                  |
-| Farelo de soja / `soymeal`           | kg; 1; 0,0017    |       R$ 2,20 | soy-oil                     | feed-mill                          | soymeal → feed → milk    | 6.000; 0; 0                     |
-| Óleo de soja 1 L / `oil`             | un; 0,92; 0,0013 |       R$ 8,90 | soy-oil                     | —                                  | oil                      | 32.504; 2.600; 1                |
-| Arroz 5 kg / `rice`                  | un; 5; 0,007     |      R$ 24,50 | rice-harvest                | —                                  | rice                     | 21.498; 2.000; 1                |
-| Feijão 1 kg / `beans`                | un; 1; 0,0015    |       R$ 9,25 | beans-harvest               | —                                  | beans                    | 57.162; 1.500; 1                |
-| Açúcar 5 kg / `sugar`                | un; 5; 0,006     |      R$ 18,50 | sugar-harvest               | —                                  | sugar                    | 15.702; 1.500; 1                |
+| Soja em grão / `soy`                 | t; 1.000; 1,4    |   R$ 2.100,00 | soy-harvest                 | soy-oil                            | soy → oil                | 280,5; 37,5; 1                  |
+| Farelo de soja / `soymeal`           | kg; 1; 0,0017    |       R$ 2,05 | soy-oil                     | feed-mill                          | soymeal → feed → milk    | 6.000; 0; 0                     |
+| Óleo de soja 1 L / `oil`             | un; 0,92; 0,0013 |      R$ 10,50 | soy-oil                     | —                                  | oil                      | 32.504; 2.600; 1                |
+| Arroz 5 kg / `rice`                  | un; 5; 0,007     |      R$ 28,90 | rice-harvest                | —                                  | rice                     | 21.498; 2.000; 1                |
+| Feijão 1 kg / `beans`                | un; 1; 0,0015    |      R$ 11,45 | beans-harvest               | —                                  | beans                    | 57.162; 1.500; 1                |
+| Açúcar 5 kg / `sugar`                | un; 5; 0,006     |      R$ 23,00 | sugar-harvest               | —                                  | sugar                    | 15.702; 1.500; 1                |
 | Leite 1 L / `milk`                   | un; 1,03; 0,0012 |       R$ 6,17 | milk-production             | —                                  | milk                     | 324.215; 1.800; 1               |
 | Sucata de aço / `scrap`              | t; 1.000; 2,5    |   R$ 1.200,00 |                             | steel-recycling                    | scrap → steel            | 0; 0; 0                         |
-| Utensílios de aço (kit) / `utensils` | un; 5; 0,02      |      R$ 70,00 | utensils                    | —                                  | utensils                 | 11.522; 0; 0                    |
-| Caminhão pesado 30 t / `truckHeavy`  | un; 9.000; 60    | R$ 290.000,00 | truck-heavy                 | —                                  | truckHeavy               | 2; 0; 0                         |
-| Caminhão leve 8 t / `truckLight`     | un; 3.500; 25    | R$ 140.000,00 | truck-light                 | —                                  | truckLight               | 3; 0; 0                         |
-| Semente de soja / `soySeed`          | t; 1.000; 1,4    |   R$ 5.850,00 | soy-harvest                 | soy-harvest                        | soySeed → soy → oil      | 12,825; 0; 0                    |
-| Ração para gado / `feed`             | kg; 1; 0,0016    |       R$ 3,11 | feed-mill                   | milk-production                    | feed → milk              | 91.552,5; 0; 0                  |
+| Utensílios de aço (kit) / `utensils` | un; 5; 0,02      |      R$ 82,50 | utensils                    | —                                  | utensils                 | 11.522; 0; 0                    |
+| Caminhão pesado 30 t / `truckHeavy`  | un; 9.000; 60    | R$ 332.000,00 | truck-heavy                 | —                                  | truckHeavy               | 2; 0; 0                         |
+| Caminhão leve 8 t / `truckLight`     | un; 3.500; 25    | R$ 160.000,00 | truck-light                 | —                                  | truckLight               | 3; 0; 0                         |
+| Semente de soja / `soySeed`          | t; 1.000; 1,4    |   R$ 5.250,00 | soy-harvest                 | soy-harvest                        | soySeed → soy → oil      | 12,825; 0; 0                    |
+| Ração para gado / `feed`             | kg; 1; 0,0016    |       R$ 3,30 | feed-mill                   | milk-production                    | feed → milk              | 91.552,5; 0; 0                  |
 | Vaca leiteira / `cow`                | un; 550; 3       |   R$ 2.500,00 | milk-production             | —                                  | cow                      | 2.250; 0; 0                     |
 | Semente de arroz / `riceSeed`        | kg; 1; 0,0017    |       R$ 7,30 | rice-harvest                | rice-harvest                       | riceSeed → rice          | 3.400; 0; 0                     |
 | Semente de feijão / `beanSeed`       | kg; 1; 0,0015    |      R$ 13,90 | beans-harvest               | beans-harvest                      | beanSeed → beans         | 4.200; 0; 0                     |
@@ -82,16 +82,16 @@ Uma linha instalada em SP, equipe mínima, índice salarial 1, ciclos unitários
 | `coal-extraction` |      R$ 0,00 |                      R$ 157,60 |         R$ 925,00 |          R$ 767,40 | R$ 2.562,84 |                     12 |   R$ 6.645,96 |                 27,8303% |
 | `steel-bars`      |  R$ 1.725,00 |                    R$ 2.515,00 |       R$ 5.000,00 |        R$ 2.485,00 | R$ 3.410,76 |                      6 |  R$ 11.499,24 |                 22,8757% |
 | `steel-recycling` |  R$ 1.412,50 |                    R$ 2.300,50 |       R$ 5.000,00 |        R$ 2.699,50 | R$ 3.410,76 |                      6 |  R$ 12.786,24 |                  21,058% |
-| `utensils`        |  R$ 1.600,00 |                    R$ 2.330,40 |       R$ 4.200,00 |        R$ 1.869,60 | R$ 2.928,60 |                      6 |   R$ 8.289,00 |                 26,1072% |
-| `truck-heavy`     | R$ 40.000,00 |                  R$ 257.500,00 |     R$ 290.000,00 |       R$ 32.500,00 | R$ 5.821,56 |                      1 |  R$ 26.678,44 |                 17,9125% |
-| `truck-light`     | R$ 15.000,00 |                  R$ 124.204,00 |     R$ 140.000,00 |       R$ 15.796,00 | R$ 5.821,56 |                      2 |  R$ 25.770,44 |                 18,4273% |
-| `soy-harvest`     |  R$ 3.510,00 |                   R$ 31.878,00 |      R$ 74.061,00 |       R$ 42.183,00 | R$ 1.035,84 |                   0,25 |   R$ 9.509,91 |                  9,8223% |
-| `soy-oil`         |  R$ 2.340,00 |                    R$ 2.562,00 |       R$ 3.452,00 |          R$ 890,00 | R$ 2.446,44 |                     12 |   R$ 8.233,56 |                 22,9067% |
-| `feed-mill`       |  R$ 2.200,00 |                    R$ 2.303,20 |       R$ 3.078,90 |          R$ 775,70 | R$ 1.964,28 |                     12 |   R$ 7.344,12 |                 21,1022% |
-| `milk-production` |  R$ 5.248,13 |                    R$ 7.153,73 |      R$ 27.765,00 |       R$ 20.611,28 | R$ 1.370,16 |                      1 |  R$ 19.241,12 |                  6,6476% |
-| `rice-harvest`    |    R$ 730,00 |                   R$ 10.314,00 |      R$ 30.203,00 |       R$ 19.889,00 | R$ 1.035,84 |                   0,25 |   R$ 3.936,41 |                 20,8324% |
-| `beans-harvest`   |  R$ 1.390,00 |                    R$ 8.028,00 |      R$ 20.029,00 |       R$ 12.001,00 | R$ 1.035,84 |                 0,3333 |   R$ 2.964,49 |                 25,8938% |
-| `sugar-harvest`   |  R$ 2.000,00 |                   R$ 12.752,00 |      R$ 35.500,00 |       R$ 22.748,00 | R$ 1.203,00 |                    0,2 |   R$ 3.346,60 |                 26,4419% |
+| `utensils`        |  R$ 1.600,00 |                    R$ 2.330,40 |       R$ 4.950,00 |        R$ 2.619,60 | R$ 2.928,60 |                      6 |  R$ 12.789,00 |                 18,6326% |
+| `truck-heavy`     | R$ 40.000,00 |                  R$ 257.500,00 |     R$ 332.000,00 |       R$ 74.500,00 | R$ 5.821,56 |                      1 |  R$ 68.678,44 |                  7,8142% |
+| `truck-light`     | R$ 15.000,00 |                  R$ 124.204,00 |     R$ 160.000,00 |       R$ 35.796,00 | R$ 5.821,56 |                      2 |  R$ 65.770,44 |                  8,1316% |
+| `soy-harvest`     |  R$ 3.150,00 |                   R$ 31.518,00 |      R$ 66.465,00 |       R$ 34.947,00 | R$ 1.035,84 |                   0,25 |   R$ 7.700,91 |                 11,8561% |
+| `soy-oil`         |  R$ 2.100,00 |                    R$ 2.322,00 |       R$ 3.658,00 |        R$ 1.336,00 | R$ 2.446,44 |                     12 |  R$ 13.585,56 |                 15,2597% |
+| `feed-mill`       |  R$ 2.050,00 |                    R$ 2.153,20 |       R$ 3.267,00 |        R$ 1.113,80 | R$ 1.964,28 |                     12 |  R$ 11.401,32 |                 14,6965% |
+| `milk-production` |  R$ 5.568,75 |                    R$ 7.474,35 |      R$ 27.765,00 |       R$ 20.290,65 | R$ 1.370,16 |                      1 |  R$ 18.920,49 |                  6,7527% |
+| `rice-harvest`    |    R$ 730,00 |                   R$ 10.314,00 |      R$ 35.483,00 |       R$ 25.169,00 | R$ 1.035,84 |                   0,25 |   R$ 5.256,41 |                 16,4622% |
+| `beans-harvest`   |  R$ 1.390,00 |                    R$ 8.028,00 |      R$ 24.429,00 |       R$ 16.401,00 | R$ 1.035,84 |                 0,3333 |   R$ 4.431,16 |                 18,9471% |
+| `sugar-harvest`   |  R$ 2.000,00 |                   R$ 12.752,00 |      R$ 43.600,00 |       R$ 30.848,00 | R$ 1.203,00 |                    0,2 |   R$ 4.966,60 |                 19,4988% |
 
 Cadência automática: 12 / teto(duração em horas / 2) ciclos por dia para esta hipótese de uma linha e um ciclo por lote; não usar esse número para lotes/linhas diferentes. Utilização acima de 100% exige mudar a hipótese/preço/custo; não é uma recomendação de aumentar produção sem compradores.
 

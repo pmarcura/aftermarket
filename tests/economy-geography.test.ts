@@ -32,10 +32,10 @@ describe('economia versão 2 no mapa real', () => {
   it('desconta da porta da fazenda o frete, a loja e o atacadista', () => {
     const price = priceList(),
       { markup } = storeEconomics();
-    // Prateleira de referência do arroz: R$ 24,50 o pacote de 5 kg.
+    // Prateleira de referência do arroz: R$ 28,90 o pacote de 5 kg (posição 0,9 da faixa; spec 006).
     const shelf = (price.rice + (5 / 1000) * freightPerTonne('rice')) * 1.04 * (1 + markup);
-    expect(shelf).toBeCloseTo(2450, 0);
-    expect(price.rice).toBeLessThan(2039); // era R$ 20,39 com 110 km
+    expect(shelf).toBeCloseTo(2890, 0);
+    expect(price.rice).toBeLessThan(2200); // era R$ 20,39 com 110 km no desenho antigo
   });
 
   it('faz a obra pública crescer com a escala do mundo', () => {

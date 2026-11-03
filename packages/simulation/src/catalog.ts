@@ -133,7 +133,7 @@ export const designItems: Record<DesignItemId, DesignItem> = {
     isNew: true,
     band: [4000, 9000],
     bandSource: 'jogo',
-    price: { kind: 'band', position: 0.6 }, // aço do alto-forno custa 17% acima da referência (D-040)
+    price: { kind: 'band', position: 0.85 }, // spec 006: sobe na faixa de varejo para a linha fechar a conta (margem ≥ 15%)
     monthlyPerPerson: 0.25,
   },
   truckHeavy: {
@@ -144,7 +144,7 @@ export const designItems: Record<DesignItemId, DesignItem> = {
     isNew: true,
     band: [22000000, 36000000],
     bandSource: 'jogo',
-    price: { kind: 'band', position: 0.5 },
+    price: { kind: 'band', position: 0.8 },
   },
   truckLight: {
     name: 'Caminhão leve 8 t',
@@ -154,7 +154,7 @@ export const designItems: Record<DesignItemId, DesignItem> = {
     isNew: true,
     band: [10000000, 18000000],
     bandSource: 'jogo',
-    price: { kind: 'band', position: 0.5 },
+    price: { kind: 'band', position: 0.75 },
   },
   soySeed: {
     name: 'Semente de soja',
@@ -180,7 +180,7 @@ export const designItems: Record<DesignItemId, DesignItem> = {
       date: '2026-10-26',
       level: 'Soja em grão · calibração por saca',
     },
-    price: { kind: 'band', position: 0.4 }, // porta da fazenda no Centro-Oeste, longe do porto (D-036)
+    price: { kind: 'band', position: 0 }, // porta da fazenda no Centro-Oeste, longe do porto (D-036)
   },
   soymeal: {
     name: 'Farelo de soja',
@@ -196,7 +196,7 @@ export const designItems: Record<DesignItemId, DesignItem> = {
       date: '2026-03',
       level: 'Farelo a granel · estimativa',
     },
-    price: { kind: 'fixed', price: 220 },
+    price: { kind: 'fixed', price: 205 },
   },
   oil: {
     name: 'Óleo de soja 1 L',
@@ -213,7 +213,7 @@ export const designItems: Record<DesignItemId, DesignItem> = {
       date: '2026-10-26',
       level: 'Varejo · parâmetro de calibração',
     },
-    price: { kind: 'band', position: 0.6 },
+    price: { kind: 'band', position: 1 },
     monthlyPerPerson: 0.8,
   },
   feed: {
@@ -224,7 +224,7 @@ export const designItems: Record<DesignItemId, DesignItem> = {
     isNew: true,
     band: [200, 330],
     bandSource: 'real',
-    price: { kind: 'band', position: 0.85 }, // paga o farelo de ~580 km em cargas reais (D-036, D-039)
+    price: { kind: 'band', position: 1 }, // paga o farelo de ~580 km em cargas reais (D-036, D-039)
   },
   cow: {
     name: 'Vaca leiteira',
@@ -279,7 +279,7 @@ export const designItems: Record<DesignItemId, DesignItem> = {
       date: '2026-10-26',
       level: 'Varejo · pacote 5 kg',
     },
-    price: { kind: 'band', position: 0.5 },
+    price: { kind: 'band', position: 0.9 },
     monthlyPerPerson: 0.3,
   },
   beanSeed: {
@@ -307,7 +307,7 @@ export const designItems: Record<DesignItemId, DesignItem> = {
       date: '2026-10-26',
       level: 'Varejo · pacote 1 kg',
     },
-    price: { kind: 'band', position: 0.5 },
+    price: { kind: 'band', position: 0.9 },
     monthlyPerPerson: 1,
   },
   caneSeedling: {
@@ -335,7 +335,7 @@ export const designItems: Record<DesignItemId, DesignItem> = {
       date: '2026-10-26',
       level: 'Varejo · pacote 5 kg',
     },
-    price: { kind: 'band', position: 0.5 },
+    price: { kind: 'band', position: 1 },
     monthlyPerPerson: 0.2,
   },
 };
@@ -573,20 +573,20 @@ export const designRecipes: DesignRecipe[] = [
 // fórmula do lucro; agora é parâmetro explícito, congelado com os valores que o motor usava em
 // 01/11/2026 (já arredondados a R$ 1.000). O prazo de retorno passa a ser saída da calculadora.
 export const equipmentByRecipe: Record<string, number> = {
-  'iron-extraction': 15900000,
-  'coal-extraction': 21100000,
-  'steel-bars': 33300000,
-  'steel-recycling': 42100000,
-  utensils: 11000000,
-  'truck-heavy': 86200000,
-  'truck-light': 83500000,
-  'soy-harvest': 25800000,
-  'soy-oil': 11400000,
-  'feed-mill': 19100000,
+  'iron-extraction': 9000000,
+  'coal-extraction': 13100000,
+  'steel-bars': 19400000,
+  'steel-recycling': 26800000,
+  utensils: 14200000,
+  'truck-heavy': 97500000,
+  'truck-light': 93000000,
+  'soy-harvest': 16300000,
+  'soy-oil': 15800000,
+  'feed-mill': 20400000,
   'milk-production': 2200000,
-  'rice-harvest': 2800000,
-  'beans-harvest': 2300000,
-  'sugar-harvest': 2500000,
+  'rice-harvest': 4000000,
+  'beans-harvest': 3800000,
+  'sugar-harvest': 4100000,
 };
 
 // Rótulo de categoria exibido nas telas.

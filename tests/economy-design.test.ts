@@ -18,32 +18,7 @@ const massKg = (items: Partial<Record<DesignItemId, number>>) =>
 // realista (utilização 0,7, preço realizado 0,95) que falham hoje. A lista tem de ser exatamente a das
 // falhas: nova falha quebra o teste, e falha resolvida também, até alguém atualizar a lista. A spec
 // 006 esvazia a lista.
-const knownBalanceDebt = [
-  'retorno:iron-extraction',
-  'retorno:coal-extraction',
-  'retorno:steel-bars',
-  'retorno:steel-recycling',
-  'margem:utensils',
-  'lucro:utensils',
-  'retorno:utensils',
-  'margem:truck-heavy',
-  'lucro:truck-heavy',
-  'retorno:truck-heavy',
-  'margem:truck-light',
-  'lucro:truck-light',
-  'retorno:truck-light',
-  'margem:soy-oil',
-  'lucro:soy-oil',
-  'retorno:soy-oil',
-  'margem:feed-mill',
-  'retorno:feed-mill',
-  'lucro:rice-harvest',
-  'retorno:rice-harvest',
-  'lucro:beans-harvest',
-  'retorno:beans-harvest',
-  'lucro:sugar-harvest',
-  'retorno:sugar-harvest',
-];
+const knownBalanceDebt: string[] = [];
 
 describe('proposta de economia da etapa B', () => {
   const result = analyzeDesign();

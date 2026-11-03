@@ -18,7 +18,7 @@ continuam compartilhados.
 | Formas         | Cantos retos, borda de 2 px, sombra dura deslocada. Botões com chanfro que afundam ao clicar.                                                                                                                                                                |
 | Gráficos       | `GraficoPixel`: grade de 4 px, linha em degraus, área em xadrez (lavoura acima do zero, brasa abaixo), zero como faixa de estrada e a mira de GPS da landing no ponto lido. Lê pelo mouse, pelo toque e pelas setas do teclado; "Ver valores" abre a tabela. |
 | Séries         | Ordem fixa `--serie-1..5` (verde, azul, ouro, lilás, brasa), validada para daltonismo e contraste sobre o grafite. A cor segue a série, nunca a posição.                                                                                                     |
-| Mapa           | GPS noturno: chão grafite, água petróleo, rodovias em ouro, demais vias em creme apagado.                                                                                                                                                                    |
+| Mapa           | Atlas pixel (D-042): cartografia real, solo verde, água azul, estradas creme/ouro e construções reais; vista inclinada opcional e entidades do jogo nítidas.                                                                                                 |
 | Texto          | Termos de laboratório (HHI, índices, "piloto", "próxima fase", tempo real) saem da tela do jogador e vão para o `/lab`.                                                                                                                                      |
 
 Tokens em `apps/web/src/design/identidade.css`; gráfico em `components/GraficoPixel.tsx` e

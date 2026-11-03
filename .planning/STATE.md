@@ -1,14 +1,42 @@
 # Estado do projeto
 
-Atualizado em **30/10/2026**. Versão **0.4.0**. Uma página: o que é verdade agora e o que vem a seguir. Detalhes e evidências ficam nos documentos de cada fase e no histórico do Git.
+Atualizado em **01/11/2026**. Versão **0.4.0**. Uma página: o que é verdade agora e o que vem a seguir. Detalhes e evidências ficam nos documentos de cada fase e no histórico do Git.
 
 ## Onde estamos
 
 Etapas **A · Arrumar a casa** e **B · Redesenhar a economia** concluídas; parte da **E** (primeira hora) adiantada a pedido do Pedro. Próximas: **C · Motor que aguenta** e **D · Jogar junto** do [roteiro](ROADMAP.md), que faltam para o playtest com amigos. O panorama visual completo está em [`docs/raio-x.html`](../docs/raio-x.html).
 
-O jogo roda localmente: mapa do Centro-Sul, compra de imóveis, produção, estoque físico, mercado com negociação, frota, finanças com crédito e empresas-bot usando os mesmos comandos dos jogadores. O mundo jogável da economia versão 2 (`npm run dev:v2`) usa escala 20, com cerca de 500 empresas-bot, começo enxuto (loja vazia e R$ 1 milhão) e guia de primeiros passos. O frete da versão 2 usa estimativa identificada; rotas rodoviárias reais continuam no mundo principal. Build e 230 testes passam.
+O jogo roda localmente: mapa do Centro-Sul, compra de imóveis, produção, estoque físico, mercado com negociação, frota, finanças com crédito e empresas-bot usando os mesmos comandos dos jogadores. O mundo jogável da economia versão 2 (`npm run dev:v2`) usa escala 20, com cerca de 500 empresas-bot, começo enxuto (loja vazia e R$ 1 milhão) e guia de primeiros passos. O frete da versão 2 usa estimativa identificada; rotas rodoviárias reais continuam no mundo principal. Build e 275 testes passam.
 
 ## O que funciona
+
+Conexão recuperada (01/11): consulta do mundo não processa mais atraso econômico;
+tick periódico em lotes, prazo de 15 segundos e tentativa compartilhada no cliente.
+Backup consistente antes do reinício; mapa real voltou a abrir. Build, 276 testes,
+reconexão e navegação desktop/celular aprovados. Limites e evidências em
+[VALIDAÇÃO DA CONEXÃO](../docs/design/VALIDACAO-CONEXAO-2026-11-01.md).
+
+Continuidade do mapa (31/10): a página conserva os dois mapas, tiles e contextos
+ao trocar de tela; fora dela, câmera e animação ficam pausadas. Construções novas
+são preparadas em worker, com fila limitada e descarte de respostas antigas.
+Build, 275 testes e dez fluxos de navegador aprovados. A medição isolada de 4.000
+construções ainda registrou uma tarefa longa de 75 ms em outras etapas; downloads
+inéditos e custo de tiles/upload permanecem limites. Ver validação do mapa.
+
+Refinamento do mapa em 31/10: cache limitado de malhas, câmera sem triangulação
+repetida, materiais com detalhe proporcional ao pixel e padrões menos regulares.
+No benchmark controlado de 500 footprints, a mediana das consultas repetidas caiu
+de 7,78 para 0,74 ms na CPU, com a mesma geometria. Isso não é uma medição de FPS.
+271 testes unitários e dez testes de navegador aprovados; revisão visual segue
+com o Pedro. Detalhes na seção de 31/10 da validação do mapa.
+
+Mapa real em pixel (30/10, D-042): solo, natureza e construções cartográficas com
+vista inclinada opcional; de perto, telhados em duas águas, fachadas, janelas e
+cornijas ilustradas sobre os contornos reais. Zoom até 20; entidades do jogo e
+rotas permanecem nítidas. A extrusão lisa inicial foi rejeitada pelo Pedro e
+substituída por esse acabamento. Verificação técnica: build, 260 testes e dez
+testes de navegador aprovados; a aprovação estética da nova versão continua
+aberta. Evidências e limites em [E-MAPA-VALIDATION](phases/E-mapa/E-MAPA-VALIDATION.md).
 
 Direção **Livro-caixa** aplicada à interface: Archivo condensada nos títulos e valores,
 IBM Plex Mono nos controles e Caveat Brush nas notas curtas, com fontes locais, papel,

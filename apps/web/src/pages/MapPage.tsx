@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ChevronDown,
   ChevronUp,
@@ -72,13 +72,19 @@ function AccessNotice({ property, strict }: { property: Property; strict?: boole
   );
 }
 
-export function MapPage() {
+export function MapPage({ active = true }: { active?: boolean }) {
   const { world, actor, selectedId, select, navigate, openBusiness, openMarket, focusMap } =
     useGame();
   const [layers, setLayers] = useState<Layers>(defaultLayers),
     [expanded, setExpanded] = useState(false);
   const [ownership, setOwnership] = useState<'' | 'mine' | 'others' | 'available'>(''),
     [details, setDetails] = useState(false);
+  useEffect(() => {
+    if (!active) {
+      setExpanded(false);
+      setDetails(false);
+    }
+  }, [active]);
   const p = world.properties.find((x) => x.id === selectedId),
     e = world.establishments.find((x) => x.propertyId === selectedId);
   const owner = world.companies.find((c) => c.id === p?.ownerId);
@@ -109,7 +115,7 @@ export function MapPage() {
   return (
     <div className="map-page">
       <div className="main-map">
-        <WorldMap layers={layers} onSelect={select} ownership={ownership} />
+        <WorldMap active={active} layers={layers} onSelect={select} ownership={ownership} />
         <div className="map-hud-top">
           <div className="map-filter-bar" role="group" aria-label="Filtrar mapa">
             {filtros.map(([id, rotulo]) => (
@@ -377,7 +383,9 @@ export function MapPage() {
           </div>
         </aside>
       )}
-      {details && p && <InfrastructureDetails property={p} onClose={() => setDetails(false)} />}
+      {active && details && p && (
+        <InfrastructureDetails property={p} onClose={() => setDetails(false)} />
+      )}
     </div>
   );
 }

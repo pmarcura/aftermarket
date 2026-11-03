@@ -49,7 +49,15 @@ for (const viewport of [
             tiles: ['http://127.0.0.1:5183/__navigation/empty.pbf?z={z}&x={x}&y={y}'],
             minzoom: 0,
             maxzoom: 14,
-            vector_layers: ['landcover', 'water', 'waterway', 'transportation'].map((id) => ({
+            vector_layers: [
+              'landuse',
+              'landcover',
+              'water',
+              'waterway',
+              'boundary',
+              'transportation',
+              'building',
+            ].map((id) => ({
               id,
               fields: {},
             })),

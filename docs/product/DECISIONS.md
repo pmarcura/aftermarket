@@ -216,6 +216,38 @@ Fechamento da calibração. Caminhão leve estava no prejuízo (−R$ 16 mil por
 - **Ruído:** utensílios e ração variaram entre as duas rodadas (utensílios de +84 mil para +38 mil; ração de +9 mil para −51 mil), no intervalo que já vimos com código idêntico.
 - **Equipamento:** a suspeita inicial estava errada. Toda linha da calculadora tem payback de 35 dias; o equipamento sobe com o lucro por design.
 
+### D-042 · Mapa real em pixel com construções (30/10/2026)
+
+Pedido do Pedro: usar a geração de mapas do OpenPixel-RPG como referência para
+transformar a cartografia real em pixel, incluindo construções. Esta decisão
+substitui a exclusão de prédios da D-014 e a aparência de GPS noturno.
+
+- A geografia continua sendo OpenFreeMap/OpenMapTiles/OSM. Estradas, água, matas e
+  edifícios mantêm seus contornos; ausência de cobertura não é preenchida por
+  construções inventadas. Footprints de cenário não viram imóveis do jogo.
+- A base é renderizada numa grade de 2 pixels CSS, com paleta rural e padrões
+  locais. Propriedades, nomes, rotas e caminhões ficam na resolução da tela,
+  sincronizados com a mesma câmera e mantendo suas coordenadas autoritativas.
+- Construções aparecem a partir do zoom 13. A vista inclinada é opcional: em zoom
+  14 ou maior usa os volumes cartográficos. Alturas são aproximadas, com fallback
+  gráfico de 6 m quando ausentes; a interface informa a aproximação.
+- Após rejeição do acabamento em blocos pelo Pedro, a aproximação recebeu
+  geometria de telhados e materiais próprios: janelas, portas, cornijas, telhas e
+  coberturas. A camada detalhada começa em zoom 15, com zoom máximo 20; a vista
+  inclinada aproxima até 18 para tornar os detalhes visíveis. Fachadas e telhados
+  são interpretação artística, identificada na interface. Uso urbano recebe
+  cores apenas nos polígonos mapeados de residencial, comércio/varejo e indústria.
+- O projeto de referência gera imagens por IA a partir de uma planta real.
+  Aproveitamos esse princípio e a separação das camadas com implementação
+  própria, sem copiar imagens/código ou adicionar serviços pagos. `earcut` 3.2.4,
+  já instalado por MapLibre, passa a dependência direta: triangula contornos
+  côncavos e pátios sem preenchê-los nem depender de APIs internas do renderer.
+- Custo técnico: dois contextos WebGL por mapa, com tiles apenas na base. Não há
+  alegação de ganho global de desempenho nem reconstrução de fachadas reais.
+
+Pesquisa, fontes e limites em [MAPA-PIXEL](../research/MAPA-PIXEL.md); plano e
+evidências em `.planning/phases/E-mapa`.
+
 ### Ideia em avaliação · Genética de cultivares (Pedro, 28/10/2026)
 
 O Pedro propôs um sistema de genética a partir de uma pesquisa sobre a cana. O produtor compra uma pequena quantidade de mudas de alta tecnologia no viveiro e as multiplica numa área própria. Depois replanta com a própria cana por anos e só volta a comprar para trocar de variedade, para limpar o canavial de doenças ou para expandir a área de uma vez.

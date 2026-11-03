@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "fixtureFingerprint": "f16c31272b02e2938811d7d772a48a5f86ed97676d686e750872af1e1ee60af6",
+  "fixtureFingerprint": "32a0c489b4acca67ee14cc278f1fff43641a191502859273f3d0fd7d103040cd",
   "note": "Inventário estático alcançável por tela; inclui componentes compartilhados e ramos condicionais. Textos dinâmicos e estados visíveis precisam da evidência de navegador. Comandos type são candidatos, não prova de execução.",
   "screens": [
     {
@@ -9,7 +9,7 @@
       "source": "pages/InicioPage.tsx",
       "purpose": "Resumir o que aconteceu e mostrar o que precisa do jogador.",
       "task": "Ver o que mudou desde a última visita e resolver uma pendência com um clique.",
-      "fingerprint": "647662024aa1e086d1c4681487fb6cdd9bc58705e584518e2343f557d407e845",
+      "fingerprint": "283c472e6be34e1aea5715b21bdc4393dfbbb229b526e5cec9864c4b73da25db",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -51,7 +51,7 @@
       "source": "pages/MapPage.tsx",
       "purpose": "Encontrar e inspecionar propriedades.",
       "task": "Localizar uma propriedade e entender titularidade e acesso.",
-      "fingerprint": "2654c75932cc3a57674eb8d2b26ed8e02af2f902d7b2dec208e13d6b0c572765",
+      "fingerprint": "efc7272542b7513c29951944329822d1bf6e96c69e04873fb11a271ce4424b1b",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -80,7 +80,16 @@
         "apps/web/src/features/inicio/tempo.ts",
         "apps/web/src/features/produto/ProdutoFicha.tsx",
         "apps/web/src/lib/game.tsx",
+        "apps/web/src/lib/map-performance.ts",
         "apps/web/src/lib/map-style.ts",
+        "apps/web/src/lib/map-textures.ts",
+        "apps/web/src/lib/pixel-basemap.ts",
+        "apps/web/src/lib/pixel-building-cache.ts",
+        "apps/web/src/lib/pixel-building-shaders.ts",
+        "apps/web/src/lib/pixel-building-worker-client.ts",
+        "apps/web/src/lib/pixel-building-worker-messages.ts",
+        "apps/web/src/lib/pixel-buildings-geometry.ts",
+        "apps/web/src/lib/pixel-buildings.ts",
         "apps/web/src/lib/routing.ts",
         "apps/web/src/main.tsx",
         "apps/web/src/pages/MapPage.tsx",
@@ -93,7 +102,7 @@
       "source": "pages/MapPage.tsx",
       "purpose": "Revisar imóvel, instalação e capital necessário.",
       "task": "Entender o custo antes de confirmar a aquisição.",
-      "fingerprint": "2654c75932cc3a57674eb8d2b26ed8e02af2f902d7b2dec208e13d6b0c572765",
+      "fingerprint": "efc7272542b7513c29951944329822d1bf6e96c69e04873fb11a271ce4424b1b",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -122,7 +131,16 @@
         "apps/web/src/features/inicio/tempo.ts",
         "apps/web/src/features/produto/ProdutoFicha.tsx",
         "apps/web/src/lib/game.tsx",
+        "apps/web/src/lib/map-performance.ts",
         "apps/web/src/lib/map-style.ts",
+        "apps/web/src/lib/map-textures.ts",
+        "apps/web/src/lib/pixel-basemap.ts",
+        "apps/web/src/lib/pixel-building-cache.ts",
+        "apps/web/src/lib/pixel-building-shaders.ts",
+        "apps/web/src/lib/pixel-building-worker-client.ts",
+        "apps/web/src/lib/pixel-building-worker-messages.ts",
+        "apps/web/src/lib/pixel-buildings-geometry.ts",
+        "apps/web/src/lib/pixel-buildings.ts",
         "apps/web/src/lib/routing.ts",
         "apps/web/src/main.tsx",
         "apps/web/src/pages/MapPage.tsx",
@@ -135,7 +153,7 @@
       "source": "pages/OpportunitiesPage.tsx",
       "purpose": "Comparar mercados e oportunidades por item e região.",
       "task": "Filtrar um produto e explicar demanda, preço e oferta.",
-      "fingerprint": "987b898a533b4115eff4d1caa40b0779032d19c01670e45b68a2025cf57ab5b9",
+      "fingerprint": "57008c58b7f323e936772b83abd7b6fb1bd817fbffaa6a3eaaadc2968676ba31",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -176,7 +194,7 @@
       "source": "pages/BusinessesPage.tsx",
       "purpose": "Gerenciar estruturas e conexões de abastecimento.",
       "task": "Identificar uma estrutura parada e abrir sua operação.",
-      "fingerprint": "e6cb96b6552739c0a6082bebf25fac75e901c4714b5469c4981faecd143b9dfe",
+      "fingerprint": "8c1ee06cb929dae53219cf4c4792588a5b2f0dd2851532eb088a2d3f09024f8e",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -220,7 +238,7 @@
       "business": "e-industry",
       "purpose": "Produzir, abastecer, contratar e vender.",
       "task": "Revisar insumos, capacidade e custo antes de iniciar produção.",
-      "fingerprint": "184743ce47a940e59a1b61bc94eede0639884bc429aad1dab8ff605e917d4031",
+      "fingerprint": "017a82069c84f4d532f9401658dbd67a3f90efd41f1ece9b384623d622c30ba3",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -280,7 +298,7 @@
       "business": "e-retail",
       "purpose": "Acompanhar estoque, preços e reposição da loja.",
       "task": "Reconhecer ruptura e configurar uma reposição viável.",
-      "fingerprint": "b3c4699f4806531fbe4762cd7cd64f5fc0b0efa8db4ef4801eb40e290648caed",
+      "fingerprint": "8054f693e3f688f99cef1a27eafa44aefc56aaf8fa69c99845beb66c89dd86ab",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -337,7 +355,7 @@
       "source": "pages/MarketPage.tsx",
       "purpose": "Comprar, negociar e observar concorrentes e editais.",
       "task": "Comparar custo posto e escolher uma compra compatível.",
-      "fingerprint": "b45884d1441163d5e9b4eb7d991ed0724376fa99ed85d42c7be811ce77241d6d",
+      "fingerprint": "aa4e8d8bc979fad25f0843d7ecd08a21fa1efbecce55cc437604787e2b090a84",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -378,7 +396,7 @@
       "source": "pages/LogisticsPage.tsx",
       "purpose": "Contratar e acompanhar transporte.",
       "task": "Entender disponibilidade, limite, custo e prazo de uma carga.",
-      "fingerprint": "2465047076f9981edb319e5caf418efcfeed1f3dd8ca17bba15d70279b8f072a",
+      "fingerprint": "3527e86e3920401bd976b69e3d935c3b5adea6219952a8755bc6c3ccdb0b005a",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -420,7 +438,16 @@
         "apps/web/src/features/produto/ProdutoFicha.tsx",
         "apps/web/src/lib/clock.ts",
         "apps/web/src/lib/game.tsx",
+        "apps/web/src/lib/map-performance.ts",
         "apps/web/src/lib/map-style.ts",
+        "apps/web/src/lib/map-textures.ts",
+        "apps/web/src/lib/pixel-basemap.ts",
+        "apps/web/src/lib/pixel-building-cache.ts",
+        "apps/web/src/lib/pixel-building-shaders.ts",
+        "apps/web/src/lib/pixel-building-worker-client.ts",
+        "apps/web/src/lib/pixel-building-worker-messages.ts",
+        "apps/web/src/lib/pixel-buildings-geometry.ts",
+        "apps/web/src/lib/pixel-buildings.ts",
         "apps/web/src/lib/routing.ts",
         "apps/web/src/main.tsx",
         "apps/web/src/pages/ComercioPages.tsx",
@@ -435,7 +462,7 @@
       "business": "e-logistics",
       "purpose": "Gerenciar veículos, disponibilidade e capacidade.",
       "task": "Encontrar um veículo livre e comparar sua capacidade.",
-      "fingerprint": "31f9c960a04b99c6e4af177a0bf72c44f15952790ad5c2a47019d7416320600b",
+      "fingerprint": "ebe9f1dd0ad8345cbac6d77dddc55f80e839bcbd75cf94702f4b9e8bf3b73347",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -485,7 +512,7 @@
       "source": "features/economy/Cotacoes.tsx",
       "purpose": "Consultar o preço de todos os itens e o movimento das outras empresas.",
       "task": "Achar o produto que mais subiu e quem está vendendo.",
-      "fingerprint": "c344b80b53ef3fa777da9c43bc34ebe4c81c015d77a438b70374b8da9decaeb6",
+      "fingerprint": "0033e95dcc238b88602eec3e74065fc6d7dcd1b71f14a1caf6a31d2a63554846",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -526,7 +553,7 @@
       "source": "pages/ComercioPages.tsx",
       "purpose": "Acompanhar compras e vendas combinadas com outras empresas.",
       "task": "Encontrar um pedido aberto e responder à contraproposta.",
-      "fingerprint": "78463c8cee3f92de63448c738de1c0d3f580ddf6c387c2b623564e2c347507da",
+      "fingerprint": "4491347d5092e861c94a909505a530f421b497e3cfae6a1fd65efbc8711b8397",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -578,7 +605,7 @@
       "source": "pages/ComercioPages.tsx",
       "purpose": "Disputar editais de prefeituras e acompanhar entregas públicas.",
       "task": "Entender quanto um edital paga e como a vencedora é escolhida.",
-      "fingerprint": "78463c8cee3f92de63448c738de1c0d3f580ddf6c387c2b623564e2c347507da",
+      "fingerprint": "4491347d5092e861c94a909505a530f421b497e3cfae6a1fd65efbc8711b8397",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -630,7 +657,7 @@
       "source": "pages/CompanyPage.tsx",
       "purpose": "Explicar caixa, resultado, compromissos e recuperação.",
       "task": "Distinguir saldo, caixa livre, dívida e resultado operacional.",
-      "fingerprint": "bb9c9a678c03cab0a841b8ada246b1c1627ed7acb2e233097553a242e98060e4",
+      "fingerprint": "daae150fbf11ac8918133c65159b461fef81241e8c4e518ce9d33c4d76503f49",
       "files": [
         "apps/web/src/App.tsx",
         "apps/web/src/analysis.css",
@@ -676,7 +703,7 @@
     },
     {
       "path": "apps/web/src/App.tsx",
-      "hash": "1bb6beb254447dbb1ded4e19c4dc361c9b758c253575f3dd8a8bbf12ae655c39",
+      "hash": "2972b5246cf89ac4d419ca961f40b10f8d210949dd5effe2f63faa52207a030a",
       "components": [
         "ArrowUpRight",
         "Badge",
@@ -718,57 +745,62 @@
         {
           "kind": "aria-label",
           "text": "AFTERMARKET · Abrir o início",
-          "line": 193
+          "line": 203
         },
         {
           "kind": "aria-label",
           "text": "Buscar cidade, empresa ou recurso",
-          "line": 200
+          "line": 210
         },
         {
           "kind": "placeholder",
           "text": "Buscar cidade, empresa, recurso ou coordenadas…",
-          "line": 201
+          "line": 211
         },
         {
           "kind": "button",
           "text": "Ver minha empresa",
-          "line": 329
+          "line": 339
         },
         {
           "kind": "button",
           "text": "Preferências e contas",
-          "line": 337
+          "line": 347
         },
         {
           "kind": "aria-label",
           "text": "Menu principal",
-          "line": 350
+          "line": 360
         },
         {
           "kind": "title",
           "text": "Preferências",
-          "line": 368
+          "line": 378
         },
         {
           "kind": "button",
           "text": "{dinâmico}",
-          "line": 373
+          "line": 383
         },
         {
           "kind": "role",
           "text": "status",
-          "line": 395
+          "line": 407
+        },
+        {
+          "kind": "role",
+          "text": "status",
+          "line": 420
         },
         {
           "kind": "title",
           "text": "Preferências do mundo",
-          "line": 406
+          "line": 432
         },
         {
           "kind": "button",
           "text": "{dinâmico}",
-          "line": 416
+          "line": 442
         }
       ],
       "commands": []
@@ -1278,8 +1310,9 @@
     },
     {
       "path": "apps/web/src/components/WorldMap.tsx",
-      "hash": "8bdccae67b19531ec7223abb3260476d9cc1734d2e902560fe5bd5d6d2adb869",
+      "hash": "b339b434d2555d1c0c46d4a4b0e78d44db7116fa12339147a21c3e45acc3f347",
       "components": [
+        "Box",
         "CategoryIcon",
         "LocateFixed",
         "RefreshCw",
@@ -1289,27 +1322,37 @@
         {
           "kind": "role",
           "text": "group",
-          "line": 1042
+          "line": 1088
         },
         {
           "kind": "aria-label",
           "text": "Negócios no mapa",
-          "line": 1042
+          "line": 1088
         },
         {
           "kind": "button",
           "text": "{dinâmico} · {dinâmico} {dinâmico}",
-          "line": 1044
+          "line": 1090
         },
         {
           "kind": "role",
           "text": "status",
-          "line": 1058
+          "line": 1104
+        },
+        {
+          "kind": "role",
+          "text": "status",
+          "line": 1183
+        },
+        {
+          "kind": "role",
+          "text": "alert",
+          "line": 1191
         },
         {
           "kind": "button",
           "text": "Recarregar mapa",
-          "line": 1103
+          "line": 1194
         }
       ],
       "commands": []
@@ -4022,7 +4065,7 @@
     },
     {
       "path": "apps/web/src/lib/game.tsx",
-      "hash": "5cc4f570ae1cba04aad2739ec5a2e444550d8f68c2d3ee9d6b4cfc7f00d6d519",
+      "hash": "cc1de5f5fee339464a0f9cad0fc92c4214331c34937e418ba1ab68a3ac16aa36",
       "components": [
         "GameContext.Provider",
         "Icon",
@@ -4032,24 +4075,87 @@
         {
           "kind": "h1",
           "text": "AFTERMARKET",
-          "line": 265
+          "line": 296
         },
         {
           "kind": "button",
           "text": "Tentar novamente",
-          "line": 268
+          "line": 299
         },
         {
           "kind": "role",
           "text": "status",
-          "line": 336
+          "line": 369
         }
       ],
       "commands": []
     },
     {
+      "path": "apps/web/src/lib/map-performance.ts",
+      "hash": "c81f0f8a1e7153600d00bb38d7a95d1e7038a6d090adf780de2effb11f686567",
+      "components": [],
+      "literals": [],
+      "commands": []
+    },
+    {
       "path": "apps/web/src/lib/map-style.ts",
-      "hash": "4b1b12bf3114e5c508645bc008e924751118f4ffe6e3a9485e60c147b07c686f",
+      "hash": "963372f2eb0c37a3cfeefb62804f15ffa7bf80fbcadc47d22c763d641b5a41ac",
+      "components": [],
+      "literals": [],
+      "commands": []
+    },
+    {
+      "path": "apps/web/src/lib/map-textures.ts",
+      "hash": "db38aa43657cfa6c380acb7c33ec650eb905e2abf450fc59dd38a513693403c5",
+      "components": [],
+      "literals": [],
+      "commands": []
+    },
+    {
+      "path": "apps/web/src/lib/pixel-basemap.ts",
+      "hash": "7f8992ef6dde246da5f30ca25b240ce21cc4d4969c4900ddad463865360b5729",
+      "components": [],
+      "literals": [],
+      "commands": []
+    },
+    {
+      "path": "apps/web/src/lib/pixel-building-cache.ts",
+      "hash": "5ef662c47cc5d9184fc419dd617193ecf29e18c7b3cb91619609e4a4e4d47c67",
+      "components": [],
+      "literals": [],
+      "commands": []
+    },
+    {
+      "path": "apps/web/src/lib/pixel-building-shaders.ts",
+      "hash": "56a9c127a7fa2cb0b6c758d27d42bf4f4b7d6685a2e52f787156347835077822",
+      "components": [],
+      "literals": [],
+      "commands": []
+    },
+    {
+      "path": "apps/web/src/lib/pixel-building-worker-client.ts",
+      "hash": "75db6b7130678686776087fb38f1182f8a749ea38e34aa680fe9dc3a11fa2a76",
+      "components": [],
+      "literals": [],
+      "commands": []
+    },
+    {
+      "path": "apps/web/src/lib/pixel-building-worker-messages.ts",
+      "hash": "fbe2e39e290a4d957e886fae3579f4b6bf6bcb69f5b631fb305c1e8e42935e35",
+      "components": [],
+      "literals": [],
+      "commands": []
+    },
+    {
+      "path": "apps/web/src/lib/pixel-buildings-geometry.ts",
+      "hash": "f6bd2df33a232643c26bf6274a88ca950588daf5cd872f30c3448cf59c1cadc3",
+      "components": [],
+      "literals": [],
+      "commands": []
+    },
+    {
+      "path": "apps/web/src/lib/pixel-buildings.ts",
+      "hash": "12e5792886a867ccc092dcd9d7a94cdf3e8ca35a7d87abc78d79560c01f2354b",
       "components": [],
       "literals": [],
       "commands": []
@@ -4441,7 +4547,7 @@
     },
     {
       "path": "apps/web/src/pages/MapPage.tsx",
-      "hash": "03795717da24de5e248051053d563883964b8b093fe73dedc3084b4191774293",
+      "hash": "fdcf7a9e74a5aaf447a7556ac795e296039e29ff9441d72316bf7b2f93e676c8",
       "components": [
         "AccessNotice",
         "ArrowLeft",
@@ -4478,163 +4584,163 @@
         {
           "kind": "role",
           "text": "group",
-          "line": 114
+          "line": 120
         },
         {
           "kind": "aria-label",
           "text": "Filtrar mapa",
-          "line": 114
+          "line": 120
         },
         {
           "kind": "button",
           "text": "{dinâmico}",
-          "line": 116
+          "line": 122
         },
         {
           "kind": "button",
           "text": "Camadas {dinâmico} {dinâmico}",
-          "line": 133
+          "line": 139
         },
         {
           "kind": "role",
           "text": "switch",
-          "line": 150
+          "line": 156
         },
         {
           "kind": "aria-label",
           "text": "Legenda do mapa",
-          "line": 160
+          "line": 166
         },
         {
           "kind": "aria-label",
           "text": "Detalhes do imóvel",
-          "line": 177
+          "line": 183
         },
         {
           "kind": "h2",
           "text": "{dinâmico}",
-          "line": 188
+          "line": 194
         },
         {
           "kind": "aria-label",
           "text": "Fechar detalhes da propriedade",
-          "line": 196
+          "line": 202
         },
         {
           "kind": "aria-label",
           "text": "Titularidade",
-          "line": 203
+          "line": 209
         },
         {
           "kind": "h3",
           "text": "{dinâmico}",
-          "line": 250
+          "line": 256
         },
         {
           "kind": "button",
           "text": "{dinâmico} / {dinâmico}",
-          "line": 270
+          "line": 276
         },
         {
           "kind": "button",
           "text": "Ver de perto",
-          "line": 299
+          "line": 305
         },
         {
           "kind": "title",
           "text": "Centralizar no mapa",
-          "line": 302
+          "line": 308
         },
         {
           "kind": "button",
           "text": "Ver tarifas e detalhes da cidade",
-          "line": 349
+          "line": 355
         },
         {
           "kind": "button",
           "text": "Comprar terreno · {dinâmico}",
-          "line": 356
+          "line": 362
         },
         {
           "kind": "button",
           "text": "Abrir meu negócio",
-          "line": 364
+          "line": 370
         },
         {
           "kind": "button",
           "text": "Ver mercadorias desta empresa",
-          "line": 369
+          "line": 375
         },
         {
           "kind": "button",
           "text": "Ver negócios que dão lucro",
-          "line": 374
+          "line": 380
         },
         {
           "kind": "button",
           "text": "Escolher um terreno no mapa",
-          "line": 393
+          "line": 401
         },
         {
           "kind": "title",
           "text": "Comprar terreno",
-          "line": 416
+          "line": 424
         },
         {
           "kind": "button",
           "text": "Voltar ao mapa",
-          "line": 419
+          "line": 427
         },
         {
           "kind": "h2",
           "text": "Terreno para {dinâmico} em {dinâmico}",
-          "line": 436
+          "line": 444
         },
         {
           "kind": "button",
           "text": "Comprar por {dinâmico}",
-          "line": 443
+          "line": 451
         },
         {
           "kind": "aria-label",
           "text": "Resumo financeiro da compra",
-          "line": 455
+          "line": 463
         },
         {
           "kind": "h3",
           "text": "O que você encontra neste terreno",
-          "line": 491
+          "line": 499
         },
         {
           "kind": "button",
           "text": "Comparar outros negócios",
-          "line": 533
+          "line": 541
         },
         {
           "kind": "button",
           "text": "Confirmar compra · {dinâmico}",
-          "line": 536
+          "line": 544
         },
         {
           "kind": "title",
           "text": "Dar nome ao novo negócio",
-          "line": 552
+          "line": 560
         },
         {
           "kind": "label",
           "text": "Nome do estabelecimento",
-          "line": 557
+          "line": 565
         },
         {
           "kind": "button",
           "text": "{dinâmico}",
-          "line": 576
+          "line": 584
         }
       ],
       "commands": [
         {
           "type": "buyProperty",
-          "line": 582
+          "line": 590
         }
       ]
     },
@@ -4851,7 +4957,7 @@
     },
     {
       "path": "apps/web/src/styles.css",
-      "hash": "02465f4a8a46f2874325e08840d0dd45dcd318605b51ea5ca01b3ce552a637f3",
+      "hash": "a3b66cc254d0f602b70510408e752af87462e10d5d45f87b3cbb489fbecccc7c",
       "components": [],
       "literals": [],
       "commands": []
@@ -4860,7 +4966,7 @@
   "tests": [
     {
       "path": "tests/e2e/animation.spec.ts",
-      "hash": "5952052ca92e4e3faa5b092c1a918d89188e9afe3fc8d13e13f0af6746ebce35",
+      "hash": "ee05916d7a4406c02d1f20fe178c91a2998fc71e3ba9b6642cfab1180e22021c",
       "cases": [
         "caminhão avança com o relógio contratado e mantém progresso após recarga"
       ]
@@ -4870,6 +4976,13 @@
       "hash": "35d359abcfc3eced94ec9428c0ab692fae298e7a3039bc19b096f76f2871cbb6",
       "cases": [
         "negocia pedido real, agrupa caminhões e configura abastecimento e educação"
+      ]
+    },
+    {
+      "path": "tests/e2e/connection.spec.ts",
+      "hash": "3142643ee9cb1be97fbeb3d8c61a56d0dceb476948667711dc81effd995f3119",
+      "cases": [
+        "uma API sem resposta tem prazo limite, não acumula pedidos e permite reconexão"
       ]
     },
     {
@@ -4917,7 +5030,7 @@
     },
     {
       "path": "tests/e2e/navigation.spec.ts",
-      "hash": "c992f5c59483a7beaccb334775d964e72874a3250e84d063e9f4c703c80dca97",
+      "hash": "5fafdb2ddfb42ffa9395684b50150eac5e105e349ac3337b9e0cd43e156bfdad",
       "cases": []
     },
     {
@@ -4927,11 +5040,19 @@
     },
     {
       "path": "tests/e2e/opening.spec.ts",
-      "hash": "ba3ca3b8c845431d6f7fc77b0c12ebbb453a89946bac0346c55d97067a3861e0",
+      "hash": "093c289531498684bfead37718e07ab6d8364fbed28d94567a6dccf98fab9524",
       "cases": [
         "nova unidade separa imóvel, equipamento e equipe sem contratar automaticamente",
         "especialidade que não cabe explica a área e não envia instalação nem cobrança",
         "unidade sem espaço para ampliar mantém as linhas e bloqueia nova cobrança"
+      ]
+    },
+    {
+      "path": "tests/e2e/pixel-map.spec.ts",
+      "hash": "eaa9d5e43f626fa83b5a7020c69460cf67a3e13fcca4c5b50cdab2187820fe28",
+      "cases": [
+        "falha da cartografia aparece mesmo com a camada interativa carregada",
+        "construções desenham pixels WebGL de footprints e preservam pátio e galpão próximo"
       ]
     },
     {

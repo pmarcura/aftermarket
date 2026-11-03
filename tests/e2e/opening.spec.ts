@@ -30,7 +30,15 @@ async function fixture(page: Page, world: World, destination: 'map' | 'industry'
         tiles: [`${test.info().project.use.baseURL}/__opening/empty.pbf?z={z}&x={x}&y={y}`],
         minzoom: 0,
         maxzoom: 14,
-        vector_layers: ['landcover', 'water', 'waterway', 'transportation'].map((id) => ({
+        vector_layers: [
+          'landuse',
+          'landcover',
+          'water',
+          'waterway',
+          'boundary',
+          'transportation',
+          'building',
+        ].map((id) => ({
           id,
           fields: {},
         })),

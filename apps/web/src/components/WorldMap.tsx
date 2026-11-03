@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import * as maplibregl from 'maplibre-gl';
 import type { GeoJSONSource } from 'maplibre-gl';
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
-import { LocateFixed, RefreshCw, Truck } from 'lucide-react';
+import { Box, LocateFixed, RefreshCw, Truck } from 'lucide-react';
 import { useGame, CategoryIcon } from '../lib/game';
 import {
   categoryInfo,
@@ -13,7 +13,8 @@ import {
   type Shipment,
   seasonProducts,
 } from '../../../../packages/simulation/src/model';
-import { createMapStyle } from '../lib/map-style';
+import { MAP_ATTRIBUTION } from '../lib/map-style';
+import { attachPixelBasemap } from '../lib/pixel-basemap';
 import { positionAlongRoute, routeLengths } from '../../../../packages/simulation/src/geometry';
 import { shipmentRoadPath, shipmentRoute } from '../../../../packages/simulation/src/road-path';
 import { shipmentStatus } from '../../../../packages/simulation/src/shipment';
@@ -227,6 +228,7 @@ export const defaultLayers: Layers = {
   routes: false,
 };
 export function WorldMap({
+  active = true,
   mini = false,
   propertyId,
   layers = defaultLayers,
@@ -240,6 +242,7 @@ export function WorldMap({
   economic,
   onRegionSelect,
 }: {
+  active?: boolean;
   mini?: boolean;
   propertyId?: string;
   layers?: Layers;
@@ -260,10 +263,17 @@ export function WorldMap({
 }) {
   const { world, actor, selectedId, select, focus, consumeFocus } = useGame();
   const container = useRef<HTMLDivElement>(null),
-    map = useRef<maplibregl.Map | null>(null);
+    baseContainer = useRef<HTMLDivElement>(null),
+    map = useRef<maplibregl.Map | null>(null),
+    basemap = useRef<ReturnType<typeof attachPixelBasemap> | null>(null);
   const [ready, setReady] = useState(false),
+    [baseReady, setBaseReady] = useState(false),
+    [tilted, setTilted] = useState(false),
     [failed, setFailed] = useState(false);
   const callback = useRef(onSelect);
+  const activeRef = useRef(active);
+  const pendingOverlay = useRef<(() => Promise<void>) | null>(null);
+  activeRef.current = active;
   const framedRoute = useRef('');
   const framedEconomy = useRef<string | undefined>(undefined);
   const drawnKey = useRef('');
@@ -272,7 +282,7 @@ export function WorldMap({
   selectRef.current = select;
   const visible = useMemo(
     () =>
-      (economic ? [] : world.properties)
+      (!active || economic ? [] : world.properties)
         .filter((p) =>
           ownership === 'mine'
             ? p.ownerId === actor
@@ -290,6 +300,7 @@ export function WorldMap({
         ),
     [
       world.properties,
+      active,
       ownership,
       actor,
       layers.companies,
@@ -299,6 +310,7 @@ export function WorldMap({
     ],
   );
   useEffect(() => {
+    let disposed = false;
     let saved: { center?: Position; zoom?: number } = {};
     try {
       saved = JSON.parse(localStorage.getItem('aftermarket.camera') ?? '{}');
@@ -309,21 +321,39 @@ export function WorldMap({
     const initial = center && typeof center[0] === 'number' ? (center as Position) : p?.coordinates;
     const instance = new maplibregl.Map({
       container: container.current!,
-      style: createMapStyle(),
+      style: { version: 8, sources: {}, layers: [] },
       center: initial ?? (!mini ? saved.center : undefined) ?? [-47.31, -22.88],
       zoom: p ? (mini ? 13.3 : 10.65) : !mini ? (saved.zoom ?? 10.05) : 9.5,
       minZoom: 3.5,
-      maxZoom: 17,
-      attributionControl: { compact: true },
+      maxZoom: 20,
+      attributionControl: { compact: true, customAttribution: MAP_ATTRIBUTION },
       interactive: !mini,
       renderWorldCopies: false,
+      trackResize: false,
     });
     map.current = instance;
+    const base = attachPixelBasemap(
+      instance,
+      baseContainer.current!,
+      () => {
+        clearTimeout(timeout);
+        setBaseReady(true);
+        setFailed(false);
+      },
+      () => setFailed(true),
+    );
+    basemap.current = base;
     // Inspeção em desenvolvimento (laboratório e testes de navegador); não existe no build final.
-    if (import.meta.env.DEV && !mini)
-      (window as unknown as { aftermarketMap?: maplibregl.Map }).aftermarketMap = instance;
+    if (import.meta.env.DEV && !mini) {
+      const debug = window as unknown as {
+        aftermarketMap?: maplibregl.Map;
+        aftermarketBasemap?: maplibregl.Map;
+      };
+      debug.aftermarketMap = instance;
+      debug.aftermarketBasemap = base.map;
+    }
     const timeout = setTimeout(() => {
-      if (!instance.isStyleLoaded()) setFailed(true);
+      if (!base.map.isStyleLoaded() || !instance.isStyleLoaded()) setFailed(true);
     }, 15000);
     // Placas chanfradas de agrupamento (clusters) em alta definição com estética de jogo.
     const countImage = (label: string) => {
@@ -385,52 +415,15 @@ export function WorldMap({
       ctx.fillText(name, 25, Math.round(h / 2) + 1);
       return ctx.getImageData(0, 0, w, h);
     };
-    // Texturas pixel-art nítidas (escala inteira) para água e florestas, sem borrar as estradas.
-    const createWaterPattern = () => {
-      const size = 32;
-      const canvas = document.createElement('canvas');
-      canvas.width = canvas.height = size;
-      const ctx = canvas.getContext('2d')!;
-      ctx.fillStyle = '#122932';
-      ctx.fillRect(0, 0, size, size);
-      ctx.fillStyle = '#1a3b47';
-      ctx.fillRect(4, 6, 8, 2);
-      ctx.fillRect(2, 8, 4, 2);
-      ctx.fillRect(12, 8, 4, 2);
-      ctx.fillRect(20, 22, 8, 2);
-      ctx.fillRect(18, 24, 4, 2);
-      ctx.fillRect(28, 24, 4, 2);
-      return ctx.getImageData(0, 0, size, size);
-    };
-    const createWoodPattern = () => {
-      const size = 24;
-      const canvas = document.createElement('canvas');
-      canvas.width = canvas.height = size;
-      const ctx = canvas.getContext('2d')!;
-      ctx.fillStyle = '#202a19';
-      ctx.fillRect(0, 0, size, size);
-      ctx.fillStyle = '#2a3821';
-      ctx.fillRect(3, 3, 4, 4);
-      ctx.fillRect(5, 1, 2, 2);
-      ctx.fillRect(15, 13, 4, 4);
-      ctx.fillRect(17, 11, 2, 2);
-      ctx.fillStyle = '#192113';
-      ctx.fillRect(3, 7, 4, 2);
-      ctx.fillRect(15, 17, 4, 2);
-      return ctx.getImageData(0, 0, size, size);
-    };
-    instance.on('load', async () => {
-      clearTimeout(timeout);
-      setFailed(false);
-      if (!instance.hasImage('water-pixel'))
-        instance.addImage('water-pixel', createWaterPattern(), { pixelRatio: 1 });
-      if (!instance.hasImage('wood-pixel'))
-        instance.addImage('wood-pixel', createWoodPattern(), { pixelRatio: 1 });
-      if (instance.getLayer('water'))
-        instance.setPaintProperty('water', 'fill-pattern', 'water-pixel');
-      if (instance.getLayer('natural-landcover'))
-        instance.setPaintProperty('natural-landcover', 'fill-pattern', 'wood-pixel');
-      for (const group of await pinImages)
+    const prepareOverlay = async () => {
+      const images = await pinImages;
+      if (disposed) return;
+      if (!activeRef.current) {
+        pendingOverlay.current = prepareOverlay;
+        return;
+      }
+      pendingOverlay.current = null;
+      for (const group of images)
         for (const [id, image] of group)
           if (!instance.hasImage(id)) instance.addImage(id, image, { pixelRatio: 2 });
       for (let n = 2; n <= 100; n++) {
@@ -670,8 +663,10 @@ export function WorldMap({
         }
       }
       setReady(true);
-    });
+    };
+    instance.on('load', prepareOverlay);
     if (!mini) {
+      instance.on('pitchend', () => setTilted(instance.getPitch() >= 15));
       instance.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
       instance.addControl(
         new maplibregl.ScaleControl({ unit: 'metric', maxWidth: 120 }),
@@ -684,18 +679,52 @@ export function WorldMap({
         ),
       );
     }
-    const observer = new ResizeObserver(() => instance.resize());
+    const observer = new ResizeObserver(() => {
+      if (!activeRef.current || !container.current?.clientWidth || !container.current.clientHeight)
+        return;
+      instance.resize();
+      base.resize();
+    });
     observer.observe(container.current!);
     return () => {
+      disposed = true;
       clearTimeout(timeout);
       observer.disconnect();
+      pendingOverlay.current = null;
+      base.destroy();
       instance.remove();
+      if (import.meta.env.DEV && !mini) {
+        const debug = window as unknown as {
+          aftermarketMap?: maplibregl.Map;
+          aftermarketBasemap?: maplibregl.Map;
+        };
+        if (debug.aftermarketMap === instance) {
+          delete debug.aftermarketMap;
+          delete debug.aftermarketBasemap;
+        }
+      }
       map.current = null;
+      basemap.current = null;
     };
   }, []);
   useEffect(() => {
+    const m = map.current,
+      base = basemap.current;
+    if (!m || !base) return;
+    base.setActive(active);
+    if (!active) {
+      m.stop();
+      return;
+    }
+    if (container.current?.clientWidth && container.current.clientHeight) {
+      m.resize();
+      base.resize();
+    }
+    if (pendingOverlay.current) void pendingOverlay.current();
+  }, [active]);
+  useEffect(() => {
     const m = map.current;
-    if (!ready || !m) return;
+    if (!active || !ready || !m) return;
     const selectedProperty = propertyId ?? selectedId;
     // Só reenvia ao mapa quando algo visível mudou (dono, seleção, filtro), não a cada rodada.
     const key = JSON.stringify([
@@ -751,10 +780,10 @@ export function WorldMap({
         },
       })),
     });
-  }, [ready, visible, layers.zoning, selectedId, propertyId, actor]);
+  }, [active, ready, visible, layers.zoning, selectedId, propertyId, actor]);
   useEffect(() => {
     const m = map.current;
-    if (!ready || !m) return;
+    if (!active || !ready || !m) return;
     m.setLayoutProperty('demand-circles', 'visibility', layers.demand ? 'visible' : 'none');
     if (!layers.demand) return;
     const values = regionsOf(world).map((r) => ({
@@ -773,10 +802,10 @@ export function WorldMap({
         properties: { demand: amount / max },
       })),
     });
-  }, [ready, layers.demand, world.revision]);
+  }, [active, ready, layers.demand, world.revision]);
   useEffect(() => {
     const m = map.current;
-    if (!m || !ready) return;
+    if (!active || !m || !ready) return;
     const lines: Position[][] =
       route && route.length > 1
         ? [route]
@@ -815,10 +844,19 @@ export function WorldMap({
         framedRoute.current = key;
       }
     }
-  }, [ready, route, layers.routes, world.shipments, ownership, actor, Boolean(shipmentGroup)]);
+  }, [
+    active,
+    ready,
+    route,
+    layers.routes,
+    world.shipments,
+    ownership,
+    actor,
+    Boolean(shipmentGroup),
+  ]);
   useEffect(() => {
     const m = map.current;
-    if (!m || !ready || mini || economic) return;
+    if (!active || !m || !ready || mini || economic) return;
     const items =
       shipmentGroup ??
       (shipment
@@ -899,13 +937,14 @@ export function WorldMap({
     return () => {
       cancelAnimationFrame(frame);
       moving.forEach((item) => item.marker.remove());
-      if (map.current === m)
+      if (activeRef.current && map.current === m)
         (m.getSource('traveled') as GeoJSONSource | undefined)?.setData({
           type: 'FeatureCollection',
           features: [],
         });
     };
   }, [
+    active,
     ready,
     shipment,
     shipmentGroup,
@@ -919,7 +958,7 @@ export function WorldMap({
   ]);
   useEffect(() => {
     const m = map.current;
-    if (!m || !ready || !economic) return;
+    if (!active || !m || !ready || !economic) return;
     const values = regionsOf(world)
       .filter((r) => !economic.state || r.state === economic.state)
       .map((r) => {
@@ -1020,6 +1059,7 @@ export function WorldMap({
       bubbles.forEach((b) => b.remove());
     };
   }, [
+    active,
     ready,
     economic?.product,
     economic?.metric,
@@ -1028,13 +1068,19 @@ export function WorldMap({
     world.revision,
   ]);
   useEffect(() => {
-    if (ready && focus && !mini) {
+    if (active && ready && focus && !mini) {
       map.current?.flyTo({ center: focus, zoom: 11, duration: 900 });
       consumeFocus();
     }
-  }, [focus, ready, mini, consumeFocus]);
+  }, [active, focus, ready, mini, consumeFocus]);
   return (
-    <div className={`world-map ${mini ? 'mini-map' : ''}`} data-map-ready={ready}>
+    <div
+      className={`world-map ${mini ? 'mini-map' : ''}`}
+      data-map-ready={ready && baseReady && !failed}
+      data-basemap-ready={baseReady}
+      data-map-active={active}
+    >
+      <div ref={baseContainer} className="map-pixel-base" aria-hidden="true" />
       <div ref={container} className="map-canvas" />
       {/* Acesso por teclado e leitor de tela: os ícones são desenhados pelo mapa, então cada
           negócio também é um botão que só aparece quando recebe foco. */}
@@ -1054,7 +1100,7 @@ export function WorldMap({
           ))}
         </div>
       )}
-      {!ready && !failed && (
+      {(!ready || !baseReady) && !failed && (
         <div className="map-loading" role="status">
           Carregando cartografia…
         </div>
@@ -1096,8 +1142,53 @@ export function WorldMap({
           <LocateFixed size={19} />
         </button>
       )}
+      {!mini && (
+        <div className="map-view-tools">
+          <button
+            type="button"
+            className="map-perspective"
+            aria-label={tilted ? 'Vista de cima' : 'Vista inclinada'}
+            aria-pressed={tilted}
+            title={
+              tilted
+                ? 'Voltar à vista de cima'
+                : 'Aproximar e inclinar para ver construções. Fachadas ilustradas e alturas aproximadas.'
+            }
+            onClick={() => {
+              const current = map.current;
+              if (!current) return;
+              let cityCenter: Position | undefined;
+              if (!tilted && current.getZoom() < 14) {
+                const here = current.getCenter();
+                const regions = [...regionsOf(world)];
+                regions.sort(
+                  (a, b) =>
+                    Math.hypot(a.coordinates[0] - here.lng, a.coordinates[1] - here.lat) -
+                    Math.hypot(b.coordinates[0] - here.lng, b.coordinates[1] - here.lat),
+                );
+                cityCenter = regions[0]?.coordinates;
+              }
+              current.easeTo({
+                pitch: tilted ? 0 : 45,
+                zoom: tilted ? current.getZoom() : Math.max(18, current.getZoom()),
+                ...(cityCenter ? { center: cityCenter } : {}),
+                duration: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 650,
+              });
+            }}
+          >
+            <Box size={18} />
+            <span>{tilted ? 'Vista de cima' : 'Vista inclinada'}</span>
+          </button>
+          {tilted && (
+            <small className="map-height-note" role="status">
+              <span>Fachadas ilustradas</span>
+              <span>Alturas aproximadas</span>
+            </small>
+          )}
+        </div>
+      )}
       {failed && (
-        <div className="map-error">
+        <div className="map-error" role="alert">
           <p>Não foi possível carregar a cartografia.</p>
           <small>A economia continua disponível. Verifique a conexão com a internet.</small>
           <button

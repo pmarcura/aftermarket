@@ -1,5 +1,5 @@
 import { NotificationCenter } from './components/NotificationCenter';
-import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   Map,
   Store,
@@ -109,8 +109,10 @@ function Shell() {
     [notifications, setNotifications] = useState(false),
     [profile, setProfile] = useState(false),
     [query, setQuery] = useState(''),
-    [searchOpen, setSearchOpen] = useState(false);
+    [searchOpen, setSearchOpen] = useState(false),
+    [mapOpened, setMapOpened] = useState(page === 'map');
   const searchRef = useRef<HTMLDivElement>(null);
+  const mainRef = useRef<HTMLElement>(null);
   const company = world.companies.find((c) => c.id === actor)!,
     { dia, hora } = relogio(world);
   useMarcarVisita();
@@ -157,6 +159,10 @@ function Shell() {
   useEffect(() => {
     document.title = `AFTERMARKET · ${destinations.find((d) => d.pages.includes(page))?.label ?? 'Mapa'}`;
   }, [page]);
+  useLayoutEffect(() => {
+    // Retaining the map must not carry another panel's scroll into its viewport.
+    mainRef.current?.scrollTo(0, 0);
+  }, [page]);
   const searchFirst = () => {
     const r = visibleRegions[0],
       p = visibleProperties[0];
@@ -167,7 +173,7 @@ function Shell() {
   };
   const views: Record<Page, React.ReactNode> = {
     inicio: <InicioPage />,
-    map: <MapPage />,
+    map: null,
     opportunities: <OpportunitiesPage />,
     businesses: <BusinessesPage />,
     market: <MarketPage />,
@@ -181,6 +187,10 @@ function Shell() {
     orders: <PedidosPage />,
     contracts: <ContratosPage />,
   };
+  const showMap = page === 'map' || !(page in views);
+  useEffect(() => {
+    if (showMap) setMapOpened(true);
+  }, [showMap]);
   return (
     <div className={`app-shell ${collapsed ? 'collapsed' : ''}`}>
       <a href="#main-content" className="skip-link">
@@ -389,16 +399,32 @@ function Shell() {
           </button>
         </div>
       </aside>
-      <main id="main-content" className={page === 'map' ? 'map-main' : 'content-main'} key={page}>
-        <Suspense
-          fallback={
-            <div className="page-body muted" role="status">
-              Carregando painel…
-            </div>
-          }
-        >
-          {views[page] ?? <MapPage />}
-        </Suspense>
+      <main ref={mainRef} id="main-content" className={showMap ? 'map-main' : 'content-main'}>
+        {(mapOpened || showMap) && (
+          <div className="map-screen" hidden={!showMap} inert={!showMap}>
+            <Suspense
+              fallback={
+                <div className="page-body muted" role="status">
+                  Carregando mapa…
+                </div>
+              }
+            >
+              <MapPage active={showMap} />
+            </Suspense>
+          </div>
+        )}
+        {!showMap && (
+          <Suspense
+            key={page}
+            fallback={
+              <div className="page-body muted" role="status">
+                Carregando painel…
+              </div>
+            }
+          >
+            {views[page]}
+          </Suspense>
+        )}
       </main>
       <ReporGaveta />
       <ProdutoFicha />

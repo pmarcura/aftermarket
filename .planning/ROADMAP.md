@@ -34,6 +34,9 @@ Cada etapa termina em algo que dá para ver ou jogar e tem um critério de "pron
 
 ## Etapa E · adiantado em 28/10
 
+- [x] Continuidade de carregamento (31/10): mapa preservado entre telas, construção de malhas em worker e fila limitada; 275 testes e dez fluxos de navegador aprovados. Ainda há custo de download, consulta de tiles e upload ([validação](phases/E-mapa/E-MAPA-VALIDATION.md)).
+- [x] Refinamento de 31/10: reuso de malhas limitado em memória, texturas com detalhe adaptativo e contexto urbano ampliado com dados reais. Benchmark controlado de CPU e regressões aprovados; acabamento segue em revisão com o Pedro.
+- [x] Mapa real em pixel com construções e perspectiva opcional, ampliado em 30/10 com telhados e fachadas ilustradas após rejeição das extrusões lisas. Verificações técnicas aprovadas; direção estética ainda em revisão com o Pedro ([validação](phases/E-mapa/E-MAPA-VALIDATION.md)).
 - [x] Começo enxuto no mundo jogável: loja vazia, 8 funcionários e R$ 1 milhão (D-033).
 - [x] Guia de primeiros passos conferido pelo estado do jogo; primeira venda em poucos minutos no teste do navegador.
 - [x] Mercado mostra o que o destino usa, margem sobre a prateleira e quantidade sugerida; Oportunidades mostra custo e lucro de cada negócio.

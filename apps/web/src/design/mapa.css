@@ -404,6 +404,14 @@
 }
 
 @media (max-width: 900px) {
+  .map-legend-bar {
+    right: 12px;
+    left: 12px;
+    bottom: 90px;
+    padding: 8px 10px;
+    gap: 7px 12px;
+    font-size: 11px;
+  }
   .compra-lote-hero {
     grid-template-columns: auto 1fr;
   }

@@ -2333,18 +2333,28 @@ function runAutomations(w: World, at: number) {
   }
 }
 
-export function advance(w: World, now = Date.now()) {
+export function advance(
+  w: World,
+  now = Date.now(),
+  budget?: { maxEvents: number; maxDurationMs: number },
+) {
   ensure(now >= w.updatedAt, 'O relógio não pode retroceder.');
   let changed = false;
+  const started = performance.now();
+  let processedAt = w.updatedAt;
+  let complete = false;
   // Eventos ordenados asseguram o mesmo resultado online e offline, com limite por lote.
-  for (let count = 0; count < 5000; count++) {
+  for (let count = 0; count < (budget?.maxEvents ?? 5000); count++) {
     const next = Math.min(
       w.nextEconomicAt,
       ...w.shipments.filter((x) => !x.delivered).map((x) => x.arrivesAt),
       ...w.jobs.filter((x) => !x.completed).map((x) => x.finishesAt),
       ...(w.training ?? []).filter((t) => !t.completed).map((t) => t.finishesAt),
     );
-    if (next > now) break;
+    if (next > now) {
+      complete = true;
+      break;
+    }
     for (const s of w.shipments.filter((x) => !x.delivered && x.arrivesAt <= next)) {
       const dest = establishment(w, s.destinationId),
         previous = dest.inventory[s.product] ?? 0;
@@ -2420,9 +2430,11 @@ export function advance(w: World, now = Date.now()) {
       w.nextEconomicAt += ECONOMIC_INTERVAL;
     }
     changed = true;
+    processedAt = Math.max(processedAt, next);
+    if (budget && performance.now() - started >= budget.maxDurationMs) break;
   }
   if (changed) {
-    w.updatedAt = now;
+    w.updatedAt = budget && !complete ? processedAt : now;
     w.revision++;
   }
   return changed;

@@ -10,8 +10,11 @@ import { RuleError } from '../../../packages/simulation/src/engine';
 import { commandSchema, product } from './commands';
 import { worldView } from './view';
 import { gzipSync } from 'node:zlib';
+import { previewAccess, readPreviewConfig } from './preview-access';
 
 const app = express();
+const preview = readPreviewConfig();
+app.use(previewAccess(preview));
 const port = Number(process.env.AFTERMARKET_PORT ?? 3001);
 if (!Number.isInteger(port) || port < 1024 || port > 65535)
   throw new Error('Porta local inválida.');
@@ -43,6 +46,7 @@ const allowedOrigins = new Set([
   'http://localhost:5173',
   `http://127.0.0.1:${process.env.AFTERMARKET_WEB_PORT ?? 5173}`,
   `http://localhost:${process.env.AFTERMARKET_WEB_PORT ?? 5173}`,
+  ...(preview ? [preview.publicOrigin] : []),
 ]);
 app.use(express.json({ limit: '16kb' }));
 app.use('/api', (_req, res, next) => {
@@ -50,7 +54,7 @@ app.use('/api', (_req, res, next) => {
   next();
 });
 app.get('/api/health', (_req, res) =>
-  res.json({ ok: true, mode: 'local-development', version: '0.4.0' }),
+  res.json({ ok: true, mode: preview ? 'preview' : 'local-development', version: '0.4.0' }),
 );
 // Pacote enxuto por jogador, comprimido; sem mudança desde a revisão que o navegador tem,
 // responde 204 sem corpo.
@@ -68,8 +72,8 @@ function sendJson(req: express.Request, res: express.Response, body: unknown) {
   } else res.end(json);
 }
 app.get('/api/world', (req, res) => {
-  const w = store.tick();
-  routing.prepare(w);
+  // The background tick advances the world. Reads must not enqueue catch-up work.
+  const w = store.read();
   const actor = actorOf(req);
   if (Number(req.query.since) === w.revision && req.query.actor === actor)
     return res.status(204).end();

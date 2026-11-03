@@ -169,7 +169,8 @@ export function createStore(
       }
     },
     tick(now = Date.now()) {
-      if (advance(world, now)) dirty = true;
+      // Catch-up is incremental: one slow offline batch must not starve HTTP.
+      if (advance(world, now, { maxEvents: 50, maxDurationMs: 25 })) dirty = true;
       if (dirty && Date.now() - lastSave >= SAVE_INTERVAL_MS) transaction(writeWorld);
       return world;
     },

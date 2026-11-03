@@ -150,6 +150,11 @@ export const useGame = () => {
 };
 export function GameProvider({ children }: { children: ReactNode }) {
   const latestWorld = useRef<World | null>(null);
+  const refreshing = useRef<{
+    actor: string;
+    promise: Promise<void>;
+    controller: AbortController;
+  } | null>(null);
   const [world, setWorld] = useState<World | null>(null),
     [error, setError] = useState('');
   const [actor, changeActor] = useState(() =>
@@ -174,30 +179,56 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [pending, setPending] = useState(false),
     [toast, setToast] = useState<{ message: string; error: boolean; id: number }>();
   // Pede só quando o mundo mudou: o servidor responde 204 se a revisão e a empresa são as mesmas.
-  const refresh = useCallback(async () => {
-    const current = latestWorld.current;
-    const since =
-      current?.view?.actor === actorRef.current
-        ? `?since=${current.revision}&actor=${actorRef.current}`
-        : '';
-    const response = await fetch(`/api/world${since}`, {
-      headers: { 'x-company-id': actorRef.current },
-    });
-    if (response.status === 204) {
-      setError('');
-      return;
-    }
-    if (!response.ok) throw new Error('O servidor não respondeu.');
-    const next: World = await response.json();
-    latestWorld.current = next;
-    setWorld((previous) =>
-      previous?.revision === next.revision &&
-      previous.view?.actor === next.view?.actor &&
-      Object.keys(previous.routes).length === Object.keys(next.routes).length
-        ? previous
-        : next,
-    );
-    setError('');
+  const refresh = useCallback((force = false): Promise<void> => {
+    const requestedActor = actorRef.current;
+    if (!force && refreshing.current?.actor === requestedActor) return refreshing.current.promise;
+    refreshing.current?.controller.abort();
+    const controller = new AbortController();
+    const promise = (async () => {
+      const timeout = setTimeout(() => controller.abort(), 15000);
+      try {
+        const current = latestWorld.current;
+        const since =
+          current?.view?.actor === actorRef.current
+            ? `?since=${current.revision}&actor=${actorRef.current}`
+            : '';
+        const response = await fetch(`/api/world${since}`, {
+          headers: { 'x-company-id': actorRef.current },
+          signal: controller.signal,
+        });
+        if (requestedActor !== actorRef.current) return;
+        if (response.status === 204) {
+          setError('');
+          return;
+        }
+        if (!response.ok) throw new Error('O servidor não respondeu.');
+        const next: World = await response.json();
+        if (requestedActor !== actorRef.current) return;
+        latestWorld.current = next;
+        setWorld((previous) =>
+          previous?.revision === next.revision &&
+          previous.view?.actor === next.view?.actor &&
+          Object.keys(previous.routes).length === Object.keys(next.routes).length
+            ? previous
+            : next,
+        );
+        setError('');
+      } catch (error) {
+        // A replaced request (manual retry or company switch) must not publish
+        // its cancellation as a failure of the current connection.
+        if (refreshing.current?.controller !== controller) return;
+        throw error;
+      } finally {
+        clearTimeout(timeout);
+      }
+    })();
+    refreshing.current = { actor: requestedActor, promise, controller };
+    void promise
+      .finally(() => {
+        if (refreshing.current?.promise === promise) refreshing.current = null;
+      })
+      .catch(() => undefined);
+    return promise;
   }, []);
   useEffect(() => {
     void refresh().catch(() =>
@@ -265,7 +296,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
         <h1>AFTERMARKET</h1>
         <p>{error || 'Conectando à economia…'}</p>
         {error && (
-          <button onClick={() => void refresh().catch(() => undefined)}>Tentar novamente</button>
+          <button onClick={() => void refresh(true).catch(() => undefined)}>
+            Tentar novamente
+          </button>
         )}
       </div>
     );

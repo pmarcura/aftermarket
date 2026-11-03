@@ -8,6 +8,7 @@ import { ProdutoArte } from '../economy/Vitrine';
 import { spriteDoNegocio } from '../../design/arte';
 import type { Pendencia } from './pendencias';
 import { NumeroVivo } from './vivo';
+import { Ficha, Medidor } from './pecas';
 
 /** O selo de cada tipo de pendência: o estado como objeto, não como etiqueta genérica. */
 function selo(p: Pendencia): { texto: string; icone: NomeIcone } {
@@ -114,6 +115,20 @@ export function Caderno({ pendencias }: { pendencias: Pendencia[] }) {
                   </Carimbo>
                   <strong>{p.titulo}</strong>
                   <small>{p.detalhe}</small>
+                  {p.fichas && (
+                    <span className="cad-fichas">
+                      {p.fichas.map((f) => (
+                        <Ficha key={f.rotulo} rotulo={f.rotulo} valor={f.valor} tom={f.tom} />
+                      ))}
+                    </span>
+                  )}
+                  {p.medida && (
+                    <Medidor
+                      parte={p.medida.parte}
+                      rotulo={p.medida.rotulo}
+                      tom={p.tom === 'brasa' ? 'brasa' : 'ouro'}
+                    />
+                  )}
                 </div>
                 {p.porDia && (
                   <div className={`cad-valor ${p.porDia.sinal}`}>

@@ -12,7 +12,8 @@ import {
   type ProductId,
 } from '../../../../../packages/simulation/src/model';
 import { HOUR_MS, gameDay, realToGame } from '../../../../../packages/simulation/src/clock';
-import { NumeroVivo, haQuanto, iniciais, matizDaEmpresa } from './vivo';
+import { Perfil, PERIODOS, SeloEmpresa, janelaDe, type Periodo } from './Perfil';
+import { NumeroVivo, haQuanto, matizDaEmpresa } from './vivo';
 
 type Filtro = 'tudo' | 'empresarios' | 'rivais';
 
@@ -44,31 +45,25 @@ const ACOES: Record<string, { icone: NomeIcone; verbo: (p?: string) => string }>
   trainWorkforce: { icone: 'equipe', verbo: () => 'treinou a equipe' },
 };
 
-function Selo({ id, nome, voce = false }: { id: string; nome: string; voce?: boolean }) {
-  return (
-    <span
-      className={`selo-empresa ${voce ? 'voce' : ''}`}
-      style={{ ['--h' as string]: matizDaEmpresa(id) }}
-      aria-hidden="true"
-    >
-      {iniciais(nome)}
-    </span>
-  );
-}
+const POR_PAGINA = 7;
 
 /**
- * O que os outros empresários e as empresas automáticas estão fazendo: o placar dos jogadores,
- * a maior compra do dia como manchete e as últimas movimentações, com pouco texto.
+ * O que os outros empresários e as empresas automáticas estão fazendo: o placar, a maior compra do
+ * dia e as movimentações, filtráveis por quem, produto e período. Cada empresa abre o seu perfil.
  */
 export function Mural({ historico }: { historico: Historico }) {
   const { world, actor } = useGame();
   const [filtro, setFiltro] = useState<Filtro>('tudo');
+  const [periodo, setPeriodo] = useState<Periodo>('dia');
+  const [produto, setProduto] = useState<ProductId | ''>('');
+  const [aberto, setAberto] = useState<string | null>(null);
+  const [mais, setMais] = useState(false);
   const empresas = useMemo(
     () => new Map(world.companies.map((c) => [c.id, c])),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [world.revision],
   );
-  const nome = (id: string) => empresas.get(id)?.name ?? 'Empresa';
+  const nome = (id: string) => (id === actor ? 'Você' : (empresas.get(id)?.name ?? 'Empresa'));
   const humano = (id: string) => empresas.get(id)?.bot === false;
 
   const placar = useMemo(
@@ -90,8 +85,6 @@ export function Mural({ historico }: { historico: Historico }) {
     const doTexto = (t: string) => ids.find((id) => t.includes(products[id].name));
     const trocas: Fato[] = Object.values(historico)
       .flatMap((h) => h?.trades ?? [])
-      // Compra miúda não é notícia: só negócios de R$ 5 mil para cima.
-      .filter((t) => t.from !== actor && t.to !== actor && t.quantity * t.unitPrice >= 500_000)
       .map((t, i) => ({
         id: `t-${t.at}-${t.from}-${t.to}-${t.product}-${i}`,
         at: t.at,
@@ -119,24 +112,36 @@ export function Mural({ historico }: { historico: Historico }) {
     });
     return [...trocas, ...acoes].sort((a, b) => b.at - a.at);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [historico, world.revision, actor]);
+  }, [historico, world.revision]);
 
-  const umDia = world.updatedAt - gameDay(world);
+  // Produtos que realmente aparecem nos fatos, para o filtro.
+  const produtosNoMural = useMemo(
+    () => [...new Set(fatos.map((f) => f.produto).filter(Boolean))] as ProductId[],
+    [fatos],
+  );
+  const filtrando = filtro !== 'tudo' || produto !== '' || periodo !== 'dia';
+  const desde = janelaDe(periodo, world.updatedAt, gameDay(world));
   const manchete = fatos
-    .filter((f) => f.valor && f.at >= umDia)
+    .filter((f) => f.valor && f.at >= world.updatedAt - gameDay(world) && f.quem !== actor)
     .sort((a, b) => b.valor! - a.valor!)[0];
-  // Um mesmo vendedor ou a mesma ação repetida aparece no máximo duas vezes.
+
+  // Sem filtro, compra miúda não é notícia e o mesmo vendedor aparece no máximo duas vezes.
+  const todos: Fato[] = [];
   const porAssunto = new Map<string, number>();
-  const lista: Fato[] = [];
   for (const f of fatos) {
-    if (lista.length >= 7) break;
-    if (f.id === manchete?.id) continue;
+    if (f.at < desde) continue;
+    if (produto && f.produto !== produto) continue;
     if (filtro === 'empresarios' ? !humano(f.quem) : filtro === 'rivais' && humano(f.quem))
       continue;
-    const vezes = (porAssunto.get(f.assunto) ?? 0) + 1;
-    porAssunto.set(f.assunto, vezes);
-    if (vezes <= 2) lista.push(f);
+    if (!filtrando) {
+      if (f.id === manchete?.id || (f.valor !== undefined && f.valor < 500_000)) continue;
+      const vezes = (porAssunto.get(f.assunto) ?? 0) + 1;
+      porAssunto.set(f.assunto, vezes);
+      if (vezes > 2) continue;
+    }
+    todos.push(f);
   }
+  const lista = todos.slice(0, mais ? 25 : POR_PAGINA);
   const horas = (at: number) => realToGame(world, world.updatedAt - at) / HOUR_MS;
 
   return (
@@ -154,14 +159,16 @@ export function Mural({ historico }: { historico: Historico }) {
           return (
             <li key={p.c.id} className={voce ? 'voce' : ''}>
               <span className="placar-pos">{i + 1}º</span>
-              <Selo id={p.c.id} nome={p.c.name} voce={voce} />
-              <span className="placar-nome">
-                <b>{voce ? 'Você' : p.c.name}</b>
-                <small>
-                  {porteDe(p.patrimonio).atual.nome} · {p.negocios}{' '}
-                  {p.negocios === 1 ? 'negócio' : 'negócios'}
-                </small>
-              </span>
+              <button className="perfil-abre" onClick={() => setAberto(p.c.id)}>
+                <SeloEmpresa id={p.c.id} nome={p.c.name} voce={voce} />
+                <span className="placar-nome">
+                  <b>{voce ? 'Você' : p.c.name}</b>
+                  <small>
+                    {porteDe(p.patrimonio).atual.nome} · {p.negocios}{' '}
+                    {p.negocios === 1 ? 'negócio' : 'negócios'}
+                  </small>
+                </span>
+              </button>
               <span className="placar-valor">
                 <NumeroVivo
                   valor={p.patrimonio}
@@ -183,14 +190,17 @@ export function Mural({ historico }: { historico: Historico }) {
             </BotaoProduto>
           )}
           <p>
-            <b>{nome(manchete.quem)}</b> {manchete.texto}
+            <button className="perfil-pessoa" onClick={() => setAberto(manchete.quem)}>
+              {nome(manchete.quem)}
+            </button>{' '}
+            {manchete.texto}
           </p>
           <span className="manchete-valor">{cr(manchete.valor!, 0)}</span>
           <small>{haQuanto(horas(manchete.at))}</small>
         </article>
       )}
 
-      <div className="mural-filtros" role="radiogroup" aria-label="Mostrar no mural">
+      <div className="mural-filtros" role="radiogroup" aria-label="Quem aparece no mural">
         {(
           [
             ['tudo', 'Tudo'],
@@ -209,28 +219,61 @@ export function Mural({ historico }: { historico: Historico }) {
           </button>
         ))}
       </div>
+      <div className="mural-filtros" role="radiogroup" aria-label="Período">
+        {PERIODOS.map(([id, rotulo]) => (
+          <button
+            key={id}
+            role="radio"
+            aria-checked={periodo === id}
+            className={periodo === id ? 'on' : ''}
+            onClick={() => setPeriodo(id)}
+          >
+            {rotulo}
+          </button>
+        ))}
+        <label className="mural-produto-filtro">
+          <span className="sr-only">Produto</span>
+          <select value={produto} onChange={(ev) => setProduto(ev.target.value as ProductId | '')}>
+            <option value="">Todos os produtos</option>
+            {produtosNoMural.map((id) => (
+              <option key={id} value={id}>
+                {products[id].name}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
 
       {lista.length === 0 ? (
         <p className="mural-vazio">
-          {filtro === 'empresarios'
-            ? 'Os outros empresários ainda não fecharam negócio hoje.'
+          {filtrando
+            ? 'Nada com esses filtros. Tente um período maior ou todos os produtos.'
             : 'Nada novo no mercado por enquanto.'}
         </p>
       ) : (
         <ul className="mural-lista">
           {lista.map((f) => (
             <li key={f.id} className={humano(f.quem) ? 'humano' : ''}>
-              <Selo id={f.quem} nome={nome(f.quem)} />
+              <button
+                className="perfil-abre"
+                onClick={() => setAberto(f.quem)}
+                aria-label={`Ver o perfil de ${nome(f.quem)}`}
+              >
+                <SeloEmpresa id={f.quem} nome={nome(f.quem)} voce={f.quem === actor} />
+              </button>
               <span className="mural-icone">
                 <IconePixel nome={f.icone} tamanho={22} />
               </span>
               <p>
-                <b>{nome(f.quem)}</b> {f.texto}
+                <button className="perfil-pessoa" onClick={() => setAberto(f.quem)}>
+                  {nome(f.quem)}
+                </button>{' '}
+                {f.texto}
               </p>
               {f.produto && (
-                <span className="mural-produto">
+                <BotaoProduto product={f.produto} className="mural-produto">
                   <ProdutoArte product={f.produto} escala={1} />
-                </span>
+                </BotaoProduto>
               )}
               <span className="mural-quando">
                 {f.valor ? <b>{cr(f.valor, 0)}</b> : null}
@@ -239,6 +282,25 @@ export function Mural({ historico }: { historico: Historico }) {
             </li>
           ))}
         </ul>
+      )}
+      {todos.length > POR_PAGINA && (
+        <button
+          className="ini-link mural-mais"
+          onClick={() => setMais((v) => !v)}
+          aria-expanded={mais}
+        >
+          {mais ? 'Mostrar menos' : `Ver mais ${Math.min(25, todos.length) - POR_PAGINA}`}
+        </button>
+      )}
+
+      {aberto && (
+        <Perfil
+          key={aberto}
+          empresaId={aberto}
+          historico={historico}
+          onAbrir={setAberto}
+          onFechar={() => setAberto(null)}
+        />
       )}
     </section>
   );

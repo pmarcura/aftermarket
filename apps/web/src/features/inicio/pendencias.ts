@@ -16,6 +16,10 @@ export interface Pendencia {
   detalhe: string;
   /** Dinheiro por dia em jogo (centavos, estimativa): quanto se perde sem agir, ou se ganha agindo. */
   porDia?: { valor: number; sinal: 'perde' | 'ganha' };
+  /** Números que importam, mostrados como fichas em vez de perdidos no texto. */
+  fichas?: { rotulo: string; valor: string; tom?: 'ouro' | 'brasa' | 'lavoura' | 'ceu' }[];
+  /** Quanto se cumpre de algo: a equipe que atende a procura, por exemplo. */
+  medida?: { parte: number; rotulo: string };
   acao: { rotulo: string; executar: () => void };
 }
 
@@ -92,6 +96,15 @@ export function usePendencias(): Pendencia[] {
             titulo: `Falta gente na ${e.name}`,
             detalhe: `${e.employees} ${e.employees === 1 ? 'pessoa atende' : 'pessoas atendem'} cerca de ${Math.round(equipe.atende)} de ${Math.round(equipe.procura)} clientes por rodada. O ideal agora é ${equipe.ideal}.`,
             porDia: { valor: equipe.perdaDia, sinal: 'perde' },
+            fichas: [
+              { rotulo: 'Equipe', valor: `${e.employees} de ${equipe.ideal}`, tom: 'brasa' },
+              { rotulo: 'Atende', valor: `${Math.round(equipe.atende)} por rodada` },
+              { rotulo: 'Procura', valor: `${Math.round(equipe.procura)} por rodada`, tom: 'ouro' },
+            ],
+            medida: {
+              parte: equipe.procura > 0 ? equipe.atende / equipe.procura : 1,
+              rotulo: `atende ${Math.round((equipe.atende / Math.max(1, equipe.procura)) * 100)}% da procura`,
+            },
             acao: { rotulo: 'Ver equipe', executar: () => openBusiness(e.id, 'Equipe') },
           });
         // Preço longe do ponto de maior lucro, pela mesma conta da prateleira.
@@ -105,6 +118,14 @@ export function usePendencias(): Pendencia[] {
             titulo: `${conta.ajustar.length === 1 ? 'Um preço rende' : `${conta.ajustar.length} preços rendem`} mais na ${e.name}`,
             detalhe: `${lista(conta.ajustar.map((x) => products[x.id].name))} ${conta.ajustar.length === 1 ? 'está longe' : 'estão longe'} do ponto de maior lucro.`,
             porDia: { valor: Math.round(ganho), sinal: 'ganha' },
+            fichas: [
+              { rotulo: 'Hoje', valor: `${cr(conta.agora, 0)} por dia` },
+              {
+                rotulo: 'Com os melhores preços',
+                valor: `${cr(conta.melhor, 0)} por dia`,
+                tom: 'lavoura',
+              },
+            ],
             acao: { rotulo: 'Ajustar preços', executar: () => openBusiness(e.id, 'Prateleira') },
           });
         // Acabando: menos de um dia de vendas ao preço atual, pela mesma conta da prateleira.
@@ -125,6 +146,11 @@ export function usePendencias(): Pendencia[] {
               : `${nomes(acabando)} ${acabando.length === 1 ? 'acaba' : 'acabam'} em ~${Math.max(1, Math.round(acabando[0].dias * 24))} h`,
             detalhe: `${e.name}: sem repor, deixa de vender cerca de ${cr(perda, 0)} por dia.`,
             porDia: { valor: Math.round(perda), sinal: 'perde' },
+            fichas: acabando.slice(0, 3).map((x) => ({
+              rotulo: products[x.id].name,
+              valor: x.dias === 0 ? 'esgotado' : `dura ~${Math.max(1, Math.round(x.dias * 24))} h`,
+              tom: x.dias === 0 ? ('brasa' as const) : ('ouro' as const),
+            })),
             acao: {
               rotulo: 'Repor',
               executar: () => openRepor({ destinationId: e.id, product: acabando[0].id }),

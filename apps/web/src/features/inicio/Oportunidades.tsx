@@ -15,6 +15,7 @@ import {
 } from '../../../../../packages/simulation/src/model';
 import { realToGame, HOUR_MS } from '../../../../../packages/simulation/src/clock';
 import { NumeroVivo } from './vivo';
+import { Ficha, type Tom } from './pecas';
 
 /** Menor preço de quem tem o produto em estoque agora, em todo o mapa. */
 function menorOferta(world: World, product: ProductId) {
@@ -86,7 +87,7 @@ function Cartao({
   titulo,
   valor,
   rotuloValor,
-  detalhe,
+  fichas,
   acao,
   matiz,
 }: {
@@ -95,7 +96,7 @@ function Cartao({
   titulo: string;
   valor: number;
   rotuloValor: string;
-  detalhe: string;
+  fichas: { rotulo: string; valor: string; tom?: Tom }[];
   acao: { rotulo: string; executar: () => void };
   matiz: number;
 }) {
@@ -110,7 +111,11 @@ function Cartao({
         </b>
         <span>{rotuloValor}</span>
       </div>
-      <small>{detalhe}</small>
+      <div className="opo-fichas">
+        {fichas.map((f) => (
+          <Ficha key={f.rotulo} rotulo={f.rotulo} valor={f.valor} tom={f.tom} />
+        ))}
+      </div>
       <button className="secondary" onClick={acao.executar}>
         {acao.rotulo}
       </button>
@@ -160,7 +165,14 @@ export function Oportunidades() {
             titulo={`A cidade procura ${products[produto.id].name} e a ${produto.lojaNome} não vende`}
             valor={Math.round(produto.lucro)}
             rotuloValor="por dia, estimativa"
-            detalhe={`~${num(produto.porDia)} ${unidade(produto.id, produto.porDia)} por dia, comprando a ${cr(produto.custo)} e vendendo a ${cr(produto.preco)}, antes do frete.`}
+            fichas={[
+              { rotulo: 'Você compra a', valor: cr(produto.custo), tom: 'brasa' },
+              { rotulo: 'Você vende a', valor: cr(produto.preco), tom: 'lavoura' },
+              {
+                rotulo: 'Vende por dia',
+                valor: `~${num(produto.porDia)} ${unidade(produto.id, produto.porDia)}`,
+              },
+            ]}
             acao={{
               rotulo: 'Mandar buscar',
               executar: () => openRepor({ destinationId: produto.lojaId, product: produto.id }),
@@ -175,7 +187,11 @@ export function Oportunidades() {
             titulo={`${abrir.line.name} em ${abrir.site!.city}`}
             valor={Math.round(abrir.line.profitAtCapacity)}
             rotuloValor="por dia, linha sempre ocupada"
-            detalhe={`Investimento de ${cr(abrir.investimento, 0)}; se paga em ~${num(abrir.retorno)} dias. Cabe no seu caixa.`}
+            fichas={[
+              { rotulo: 'Investimento', valor: cr(abrir.investimento, 0), tom: 'ouro' },
+              { rotulo: 'Se paga em', valor: `~${num(abrir.retorno)} dias`, tom: 'lavoura' },
+              { rotulo: 'Seu caixa', valor: 'cobre tudo' },
+            ]}
             acao={{
               rotulo: 'Ver no mapa',
               executar: () => focusMap(abrir.site!.coordinates, abrir.site!.id),
@@ -194,7 +210,14 @@ export function Oportunidades() {
             titulo={`${comprador ?? 'Uma empresa'} quer ${products[pedido.pedido.product].name}`}
             valor={Math.round(pedido.valor)}
             rotuloValor="com o estoque que você já tem"
-            detalhe={`${num(pedido.quantidade)} ${unidade(pedido.pedido.product, pedido.quantidade)} a ${cr(pedido.pedido.unitPrice)}; o pedido vence em ~${num(horas)} h de jogo.`}
+            fichas={[
+              {
+                rotulo: 'Quantidade',
+                valor: `${num(pedido.quantidade)} ${unidade(pedido.pedido.product, pedido.quantidade)}`,
+              },
+              { rotulo: 'Preço', valor: cr(pedido.pedido.unitPrice), tom: 'ouro' },
+              { rotulo: 'Vence em', valor: `~${num(horas)} h`, tom: 'brasa' },
+            ]}
             acao={{ rotulo: 'Fazer proposta', executar: () => navigate('orders') }}
           />
         )}

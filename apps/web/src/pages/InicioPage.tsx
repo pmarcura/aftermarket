@@ -9,10 +9,13 @@ import { Caderno } from '../features/inicio/Caderno';
 import { Pregao, produtosDoPregao } from '../features/inicio/Pregao';
 import { Oportunidades } from '../features/inicio/Oportunidades';
 import { Mural } from '../features/inicio/Mural';
+import { Relogio } from '../features/inicio/Relogio';
 import { NumeroVivo } from '../features/inicio/vivo';
 import { useHistorico } from '../features/mercado/historico';
-import { patrimonioDe, porteDe } from '../features/empresa/resumo';
+import { PORTES, patrimonioDe, porteDe } from '../features/empresa/resumo';
+import { seasonProducts } from '../../../../packages/simulation/src/model';
 import '../design/inicio.css';
+import '../design/inicio-ajustes.css';
 
 type Periodo = ReturnType<typeof useAusencia>;
 
@@ -96,7 +99,8 @@ function Porte() {
     [world.revision, actor],
   );
   const porte = porteDe(patrimonio);
-  // A barra enche do zero ao aparecer; depois acompanha o patrimônio.
+  const atual = PORTES.indexOf(porte.atual);
+  // O degrau atual enche do zero ao aparecer; depois acompanha o patrimônio.
   const [cheio, setCheio] = useState(0);
   useEffect(() => {
     const t = requestAnimationFrame(() => setCheio(porte.avanco));
@@ -111,26 +115,33 @@ function Porte() {
         <NumeroVivo valor={patrimonio} formato={(v) => cr(v, 0)} id="porte" />
         <small>de patrimônio</small>
       </p>
-      <div
-        className="porte-trilho"
-        role="progressbar"
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuenow={Math.round(porte.avanco * 100)}
-        aria-label={`Avanço até empresa ${porte.proximo?.nome.toLocaleLowerCase('pt-BR') ?? 'máxima'}`}
+      <ol
+        className="degraus"
+        aria-label={`Porte ${porte.atual.nome}, ${Math.round(porte.avanco * 100)}% do caminho até o próximo`}
       >
-        <i style={{ width: `${cheio * 100}%` }} />
-      </div>
+        {PORTES.map((d, i) => (
+          <li
+            key={d.id}
+            className={i < atual ? 'feito' : i === atual ? 'agora' : 'falta'}
+            style={{ ['--alto' as string]: `${28 + i * 17}px` }}
+            aria-current={i === atual ? 'step' : undefined}
+          >
+            <span className="degrau">
+              {i === atual && <i style={{ height: `${cheio * 100}%` }} />}
+              {i < atual && <b aria-hidden="true">✓</b>}
+            </span>
+            <small>{d.nome}</small>
+          </li>
+        ))}
+      </ol>
       <p className="porte-meta">
-        <span>{porte.atual.nome}</span>
         {porte.proximo ? (
           <>
-            <span aria-hidden="true">→</span>
-            <b>{porte.proximo.nome}</b>
-            <small>faltam {cr(porte.falta, 0)}</small>
+            <b>{cr(porte.falta, 0)}</b>
+            <span>para a empresa {porte.proximo.nome.toLocaleLowerCase('pt-BR')}</span>
           </>
         ) : (
-          <small>o maior porte do jogo</small>
+          <span>o maior porte do jogo</span>
         )}
       </p>
       <button className="ini-link" onClick={() => navigate('company')}>
@@ -201,7 +212,7 @@ function ACaminho() {
 
 export function InicioPage() {
   const { world, actor } = useGame();
-  const { dia, hora, semana } = relogio(world);
+  const { dia } = relogio(world);
   const empresa = world.companies.find((c) => c.id === actor)!;
   const pendencias = usePendencias();
   const periodo = useAusencia();
@@ -211,18 +222,13 @@ export function InicioPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [world.revision, actor],
   );
-  // O mural usa as trocas dos mesmos produtos que o pregão já busca.
-  const historico = useHistorico(
-    itens.map((i) => i.id),
-    15000,
-  );
+  // Pregão e mural leem o histórico de todos os produtos, pelo mesmo endereço da ficha do produto.
+  const historico = useHistorico(seasonProducts(world), 20000);
   return (
     <div className="inicio">
       <header className="ini-cab">
-        <Placa
-          titulo={empresa.name}
-          sub={`Dia ${dia} · ${semana.toLocaleLowerCase('pt-BR')} · ${String(hora).padStart(2, '0')}h no jogo`}
-        />
+        <Placa titulo={empresa.name} sub={`Dia ${dia}`} />
+        <Relogio />
       </header>
       <div className="ini-topo">
         <div className="ini-principal">

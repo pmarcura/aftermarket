@@ -16,7 +16,7 @@ export const agoraDoMundo = (w: World) =>
   Math.max(w.updatedAt, w.nextEconomicAt - economicInterval(w));
 
 /** Converte um instante real em data do jogo, pelo relógio deste mundo (season.config.clock). */
-const dataDoJogo = (w: World, real: number) =>
+export const dataDoJogo = (w: World, real: number) =>
   w.season.startedAt + realToGame(w, real - w.season.startedAt);
 const realDoJogo = (w: World, jogo: number) =>
   w.season.startedAt + gameToReal(w, jogo - w.season.startedAt);

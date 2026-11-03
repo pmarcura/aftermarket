@@ -11,11 +11,28 @@ export function EsperaGlobal() {
   const { pending } = useGame();
   // Some só depois de um instante, para ações rápidas não piscarem.
   const [visivel, setVisivel] = useState(false);
+  // O botão que o jogador acabou de clicar: é ele que mostra o giro enquanto o comando roda.
+  const ultimo = useRef<{ botao: HTMLButtonElement; em: number } | null>(null);
+  useEffect(() => {
+    const aoClicar = (ev: MouseEvent) => {
+      const botao = (ev.target as Element | null)?.closest('button');
+      ultimo.current = botao ? { botao, em: Date.now() } : null;
+    };
+    // Captura: roda antes do clique mudar o estado, então sabemos qual botão iniciou a ação.
+    document.addEventListener('click', aoClicar, true);
+    return () => document.removeEventListener('click', aoClicar, true);
+  }, []);
   useEffect(() => {
     if (pending) {
       setVisivel(true);
       document.documentElement.classList.add('acao-pendente');
-      return () => document.documentElement.classList.remove('acao-pendente');
+      const alvo =
+        ultimo.current && Date.now() - ultimo.current.em < 2000 ? ultimo.current.botao : null;
+      alvo?.setAttribute('data-espera', 'true');
+      return () => {
+        document.documentElement.classList.remove('acao-pendente');
+        alvo?.removeAttribute('data-espera');
+      };
     }
     const t = setTimeout(() => setVisivel(false), 350);
     return () => clearTimeout(t);

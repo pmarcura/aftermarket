@@ -3,6 +3,7 @@ import { treasuryAvailable } from './operations';
 import { gameDay } from './clock';
 import { pendingOrdersBy } from './indexes';
 import { companyOf } from './metrics';
+import { maxPriceCap } from './competition';
 
 export const designRules = {
   loanFee: 0.02,
@@ -80,7 +81,7 @@ export function initializeDesign(w: World, at = w.updatedAt) {
             minimum: Math.ceil(q! * 2),
             target: Math.ceil(q! * 4),
             maxBuy: Math.ceil(q! * 4),
-            maxPrice: Math.round(w.season.config.basePrices[product as ProductId] * 1.5),
+            maxPrice: maxPriceCap(w, product as ProductId),
           })),
       };
   }

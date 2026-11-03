@@ -18,7 +18,7 @@ import {
   vehicleModels,
   type VehicleModel,
 } from './economy-design';
-import { openingTransfer, rivalNames, treasuryId } from './competition';
+import { openingTransfer, rivalNames, treasuryId, maxPriceCap } from './competition';
 import { equipmentCostFor } from './design';
 import {
   householdDemand,
@@ -144,7 +144,7 @@ export function v2SupplyPolicy(w: World, e: Establishment): SupplyPolicy {
           minimum: Math.ceil(Math.max(batch * 2, daily)),
           target,
           maxBuy: target,
-          maxPrice: Math.round(w.season.config.basePrices[product] * 1.5),
+          maxPrice: maxPriceCap(w, product),
           // Teto de frete por produto: 30% do preço do próprio item (carvão distante segue viável).
           maxFreightPerUnit: freightCap(w, product),
         };
@@ -170,7 +170,7 @@ export function v2SupplyPolicy(w: World, e: Establishment): SupplyPolicy {
                 : Math.ceil(target / 3),
             target,
             maxBuy: target,
-            maxPrice: Math.round(w.season.config.basePrices[product] * 1.5),
+            maxPrice: maxPriceCap(w, product),
             maxFreightPerUnit: freightCap(w, product),
           };
         })

@@ -12,5 +12,6 @@ Como trabalhar: ler `CONSTITUTION.md`, depois a spec ativa. Cada pasta tem `spec
 | 005  | [Invariantes em runtime e desempenho do motor](005-invariantes-e-desempenho/spec.md)                                        | verificada (R7 retirado)                                     | 2      | 001        |
 | 006  | Fechar exploits de preço e temporada versionada `balance/season-2026-01`                                                    | rascunho                                                     | 3–4    | 003, 004   |
 | 007  | Servidor de jogo: login por convite, autorização por empresa, view pública/privada                                          | rascunho                                                     | 3–6    | 001        |
+| 008  | [Estrutura das telas: cada coisa numa casa só](008-estrutura-telas/spec.md)                                                 | aprovada (Pedro)                                             | —      | —          |
 
 Ordem combinada em 30/10/2026 (D-042): 001 e 002 em paralelo, depois 003–005, depois 006 e 007 em paralelo. Em 01/11/2026 a 005 passou à frente da 004: a régua completa na escala 20 depende de o custo por dia parar de crescer com o tempo (decisão registrada na 003).

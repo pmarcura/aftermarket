@@ -1,72 +1,25 @@
-import { useEffect, useState } from 'react';
-import { Check, Coins, Factory, Plus, ShoppingBasket, Truck } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { useGame, cr, num } from '../lib/game';
-import { BotaoProduto } from '../components/BotaoProduto';
-import { Carimbo, Placa } from '../components/Livro';
-import { IconePixel } from '../components/IconePixel';
-import { ProdutoArte } from '../features/economy/Vitrine';
-import { PixelArt } from '../components/PixelArt';
+import { Placa } from '../components/Livro';
 import { CargaCaminho } from '../components/CargaCaminho';
-import { GraficoPixel } from '../components/GraficoPixel';
-import { matizDoProduto, spriteDoNegocio } from '../design/arte';
-import { estadoDe } from '../features/business/BusinessCards';
-import { usePendencias, type Pendencia } from '../features/inicio/pendencias';
+import { usePendencias } from '../features/inicio/pendencias';
 import { usePrimeirosPassos } from '../features/inicio/primeirosPassos';
-import {
-  agoraDoMundo,
-  comecoDoDia,
-  horasDeJogo,
-  relogio,
-  useAusencia,
-  useResumoDoCaixa,
-} from '../features/inicio/tempo';
-import { gameCalendar } from '../../../../packages/simulation/src/operations';
-import { gameDay } from '../../../../packages/simulation/src/clock';
+import { horasDeJogo, relogio, useAusencia, useResumoDoCaixa } from '../features/inicio/tempo';
+import { Caderno } from '../features/inicio/Caderno';
+import { Pregao, produtosDoPregao } from '../features/inicio/Pregao';
+import { Oportunidades } from '../features/inicio/Oportunidades';
+import { Mural } from '../features/inicio/Mural';
+import { NumeroVivo } from '../features/inicio/vivo';
+import { useHistorico } from '../features/mercado/historico';
+import { patrimonioDe, porteDe } from '../features/empresa/resumo';
 import '../design/inicio.css';
 
-// A contagem anima só na primeira vez que cada número aparece na sessão.
-const contados = new Set<string>();
-const semMovimento = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-
-/** Número que sobe até o valor em passos, uma vez por sessão. */
-function Contador({
-  id,
-  valor,
-  formato,
-}: {
-  id: string;
-  valor: number;
-  formato: (v: number) => string;
-}) {
-  const [mostrado, setMostrado] = useState(() => (contados.has(id) || semMovimento() ? valor : 0));
-  useEffect(() => {
-    if (mostrado === valor) return;
-    if (contados.has(id) || semMovimento()) {
-      setMostrado(valor);
-      return;
-    }
-    let passo = 0;
-    const passos = 12;
-    const t = setInterval(() => {
-      passo++;
-      setMostrado(passo >= passos ? valor : Math.round((valor * passo) / passos));
-      if (passo >= passos) {
-        clearInterval(t);
-        contados.add(id);
-      }
-    }, 45);
-    return () => clearInterval(t);
-    // Só reage ao valor novo.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [valor]);
-  return <>{formato(mostrado)}</>;
-}
-
-type Caixa = ReturnType<typeof useResumoDoCaixa>;
 type Periodo = ReturnType<typeof useAusencia>;
 
-function Ausencia({ caixa, periodo }: { caixa: Caixa; periodo: Periodo }) {
+/** O que aconteceu enquanto o jogador esteve fora (ou hoje), em forma de recibo. */
+function Recibo({ periodo }: { periodo: Periodo }) {
   const { world, actor } = useGame();
+  const caixa = useResumoDoCaixa(periodo.desde);
   const { desde, ausente, agora } = periodo;
   const meus = new Set(world.establishments.filter((e) => e.companyId === actor).map((e) => e.id));
   const entregas = world.shipments.filter(
@@ -75,165 +28,142 @@ function Ausencia({ caixa, periodo }: { caixa: Caixa; periodo: Periodo }) {
   const lotes = world.jobs.filter(
     (j) => meus.has(j.establishmentId) && j.completed && j.finishesAt >= desde,
   ).length;
-  // Vendas e gastos sempre aparecem; entregas e lotes só quando aconteceram.
-  const itens = [
-    {
-      id: 'vendas',
-      icone: Coins,
-      tom: 'ouro',
-      valor: caixa.vendas,
-      formato: (v: number) => cr(v, 0),
-      rotulo: 'em vendas',
-    },
-    {
-      id: 'gastos',
-      icone: ShoppingBasket,
-      tom: 'apagado',
-      valor: caixa.gastos,
-      formato: (v: number) => cr(v, 0),
-      rotulo: caixa.mercadoria
-        ? `em gastos, ${cr(caixa.mercadoria, 0)} viraram estoque`
-        : 'em gastos',
-    },
-    entregas > 0 && {
-      id: 'entregas',
-      icone: Truck,
-      tom: 'ceu',
-      valor: entregas,
-      formato: (v: number) => num(v),
-      rotulo: entregas === 1 ? 'entrega chegou' : 'entregas chegaram',
-    },
-    lotes > 0 && {
-      id: 'lotes',
-      icone: Factory,
-      tom: 'lavoura',
-      valor: lotes,
-      formato: (v: number) => num(v),
-      rotulo: lotes === 1 ? 'lote produzido' : 'lotes produzidos',
-    },
-  ].filter(Boolean) as {
-    id: string;
-    icone: typeof Coins;
-    tom: string;
-    valor: number;
-    formato: (v: number) => string;
-    rotulo: string;
-  }[];
+  const custos = caixa.gastos - caixa.mercadoria - caixa.investimento;
+  const sobra = caixa.vendas - custos;
+  const chave = ausente ? 'fora' : 'hoje';
   return (
-    <section className="ini-fora" aria-labelledby="ini-fora-titulo">
-      <h2 id="ini-fora-titulo">
+    <section className="recibo lv-recibo" aria-labelledby="recibo-titulo">
+      <h2 id="recibo-titulo" className="lv-rotulo">
         {ausente
-          ? `Enquanto você esteve fora, ${num(horasDeJogo(world, agora - desde))} h de jogo`
-          : 'Hoje'}
+          ? `Enquanto você esteve fora · ${num(horasDeJogo(world, agora - desde))} h`
+          : 'Hoje até agora'}
       </h2>
-      <ul>
-        {itens.map((i) => (
-          <li key={i.id} className={`tom-${i.tom}`}>
-            <i aria-hidden="true">
-              <i.icone size={18} strokeWidth={2} />
-            </i>
-            <b>
-              <Contador
-                id={`${ausente ? 'fora' : 'hoje'}-${i.id}`}
-                valor={i.valor}
-                formato={i.formato}
-              />
-            </b>
-            <span>{i.rotulo}</span>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
-function PrecisaDeVoce({ pendencias }: { pendencias: Pendencia[] }) {
-  const { navigate } = useGame();
-  return (
-    <section className="ini-bloco" aria-labelledby="ini-precisa">
-      <h2 id="ini-precisa">
-        Precisa de você{' '}
-        {pendencias.length > 0 && <span className="ini-conta">{pendencias.length}</span>}
-      </h2>
-      {pendencias.length ? (
-        <ul className="ini-pendencias">
-          {pendencias.map((p) => (
-            <li
-              key={p.id}
-              className={`pend tom-${p.tom}`}
-              style={{ ['--h' as string]: p.produto ? matizDoProduto(p.produto) : 30 }}
-            >
-              <div className="pend-arte">
-                {p.produto ? (
-                  <BotaoProduto product={p.produto}>
-                    <ProdutoArte product={p.produto} escala={2} />
-                  </BotaoProduto>
-                ) : (
-                  <IconePixel nome={p.tom === 'brasa' ? 'pedido' : 'estrela'} tamanho={48} />
-                )}
-              </div>
-              <div className="pend-texto">
-                <span className="pend-nivel">
-                  <Carimbo tom={p.tom} giro={p.tom === 'brasa' ? -4 : 3}>
-                    {p.tom === 'brasa' ? 'Urgente' : 'Atenção'}
-                  </Carimbo>
-                </span>
-                <strong>{p.titulo}</strong>
-                <small>{p.detalhe}</small>
-              </div>
-              <button
-                className={`pend-acao ${p.tom === 'brasa' ? 'primary' : 'secondary'}`}
-                onClick={p.acao.executar}
-              >
-                {p.acao.rotulo}
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <div className="ini-em-dia">
-          <i aria-hidden="true">
-            <Check size={22} strokeWidth={3} />
-          </i>
-          <div>
-            <strong>Tudo em dia por aqui.</strong>
-            <small>Bom momento para olhar o que está em falta no mercado.</small>
-          </div>
-          <button className="secondary" onClick={() => navigate('quotes')}>
-            Ver cotações
-          </button>
+      <dl>
+        <div>
+          <dt>Vendas</dt>
+          <dd className="entra">
+            +<NumeroVivo valor={caixa.vendas} formato={(v) => cr(v, 0)} id={`${chave}-vendas`} />
+          </dd>
         </div>
-      )}
+        <div>
+          <dt>Equipe, energia e frete</dt>
+          <dd className="sai">
+            −<NumeroVivo valor={custos} formato={(v) => cr(v, 0)} id={`${chave}-custos`} />
+          </dd>
+        </div>
+        {caixa.investimento > 0 && (
+          <div>
+            <dt>Investido em imóveis e caminhões</dt>
+            <dd>{cr(caixa.investimento, 0)}</dd>
+          </div>
+        )}
+        {caixa.mercadoria > 0 && (
+          <div>
+            <dt>Virou estoque</dt>
+            <dd>{cr(caixa.mercadoria, 0)}</dd>
+          </div>
+        )}
+        {entregas > 0 && (
+          <div>
+            <dt>{entregas === 1 ? 'Chegou 1 carga' : `Chegaram ${entregas} cargas`}</dt>
+            <dd>✓</dd>
+          </div>
+        )}
+        {lotes > 0 && (
+          <div>
+            <dt>{lotes === 1 ? '1 lote produzido' : `${lotes} lotes produzidos`}</dt>
+            <dd>✓</dd>
+          </div>
+        )}
+        <div className="total">
+          <dt>{sobra >= 0 ? 'Sobrou' : 'Faltou'}</dt>
+          <dd className={sobra >= 0 ? 'entra' : 'sai'}>
+            {sobra >= 0 ? '+' : '−'}
+            <NumeroVivo valor={Math.abs(sobra)} formato={(v) => cr(v, 0)} id={`${chave}-sobra`} />
+          </dd>
+        </div>
+      </dl>
     </section>
   );
 }
 
+/** Régua do porte da empresa: a meta de longo prazo, sempre à vista. */
+function Porte() {
+  const { world, actor, navigate } = useGame();
+  const patrimonio = useMemo(
+    () => patrimonioDe(world, actor).netWorth,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [world.revision, actor],
+  );
+  const porte = porteDe(patrimonio);
+  // A barra enche do zero ao aparecer; depois acompanha o patrimônio.
+  const [cheio, setCheio] = useState(0);
+  useEffect(() => {
+    const t = requestAnimationFrame(() => setCheio(porte.avanco));
+    return () => cancelAnimationFrame(t);
+  }, [porte.avanco]);
+  return (
+    <section className="porte lv-peca" aria-labelledby="porte-titulo">
+      <h2 id="porte-titulo" className="lv-rotulo">
+        Porte da empresa
+      </h2>
+      <p className="porte-valor">
+        <NumeroVivo valor={patrimonio} formato={(v) => cr(v, 0)} id="porte" />
+        <small>de patrimônio</small>
+      </p>
+      <div
+        className="porte-trilho"
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(porte.avanco * 100)}
+        aria-label={`Avanço até empresa ${porte.proximo?.nome.toLocaleLowerCase('pt-BR') ?? 'máxima'}`}
+      >
+        <i style={{ width: `${cheio * 100}%` }} />
+      </div>
+      <p className="porte-meta">
+        <span>{porte.atual.nome}</span>
+        {porte.proximo ? (
+          <>
+            <span aria-hidden="true">→</span>
+            <b>{porte.proximo.nome}</b>
+            <small>faltam {cr(porte.falta, 0)}</small>
+          </>
+        ) : (
+          <small>o maior porte do jogo</small>
+        )}
+      </p>
+      <button className="ini-link" onClick={() => navigate('company')}>
+        Ver a empresa
+      </button>
+    </section>
+  );
+}
+
+/** O guia da primeira hora: um passo por vez, até acabar. */
 function PrimeirosPassos() {
   const passos = usePrimeirosPassos();
   const feitos = passos.filter((p) => p.done).length;
   const proximo = passos.find((p) => !p.done);
   if (!proximo) return null;
   return (
-    <section className="ini-bloco ini-passos" aria-labelledby="ini-passos">
-      <h2 id="ini-passos">Primeiros passos</h2>
+    <section className="passo" aria-labelledby="passo-titulo">
       <div
-        className="ini-blocos"
+        className="passo-pips"
         role="img"
         aria-label={`${feitos} de ${passos.length} passos concluídos`}
       >
-        {passos.map((p, i) => (
-          <i
-            key={p.title}
-            className={p.done ? 'feito' : p === proximo ? 'agora' : ''}
-            title={`${i + 1}. ${p.title}`}
-          />
+        {passos.map((p) => (
+          <i key={p.title} className={p.done ? 'feito' : p === proximo ? 'agora' : ''} />
         ))}
-        <span>
-          {feitos} de {passos.length}
-        </span>
       </div>
-      <h3>{proximo.title}</h3>
-      <p>{proximo.text}</p>
+      <div className="passo-texto">
+        <span className="lv-rotulo">
+          Próximo passo · {feitos + 1} de {passos.length}
+        </span>
+        <h2 id="passo-titulo">{proximo.title}</h2>
+        <p>{proximo.text}</p>
+      </div>
       {proximo.action && (
         <button className="primary" onClick={proximo.action.run}>
           {proximo.action.label}
@@ -251,108 +181,20 @@ function ACaminho() {
     .sort((a, b) => a.arrivesAt - b.arrivesAt);
   if (!cargas.length) return null;
   return (
-    <section className="ini-bloco" aria-labelledby="ini-caminho">
-      <h2 id="ini-caminho">A caminho</h2>
+    <section className="a-caminho" aria-labelledby="caminho-titulo">
+      <h2 id="caminho-titulo" className="lv-rotulo">
+        A caminho
+      </h2>
       <ul className="cam-lista">
-        {cargas.slice(0, 4).map((s) => (
+        {cargas.slice(0, 3).map((s) => (
           <CargaCaminho key={s.id} s={s} world={world} />
         ))}
-      </ul>{' '}
-      {cargas.length > 4 && (
-        <button className="gpx-tabela-botao" onClick={() => navigate('logistics')}>
+      </ul>
+      {cargas.length > 3 && (
+        <button className="ini-link" onClick={() => navigate('logistics')}>
           Ver as {cargas.length} cargas
         </button>
       )}
-    </section>
-  );
-}
-
-function VendasDaSemana({ porDia }: { porDia: number[] }) {
-  const { world } = useGame();
-  // Com menos de 3 dias de vendas, as barras vazias não dizem nada.
-  if (porDia.filter((v) => v > 0).length < 3) return null;
-  const fim = comecoDoDia(world) + gameDay(world);
-  const rotulos = porDia.map((_, i) =>
-    i === 6
-      ? 'hoje'
-      : gameCalendar(world, fim - (7 - i) * gameDay(world) + gameDay(world) / 2)
-          .label.slice(0, 3)
-          .toLocaleLowerCase('pt-BR'),
-  );
-  return (
-    <section className="ini-bloco" aria-labelledby="ini-vendas">
-      <h2 id="ini-vendas">Vendas por dia</h2>
-      <GraficoPixel
-        titulo="Vendas da empresa em cada um dos últimos 7 dias de jogo"
-        tipo="barras"
-        altura={190}
-        rotulos={rotulos}
-        series={[{ nome: 'Vendas', valores: porDia }]}
-        formato={(v) => cr(v)}
-        formatoEixo={(v) => cr(v, 0)}
-      />
-    </section>
-  );
-}
-
-function SeusNegocios({
-  pendencias,
-  porNegocioHoje,
-}: {
-  pendencias: Pendencia[];
-  porNegocioHoje: Map<string, number>;
-}) {
-  const { world, actor, openBusiness, navigate } = useGame();
-  const agora = agoraDoMundo(world);
-  const meus = world.establishments.filter((e) => e.companyId === actor);
-  return (
-    <section className="ini-bloco ini-negocios" aria-labelledby="ini-negocios">
-      <h2 id="ini-negocios">Seus negócios</h2>
-      <ul>
-        {meus.map((e) => {
-          const estado = estadoDe(e);
-          const problema = pendencias.find((p) => p.negocioId === e.id);
-          const lote = world.jobs.find((j) => j.establishmentId === e.id && !j.completed);
-          const vendas = porNegocioHoje.get(e.id) ?? 0;
-          const parado = estado.tone !== 'green';
-          const motivo = problema
-            ? problema.titulo.replace(`${e.name} `, '')
-            : lote
-              ? `Produzindo, pronto em ~${num(Math.max(1, horasDeJogo(world, lote.finishesAt - agora)))} h`
-              : vendas > 0 || e.category === 'retail'
-                ? `Vendeu ${cr(vendas, 0)} hoje`
-                : 'Sem produção agora';
-          const tom = problema ? problema.tom : parado ? 'ouro' : 'lavoura';
-          return (
-            <li key={e.id}>
-              <button
-                className={`neg tom-${tom}`}
-                style={{ ['--h' as string]: matizDoProduto(e.category) }}
-                onClick={() => openBusiness(e.id)}
-                aria-label={`${e.name}: ${parado ? estado.label : motivo}`}
-              >
-                <span className="neg-cena">
-                  <PixelArt name={spriteDoNegocio(e, world)} scale={2} />
-                </span>
-                <strong>{e.name}</strong>
-                <span className="neg-estado">
-                  {parado ? estado.label : problema ? 'Precisa de atenção' : 'Funcionando'}
-                </span>
-                <small>{motivo}</small>
-              </button>
-            </li>
-          );
-        })}
-        <li>
-          <button className="neg neg-novo" onClick={() => navigate('map')}>
-            <span className="neg-mais" aria-hidden="true">
-              <Plus size={34} strokeWidth={3} />
-            </span>
-            <strong>Abrir negócio</strong>
-            <small>Escolha um imóvel no mapa</small>
-          </button>
-        </li>
-      </ul>
     </section>
   );
 }
@@ -363,7 +205,17 @@ export function InicioPage() {
   const empresa = world.companies.find((c) => c.id === actor)!;
   const pendencias = usePendencias();
   const periodo = useAusencia();
-  const caixa = useResumoDoCaixa(periodo.desde);
+  const itens = useMemo(
+    () => produtosDoPregao(world, actor),
+    // A lista muda quando a empresa passa a negociar outro produto.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [world.revision, actor],
+  );
+  // O mural usa as trocas dos mesmos produtos que o pregão já busca.
+  const historico = useHistorico(
+    itens.map((i) => i.id),
+    15000,
+  );
   return (
     <div className="inicio">
       <header className="ini-cab">
@@ -372,17 +224,21 @@ export function InicioPage() {
           sub={`Dia ${dia} · ${semana.toLocaleLowerCase('pt-BR')} · ${String(hora).padStart(2, '0')}h no jogo`}
         />
       </header>
-      <Ausencia caixa={caixa} periodo={periodo} />
-      <div className="ini-grade">
-        <div className="ini-coluna">
-          <PrecisaDeVoce pendencias={pendencias} />
-          <SeusNegocios pendencias={pendencias} porNegocioHoje={caixa.porNegocioHoje} />
-        </div>
-        <div className="ini-coluna">
-          <PrimeirosPassos />
+      <div className="ini-topo">
+        <div className="ini-principal">
+          <Caderno pendencias={pendencias} />
           <ACaminho />
-          <VendasDaSemana porDia={caixa.porDia} />
         </div>
+        <aside className="ini-lado" aria-label="Resumo">
+          <Recibo periodo={periodo} />
+          <Porte />
+        </aside>
+      </div>
+      <PrimeirosPassos />
+      <Oportunidades />
+      <div className="ini-mercado">
+        <Pregao historico={historico} itens={itens} />
+        <Mural historico={historico} />
       </div>
     </div>
   );

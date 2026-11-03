@@ -1,4 +1,5 @@
-import type { Entry, World } from '../../../../../packages/simulation/src/model';
+import type { Entry, ProductId, World } from '../../../../../packages/simulation/src/model';
+import { arrears, outstandingLoans } from '../../../../../packages/simulation/src/design';
 import type { ParteEmpilhada } from '../../components/BarrasPixel';
 import { agoraDoMundo, comecoDoDia } from '../inicio/tempo';
 import { gameDay } from '../../../../../packages/simulation/src/clock';
@@ -11,6 +12,48 @@ export const PORTES = [
   { id: 'grande', nome: 'Grande', ate: 10_000_000_000 },
   { id: 'grupo', nome: 'Grupo', ate: Infinity },
 ] as const;
+
+/** Patrimônio: o que a empresa tem menos o que deve. Serve para qualquer empresa do mundo. */
+export function patrimonioDe(world: World, empresa: string) {
+  const company = world.companies.find((c) => c.id === empresa);
+  const units = world.establishments.filter((e) => e.companyId === empresa);
+  const propertyAssets = world.properties
+    .filter((p) => p.ownerId === empresa)
+    .reduce((n, p) => n + p.price, 0);
+  const inventory = units.reduce(
+    (n, e) =>
+      n +
+      Object.entries(e.inventory).reduce(
+        (sum, [id, q]) => sum + (e.unitCosts[id as ProductId] ?? 0) * q!,
+        0,
+      ),
+    0,
+  );
+  const ids = new Set(units.map((e) => e.id));
+  const wip = world.jobs
+    .filter((j) => !j.completed && ids.has(j.establishmentId))
+    .reduce((n, j) => n + j.cost, 0);
+  const inTransit = world.shipments
+    .filter((s) => s.buyerId === empresa && !s.delivered)
+    .reduce((n, s) => n + s.cost + s.freight, 0);
+  const vehicles = world.vehicles
+    .filter((v) => v.companyId === empresa)
+    .reduce((n, v) => n + (v.purchasePrice ?? 28000000), 0);
+  const equipment = units.reduce((n, e) => n + (e.installationValue ?? 0), 0);
+  const assets = (company?.balance ?? 0) + propertyAssets + inventory + wip + inTransit + vehicles;
+  const liabilities = arrears(world, empresa) + outstandingLoans(world, empresa);
+  return {
+    propertyAssets,
+    inventory,
+    wip,
+    inTransit,
+    vehicles,
+    equipment,
+    assets,
+    liabilities,
+    netWorth: assets + equipment - liabilities,
+  };
+}
 
 export function porteDe(patrimonio: number) {
   const i = PORTES.findIndex((p) => patrimonio < p.ate);

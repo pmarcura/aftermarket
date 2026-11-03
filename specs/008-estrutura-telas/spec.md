@@ -55,3 +55,16 @@ Achados que não são de interface, para o John decidir onde entram:
 ## Fora de escopo
 
 Mapa 3D (ramo `pedro/mapa-3d`, integração pelo John), notícias e ranking, celular como plataforma principal, arte final de produtos.
+
+## Andamento
+
+### Tela 1 · Início (03/11/2026, direção A "Caderno do dia", escolhida pelo Pedro)
+
+- **Caderno do dia:** pendências com o dinheiro em jogo por dia (estimativa) e o botão que resolve; o que foi resolvido fica riscado com o carimbo "Feito". Alertas novos: equipe curta (mesma conta da aba Equipe, `equipeDaLoja`) e preço longe do ponto de maior lucro; ordem por urgência e depois por valor.
+- **Recibo** de enquanto você esteve fora (ou de hoje) e **porte** da empresa com a régua até o próximo porte (`patrimonioDe`, a mesma conta da Empresa).
+- **Oportunidades:** produto que a cidade procura e a loja não vende (abre Mandar buscar), negócio que cabe no caixa (mesmo lucro de Negócios para abrir) e pedido de outra empresa que o estoque atende.
+- **Pregão ao vivo:** até 8 produtos (primeiro os que a empresa negocia), preço nacional que corre e pisca ao mudar, variação contra um dia de jogo (ou "novo") e minigráfico que se desenha.
+- **Mural:** placar dos empresários pelo patrimônio, a maior compra do dia como manchete e as últimas movimentações com filtro Tudo / Empresários / Empresas automáticas. Clã e amigos dependem do servidor de jogo (spec 007): ainda não há grupo nem convite no motor.
+- Saíram do Início: cartões dos negócios (casa: Negócios) e vendas por dia (casa: Empresa).
+- Correções: o ajuste do capital inicial (`budget`) e os investimentos (imóvel, caminhão) não contam mais como custo no Início; o cartão de carga a caminho não passa mais da tela no celular.
+- **Correção do inventário:** arroz, feijão e açúcar nunca estiveram na loja. A aba Abastecimento rotula como "Esgotado" todo produto da temporada que a loja não vende; o rótulo engana e deve mudar quando a Loja for redesenhada.

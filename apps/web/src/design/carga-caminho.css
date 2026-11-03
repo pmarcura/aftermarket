@@ -8,7 +8,7 @@
 }
 .cam {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   gap: 18px;
   padding: 14px 18px 14px 10px;
@@ -196,4 +196,24 @@
 }
 .cam-ponto {
   border-color: var(--papel);
+}
+
+/* Celular: a imagem encolhe e a rota quebra linha em vez de passar da tela. */
+@media (max-width: 700px) {
+  .cam {
+    gap: 12px;
+    padding: 12px 12px 12px 8px;
+  }
+  .cam-arte {
+    min-width: 56px;
+  }
+  .cam-arte img {
+    max-width: 56px;
+  }
+  .cam-topo strong {
+    font-size: 18px;
+  }
+  .cam-rota {
+    flex-wrap: wrap;
+  }
 }

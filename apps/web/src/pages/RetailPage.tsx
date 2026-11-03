@@ -18,7 +18,12 @@ export function RetailPage() {
     world.establishments.find(
       (e) => e.id === businessId && e.companyId === actor && e.category === 'retail',
     ) ?? world.establishments.find((e) => e.companyId === actor && e.category === 'retail');
-  const [tab, setTab] = useState('Prateleira');
+  // Quem abre a loja pode pedir uma aba (o Início leva direto à Equipe, por exemplo).
+  const [tab, setTab] = useState(() => {
+    const pedida = sessionStorage.getItem('aftermarket.loja.aba');
+    sessionStorage.removeItem('aftermarket.loja.aba');
+    return pedida ?? 'Prateleira';
+  });
   if (!e)
     return (
       <Empty

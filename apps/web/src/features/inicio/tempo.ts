@@ -51,6 +51,8 @@ export function resumoDoCaixa(w: World, empresa: string, desde: number) {
     vendas: 0,
     gastos: 0,
     mercadoria: 0,
+    /** Imóveis, instalação e caminhões: viram patrimônio, não custo. */
+    investimento: 0,
     vendasHoje: 0,
     porDia: [0, 0, 0, 0, 0, 0, 0],
     porNegocioHoje: new Map<string, number>(),
@@ -69,9 +71,11 @@ export function resumoDoCaixa(w: World, empresa: string, desde: number) {
             (r.porNegocioHoje.get(l.establishmentId) ?? 0) + l.amount,
           );
       }
-    } else if (l.from === empresa && l.at >= desde) {
+    } else if (l.from === empresa && l.at >= desde && l.kind !== 'budget') {
+      // 'budget' do jogador é o ajuste do capital inicial do cenário, não um gasto da empresa.
       r.gastos += l.amount;
       if (l.kind === 'trade') r.mercadoria += l.amount;
+      if (l.kind === 'property' || l.kind === 'vehicle') r.investimento += l.amount;
     }
   }
   return r;

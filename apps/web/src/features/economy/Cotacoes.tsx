@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useMemo, useState } from 'react';
 import { ArrowDownRight, ArrowUpRight, Minus } from 'lucide-react';
 import { useGame, cr, num } from '../../lib/game';
 import { PageHeading, Select } from '../../components/ui';
@@ -7,13 +7,13 @@ import { IconePixel } from '../../components/IconePixel';
 import { BotaoProduto } from '../../components/BotaoProduto';
 import { matizDoProduto } from '../../design/arte';
 import { Faisca } from '../mercado/Faisca';
+import { useHistorico } from '../mercado/historico';
 import { ProdutoArte } from './Vitrine';
 import { unidade } from './Carga';
 import { BusinessIdeas, useNegocios } from './BusinessIdeas';
 import {
   products,
   seasonProducts,
-  type MarketSample,
   type ProductId,
   type World,
 } from '../../../../../packages/simulation/src/model';
@@ -25,48 +25,6 @@ import '../../design/cotacoes.css';
 const AnaliseAvancada = lazy(() =>
   import('../../components/ProductAnalysis').then((m) => ({ default: m.ProductAnalysis })),
 );
-
-interface Negocio {
-  at: number;
-  from: string;
-  to: string;
-  product: ProductId;
-  quantity: number;
-  unitPrice: number;
-}
-type Historico = Partial<Record<ProductId, { samples: MarketSample[]; trades: Negocio[] }>>;
-
-/** Histórico nacional de todos os produtos, pelo mesmo endereço que a ficha do produto usa. */
-function useHistorico(ids: ProductId[]) {
-  const [h, setH] = useState<Historico>({});
-  const chave = ids.join(',');
-  useEffect(() => {
-    let ativo = true;
-    const ler = () =>
-      Promise.all(
-        ids.map((id) =>
-          fetch(`/api/market-history?product=${id}&region=`)
-            .then((r) => (r.ok ? r.json() : undefined))
-            .then((v) => [id, v] as const)
-            .catch(() => [id, undefined] as const),
-        ),
-      ).then((pares) => {
-        if (!ativo) return;
-        const novo: Historico = {};
-        for (const [id, v] of pares) if (v) novo[id] = { samples: v.samples, trades: v.trades };
-        setH(novo);
-      });
-    void ler();
-    const t = setInterval(() => void ler(), 30000);
-    return () => {
-      ativo = false;
-      clearInterval(t);
-    };
-    // A lista de produtos só muda com a temporada.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chave]);
-  return h;
-}
 
 /** Tempo de jogo decorrido, em palavras curtas. */
 function haQuanto(world: World, at: number) {

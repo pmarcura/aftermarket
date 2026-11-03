@@ -7,10 +7,15 @@ import { GraficoPixel } from '../components/GraficoPixel';
 import { BarraEmpilhada, type ParteEmpilhada } from '../components/BarrasPixel';
 import { Recovery } from '../features/business/Recovery';
 import { Transacoes, momentoDoJogo } from '../features/empresa/Transacoes';
-import { GRUPOS, porteDe, resumoDaEmpresa, type GrupoSaida } from '../features/empresa/resumo';
+import {
+  GRUPOS,
+  patrimonioDe,
+  porteDe,
+  resumoDaEmpresa,
+  type GrupoSaida,
+} from '../features/empresa/resumo';
 import { operatingCosts } from '../../../../packages/simulation/src/metrics';
-import { arrears, freeCash, outstandingLoans } from '../../../../packages/simulation/src/design';
-import type { ProductId } from '../../../../packages/simulation/src/model';
+import { freeCash } from '../../../../packages/simulation/src/design';
 import '../design/item.css';
 import '../design/empresa.css';
 
@@ -20,33 +25,19 @@ export function CompanyPage() {
   const { world, actor, notice } = useGame();
   const [dias, setDias] = useState<(typeof PERIODOS)[number]>(7);
   const company = world.companies.find((c) => c.id === actor)!,
-    units = world.establishments.filter((e) => e.companyId === actor),
-    fleet = world.vehicles.filter((v) => v.companyId === actor);
+    units = world.establishments.filter((e) => e.companyId === actor);
 
-  // Patrimônio: o que a empresa tem menos o que deve (mesmas contas de antes).
-  const propertyAssets = world.properties
-    .filter((p) => p.ownerId === actor)
-    .reduce((n, p) => n + p.price, 0);
-  const inventory = units.reduce(
-    (n, e) =>
-      n +
-      Object.entries(e.inventory).reduce(
-        (sum, [id, q]) => sum + (e.unitCosts[id as ProductId] ?? 0) * q!,
-        0,
-      ),
-    0,
-  );
-  const wip = world.jobs
-    .filter((j) => !j.completed && units.some((e) => e.id === j.establishmentId))
-    .reduce((n, j) => n + j.cost, 0);
-  const inTransit = world.shipments
-    .filter((s) => s.buyerId === actor && !s.delivered)
-    .reduce((n, s) => n + s.cost + s.freight, 0);
-  const vehicles = fleet.reduce((n, v) => n + (v.purchasePrice ?? 28000000), 0);
-  const equipment = units.reduce((n, e) => n + (e.installationValue ?? 0), 0);
-  const assets = company.balance + propertyAssets + inventory + wip + inTransit + vehicles;
-  const liabilities = arrears(world, actor) + outstandingLoans(world, actor);
-  const netWorth = assets + equipment - liabilities;
+  const {
+    propertyAssets,
+    inventory,
+    wip,
+    inTransit,
+    vehicles,
+    equipment,
+    assets,
+    liabilities,
+    netWorth,
+  } = patrimonioDe(world, actor);
   const porte = porteDe(netWorth);
   const totalBens = Math.max(assets + equipment, 1);
 

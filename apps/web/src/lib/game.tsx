@@ -131,7 +131,8 @@ interface GameContextValue {
   consumeFocus: () => void;
   focusMap: (coordinates: [number, number], propertyId?: string) => void;
   businessId: string;
-  openBusiness: (id: string) => void;
+  /** Abre o negócio; `aba` escolhe a aba de abertura da loja (Prateleira, Equipe…). */
+  openBusiness: (id: string, aba?: string) => void;
   intent: MarketIntent;
   openMarket: (intent: MarketIntent) => void;
   /** Abre a gaveta de reposição (Mandar buscar) por cima da tela atual. */
@@ -297,7 +298,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           select(propertyId ?? null);
           navigate('map');
         },
-        openBusiness: (id) => {
+        openBusiness: (id, aba) => {
           const live = latestWorld.current ?? world;
           const e = live.establishments.find((x) => x.id === id);
           if (!e) return;
@@ -310,6 +311,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           }
           setBusinessId(id);
           localStorage.setItem('aftermarket.business', id);
+          if (aba) sessionStorage.setItem('aftermarket.loja.aba', aba);
           navigate(
             e.installed === false && e.category !== 'retail'
               ? 'industry'

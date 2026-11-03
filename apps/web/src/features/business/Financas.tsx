@@ -3,7 +3,7 @@ import { Lightbulb } from 'lucide-react';
 import { useGame, cr, num, ProductIcon } from '../../lib/game';
 import { Empty } from '../../components/ui';
 import { GraficoPixel } from '../../components/GraficoPixel';
-import { BarraEmpilhada, BarrasPixel, type ParteEmpilhada } from '../../components/BarrasPixel';
+import { BarrasPixel, type ParteEmpilhada } from '../../components/BarrasPixel';
 import { comecoDoDia } from '../inicio/tempo';
 import {
   products,
@@ -121,14 +121,6 @@ export function BusinessFinance({ establishment: e }: { establishment: Establish
         ? r.dataDoDia(i).label.slice(0, 3).toLocaleLowerCase('pt-BR')
         : `${dia2(r.dataDoDia(i).date.getUTCDate())}/${dia2(r.dataDoDia(i).date.getUTCMonth() + 1)}`,
   );
-  const partes: ParteEmpilhada[] = (Object.keys(GRUPOS) as Grupo[]).map((g) => ({
-    id: g,
-    rotulo: GRUPOS[g].rotulo,
-    valor: r.porGrupo[g],
-    cor: GRUPOS[g].cor,
-    forma: GRUPOS[g].forma,
-    ajuda: r.porGrupo[g] > 0 ? GRUPOS[g].ajuda : undefined,
-  }));
   const estoque = Object.entries(e.inventory).reduce(
     (n, [id, q]) => n + q! * (e.unitCosts[id as ProductId] ?? 0),
     0,
@@ -221,18 +213,6 @@ export function BusinessFinance({ establishment: e }: { establishment: Establish
           ]}
           formato={(v) => cr(v)}
           formatoEixo={(v) => cr(v, 0)}
-        />
-      </section>
-
-      <section className="fin-bloco">
-        <Cabecalho
-          titulo="Para onde foi o dinheiro"
-          texto="Tudo o que saiu, separado por assunto."
-        />
-        <BarraEmpilhada
-          titulo="Saídas do período por assunto"
-          partes={partes}
-          formato={(v) => cr(v, 0)}
         />
       </section>
 

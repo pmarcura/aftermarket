@@ -33,10 +33,13 @@ export function LinhaPreco({
   loja,
   product,
   m,
+  compacto = false,
 }: {
   loja: Establishment;
   product: ProductId;
   m: Mercado;
+  /** Sem o cabeçalho do produto: o painel do balcão já mostra o produto. */
+  compacto?: boolean;
 }) {
   const { world, run, pending, openRepor } = useGame();
   const aCaminho = world.shipments.some(
@@ -169,44 +172,46 @@ export function LinhaPreco({
 
   return (
     <article
-      className={`item ${estoque <= 0 ? 'esgotado' : ''}`}
+      className={`item ${estoque <= 0 ? 'esgotado' : ''} ${compacto ? 'item-compacto' : ''}`}
       style={{ ['--h' as string]: matizDoProduto(product) }}
     >
-      <header className="item-hero">
-        <span className="lv-preco item-etiqueta">{cr(preco)}</span>
-        <div className="item-arte">
-          <BotaoProduto product={product}>
-            <ProdutoArte product={product} escala={3} />
-          </BotaoProduto>
-        </div>
-        <div className="item-ident">
-          <h3>
-            <BotaoProduto product={product}>{products[product].name}</BotaoProduto>
-          </h3>
-          <EstadoEstoque estoque={estoque} dias={dias} />
-          <dl className="item-fatos">
-            <div>
-              <IconePixel nome="caixa" tamanho={22} />
-              <dt>No armazém</dt>
-              <dd>
-                {num(estoque)} {unidade(product, estoque)}
-              </dd>
-            </div>
-            <div>
-              <dt>Qualidade</dt>
-              <dd>{num(inventoryQuality(loja, product))}</dd>
-            </div>
-          </dl>
-        </div>
-        {(estoque <= 0 || dias < 3) && (
-          <button
-            className={`item-repor ${estoque <= 0 && !aCaminho ? 'primary' : 'secondary'}`}
-            onClick={() => openRepor({ destinationId: loja.id, product })}
-          >
-            <ShoppingCart size={18} /> {aCaminho ? 'Já pedido · pedir mais' : 'Mandar buscar'}
-          </button>
-        )}
-      </header>
+      {!compacto && (
+        <header className="item-hero">
+          <span className="lv-preco item-etiqueta">{cr(preco)}</span>
+          <div className="item-arte">
+            <BotaoProduto product={product}>
+              <ProdutoArte product={product} escala={3} />
+            </BotaoProduto>
+          </div>
+          <div className="item-ident">
+            <h3>
+              <BotaoProduto product={product}>{products[product].name}</BotaoProduto>
+            </h3>
+            <EstadoEstoque estoque={estoque} dias={dias} />
+            <dl className="item-fatos">
+              <div>
+                <IconePixel nome="caixa" tamanho={22} />
+                <dt>No armazém</dt>
+                <dd>
+                  {num(estoque)} {unidade(product, estoque)}
+                </dd>
+              </div>
+              <div>
+                <dt>Qualidade</dt>
+                <dd>{num(inventoryQuality(loja, product))}</dd>
+              </div>
+            </dl>
+          </div>
+          {(estoque <= 0 || dias < 3) && (
+            <button
+              className={`item-repor ${estoque <= 0 && !aCaminho ? 'primary' : 'secondary'}`}
+              onClick={() => openRepor({ destinationId: loja.id, product })}
+            >
+              <ShoppingCart size={18} /> {aCaminho ? 'Já pedido · pedir mais' : 'Mandar buscar'}
+            </button>
+          )}
+        </header>
+      )}
 
       <div className="item-corpo">
         <div className="item-pista">

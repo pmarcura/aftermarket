@@ -1,0 +1,567 @@
+/*
+ * Loja · prateleira de balcão (spec 008, tela 2).
+ * Produtos de pé numa tábua de madeira, com a etiqueta de preço pendurada e as caixas que restam;
+ * vagas vazias escuras com a perda por dia; painel do balcão com preço e regra de repor sozinho.
+ */
+.bl {
+  margin-top: 14px;
+  --madeira: #4a3a28;
+  --madeira-clara: #5c4832;
+  display: grid;
+  gap: 26px;
+  --tinta-perde: #a3361c;
+  --tinta-ganha: #3f6a14;
+}
+
+/* ---------- Dica dos melhores preços ---------- */
+.bl-dica {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 18px;
+  padding: 12px 18px;
+  background: var(--chapa);
+  box-shadow:
+    inset 0 0 0 2px var(--borda),
+    inset 6px 0 0 var(--ouro);
+}
+.bl-dica .lv-mao {
+  flex: 1;
+  min-width: 220px;
+  margin: 0;
+  font-size: 24px;
+  color: var(--ouro);
+}
+
+/* ---------- Barra: título e modo de vista ---------- */
+.bl-barra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px 20px;
+}
+.bl-barra h2 {
+  margin: 0;
+  font-size: 34px;
+  color: var(--creme);
+}
+.bl-barra h2 small {
+  margin-left: 12px;
+  font-family: var(--rotulo);
+  font-stretch: 100%;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  color: var(--brasa);
+}
+.bl-vista {
+  display: flex;
+  gap: 8px;
+}
+.bl-vista button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 12px;
+  background: var(--chapa);
+  border: 2px solid var(--borda);
+  color: var(--apagado);
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.bl-vista button.on {
+  background: var(--lavoura);
+  border-color: var(--lavoura-escura);
+  color: var(--noite);
+  box-shadow: 3px 3px 0 var(--sombra);
+}
+
+/* ---------- Tábua de madeira ---------- */
+.bl-tabua {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+  margin: 0 0 18px;
+  padding: 20px 20px 0;
+  list-style: none;
+  background: var(--chapa-2) var(--grao);
+  background-blend-mode: soft-light;
+  box-shadow: inset 0 0 0 2px var(--borda);
+}
+.bl-tabua::after {
+  content: '';
+  position: absolute;
+  inset: auto -8px -16px;
+  height: 18px;
+  background: var(--madeira);
+  box-shadow:
+    inset 0 4px 0 var(--madeira-clara),
+    0 6px 0 rgb(0 0 0 / 0.45);
+  pointer-events: none;
+}
+.bl-slot {
+  position: relative;
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  padding: 6px 4px 26px;
+  transition: transform 0.18s;
+}
+.bl-slot-corpo {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+  padding: 6px;
+  text-align: left;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.bl-slot-corpo.estatico {
+  cursor: default;
+}
+.bl-slot:not(.vazio):hover {
+  transform: translateY(-3px);
+}
+.bl-slot.aberto {
+  outline: 3px solid var(--ouro);
+  outline-offset: 2px;
+  background: color-mix(in srgb, var(--ouro) 7%, transparent);
+}
+.bl-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+.bl-sprite {
+  display: grid;
+  place-items: center;
+  width: 108px;
+  height: 96px;
+  transform: rotate(-4deg);
+  transition: transform 0.2s;
+}
+.bl-sprite img {
+  max-width: 100px;
+  max-height: 90px;
+}
+.bl-slot:not(.vazio):hover .bl-sprite {
+  transform: rotate(-1deg) scale(1.05);
+}
+.bl-slot.vazio .bl-sprite {
+  filter: grayscale(1) brightness(0.55) contrast(1.15);
+  opacity: 0.6;
+}
+.bl-preco {
+  font-size: 28px;
+  margin-top: 4px;
+  transform: rotate(-5deg);
+}
+.bl-nome {
+  font-family: var(--display);
+  font-stretch: 68%;
+  font-weight: 900;
+  font-size: 28px;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--creme);
+}
+.bl-slot.vazio .bl-nome {
+  color: var(--apagado);
+}
+
+/* ---------- Caixas de estoque ---------- */
+.bl-caixas {
+  --cor: var(--lavoura);
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 3px;
+}
+.bl-caixas.tom-ouro {
+  --cor: var(--ouro);
+}
+.bl-caixas.tom-brasa {
+  --cor: var(--brasa);
+}
+.bl-caixas i {
+  height: 16px;
+  background: var(--cor);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.3);
+  animation: bl-caixa 0.3s ease-out both;
+  animation-delay: calc(var(--i) * 28ms);
+}
+.bl-caixas i.vazia {
+  background: var(--chapa-3);
+  box-shadow: inset 0 0 0 1px var(--borda-forte);
+}
+@keyframes bl-caixa {
+  from {
+    transform: scaleY(0);
+  }
+}
+.bl-dura {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--apagado);
+}
+.bl-slot.tom-brasa .bl-dura b {
+  color: #ffb39e;
+}
+.bl-slot.tom-ouro .bl-dura b {
+  color: var(--ouro);
+}
+.bl-slot.tom-lavoura .bl-dura b {
+  color: var(--lavoura-clara);
+}
+.bl-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  padding: 0 6px;
+}
+.bl-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  padding: 0 6px;
+}
+.bl-auto {
+  padding: 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.bl-auto .lv-carimbo {
+  padding: 3px 8px;
+  font-size: 12px;
+  border-width: 3px;
+  background: transparent;
+}
+
+/* ---------- Vaga vazia ---------- */
+.bl-procura {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.35;
+  color: var(--apagado);
+}
+.bl-perda {
+  display: grid;
+  margin: 0;
+  font-family: var(--display);
+  font-stretch: 62%;
+  font-weight: 900;
+  font-size: 34px;
+  line-height: 0.95;
+  color: var(--brasa);
+}
+.bl-perda.ok {
+  color: var(--ceu);
+  font-size: 26px;
+}
+.bl-perda small {
+  font-family: var(--rotulo);
+  font-stretch: 100%;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--apagado);
+}
+.bl-conta {
+  font-size: 13px;
+  color: var(--apagado);
+}
+
+/* ---------- Painel do balcão ---------- */
+.bl-painel {
+  display: grid;
+  gap: 18px;
+  padding: 22px 24px 26px;
+  background: var(--chapa) var(--grao);
+  background-blend-mode: soft-light;
+  box-shadow:
+    inset 0 0 0 2px var(--borda-forte),
+    inset 0 5px 0 var(--ouro),
+    7px 7px 0 var(--sombra);
+  animation: bl-painel 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+}
+@keyframes bl-painel {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+.bl-painel > header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.bl-painel > header .lv-rotulo {
+  color: var(--ouro);
+}
+.bl-painel > header h3 {
+  margin: 2px 0 0;
+  font-size: 34px;
+  color: var(--creme);
+}
+.bl-painel-sprite {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 64px;
+  transform: rotate(-5deg);
+}
+.bl-painel-sprite img {
+  max-width: 68px;
+  max-height: 60px;
+}
+.bl-painel-corpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+/* O cartão de preço antigo, sem a moldura própria, dentro do painel. */
+.bl-painel .item-compacto {
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: 0;
+  box-shadow: none;
+}
+.bl-painel .item-compacto .item-corpo {
+  padding: 0;
+}
+
+/* ---------- Regra de repor sozinho ---------- */
+.bl-regra {
+  display: grid;
+  gap: 14px;
+  padding: 18px 18px 20px;
+  background: var(--chapa-2);
+  box-shadow: inset 0 0 0 2px var(--borda);
+}
+.bl-regra > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.bl-regra > header .lv-rotulo {
+  color: var(--ceu);
+}
+.bl-regra-dica,
+.bl-regra-aviso,
+.bl-regra-plano {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--apagado);
+}
+.bl-regra-aviso {
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--ouro) 12%, var(--chapa));
+  box-shadow: inset 4px 0 0 var(--ouro);
+  color: var(--creme);
+}
+.bl-regra-passos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px 24px;
+}
+.bl-regra-plano small {
+  display: block;
+  margin-top: 4px;
+  font-size: 13px;
+}
+.bl-regra footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.bl-erro {
+  flex: 1;
+  font-size: 14px;
+  color: var(--brasa);
+}
+
+/* ---------- Lista (modo tabela) ---------- */
+.bl-lista {
+  position: relative;
+  padding: 18px 22px 24px;
+  color: var(--tinta);
+  isolation: isolate;
+  overflow-x: auto;
+}
+.bl-lista::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--papel) var(--grao);
+  background-blend-mode: multiply;
+  box-shadow: 7px 8px 0 var(--sombra);
+}
+.bl-lista table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+}
+.bl-lista th {
+  background: transparent;
+  text-align: left;
+  padding: 6px 8px;
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #5b5441;
+  border-bottom: 3px double var(--tinta);
+}
+.bl-lista td,
+.bl-lista .bl-lista-prod {
+  color: var(--tinta);
+}
+.bl-lista td {
+  padding: 10px 8px;
+  vertical-align: middle;
+  border-bottom: 1px dashed #b9a77a;
+}
+.bl-lista tr.falta td {
+  background: rgb(168 52 26 / 0.07);
+}
+.bl-lista tr.aberto td {
+  background: rgb(230 181 74 / 0.18);
+}
+.bl-lista-prod {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--display);
+  font-stretch: 68%;
+  font-weight: 900;
+  font-size: 20px;
+  text-transform: uppercase;
+}
+.bl-lista-prod img {
+  max-width: 42px;
+  max-height: 38px;
+}
+.bl-lista .num {
+  font-family: var(--display);
+  font-stretch: 64%;
+  font-weight: 900;
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.bl-lista .pos {
+  color: var(--tinta-ganha);
+}
+.bl-lista .neg {
+  color: var(--tinta-perde);
+}
+.bl-lista small {
+  display: block;
+  margin-top: 3px;
+  font-size: 13px;
+  color: #5b5441;
+}
+.bl-lista td.num.pos {
+  color: var(--tinta-ganha);
+}
+.bl-lista td.num.neg {
+  color: var(--tinta-perde);
+}
+.bl-lista td {
+  background: transparent;
+}
+.bl-lista .bl-caixas {
+  width: 130px;
+}
+.bl-lista .bl-caixas i.vazia {
+  background: #dccfa6;
+  box-shadow: inset 0 0 0 1px #b9a77a;
+}
+.bl-lista-acoes {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.bl-lista tfoot td {
+  background: transparent;
+  border-top: 3px double var(--tinta);
+  border-bottom: 0;
+  font-family: var(--display);
+  font-stretch: 68%;
+  font-weight: 900;
+  font-size: 20px;
+  text-transform: uppercase;
+}
+.bl-lista .lv-carimbo {
+  padding: 2px 7px;
+  font-size: 12px;
+  border-width: 3px;
+  background: transparent;
+  --tom: var(--tinta-perde) !important;
+}
+
+.bl-vazio-dica,
+.bl-nota-rodape {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--apagado);
+}
+
+/* ---------- Celular ---------- */
+@media (max-width: 1000px) {
+  .bl-tabua {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .bl-painel-corpo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .bl-tabua {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+    padding: 14px 12px 0;
+  }
+  .bl-barra h2 {
+    font-size: 28px;
+  }
+  .bl-painel {
+    padding: 18px 14px 22px;
+  }
+  .bl-painel > header h3 {
+    font-size: 28px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bl *,
+  .bl *::before {
+    animation: none !important;
+    transition: none !important;
+  }
+}

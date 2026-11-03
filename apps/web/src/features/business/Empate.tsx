@@ -6,6 +6,7 @@ import { products, type Establishment } from '../../../../../packages/simulation
 import { householdItems } from '../../../../../packages/simulation/src/channels';
 import { seasonPrice } from '../../../../../packages/simulation/src/metrics';
 import { avaliar, procuraDiaria, quantidadeSugerida } from '../economy/compra';
+import { vagasDaLoja } from '../loja/vagas';
 import { contaDaPrateleira } from './precificacao';
 
 /**
@@ -13,7 +14,7 @@ import { contaDaPrateleira } from './precificacao';
  * concorrência da cidade, a mesma conta da Prateleira) contra o custo de manter as portas abertas.
  */
 export function LojaCabecalho({ loja }: { loja: Establishment }) {
-  const { world, actor, openMarket, openBusiness } = useGame();
+  const { world, actor, openRepor, openBusiness } = useGame();
   const p = world.properties.find((x) => x.id === loja.propertyId)!;
   const fixo = loja.dailyCost;
   // Mesma conta da prateleira e do Início.
@@ -24,6 +25,11 @@ export function LojaCabecalho({ loja }: { loja: Establishment }) {
       .map((s) => s.product),
   );
   const saldo = ganho - fixo;
+  // O que mais urge repor: o produto que acaba primeiro; sem nenhum, a vaga que mais rende.
+  const conta = contaDaPrateleira(world, loja);
+  const vagas = vagasDaLoja(world, loja);
+  const urgente = conta.itens.find((x) => x.dias < 3)?.id ?? vagas.find((v) => !v.aCaminho)?.id;
+  const deixaDeGanhar = vagas.filter((v) => !v.aCaminho).reduce((n, v) => n + v.lucroDia, 0);
   // Só quando falta: os produtos que a loja não vende e mais ajudam, com a melhor oferta na porta.
   const ideias =
     saldo >= 0
@@ -63,8 +69,12 @@ export function LojaCabecalho({ loja }: { loja: Establishment }) {
           sub={`${p.city}, ${p.state} · ${loja.enabled ? 'portas abertas' : 'pausada'} · ${num(loja.employees)} ${loja.employees === 1 ? 'funcionário' : 'funcionários'}`}
         />
         <div className="lojah2-acoes">
-          <button className="primary" onClick={() => openMarket({ destinationId: loja.id })}>
-            <ShoppingCart size={18} /> Comprar mercadorias
+          <button
+            className="primary"
+            disabled={!urgente}
+            onClick={() => urgente && openRepor({ destinationId: loja.id, product: urgente })}
+          >
+            <ShoppingCart size={18} /> Repor o que falta
           </button>
           {outras.length > 1 && (
             <select
@@ -125,6 +135,16 @@ export function LojaCabecalho({ loja }: { loja: Establishment }) {
             </b>
             <small>{saldo >= 0 ? 'depois dos custos' : 'para chegar ao empate'}</small>
           </div>
+          {deixaDeGanhar > 0 && (
+            <div className="lv-peca">
+              <span className="lv-rotulo">Deixa de ganhar</span>
+              <b className="lv-numero ruim">−{cr(Math.round(deixaDeGanhar), 0)}</b>
+              <small>
+                por dia, em {vagas.filter((v) => !v.aCaminho).length}{' '}
+                {vagas.filter((v) => !v.aCaminho).length === 1 ? 'vaga vazia' : 'vagas vazias'}
+              </small>
+            </div>
+          )}
           {aCaminho.size > 0 && (
             <div className="lv-peca lojah2-caminho">
               <IconePixel nome="caminhao" tamanho={34} />
@@ -145,7 +165,7 @@ export function LojaCabecalho({ loja }: { loja: Establishment }) {
             <button
               key={id}
               className="secondary"
-              onClick={() => openMarket({ destinationId: loja.id, product: id })}
+              onClick={() => openRepor({ destinationId: loja.id, product: id })}
             >
               <ProductIcon product={id} /> {products[id].name}
               <b>+{cr(porDia, 0)}/dia</b>

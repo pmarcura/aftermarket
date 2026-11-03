@@ -3,12 +3,11 @@ import '../design/loja.css';
 import '../design/producao.css';
 import { useGame } from '../lib/game';
 import { Panel, Tabs, Empty } from '../components/ui';
-import { Abastecimento } from '../features/business/Abastecimento';
 import { Workforce } from '../features/business/Workforce';
 import { Installation } from '../features/business/Installation';
 import { BusinessFinance, Consumption } from '../features/business/Analytics';
 import { LojaCabecalho } from '../features/business/Empate';
-import { Prateleira } from '../features/business/Prateleira';
+import { Balcao } from '../features/loja/Balcao';
 import { Unidades } from '../features/business/producao/Cabeca';
 import { matizDaCategoria } from '../features/business/producao/pecas';
 
@@ -22,7 +21,12 @@ export function RetailPage() {
   const [tab, setTab] = useState(() => {
     const pedida = sessionStorage.getItem('aftermarket.loja.aba');
     sessionStorage.removeItem('aftermarket.loja.aba');
-    return pedida ?? 'Prateleira';
+    // Abas antigas continuam valendo para quem chega com um atalho velho.
+    return pedida === 'Finanças'
+      ? 'Resultado'
+      : pedida === 'Abastecimento'
+        ? 'Prateleira'
+        : (pedida ?? 'Prateleira');
   });
   if (!e)
     return (
@@ -62,15 +66,10 @@ export function RetailPage() {
       <LojaCabecalho loja={e} />
       <div className="retail-grid">
         <Panel className="loja-painel">
-          <Tabs
-            values={['Prateleira', 'Abastecimento', 'Equipe', 'Finanças']}
-            value={tab}
-            onChange={setTab}
-          />
-          {tab === 'Prateleira' && <Prateleira loja={e} />}
-          {tab === 'Abastecimento' && <Abastecimento key={e.id} establishment={e} />}
+          <Tabs values={['Prateleira', 'Equipe', 'Resultado']} value={tab} onChange={setTab} />
+          {tab === 'Prateleira' && <Balcao loja={e} />}
           {tab === 'Equipe' && <Workforce key={e.id} establishment={e} />}
-          {tab === 'Finanças' && (
+          {tab === 'Resultado' && (
             <>
               <BusinessFinance key={e.id} establishment={e} />
               <Consumption key={`${e.id}-consumo`} establishment={e} />

@@ -27,7 +27,7 @@ import '../../design/abastecimento.css';
 type Linha = ReturnType<typeof supplyForecast>['rows'][number];
 
 /** Campo numérico com − e +, para ajustar sem digitar. Aceita centavos com casas={2}. */
-function Passo({
+export function Passo({
   rotulo,
   valor,
   onChange,
@@ -91,7 +91,7 @@ function Passo({
 }
 
 /** Interruptor de pixel: o estado aparece em texto, não só na cor. */
-function Interruptor({
+export function Interruptor({
   ligado,
   onChange,
   rotulo,

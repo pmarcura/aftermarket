@@ -114,7 +114,7 @@ for (const viewport of [
       await expect(
         page.getByRole('heading', { level: 1, name: store.name, exact: true }),
       ).toBeVisible();
-      for (const name of ['Prateleira', 'Abastecimento', 'Equipe', 'Finanças']) {
+      for (const name of ['Prateleira', 'Equipe', 'Resultado']) {
         const tab = page.getByRole('tab', { name, exact: true });
         await tab.focus();
         await page.keyboard.press('Enter');

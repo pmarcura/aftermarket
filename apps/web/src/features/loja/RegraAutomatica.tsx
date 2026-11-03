@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useGame, cr, num } from '../../lib/game';
 import { Interruptor, Passo } from '../business/Abastecimento';
+import { BotaoEspera } from '../../components/Espera';
 import { unidade } from '../economy/Carga';
 import {
   products,
@@ -27,6 +28,7 @@ export function useRegra(loja: Establishment, product: ProductId) {
 
 export function RegraAutomatica({ loja, product }: { loja: Establishment; product: ProductId }) {
   const { world, run, pending } = useGame();
+  const [trocando, setTrocando] = useState(false);
   const { politica, regra } = useRegra(loja, product);
   const [r, setR] = useState<SupplyRule | undefined>(regra);
   useEffect(
@@ -80,9 +82,17 @@ export function RegraAutomatica({ loja, product }: { loja: Establishment; produc
         <span className="lv-rotulo">Repor sozinho</span>
         <Interruptor
           ligado={Boolean(regra)}
-          desabilitado={pending}
+          desabilitado={pending || trocando}
+          ocupado={trocando}
           rotulo={`Repor ${nome} sozinho`}
-          onChange={() => void (regra ? desligar() : ligar())}
+          onChange={async () => {
+            setTrocando(true);
+            try {
+              await (regra ? desligar() : ligar());
+            } finally {
+              setTrocando(false);
+            }
+          }}
         />
       </header>
       {!regra ? (
@@ -141,11 +151,12 @@ export function RegraAutomatica({ loja, product }: { loja: Establishment; produc
               {!valido && (
                 <span className="bl-erro">O valor de repor precisa ser menor que o de encher.</span>
               )}
-              <button
+              <BotaoEspera
                 className="primary"
+                esperando="Salvando…"
                 disabled={!mudou || !valido || pending}
                 onClick={() =>
-                  void salvar(
+                  salvar(
                     {
                       ...politica,
                       rules: politica.rules.map((x) => (x.product === product ? r : x)),
@@ -155,7 +166,7 @@ export function RegraAutomatica({ loja, product }: { loja: Establishment; produc
                 }
               >
                 {mudou ? 'Salvar regra' : 'Regra salva'}
-              </button>
+              </BotaoEspera>
             </footer>
           </>
         )

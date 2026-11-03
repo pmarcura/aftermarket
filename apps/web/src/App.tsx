@@ -27,6 +27,7 @@ import { freeCash } from '../../../packages/simulation/src/design';
 import { comecoDoDia, relogio, useMarcarVisita, useResumoDoCaixa } from './features/inicio/tempo';
 import { ReporGaveta } from './features/economy/ReporGaveta';
 import { ProdutoFicha } from './features/produto/ProdutoFicha';
+import { EsperaGlobal } from './components/Espera';
 const InicioPage = lazy(() =>
   import('./pages/InicioPage').then((m) => ({ default: m.InicioPage })),
 );
@@ -184,6 +185,7 @@ function Shell() {
   };
   return (
     <div className={`app-shell ${collapsed ? 'collapsed' : ''}`}>
+      <EsperaGlobal />
       <a href="#main-content" className="skip-link">
         Ir para o conteúdo
       </a>

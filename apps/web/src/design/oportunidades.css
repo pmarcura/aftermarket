@@ -136,8 +136,9 @@
 .op-adesivo {
   display: grid;
   place-items: center;
-  width: 108px;
-  height: 96px;
+  min-width: 72px;
+  height: 116px;
+  padding: 0 8px;
   transform: rotate(-6deg);
   transition: transform 0.2s;
 }
@@ -145,8 +146,9 @@
   transform: rotate(-2deg) scale(1.06);
 }
 .op-adesivo img {
-  max-width: 104px;
-  max-height: 92px;
+  max-width: none;
+  max-height: none;
+  image-rendering: pixelated;
 }
 .op-venda .op-titulo small {
   color: var(--apagado);
@@ -284,8 +286,9 @@
   border: 2px dashed rgb(190 225 255 / 0.45);
 }
 .op-predio img {
-  max-width: 100px;
-  max-height: 86px;
+  max-width: none;
+  max-height: none;
+  image-rendering: pixelated;
   transition: transform 0.25s;
 }
 .op:hover .op-predio img {
@@ -459,8 +462,9 @@
   height: 64px;
 }
 .op-pedido-arte img {
-  max-width: 68px;
-  max-height: 62px;
+  max-width: none;
+  max-height: none;
+  image-rendering: pixelated;
 }
 .op-pedido-conta {
   display: grid;
@@ -515,16 +519,11 @@
   .op-titulo strong {
     font-size: 26px;
   }
-  .op-adesivo,
   .op-predio {
     width: 84px;
     height: 76px;
   }
-  .op-adesivo img,
-  .op-predio img {
-    max-width: 80px;
-    max-height: 72px;
-  }
+
   .op-pedido-carimbo {
     position: static;
     justify-self: end;

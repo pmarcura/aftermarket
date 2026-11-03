@@ -96,11 +96,14 @@ export function Interruptor({
   onChange,
   rotulo,
   desabilitado,
+  ocupado,
 }: {
   ligado: boolean;
   onChange: () => void;
   rotulo: string;
   desabilitado?: boolean;
+  /** O servidor ainda não confirmou: mostra "Salvando…" em vez do estado antigo. */
+  ocupado?: boolean;
 }) {
   return (
     <button
@@ -109,11 +112,12 @@ export function Interruptor({
       aria-checked={ligado}
       aria-label={rotulo}
       disabled={desabilitado}
-      className={`abs-chave ${ligado ? 'ligado' : ''}`}
+      aria-busy={ocupado}
+      className={`abs-chave ${ligado ? 'ligado' : ''} ${ocupado ? 'ocupado' : ''}`}
       onClick={onChange}
     >
       <i aria-hidden="true" />
-      <span>{ligado ? 'Ligado' : 'Desligado'}</span>
+      <span>{ocupado ? 'Salvando…' : ligado ? 'Ligado' : 'Desligado'}</span>
     </button>
   );
 }

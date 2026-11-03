@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { BotaoProduto } from '../../components/BotaoProduto';
 import { ShoppingCart } from 'lucide-react';
+import { BotaoEspera } from '../../components/Espera';
 import { useGame, cr, num } from '../../lib/game';
 import { ProdutoArte } from '../economy/Vitrine';
 import { IconePixel, type NomeIcone } from '../../components/IconePixel';
@@ -348,18 +349,19 @@ export function LinhaPreco({
                 Testar {cr(m.melhor)}
               </button>
             )}
-            <button
+            <BotaoEspera
               className="primary"
+              esperando="Salvando…"
               disabled={pending || preco === salvo}
               onClick={() =>
-                void run(
+                run(
                   { type: 'setPrice', establishmentId: loja.id, product, price: preco },
                   `Preço de ${products[product].name} ajustado para ${cr(preco)}.`,
                 )
               }
             >
               {preco === salvo ? 'Preço salvo' : `Salvar ${cr(preco)}`}
-            </button>
+            </BotaoEspera>
           </div>
         </div>
       </div>

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { LayoutGrid, List } from 'lucide-react';
 import { useGame, cr, num } from '../../lib/game';
 import { Empty } from '../../components/ui';
+import { BotaoEspera } from '../../components/Espera';
 import { Carimbo } from '../../components/Livro';
 import { ProdutoArte } from '../economy/Vitrine';
 import { unidade } from '../economy/Carga';
@@ -77,7 +78,7 @@ function SlotProduto({
       >
         <span className="bl-topo">
           <span className="bl-sprite lv-adesivo">
-            <ProdutoArte product={x.id} escala={3} />
+            <ProdutoArte product={x.id} escala={2} />
           </span>
           <span className="lv-preco bl-preco">{cr(x.preco)}</span>
         </span>
@@ -119,7 +120,7 @@ function SlotVazio({ loja, v }: { loja: Establishment; v: Vaga }) {
       <div className="bl-slot-corpo estatico">
         <span className="bl-topo">
           <span className="bl-sprite">
-            <ProdutoArte product={v.id} escala={3} />
+            <ProdutoArte product={v.id} escala={2} />
           </span>
           <Carimbo tom={v.aCaminho ? 'ceu' : 'brasa'} giro={-4}>
             {v.aCaminho ? 'a caminho' : 'vaga vazia'}
@@ -156,7 +157,7 @@ function Painel({ loja, x }: { loja: Establishment; x: Item }) {
     <section className="bl-painel" aria-labelledby="bl-painel-titulo">
       <header>
         <span className="bl-painel-sprite lv-adesivo">
-          <ProdutoArte product={x.id} escala={2} />
+          <ProdutoArte product={x.id} escala={1} />
         </span>
         <div>
           <span className="lv-rotulo">Painel do balcão</span>
@@ -300,6 +301,7 @@ export function Balcao({ loja }: { loja: Establishment }) {
   );
   // O primeiro produto aberto é o que mais pede atenção: o que acaba primeiro.
   const [aberto, setAberto] = useState<ProductId | null>(null);
+  const [progresso, setProgresso] = useState({ n: 0 });
   const atual = conta.itens.find((x) => x.id === (aberto ?? conta.itens[0]?.id)) ?? null;
   const painel = useRef<HTMLDivElement>(null);
   const clicou = useRef(false);
@@ -341,19 +343,23 @@ export function Balcao({ loja }: { loja: Establishment }) {
             Ajustando {conta.ajustar.length} {conta.ajustar.length === 1 ? 'preço' : 'preços'}, a
             prateleira ganha +{cr(ganho, 0)} por dia
           </p>
-          <button
+          <BotaoEspera
             className="primary"
             disabled={pending}
+            esperando={`Ajustando ${progresso.n === 0 ? 1 : progresso.n} de ${conta.ajustar.length}…`}
             onClick={async () => {
-              for (const [i, x] of conta.ajustar.entries())
+              for (const [i, x] of conta.ajustar.entries()) {
+                setProgresso({ n: i + 1 });
                 await run(
                   { type: 'setPrice', establishmentId: loja.id, product: x.id, price: x.m.melhor },
                   `Preços ajustados (${i + 1} de ${conta.ajustar.length}).`,
                 );
+              }
+              setProgresso({ n: 0 });
             }}
           >
             Usar os melhores preços
-          </button>
+          </BotaoEspera>
         </div>
       )}
 

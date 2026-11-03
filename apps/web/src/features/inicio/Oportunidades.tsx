@@ -117,7 +117,7 @@ function CartaoVenda({ o }: { o: Produto }) {
       <span className="op-tipo">Vender mais</span>
       <div className="op-venda-topo">
         <BotaoProduto product={o.id} className="op-adesivo lv-adesivo">
-          <ProdutoArte product={o.id} escala={3} />
+          <ProdutoArte product={o.id} escala={2} />
         </BotaoProduto>
         <p className="op-titulo">
           <small>A cidade procura</small>
@@ -167,7 +167,7 @@ function CartaoNegocio({ n }: { n: Negocio }) {
       <span className="op-tipo">Abrir negócio</span>
       <div className="op-planta-topo">
         <span className="op-predio">
-          <PixelArt name={spriteDaCategoria[n.r.category]} scale={2} />
+          <PixelArt name={spriteDaCategoria[n.r.category]} scale={1} />
         </span>
         <p className="op-titulo">
           <strong>{n.line.name}</strong>
@@ -229,7 +229,7 @@ function CartaoPedido({ o, horas }: { o: Pedido; horas: number }) {
         </p>
         <div className="op-pedido-item">
           <BotaoProduto product={o.pedido.product} className="op-pedido-arte">
-            <ProdutoArte product={o.pedido.product} escala={2} />
+            <ProdutoArte product={o.pedido.product} escala={1} />
           </BotaoProduto>
           <span className="op-pedido-conta">
             <span>

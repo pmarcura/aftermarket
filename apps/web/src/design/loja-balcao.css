@@ -144,14 +144,17 @@
 .bl-sprite {
   display: grid;
   place-items: center;
-  width: 108px;
-  height: 96px;
+  min-width: 72px;
+  height: 116px;
+  padding: 0 8px;
   transform: rotate(-4deg);
   transition: transform 0.2s;
 }
+/* Escala inteira e sem espremer: pixel art só fica nítida assim. */
 .bl-sprite img {
-  max-width: 100px;
-  max-height: 90px;
+  max-width: none;
+  max-height: none;
+  image-rendering: pixelated;
 }
 .bl-slot:not(.vazio):hover .bl-sprite {
   transform: rotate(-1deg) scale(1.05);
@@ -323,13 +326,14 @@
 .bl-painel-sprite {
   display: grid;
   place-items: center;
-  width: 72px;
+  min-width: 56px;
   height: 64px;
   transform: rotate(-5deg);
 }
 .bl-painel-sprite img {
-  max-width: 68px;
-  max-height: 60px;
+  max-width: none;
+  max-height: none;
+  image-rendering: pixelated;
 }
 .bl-painel-corpo {
   display: grid;
@@ -463,8 +467,7 @@
   text-transform: uppercase;
 }
 .bl-lista-prod img {
-  max-width: 42px;
-  max-height: 38px;
+  image-rendering: pixelated;
 }
 .bl-lista .num {
   font-family: var(--display);

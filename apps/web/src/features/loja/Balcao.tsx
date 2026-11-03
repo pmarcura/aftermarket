@@ -302,7 +302,15 @@ export function Balcao({ loja }: { loja: Establishment }) {
   // O primeiro produto aberto é o que mais pede atenção: o que acaba primeiro.
   const [aberto, setAberto] = useState<ProductId | null>(null);
   const [progresso, setProgresso] = useState({ n: 0 });
-  const atual = conta.itens.find((x) => x.id === (aberto ?? conta.itens[0]?.id)) ?? null;
+  // O primeiro produto aberto é escolhido uma vez (o que acaba primeiro) e depois fica fixo: se a
+  // seleção seguisse a ordem, que muda a cada atualização do mundo, o painel seria recriado e o
+  // jogador perderia o que estava digitando.
+  useEffect(() => {
+    if (aberto === null && conta.itens[0]) setAberto(conta.itens[0].id);
+    else if (aberto !== null && !conta.itens.some((x) => x.id === aberto))
+      setAberto(conta.itens[0]?.id ?? null);
+  }, [aberto, conta.itens]);
+  const atual = conta.itens.find((x) => x.id === aberto) ?? null;
   const painel = useRef<HTMLDivElement>(null);
   const clicou = useRef(false);
   useEffect(() => {

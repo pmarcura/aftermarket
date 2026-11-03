@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { BotaoProduto } from '../../components/BotaoProduto';
 import { ShoppingCart } from 'lucide-react';
 import { BotaoEspera } from '../../components/Espera';
+import { DetalheReferencia, type Referencia } from '../loja/Referencias';
 import { useGame, cr, num } from '../../lib/game';
 import { ProdutoArte } from '../economy/Vitrine';
 import { IconePixel, type NomeIcone } from '../../components/IconePixel';
@@ -50,6 +51,10 @@ export function LinhaPreco({
   const [preco, setPreco] = useState(salvo);
   useEffect(() => setPreco(salvo), [salvo]);
   const [verCurva, setVerCurva] = useState(false);
+  // A referência aberta (custo, cidade, mapa ou justo): explica de onde vem aquele número.
+  const [referencia, setReferencia] = useState<Referencia | null>(null);
+  const abrirReferencia = (chave: string) =>
+    setReferencia((atual) => (atual === chave ? null : (chave as Referencia)));
   const estoque = loja.inventory[product] ?? 0;
   const vende = m.vendas(preco);
   const lucro = m.lucro(preco);
@@ -220,14 +225,17 @@ export function LinhaPreco({
           <div className="pista" aria-label="Trilho de preço">
             <div className="pista-marcos" style={{ height: 46 + fileiras * 34 }}>
               {marcos.map((mk) => (
-                <span
+                <button
+                  type="button"
                   key={mk.chave}
-                  className="pista-marco"
+                  className={`pista-marco ${referencia === mk.chave ? 'aberto' : ''}`}
                   style={{ left: `${x(mk.v)}%`, ['--n' as string]: mk.linha }}
-                  title={`${mk.rotulo}: ${cr(mk.v)}`}
+                  title={`${mk.rotulo}: ${cr(mk.v)}. Clique para entender.`}
+                  aria-label={`${mk.rotulo}: ${cr(mk.v)}. Ver detalhes`}
+                  onClick={() => abrirReferencia(mk.chave)}
                 >
                   <IconePixel nome={mk.icone} tamanho={28} />
-                </span>
+                </button>
               ))}
             </div>
             <div className="pista-trilho" style={{ background: gradiente }}>
@@ -265,14 +273,32 @@ export function LinhaPreco({
           <ul className="marcos-lista" aria-label="Referências de preço">
             {[...marcos].reverse().map((mk) => (
               <li key={mk.chave}>
-                <IconePixel nome={mk.icone} tamanho={28} />
-                <span>
-                  <small>{mk.rotulo}</small>
-                  <b>{cr(mk.v)}</b>
-                </span>
+                <button
+                  type="button"
+                  className={`marco-botao ${referencia === mk.chave ? 'aberto' : ''}`}
+                  aria-expanded={referencia === mk.chave}
+                  onClick={() => abrirReferencia(mk.chave)}
+                >
+                  <IconePixel nome={mk.icone} tamanho={28} />
+                  <span>
+                    <small>{mk.rotulo}</small>
+                    <b>{cr(mk.v)}</b>
+                  </span>
+                  <em aria-hidden="true">{referencia === mk.chave ? 'fechar' : 'entender'}</em>
+                </button>
               </li>
             ))}
           </ul>
+          {referencia && (
+            <DetalheReferencia
+              referencia={referencia}
+              loja={loja}
+              product={product}
+              m={m}
+              preco={preco}
+              onFechar={() => setReferencia(null)}
+            />
+          )}
           <button className="text-button pr-curva" onClick={() => setVerCurva(!verCurva)}>
             {verCurva ? 'Esconder a curva de lucro' : 'Ver a curva de lucro'}
           </button>

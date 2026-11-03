@@ -1,0 +1,145 @@
+/*
+ * Equipe · Livro-caixa (spec 008): diagnóstico em fichas, crachás de papel, a decisão à direita
+ * com o que a mudança vale por dia. Sobrepõe o estilo base de equipe.css.
+ */
+.eq .eq-fichas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  margin: 4px 0 6px;
+}
+
+/* ---------- Crachás: cartões de papel presos num cordão ---------- */
+.eq .eq-crachas {
+  gap: 12px 10px;
+}
+.eq .eq-cracha {
+  width: 46px;
+  height: 62px;
+  padding-top: 8px;
+  background: var(--papel) var(--grao);
+  background-blend-mode: multiply;
+  border: 0;
+  box-shadow:
+    inset 0 -6px 0 var(--tom, var(--lavoura)),
+    3px 3px 0 var(--sombra);
+  transition: transform 0.18s;
+}
+.eq .eq-cracha:nth-child(odd) {
+  transform: rotate(-2deg);
+}
+.eq .eq-cracha:nth-child(even) {
+  transform: rotate(1.5deg);
+}
+.eq .eq-cracha:hover {
+  transform: translateY(-3px) rotate(0);
+}
+.eq .eq-cracha::before {
+  top: -7px;
+  width: 14px;
+  height: 7px;
+  margin-left: -7px;
+  background: var(--noite);
+  box-shadow: inset 0 0 0 2px var(--borda-forte);
+}
+.eq .eq-cracha .cr-cabeca {
+  fill: #d9a87a;
+}
+.eq .eq-cracha .cr-olho {
+  fill: var(--tinta);
+}
+.eq .eq-cracha .cr-corpo {
+  fill: var(--tinta);
+}
+.eq .eq-cracha .cr-etiqueta {
+  fill: var(--papel);
+  opacity: 0.9;
+}
+.eq .eq-cracha.falta {
+  background: transparent;
+  box-shadow: inset 0 0 0 3px var(--brasa);
+  border-style: dashed;
+  opacity: 0.85;
+}
+.eq .eq-cracha.falta .cr-cabeca,
+.eq .eq-cracha.falta .cr-corpo {
+  fill: var(--brasa);
+  opacity: 0.55;
+}
+.eq .eq-cracha.entra {
+  --tom: var(--lavoura);
+  animation: eq-entra 1.2s ease-out;
+}
+@keyframes eq-entra {
+  from {
+    transform: translateY(-14px) rotate(-6deg);
+    opacity: 0;
+  }
+}
+.eq .eq-cracha.sai {
+  --tom: var(--brasa);
+  opacity: 0.6;
+}
+.eq .eq-cracha.sobra {
+  --tom: var(--ouro);
+}
+
+/* ---------- Coluna da decisão: sempre à vista no computador ---------- */
+@media (min-width: 1100px) {
+  .eq .eq-decisao {
+    position: sticky;
+    top: 12px;
+  }
+}
+.eq .eq-ajuste {
+  box-shadow:
+    inset 0 0 0 2px var(--borda-forte),
+    inset 0 5px 0 var(--lavoura),
+    6px 6px 0 var(--sombra);
+}
+.eq .eq-ajuste h4 {
+  color: var(--lavoura-clara);
+}
+
+/* O recibo da mudança vira um bilhete de papel: o que custa e o que rende. */
+.eq .eq-recibo {
+  color: var(--tinta);
+  background: var(--papel) var(--grao);
+  background-blend-mode: multiply;
+  box-shadow: 4px 4px 0 var(--sombra);
+  border: 0;
+  transform: rotate(-0.4deg);
+}
+.eq .eq-recibo strong {
+  color: var(--tinta);
+  font-family: var(--display);
+  font-stretch: 70%;
+  font-weight: 900;
+  font-size: 24px;
+  text-transform: uppercase;
+}
+.eq .eq-recibo li {
+  color: var(--tinta);
+  font-size: 15px;
+}
+.eq .eq-recibo li.custo {
+  color: #a3361c;
+  font-weight: 700;
+}
+.eq .eq-recibo li.economia {
+  color: #3f6a14;
+  font-weight: 700;
+}
+.eq .eq-aplicar {
+  width: 100%;
+  font-size: 15px;
+  padding-block: 14px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eq .eq-cracha,
+  .eq .eq-cracha.entra {
+    animation: none;
+    transition: none;
+  }
+}

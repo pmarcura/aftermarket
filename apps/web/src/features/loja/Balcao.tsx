@@ -8,7 +8,7 @@ import { ProdutoArte } from '../economy/Vitrine';
 import { unidade } from '../economy/Carga';
 import { contaDaPrateleira } from '../business/precificacao';
 import { LinhaPreco } from '../business/LinhaPreco';
-import { Caixa } from '../business/Prateleira';
+import { Fita } from './Fita';
 import { Ficha } from '../inicio/pecas';
 import {
   products,
@@ -456,7 +456,7 @@ export function Balcao({ loja }: { loja: Establishment }) {
           </button>
         </p>
       )}
-      <Caixa loja={loja} />
+      <Fita loja={loja} />
       <p className="bl-nota-rodape">
         Estimativa com a procura da cidade, a qualidade do estoque e os preços das lojas
         concorrentes, pela mesma regra que decide as vendas. Equipe, área e estoque podem limitar a

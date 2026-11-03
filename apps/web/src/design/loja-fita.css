@@ -1,0 +1,205 @@
+/* Caixa da loja: a fita de vendas como talões de papel, um por rodada. */
+.fita {
+  --tinta-suave: #5b5441;
+  --tinta-ganha: #3f6a14;
+  display: grid;
+  gap: 18px;
+}
+.fita > header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px 20px;
+  padding-bottom: 10px;
+  border-bottom: 3px dashed var(--borda-forte);
+}
+.fita > header h3 {
+  margin: 0;
+  font-size: 34px;
+  color: var(--creme);
+}
+.fita-hoje {
+  display: grid;
+  justify-items: end;
+}
+.fita-hoje small {
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--apagado);
+}
+.fita-hoje b {
+  font-family: var(--display);
+  font-stretch: 62%;
+  font-weight: 900;
+  font-size: 38px;
+  line-height: 0.95;
+  color: var(--lavoura-clara);
+}
+.fita-vazio {
+  margin: 0;
+  font-size: 24px;
+  color: var(--ouro);
+}
+.fita-lista {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 22px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  align-items: start;
+}
+.talao {
+  position: relative;
+  padding: 16px 18px 26px;
+  color: var(--tinta);
+  isolation: isolate;
+  filter: drop-shadow(5px 6px 0 var(--sombra));
+  animation: talao-entra 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.1) both;
+}
+.talao:nth-child(2) {
+  animation-delay: 0.06s;
+}
+.talao:nth-child(3) {
+  animation-delay: 0.12s;
+}
+.talao:nth-child(4) {
+  animation-delay: 0.18s;
+}
+.talao::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--papel) var(--grao);
+  background-blend-mode: multiply;
+  /* Picote embaixo, como o fim de um talão destacado. */
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% 96%,
+    95% 100%,
+    90% 96%,
+    85% 100%,
+    80% 96%,
+    75% 100%,
+    70% 96%,
+    65% 100%,
+    60% 96%,
+    55% 100%,
+    50% 96%,
+    45% 100%,
+    40% 96%,
+    35% 100%,
+    30% 96%,
+    25% 100%,
+    20% 96%,
+    15% 100%,
+    10% 96%,
+    5% 100%,
+    0 96%
+  );
+}
+.talao:nth-child(odd) {
+  transform: rotate(-0.5deg);
+}
+.talao:nth-child(even) {
+  transform: rotate(0.4deg);
+}
+.talao.nova {
+  animation: talao-nova 0.7s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+@keyframes talao-entra {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+@keyframes talao-nova {
+  from {
+    opacity: 0;
+    transform: translateY(-26px) rotate(-3deg);
+  }
+}
+.talao-topo {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding-bottom: 8px;
+  border-bottom: 3px double var(--tinta);
+}
+.talao-topo time {
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  padding: 2px 8px;
+  background: var(--tinta);
+  color: var(--papel);
+}
+.talao-topo .lv-carimbo {
+  --tom: var(--tinta-ganha) !important;
+  padding: 2px 7px;
+  font-size: 12px;
+  border-width: 3px;
+  background: transparent;
+}
+.talao-total {
+  margin-left: auto;
+  font-family: var(--display);
+  font-stretch: 62%;
+  font-weight: 900;
+  font-size: 30px;
+  line-height: 1;
+  color: var(--tinta-ganha);
+}
+.talao ul {
+  display: grid;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.talao ul li {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  padding: 5px 0;
+  border-bottom: 1px dashed #b9a77a;
+  font-size: 15px;
+}
+.talao ul li:last-child {
+  border-bottom: 0;
+}
+.talao ul li b {
+  font-family: var(--display);
+  font-stretch: 70%;
+  font-weight: 800;
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+}
+.talao-mais {
+  color: var(--tinta-suave);
+  font-size: 14px;
+}
+.talao-mais span {
+  grid-column: 2 / -1;
+}
+@media (max-width: 640px) {
+  .fita-lista {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .fita > header h3 {
+    font-size: 28px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .talao,
+  .talao.nova {
+    animation: none;
+  }
+}

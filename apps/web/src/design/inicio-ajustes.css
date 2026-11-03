@@ -22,216 +22,6 @@
   align-items: center;
 }
 
-/* ---------- Relógio do jogo ---------- */
-.relogio {
-  --ceu-noite: #1d2a3a;
-  --ceu-aurora: #6b4f35;
-  --ceu-dia: #3d6f93;
-  position: relative;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  grid-template-areas:
-    'hora semana'
-    'ceu ceu'
-    'rodada rodada';
-  gap: 14px 22px;
-  padding: 18px 22px 20px;
-  background: var(--chapa) var(--grao);
-  background-blend-mode: soft-light;
-  box-shadow:
-    inset 0 0 0 2px var(--borda),
-    inset 0 5px 0 var(--ceu),
-    6px 6px 0 var(--sombra);
-}
-.rel-hora {
-  grid-area: hora;
-  display: grid;
-  gap: 2px;
-}
-.rel-dia {
-  justify-self: start;
-  padding: 3px 9px;
-  background: var(--ceu);
-  color: var(--noite);
-  transform: rotate(-2deg);
-  box-shadow: 2px 2px 0 var(--sombra);
-}
-.rel-hora b {
-  font-family: var(--display);
-  font-stretch: 62%;
-  font-weight: 900;
-  font-size: 64px;
-  line-height: 0.95;
-  letter-spacing: 0.01em;
-  color: var(--creme);
-  font-variant-numeric: tabular-nums;
-}
-.rel-hora b i {
-  display: inline-block;
-  font-style: normal;
-  margin: 0 2px;
-  color: var(--ouro);
-  animation: ini-dois-pontos 1s steps(1) infinite;
-}
-@keyframes ini-dois-pontos {
-  50% {
-    opacity: 0.15;
-  }
-}
-.rel-turno {
-  font-family: var(--rotulo);
-  font-weight: 600;
-  font-size: 14px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--apagado);
-}
-.rel-ceu {
-  grid-area: ceu;
-  position: relative;
-  height: 28px;
-  margin-bottom: 18px;
-  background: linear-gradient(
-    90deg,
-    var(--ceu-noite) 0 20%,
-    var(--ceu-aurora) 20% 29%,
-    var(--ceu-dia) 29% 71%,
-    var(--ceu-aurora) 71% 79%,
-    var(--ceu-noite) 79% 100%
-  );
-  box-shadow:
-    inset 0 0 0 2px var(--borda),
-    3px 3px 0 var(--sombra);
-}
-.rel-astro {
-  position: absolute;
-  top: 5px;
-  width: 18px;
-  height: 18px;
-  margin-left: -9px;
-  background: var(--ouro);
-  box-shadow:
-    0 0 0 2px var(--ouro-escuro),
-    0 0 12px 3px color-mix(in srgb, var(--ouro) 55%, transparent);
-  transition: left 1s linear;
-}
-.rel-astro.lua {
-  background: var(--creme);
-  box-shadow:
-    inset -5px -3px 0 #bfb59a,
-    0 0 0 2px #8a846e;
-  border-radius: 50%;
-}
-.rel-marcas {
-  position: absolute;
-  inset: 100% 0 auto;
-  display: flex;
-  justify-content: space-between;
-  padding-top: 4px;
-  font-family: var(--rotulo);
-  font-weight: 600;
-  font-size: 12px;
-  color: var(--apagado);
-}
-.rel-semana {
-  grid-area: semana;
-  display: grid;
-  gap: 6px;
-  align-content: end;
-}
-.rel-semana ol {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  align-items: end;
-  gap: 6px;
-  height: 74px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.rel-semana li {
-  display: grid;
-  grid-template-rows: 1fr auto;
-  gap: 3px;
-  height: 100%;
-}
-.rel-semana li i {
-  align-self: end;
-  min-height: 6px;
-  background: var(--chapa-3);
-  box-shadow: inset 0 0 0 2px var(--borda-forte);
-  transition: height 0.6s;
-}
-.rel-semana li.hoje i {
-  background: var(--ouro);
-  box-shadow: inset 0 0 0 2px var(--ouro-escuro);
-  animation: ini-pip 1.6s ease-in-out infinite;
-}
-.rel-semana li span {
-  text-align: center;
-  font-family: var(--rotulo);
-  font-weight: 600;
-  font-size: 12px;
-  text-transform: uppercase;
-  color: var(--apagado);
-}
-.rel-semana li.hoje span {
-  color: var(--ouro);
-}
-.rel-semana p {
-  margin: 0;
-  font-size: 14px;
-  color: var(--apagado);
-}
-.rel-rodada {
-  grid-area: rodada;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 6px 18px;
-  align-items: center;
-  padding-top: 12px;
-  border-top: 2px dashed var(--borda-forte);
-}
-.rel-rodada .lv-rotulo {
-  color: var(--ceu);
-}
-.rel-conta {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-}
-.rel-conta b {
-  font-family: var(--display);
-  font-stretch: 62%;
-  font-weight: 900;
-  font-size: 28px;
-  line-height: 1;
-  color: var(--creme);
-  font-variant-numeric: tabular-nums;
-}
-.rel-conta small {
-  display: none;
-}
-.rel-trilho {
-  grid-column: 1 / -1;
-  height: 12px;
-  background: var(--chapa-3);
-  box-shadow:
-    inset 0 0 0 2px var(--borda),
-    2px 2px 0 var(--sombra);
-}
-.rel-trilho i {
-  display: block;
-  height: 100%;
-  background: repeating-linear-gradient(90deg, var(--ceu) 0 8px, #4f8fbf 8px 10px);
-  transition: width 1s linear;
-}
-.rel-ritmo {
-  grid-column: 1 / -1;
-  font-size: 13px;
-  color: var(--apagado);
-}
-
 /* ---------- Ficha: um número que importa, com a sua própria peça ---------- */
 .fnum {
   --cor: var(--borda-forte);
@@ -331,18 +121,11 @@
   color: var(--tinta-suave);
 }
 .cad-fichas,
-.opo-fichas,
 .perfil-fichas {
   display: flex;
   flex-wrap: wrap;
   gap: 8px 10px;
   margin-top: 6px;
-}
-.opo-fichas {
-  margin: 4px 0;
-}
-.opo .fnum b {
-  font-size: 18px;
 }
 
 /* ---------- Escada de porte ---------- */
@@ -676,23 +459,8 @@ dialog.perfil[open] {
   .ini-cab {
     grid-template-columns: minmax(0, 1fr);
   }
-  .relogio {
-    max-width: 560px;
-  }
 }
 @media (max-width: 700px) {
-  .relogio {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-areas:
-      'hora'
-      'semana'
-      'ceu'
-      'rodada';
-    padding: 16px 16px 18px;
-  }
-  .rel-hora b {
-    font-size: 56px;
-  }
   .perfil-corpo {
     padding: 18px 16px 24px;
   }
@@ -725,9 +493,7 @@ dialog.perfil[open] {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .rel-hora b i,
-  .degraus .agora .degrau,
-  .rel-semana li.hoje i {
+  .degraus .agora .degrau {
     animation: none !important;
   }
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { BotaoProduto } from '../../components/BotaoProduto';
 import { ShoppingCart } from 'lucide-react';
 import { BotaoEspera } from '../../components/Espera';
@@ -50,6 +50,13 @@ export function LinhaPreco({
   const salvo = loja.prices[product] ?? m.justo;
   const [preco, setPreco] = useState(salvo);
   useEffect(() => setPreco(salvo), [salvo]);
+  // O que o jogador digita fica como texto: reformatar a cada tecla apagava "12,5" no meio.
+  const formatado = (centavos: number) => (centavos / 100).toFixed(2).replace('.', ',');
+  const [texto, setTexto] = useState(() => formatado(salvo));
+  const editando = useRef(false);
+  useEffect(() => {
+    if (!editando.current) setTexto(formatado(preco));
+  }, [preco]);
   const [verCurva, setVerCurva] = useState(false);
   // A referência aberta (custo, cidade, mapa ou justo): explica de onde vem aquele número.
   const [referencia, setReferencia] = useState<Referencia | null>(null);
@@ -343,11 +350,30 @@ export function LinhaPreco({
                 −
               </button>
               <input
-                type="number"
-                min="0.01"
-                step="0.01"
-                value={(preco / 100).toFixed(2)}
-                onChange={(e) => setPreco(Math.max(1, Math.round(Number(e.target.value) * 100)))}
+                type="text"
+                inputMode="decimal"
+                autoComplete="off"
+                value={texto}
+                onFocus={(e) => {
+                  editando.current = true;
+                  e.currentTarget.select();
+                }}
+                onChange={(e) => {
+                  const bruto = e.target.value;
+                  // Aceita vírgula ou ponto; só números e um separador.
+                  if (!/^\d*[.,]?\d{0,2}$/.test(bruto)) return;
+                  setTexto(bruto);
+                  const n = Number(bruto.replace(',', '.'));
+                  if (bruto !== '' && Number.isFinite(n) && n > 0) setPreco(Math.round(n * 100));
+                }}
+                onBlur={() => {
+                  editando.current = false;
+                  const n = Number(texto.replace(',', '.'));
+                  const valido = Number.isFinite(n) && n > 0 ? Math.round(n * 100) : preco;
+                  setPreco(valido);
+                  setTexto(formatado(valido));
+                }}
+                onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
                 aria-label={`Preço de venda de ${products[product].name} em reais`}
               />
               <button

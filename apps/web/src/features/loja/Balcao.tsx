@@ -70,12 +70,8 @@ function SlotProduto({
   const nome = products[x.id].name;
   return (
     <li className={`bl-slot tom-${tomDe(x.dias)} ${aberto ? 'aberto' : ''}`}>
-      <button
-        className="bl-slot-corpo"
-        onClick={onAbrir}
-        aria-pressed={aberto}
-        aria-label={`${nome}: ajustar preço e regra`}
-      >
+      <button className="bl-slot-corpo" onClick={onAbrir} aria-pressed={aberto}>
+        <span className="sr-only">Abrir o painel do balcão de {nome}. </span>
         <span className="bl-topo">
           <span className="bl-sprite lv-adesivo">
             <ProdutoArte product={x.id} escala={2} />
@@ -102,7 +98,11 @@ function SlotProduto({
         >
           Repor
         </button>
-        <button className="bl-auto" onClick={onAbrir} aria-label={`Regra de repor ${nome} sozinho`}>
+        <button
+          className="bl-auto"
+          onClick={onAbrir}
+          aria-label={`Regra de repor ${nome} sozinho: ${ligada ? 'ligada' : regra ? 'pausada' : 'desligada'}. Abrir o painel`}
+        >
           <Carimbo tom={ligada ? 'lavoura' : regra ? 'ouro' : 'ceu'} giro={ligada ? -3 : 2}>
             {ligada ? 'auto: ligado' : regra ? 'auto: pausado' : 'auto: desligado'}
           </Carimbo>
@@ -190,6 +190,7 @@ function Lista({
   onAbrir: (id: ProductId) => void;
 }) {
   const { openRepor } = useGame();
+  const total = itens.reduce((n, x) => n + x.lucro, 0);
   return (
     <div className="bl-lista">
       <table>
@@ -248,7 +249,10 @@ function Lista({
               </td>
               <td className="num">{cr(x.preco)}</td>
               <td className="num">~{num(x.vende)}</td>
-              <td className="num pos">+{cr(x.lucro, 0)}</td>
+              <td className={`num ${x.lucro >= 0 ? 'pos' : 'neg'}`}>
+                {x.lucro >= 0 ? '+' : '−'}
+                {cr(Math.abs(x.lucro), 0)}
+              </td>
               <td className="bl-lista-acoes">
                 <button className="secondary" onClick={() => onAbrir(x.id)}>
                   Preço e regra
@@ -266,12 +270,9 @@ function Lista({
         <tfoot>
           <tr>
             <td colSpan={4}>Total da prateleira</td>
-            <td className="num pos">
-              +
-              {cr(
-                itens.reduce((n, x) => n + x.lucro, 0),
-                0,
-              )}
+            <td className={`num ${total >= 0 ? 'pos' : 'neg'}`}>
+              {total >= 0 ? '+' : '−'}
+              {cr(Math.abs(total), 0)}
             </td>
             <td />
           </tr>
@@ -287,7 +288,8 @@ function Lista({
  * dia. Clicar num produto abre o painel do balcão (preço, curva de lucro e regra de repor sozinho).
  */
 export function Balcao({ loja }: { loja: Establishment }) {
-  const { world, run, pending, openRepor } = useGame();
+  const { world, run, pending, openRepor, notice } = useGame();
+  const aviso = (texto: string) => notice(texto, true);
   const [vista, setVista] = useState<Vista>(lerVista);
   const conta = useMemo(
     () => contaDaPrateleira(world, loja),
@@ -314,7 +316,9 @@ export function Balcao({ loja }: { loja: Establishment }) {
   const painel = useRef<HTMLDivElement>(null);
   const clicou = useRef(false);
   useEffect(() => {
-    if (clicou.current) painel.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    const aoLado = window.matchMedia?.('(min-width: 1180px)').matches;
+    if (clicou.current && !aoLado)
+      painel.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     clicou.current = false;
   }, [atual?.id]);
   const abrir = (id: ProductId) => {
@@ -341,7 +345,7 @@ export function Balcao({ loja }: { loja: Establishment }) {
   const ganho = conta.melhor - conta.agora;
   const linhas: (Item | Vaga)[] = [...conta.itens, ...vagas];
   const fileiras: (Item | Vaga)[][] = [];
-  for (let i = 0; i < linhas.length; i += 3) fileiras.push(linhas.slice(i, i + 3));
+  for (let i = 0; i < linhas.length; i += 2) fileiras.push(linhas.slice(i, i + 2));
 
   return (
     <div className="bl">
@@ -358,10 +362,16 @@ export function Balcao({ loja }: { loja: Establishment }) {
             onClick={async () => {
               for (const [i, x] of conta.ajustar.entries()) {
                 setProgresso({ n: i + 1 });
-                await run(
+                const ok = await run(
                   { type: 'setPrice', establishmentId: loja.id, product: x.id, price: x.m.melhor },
                   `Preços ajustados (${i + 1} de ${conta.ajustar.length}).`,
                 );
+                if (!ok) {
+                  aviso(
+                    `${conta.ajustar.length - i} de ${conta.ajustar.length} preços ficaram sem ajuste. Tente de novo.`,
+                  );
+                  break;
+                }
               }
               setProgresso({ n: 0 });
             }}
@@ -387,7 +397,7 @@ export function Balcao({ loja }: { loja: Establishment }) {
             className={vista === 'prateleira' ? 'on' : ''}
             onClick={() => escolher('prateleira')}
           >
-            <LayoutGrid size={16} aria-hidden="true" /> Prateleira
+            <LayoutGrid size={16} aria-hidden="true" /> Cartões
           </button>
           <button
             role="radio"
@@ -400,35 +410,40 @@ export function Balcao({ loja }: { loja: Establishment }) {
         </div>
       </div>
 
-      {vista === 'prateleira' ? (
-        fileiras.map((fila, k) => (
-          <ul className="bl-tabua" key={k}>
-            {fila.map((x) =>
-              'estoque' in x ? (
-                <SlotProduto
-                  key={x.id}
-                  loja={loja}
-                  x={x}
-                  aberto={atual?.id === x.id}
-                  onAbrir={() => abrir(x.id)}
-                />
-              ) : (
-                <SlotVazio key={x.id} loja={loja} v={x} />
-              ),
-            )}
-          </ul>
-        ))
-      ) : (
-        <Lista
-          loja={loja}
-          itens={conta.itens}
-          vagas={vagas}
-          aberto={atual?.id ?? null}
-          onAbrir={abrir}
-        />
-      )}
-
-      <div ref={painel}>{atual && <Painel loja={loja} x={atual} />}</div>
+      <div className="bl-area">
+        <div className="bl-prat">
+          {vista === 'prateleira' ? (
+            fileiras.map((fila, k) => (
+              <ul className="bl-tabua" key={k}>
+                {fila.map((x) =>
+                  'estoque' in x ? (
+                    <SlotProduto
+                      key={x.id}
+                      loja={loja}
+                      x={x}
+                      aberto={atual?.id === x.id}
+                      onAbrir={() => abrir(x.id)}
+                    />
+                  ) : (
+                    <SlotVazio key={x.id} loja={loja} v={x} />
+                  ),
+                )}
+              </ul>
+            ))
+          ) : (
+            <Lista
+              loja={loja}
+              itens={conta.itens}
+              vagas={vagas}
+              aberto={atual?.id ?? null}
+              onAbrir={abrir}
+            />
+          )}
+        </div>
+        <aside className="bl-lado" ref={painel} aria-label="Painel do balcão">
+          {atual && <Painel loja={loja} x={atual} />}
+        </aside>
+      </div>
 
       {!conta.itens.length && vagas.length > 0 && (
         <p className="bl-vazio-dica">

@@ -568,3 +568,53 @@
     transition: none !important;
   }
 }
+
+/* ---------- Prateleira à esquerda, painel do balcão ao lado (computador) ---------- */
+.bl-area {
+  display: grid;
+  gap: 26px;
+  align-items: start;
+}
+.bl-prat {
+  display: grid;
+  gap: 0;
+  min-width: 0;
+}
+.bl-tabua {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (min-width: 1180px) {
+  .bl-area {
+    grid-template-columns: minmax(0, 1.1fr) minmax(430px, 0.9fr);
+  }
+  /* O painel acompanha a rolagem: dá para escolher outro produto sem perder o painel. */
+  .bl-lado {
+    position: sticky;
+    top: 12px;
+    max-height: calc(100vh - 24px);
+    overflow-y: auto;
+    padding-right: 2px;
+  }
+  .bl-lado .item-corpo {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+  .bl-lado .bl-painel {
+    margin-top: 0;
+  }
+}
+@media (max-width: 640px) {
+  .bl-tabua {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* A etiqueta do preço da moeda não cobre mais a legenda da régua. */
+.bl-painel .pista-escala {
+  margin-top: 30px;
+}
+
+/* "clip" corta como "hidden", mas não vira área de rolagem: o painel do balcão pode acompanhar. */
+.panel.loja-painel {
+  overflow: clip;
+}

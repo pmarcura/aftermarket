@@ -13,6 +13,7 @@
   opacity: 1;
 }
 .espera-global i {
+  animation-play-state: paused;
   display: block;
   height: 100%;
   background: repeating-linear-gradient(
@@ -25,6 +26,7 @@
   animation: espera-corre 0.7s linear infinite;
 }
 .espera-global.ativa i {
+  animation-play-state: running;
   width: 100%;
 }
 .espera-global.saindo i {
@@ -115,4 +117,8 @@ button[data-espera]::before {
   button[data-espera]::before {
     animation: none;
   }
+}
+
+button[data-espera] .giro {
+  display: none;
 }

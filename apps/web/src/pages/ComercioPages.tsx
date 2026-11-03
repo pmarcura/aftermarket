@@ -15,7 +15,11 @@ export function PedidosPage({ inicial }: { inicial?: OrdersTab } = {}) {
         description="Compras e vendas combinadas com outras empresas: o que espera resposta, o que está a caminho e o que já foi entregue."
       />
       <div className="page-body">
-        <Pedidos key={ordersIntent?.request ?? 'default'} inicial={ordersIntent?.tab ?? inicial} />
+        <Pedidos
+          key={ordersIntent?.request ?? 'default'}
+          inicial={ordersIntent?.tab ?? inicial}
+          proporPedido={ordersIntent?.proporPedido}
+        />
       </div>
     </>
   );

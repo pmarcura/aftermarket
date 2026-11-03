@@ -129,9 +129,20 @@ export function usePendencias(): Pendencia[] {
             acao: { rotulo: 'Ajustar preços', executar: () => openBusiness(e.id, 'Prateleira') },
           });
         // Acabando: menos de um dia de vendas ao preço atual, pela mesma conta da prateleira.
+        // Carga já na estrada para esta loja conta como estoque: não pede para repor de novo.
+        const naEstrada = (id: ProductId) =>
+          world.shipments
+            .filter((c) => !c.delivered && c.destinationId === e.id && c.product === id)
+            .reduce((n, c) => n + c.quantity, 0);
         const acabando = conta.itens
-          .map((x) => ({ id: x.id, dias: x.dias, porDia: x.vende * x.preco }))
-          .filter((x) => x.dias < 1);
+          .map((x) => ({
+            id: x.id,
+            dias: x.dias,
+            porDia: x.vende * x.preco,
+            vende: x.vende,
+            estoque: x.estoque,
+          }))
+          .filter((x) => x.dias < 1 && (x.estoque + naEstrada(x.id)) / Math.max(0.01, x.vende) < 1);
         if (acabando.length) {
           const esgotados = acabando.filter((x) => x.dias === 0);
           const perda = acabando.reduce((n, x) => n + x.porDia, 0);

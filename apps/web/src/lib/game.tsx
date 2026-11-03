@@ -35,15 +35,30 @@ import {
 } from 'lucide-react';
 import { Notice } from '../components/Notice';
 
-export const cr = (value: number, decimals = 2) =>
-  (value / 100).toLocaleString('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  });
-export const num = (value: number, decimals = 0) =>
-  value.toLocaleString('pt-BR', { maximumFractionDigits: decimals });
+// Formatadores prontos: criar um por número custa caro quando a tela formata milhares deles.
+const moedas = new Map<number, Intl.NumberFormat>();
+const numeros = new Map<number, Intl.NumberFormat>();
+export const cr = (value: number, decimals = 2) => {
+  let f = moedas.get(decimals);
+  if (!f) {
+    f = new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+    });
+    moedas.set(decimals, f);
+  }
+  return f.format(value / 100);
+};
+export const num = (value: number, decimals = 0) => {
+  let f = numeros.get(decimals);
+  if (!f) {
+    f = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: decimals });
+    numeros.set(decimals, f);
+  }
+  return f.format(value);
+};
 export const categoryIcons = {
   industry: Factory,
   retail: Store,
@@ -123,8 +138,9 @@ interface GameContextValue {
   refresh: () => Promise<void>;
   page: Page;
   navigate: (page: Page, preserveIntent?: boolean) => void;
-  ordersIntent: { tab: OrdersTab; request: number } | null;
-  openOrders: (tab: OrdersTab) => void;
+  ordersIntent: { tab: OrdersTab; request: number; proporPedido?: string } | null;
+  /** Abre Pedidos numa aba; com `proporPedido`, já abre a proposta para aquele pedido. */
+  openOrders: (tab: OrdersTab, proporPedido?: string) => void;
   selectedId: string | null;
   select: (id: string | null) => void;
   focus: [number, number] | undefined;
@@ -279,9 +295,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
         page,
         navigate,
         ordersIntent,
-        openOrders: (tab) => {
+        openOrders: (tab, proporPedido) => {
           navigate('orders');
-          setOrdersIntent({ tab, request: ++ordersRequest.current });
+          setOrdersIntent({ tab, request: ++ordersRequest.current, proporPedido });
         },
         selectedId,
         select,

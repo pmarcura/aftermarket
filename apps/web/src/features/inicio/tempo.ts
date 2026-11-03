@@ -91,6 +91,7 @@ export function useResumoDoCaixa(desde: number) {
 const chaveDaVisita = (w: World, empresa: string) => `aftermarket.visto.${w.season.id}.${empresa}`;
 
 // Lida uma vez por carga da página: trocar de tela não apaga o resumo da ausência.
+const chegadas = new Map<string, number>();
 const primeiraLeitura = new Map<string, number | null>();
 function lerVisita(chave: string) {
   if (!primeiraLeitura.has(chave)) {
@@ -124,8 +125,11 @@ export function useMarcarVisita() {
 /** Desde quando o jogador está fora, pela visita anterior a esta sessão. */
 export function useAusencia() {
   const { world, actor } = useGame();
-  const desde = lerVisita(chaveDaVisita(world, actor));
-  const agora = agoraDoMundo(world);
+  const chave = chaveDaVisita(world, actor);
+  const desde = lerVisita(chave);
+  // A ausência termina quando o jogador chega: jogar mais não aumenta o tempo que ele ficou fora.
+  if (!chegadas.has(chave)) chegadas.set(chave, agoraDoMundo(world));
+  const agora = chegadas.get(chave)!;
   // Ausência curta (ou primeira visita) vira "hoje", o mesmo período da barra de cima e dos negócios.
   const fora = desde !== null && agora - desde >= gameDay(world) / 6 ? desde : null;
   return { desde: fora ?? comecoDoDia(world), ausente: fora !== null, agora };

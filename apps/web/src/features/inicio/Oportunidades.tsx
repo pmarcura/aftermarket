@@ -19,11 +19,15 @@ import { SeloEmpresa } from './Perfil';
 import '../../design/oportunidades.css';
 
 /** Menor preço de quem tem o produto em estoque agora, em todo o mapa. */
-function menorOferta(world: World, product: ProductId) {
+function menorOferta(
+  world: World,
+  product: ProductId,
+  porId: Map<string, World['establishments'][number]>,
+) {
   let menor: number | undefined;
   for (const o of world.offers) {
     if (o.product !== product) continue;
-    const e = world.establishments.find((x) => x.id === o.establishmentId);
+    const e = porId.get(o.establishmentId);
     if (!e?.enabled || (e.inventory[product] ?? 0) <= 0) continue;
     if (menor === undefined || o.price < menor) menor = o.price;
   }
@@ -46,13 +50,19 @@ function produtoParaLoja(world: World, empresa: string) {
         lucro: number;
       }
     | undefined;
+  const porId = new Map(world.establishments.map((e) => [e.id, e]));
   for (const loja of world.establishments) {
     if (loja.companyId !== empresa || loja.category !== 'retail' || !loja.enabled) continue;
     for (const id of seasonProducts(world)) {
       if ((loja.inventory[id] ?? 0) > 0) continue;
+      // Já está a caminho desta loja: a sugestão seria repetir o que o jogador já fez.
+      if (
+        world.shipments.some((c) => !c.delivered && c.destinationId === loja.id && c.product === id)
+      )
+        continue;
       const m = mercadoDaCidade(world, loja, id);
       if (m.procuraDia <= 0) continue;
-      const custo = menorOferta(world, id);
+      const custo = menorOferta(world, id, porId);
       if (custo === undefined || custo >= m.justo) continue;
       const porDia = m.vendas(m.justo);
       const lucro = porDia * (m.justo - custo);
@@ -201,7 +211,7 @@ function CartaoNegocio({ n }: { n: Negocio }) {
 
 /** Vender a empresas: o pedido de compra impresso, com a conta da quantidade pelo preço. */
 function CartaoPedido({ o, horas }: { o: Pedido; horas: number }) {
-  const { world, navigate } = useGame();
+  const { world, openOrders } = useGame();
   const comprador = world.companies.find((c) => c.id === o.pedido.buyerId);
   return (
     <li className="op op-pedido">
@@ -241,7 +251,7 @@ function CartaoPedido({ o, horas }: { o: Pedido; horas: number }) {
           </Carimbo>
         </span>
       </div>
-      <button className="primary" onClick={() => navigate('orders')}>
+      <button className="primary" onClick={() => openOrders('responder', o.pedido.id)}>
         Fazer proposta
       </button>
     </li>

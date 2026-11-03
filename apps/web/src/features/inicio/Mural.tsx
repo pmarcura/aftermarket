@@ -22,7 +22,8 @@ interface Fato {
   at: number;
   quem: string;
   icone: NomeIcone;
-  texto: string;
+  /** O texto só é escrito para as linhas que aparecem: formatar milhares de números trava a tela. */
+  texto: () => string;
   produto?: ProductId;
   valor?: number;
   /** Assunto repetível: o vendedor de uma troca ou o tipo de ação de uma empresa. */
@@ -80,21 +81,28 @@ export function Mural({ historico }: { historico: Historico }) {
     [world.revision],
   );
 
+  // As trocas só mudam quando chega histórico novo; as ações dos bots, a cada atualização do mundo.
+  const trocas = useMemo(
+    () =>
+      Object.values(historico)
+        .flatMap((h) => h?.trades ?? [])
+        .map((t, i): Fato => ({
+          id: `t-${t.at}-${t.from}-${t.to}-${t.product}-${i}`,
+          at: t.at,
+          quem: t.from,
+          assunto: `vende-${t.to}`,
+          icone: 'moeda',
+          texto: () =>
+            `comprou ${num(t.quantity)} ${unidade(t.product, t.quantity)} de ${nome(t.to)}`,
+          produto: t.product,
+          valor: t.quantity * t.unitPrice,
+        })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [historico],
+  );
   const fatos = useMemo(() => {
     const ids = seasonProducts(world);
     const doTexto = (t: string) => ids.find((id) => t.includes(products[id].name));
-    const trocas: Fato[] = Object.values(historico)
-      .flatMap((h) => h?.trades ?? [])
-      .map((t, i) => ({
-        id: `t-${t.at}-${t.from}-${t.to}-${t.product}-${i}`,
-        at: t.at,
-        quem: t.from,
-        assunto: `vende-${t.to}`,
-        icone: 'moeda' as const,
-        texto: `comprou ${num(t.quantity)} ${unidade(t.product, t.quantity)} de ${nome(t.to)}`,
-        produto: t.product,
-        valor: t.quantity * t.unitPrice,
-      }));
     const acoes: Fato[] = (world.botActivity ?? []).map((a, i) => {
       const produto = doTexto(a.text);
       const acao = ACOES[a.kind];
@@ -102,17 +110,19 @@ export function Mural({ historico }: { historico: Historico }) {
         id: `a-${a.at}-${a.companyId}-${i}`,
         at: a.at,
         quem: a.companyId,
-        assunto: `${a.kind}-${a.companyId}`,
+        // A mesma ação sobre o mesmo produto, de empresas diferentes, conta como repetida.
+        assunto: `${a.kind}-${produto ?? ''}`,
         icone: acao?.icone ?? 'estrela',
-        texto: acao
-          ? acao.verbo(produto && products[produto].name.toLocaleLowerCase('pt-BR'))
-          : a.text.charAt(0).toLowerCase() + a.text.slice(1),
+        texto: () =>
+          acao
+            ? acao.verbo(produto && products[produto].name.toLocaleLowerCase('pt-BR'))
+            : a.text.charAt(0).toLowerCase() + a.text.slice(1),
         produto,
       };
     });
     return [...trocas, ...acoes].sort((a, b) => b.at - a.at);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [historico, world.revision]);
+  }, [trocas, world.revision]);
 
   // Produtos que realmente aparecem nos fatos, para o filtro.
   const produtosNoMural = useMemo(
@@ -193,7 +203,7 @@ export function Mural({ historico }: { historico: Historico }) {
             <button className="perfil-pessoa" onClick={() => setAberto(manchete.quem)}>
               {nome(manchete.quem)}
             </button>{' '}
-            {manchete.texto}
+            {manchete.texto()}
           </p>
           <span className="manchete-valor">{cr(manchete.valor!, 0)}</span>
           <small>{haQuanto(horas(manchete.at))}</small>
@@ -268,7 +278,7 @@ export function Mural({ historico }: { historico: Historico }) {
                 <button className="perfil-pessoa" onClick={() => setAberto(f.quem)}>
                   {nome(f.quem)}
                 </button>{' '}
-                {f.texto}
+                {f.texto()}
               </p>
               {f.produto && (
                 <BotaoProduto product={f.produto} className="mural-produto">

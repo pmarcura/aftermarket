@@ -4,7 +4,7 @@ import { Placa } from '../components/Livro';
 import { CargaCaminho } from '../components/CargaCaminho';
 import { usePendencias } from '../features/inicio/pendencias';
 import { usePrimeirosPassos } from '../features/inicio/primeirosPassos';
-import { horasDeJogo, relogio, useAusencia, useResumoDoCaixa } from '../features/inicio/tempo';
+import { horasDeJogo, useAusencia, useResumoDoCaixa } from '../features/inicio/tempo';
 import { Caderno } from '../features/inicio/Caderno';
 import { Pregao, produtosDoPregao } from '../features/inicio/Pregao';
 import { Oportunidades } from '../features/inicio/Oportunidades';
@@ -13,9 +13,9 @@ import { Relogio } from '../features/inicio/Relogio';
 import { NumeroVivo } from '../features/inicio/vivo';
 import { useHistorico } from '../features/mercado/historico';
 import { PORTES, patrimonioDe, porteDe } from '../features/empresa/resumo';
-import { seasonProducts } from '../../../../packages/simulation/src/model';
 import '../design/inicio.css';
 import '../design/inicio-ajustes.css';
+import '../design/inicio-celular.css';
 
 type Periodo = ReturnType<typeof useAusencia>;
 
@@ -212,7 +212,6 @@ function ACaminho() {
 
 export function InicioPage() {
   const { world, actor } = useGame();
-  const { dia } = relogio(world);
   const empresa = world.companies.find((c) => c.id === actor)!;
   const pendencias = usePendencias();
   const periodo = useAusencia();
@@ -222,12 +221,15 @@ export function InicioPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [world.revision, actor],
   );
-  // Pregão e mural leem o histórico de todos os produtos, pelo mesmo endereço da ficha do produto.
-  const historico = useHistorico(seasonProducts(world), 20000);
+  // Pregão, mural e perfis leem o histórico só dos produtos do pregão: menos dados pela rede.
+  const historico = useHistorico(
+    itens.map((i) => i.id),
+    20000,
+  );
   return (
     <div className="inicio">
       <header className="ini-cab">
-        <Placa titulo={empresa.name} sub={`Dia ${dia}`} />
+        <Placa titulo={empresa.name} />
         <Relogio />
       </header>
       <div className="ini-topo">

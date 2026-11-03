@@ -37,13 +37,25 @@ export function produtosDoPregao(world: World, empresa: string): { id: ProductId
   const outros = [...temporada]
     .filter((id) => !seus.has(id))
     .sort((a, b) => (negociado.get(b) ?? 0) - (negociado.get(a) ?? 0));
+  // No máximo 6 produtos próprios: sobram vagas para o que mais se negocia no país.
   return [
-    ...[...seus].map((id) => ({ id, seu: true })),
+    ...[...seus].slice(0, 6).map((id) => ({ id, seu: true })),
     ...outros.map((id) => ({ id, seu: false })),
   ].slice(0, QUANTOS);
 }
 
-function Variacao({ v, tem, dia }: { v: number; tem: boolean; dia: boolean }) {
+function Variacao({
+  v,
+  tem,
+  dia,
+  carregando,
+}: {
+  v: number;
+  tem: boolean;
+  dia: boolean;
+  carregando: boolean;
+}) {
+  if (carregando) return <span className="preg-var carregando">…</span>;
   if (!tem) return <span className="preg-var novo">novo</span>;
   const sobe = v > 0.0005;
   const desce = v < -0.0005;
@@ -109,8 +121,15 @@ export function Pregao({
                 <ProdutoArte product={l.id} escala={1} />
               </span>
               <span className="preg-nome">
-                <b>{products[l.id].name}</b>
-                <small>{l.seu ? 'você negocia' : products[l.id].category}</small>
+                <b>
+                  {products[l.id].name}
+                  {l.seu && (
+                    <span className="preg-seu" title="Você negocia este produto">
+                      seu
+                    </span>
+                  )}
+                </b>
+                <small>{products[l.id].category}</small>
               </span>
               <span className="preg-faisca">
                 <Faisca valores={l.faisca} sobe={l.variacao >= 0} />
@@ -119,11 +138,18 @@ export function Pregao({
                 {l.preco ? (
                   <NumeroVivo valor={l.preco} formato={(v) => cr(Math.round(v))} />
                 ) : (
-                  <span className="vivo">—</span>
+                  <span className={`vivo ${historico[l.id] ? '' : 'preg-carregando'}`}>
+                    {historico[l.id] ? '—' : 'carregando'}
+                  </span>
                 )}
                 <small>por {unidade(l.id, 1)}</small>
               </span>
-              <Variacao v={l.variacao} tem={l.temComparacao} dia={l.diaInteiro} />
+              <Variacao
+                v={l.variacao}
+                tem={l.temComparacao}
+                dia={l.diaInteiro}
+                carregando={!historico[l.id]}
+              />
             </BotaoProduto>
           </li>
         ))}

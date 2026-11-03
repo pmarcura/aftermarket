@@ -208,7 +208,7 @@ export function Perfil({
 
         <section aria-labelledby="perfil-trocas">
           <h3 id="perfil-trocas" className="lv-rotulo">
-            Compras e vendas
+            Compras e vendas entre empresas
           </h3>
           <div className="mural-filtros" role="radiogroup" aria-label="Período">
             {PERIODOS.map(([id, rotulo]) => (
@@ -240,7 +240,7 @@ export function Perfil({
           <div className="perfil-fichas">
             <Ficha rotulo="Comprou" tom="brasa" valor={cr(soma(compras), 0)} />
             <Ficha rotulo="Vendeu" tom="lavoura" valor={cr(soma(vendas), 0)} />
-            <Ficha rotulo="Negócios" valor={String(transacoes.length)} />
+            <Ficha rotulo="Trocas" valor={String(transacoes.length)} />
           </div>
           {porProduto.length > 0 && (
             <ul className="perfil-barras" aria-label="Produtos mais negociados">
@@ -259,7 +259,10 @@ export function Perfil({
             </ul>
           )}
           {transacoes.length === 0 ? (
-            <p className="perfil-vazio">Nenhuma compra ou venda neste período.</p>
+            <p className="perfil-vazio">
+              Nenhuma compra ou venda com outras empresas neste período. Vendas no balcão das lojas
+              não aparecem aqui.
+            </p>
           ) : (
             <ul className="perfil-trocas">
               {transacoes.slice(0, 30).map((t, i) => {

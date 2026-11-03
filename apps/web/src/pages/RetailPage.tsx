@@ -3,11 +3,11 @@ import '../design/loja.css';
 import '../design/producao.css';
 import { useGame } from '../lib/game';
 import { Panel, Tabs, Empty } from '../components/ui';
-import { Workforce } from '../features/business/Workforce';
 import { Installation } from '../features/business/Installation';
-import { BusinessFinance, Consumption } from '../features/business/Analytics';
 import { LojaCabecalho } from '../features/business/Empate';
 import { Balcao } from '../features/loja/Balcao';
+import { EquipeLoja } from '../features/loja/EquipeLoja';
+import { ResultadoLoja } from '../features/loja/ResultadoLoja';
 import { Unidades } from '../features/business/producao/Cabeca';
 import { matizDaCategoria } from '../features/business/producao/pecas';
 
@@ -68,13 +68,8 @@ export function RetailPage() {
         <Panel className="loja-painel">
           <Tabs values={['Prateleira', 'Equipe', 'Resultado']} value={tab} onChange={setTab} />
           {tab === 'Prateleira' && <Balcao loja={e} />}
-          {tab === 'Equipe' && <Workforce key={e.id} establishment={e} />}
-          {tab === 'Resultado' && (
-            <>
-              <BusinessFinance key={e.id} establishment={e} />
-              <Consumption key={`${e.id}-consumo`} establishment={e} />
-            </>
-          )}
+          {tab === 'Equipe' && <EquipeLoja key={e.id} loja={e} />}
+          {tab === 'Resultado' && <ResultadoLoja key={e.id} loja={e} />}
         </Panel>
       </div>
     </div>

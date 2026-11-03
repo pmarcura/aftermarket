@@ -37,8 +37,10 @@ import { householdItems } from './channels';
 
 // Abertura gerada pela calculadora (etapa 2): as linhas que a economia alvo pede para cada
 // receita, vezes a escala do mundo, divididas em empresas pequenas de 1 a 4 linhas, cada uma num
-// polo real da atividade. Os bots ficam com BOT_SHARE das linhas; o resto é espaço dos jogadores.
-const BOT_SHARE = 0.8;
+// polo real da atividade. Os bots ficam com BOT_SHARE das linhas. Com 0,8 (antes) a oferta dos bots atendia só 45% da
+// procura na escala 20 (spec 006): com 5–50 jogadores, os 20% "reservados" nunca se enchiam. Jogadores
+// entram comprando terrenos novos e competem com os bots, que perdem mercado em vez de ceder vaga.
+const BOT_SHARE = 1;
 const STORE_STAFF = 40; // equipe máxima de uma loja-bot; cidades grandes recebem várias lojas
 export interface RivalTemplate {
   recipe?: string;

@@ -192,8 +192,10 @@ export function Relogio() {
         <div className="rel-bilhete">
           <span className="rel-bilhete-texto">
             <small>Próxima rodada da economia</small>
-            <b>
-              {Math.floor(segundos / 60)}:{String(segundos % 60).padStart(2, '0')}
+            <b className={segundos === 0 ? 'calculando' : ''}>
+              {segundos === 0
+                ? 'calculando…'
+                : `${Math.floor(segundos / 60)}:${String(segundos % 60).padStart(2, '0')}`}
             </b>
           </span>
           <span className="rel-picotes" aria-hidden="true">
@@ -202,7 +204,7 @@ export function Relogio() {
             ))}
           </span>
           <small className="rel-ritmo">
-            vendas, produção e salários · 1 min real = {num(ritmo)} min no jogo
+            1 min real = {ritmo >= 60 ? `${num(ritmo / 60)} h` : `${num(ritmo)} min`} de jogo
           </small>
         </div>
       </div>

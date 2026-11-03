@@ -31,8 +31,9 @@ export function NotificationCenter({
     .map(([id, ships]) => ({ id, ships, at: Math.max(...ships.map((s) => s.arrivesAt)) }))
     .filter((g) => g.at > (reads[actor] ?? 0))
     .sort((a, b) => b.at - a.at);
+  // Vermelho conta só o que pede decisão; as entregas lidas aparecem num selo azul à parte.
   const pendencias = usePendencias(),
-    count = deliveries.length + pendencias.length;
+    count = pendencias.length;
   return (
     <div className="notification-wrapper">
       <button
@@ -43,6 +44,11 @@ export function NotificationCenter({
       >
         <Bell size={20} />
         {count > 0 && <i>{count > 99 ? '99+' : count}</i>}
+        {deliveries.length > 0 && (
+          <b className="notification-entregas">
+            {deliveries.length > 99 ? '99+' : deliveries.length}
+          </b>
+        )}
       </button>
       {open && (
         <div

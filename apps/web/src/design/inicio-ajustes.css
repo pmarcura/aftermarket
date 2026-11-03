@@ -178,7 +178,6 @@
   box-shadow:
     inset 0 0 0 2px var(--ouro),
     3px 3px 0 var(--sombra);
-  animation: ini-pip 1.8s ease-in-out infinite;
 }
 .degraus small {
   text-align: center;

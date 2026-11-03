@@ -386,6 +386,19 @@ button.text-button:hover {
   border-radius: 0;
   color: #d3cdc1;
 }
+.notification-button > .notification-entregas {
+  position: absolute;
+  right: 16px;
+  bottom: 15px;
+  min-width: 15px;
+  padding: 0 3px;
+  background: var(--ceu);
+  color: var(--noite);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 15px;
+  border: 1px solid #181b14;
+}
 .notification-button > i {
   position: absolute;
   right: 16px;
@@ -3181,6 +3194,10 @@ td .primary {
   }
   .notification-button > i {
     top: 11px;
+    right: 4px;
+  }
+  .notification-button > .notification-entregas {
+    bottom: 9px;
     right: 4px;
   }
   .profile-button {

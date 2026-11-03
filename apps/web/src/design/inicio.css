@@ -492,39 +492,6 @@
   font-size: 14px;
   color: var(--apagado);
 }
-.porte-trilho {
-  position: relative;
-  height: 18px;
-  background: var(--chapa-3);
-  box-shadow:
-    inset 0 0 0 2px var(--borda),
-    3px 3px 0 var(--sombra);
-  overflow: hidden;
-}
-.porte-trilho i {
-  position: absolute;
-  inset: 2px auto 2px 2px;
-  max-width: calc(100% - 4px);
-  background: repeating-linear-gradient(90deg, var(--ouro) 0 8px, var(--ouro-escuro) 8px 10px);
-  transition: width 1.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-.porte-trilho i::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.55), transparent);
-  width: 40px;
-  animation: ini-brilho 3.6s ease-in-out infinite 1.5s;
-}
-@keyframes ini-brilho {
-  from {
-    transform: translateX(-60px);
-  }
-  40%,
-  to {
-    transform: translateX(400px);
-  }
-}
 .porte-meta {
   display: flex;
   flex-wrap: wrap;
@@ -585,13 +552,8 @@
   box-shadow: inset 0 0 0 2px var(--lavoura-escura);
 }
 .passo-pips i.agora {
-  animation: ini-pip 1.4s ease-in-out infinite;
-}
-@keyframes ini-pip {
-  50% {
-    box-shadow: inset 0 0 0 2px var(--lavoura);
-    background: color-mix(in srgb, var(--lavoura) 30%, var(--chapa-3));
-  }
+  box-shadow: inset 0 0 0 2px var(--lavoura);
+  background: color-mix(in srgb, var(--lavoura) 30%, var(--chapa-3));
 }
 .passo-texto {
   display: grid;

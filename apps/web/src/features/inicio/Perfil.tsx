@@ -17,6 +17,7 @@ import {
 import { HOUR_MS, gameDay, realToGame } from '../../../../../packages/simulation/src/clock';
 import { Ficha } from './pecas';
 import { NumeroVivo, haQuanto, iniciais, matizDaEmpresa } from './vivo';
+import '../../design/perfil.css';
 
 export type Periodo = 'dia' | 'semana' | 'tudo';
 export const PERIODOS: [Periodo, string][] = [
@@ -132,7 +133,7 @@ export function Perfil({
   return (
     <dialog
       ref={janela}
-      className="perfil"
+      className="perfil ficha-cadastral"
       aria-labelledby="perfil-titulo"
       onClose={onFechar}
       onClick={(ev) => ev.target === janela.current && janela.current?.close()}
@@ -142,7 +143,8 @@ export function Perfil({
           <SeloEmpresa id={empresaId} nome={empresa.name} voce={empresaId === actor} grande />
           <div>
             <span className="lv-rotulo">
-              {empresaId === actor ? 'Sua empresa' : humano ? 'Empresário' : 'Empresa automática'}
+              Ficha cadastral ·{' '}
+              {empresaId === actor ? 'sua empresa' : humano ? 'empresário' : 'empresa automática'}
             </span>
             <h2 id="perfil-titulo" className="lv-grande">
               {empresa.name}

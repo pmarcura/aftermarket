@@ -171,18 +171,7 @@
   width: 3px;
   height: 3px;
   background: var(--creme);
-  animation: rel-pisca 2.4s steps(2) infinite;
-}
-.rel-estrela:nth-child(3n) {
-  animation-delay: 0.8s;
-}
-.rel-estrela:nth-child(3n + 1) {
-  animation-delay: 1.6s;
-}
-@keyframes rel-pisca {
-  50% {
-    opacity: 0.25;
-  }
+  opacity: 0.85;
 }
 .rel-astro {
   position: absolute;
@@ -281,6 +270,13 @@
   color: var(--creme);
   font-variant-numeric: tabular-nums;
 }
+.rel-bilhete-texto b.calculando {
+  font-family: var(--rotulo);
+  font-stretch: 100%;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--apagado);
+}
 .rel-picotes {
   display: grid;
   grid-auto-flow: column;
@@ -305,12 +301,6 @@
 }
 .rel-picotes i.agora {
   background: var(--ouro);
-  animation: rel-agora 1.2s ease-in-out infinite;
-}
-@keyframes rel-agora {
-  50% {
-    background: var(--ouro-claro);
-  }
 }
 .rel-ritmo {
   font-size: 13px;

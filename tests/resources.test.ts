@@ -8,13 +8,12 @@ import {
 } from '../packages/simulation/src/channels';
 import { createWorld } from '../packages/simulation/src/seed';
 import { advance, execute } from '../packages/simulation/src/engine';
-import {
-  ECONOMIC_INTERVAL,
-  type ProductId,
-  type Recipe,
-  type World,
-} from '../packages/simulation/src/model';
-import { GAME_DAY } from '../packages/simulation/src/operations';
+import { type ProductId, type Recipe, type World } from '../packages/simulation/src/model';
+import { createClock, economicInterval, gameDay } from '../packages/simulation/src/clock';
+
+// Os mundos destes testes nascem no relógio padrão (120×).
+const DAY = gameDay(createClock());
+const ROUND = economicInterval(createClock());
 
 const NOW = Date.UTC(2026, 9, 27, 12);
 const money = (w: World) => w.companies.reduce((n, c) => n + c.balance, 0);
@@ -291,7 +290,7 @@ describe.each(householdProducts)('consumo final de %s', (product) => {
     shop.enabled = true;
     shop.inventory = { [product]: 10000 };
     shop.prices = { [product]: w.season.config.basePrices[product] };
-    w.nextEconomicAt = NOW + ECONOMIC_INTERVAL;
+    w.nextEconomicAt = NOW + ROUND;
     advance(w, w.nextEconomicAt);
     const sold = w.ledger.filter(
       (l) => l.channel === 'retail' && l.product === product && l.establishmentId === shop.id,
@@ -334,8 +333,8 @@ describe.each(infrastructurePrograms)('consumo público: $name', (program) => {
       maxFreight: 10000000,
       reserved: unitPrice * program.quantity + 10000000,
       createdAt: NOW,
-      biddingEndsAt: NOW + GAME_DAY / 4,
-      deadline: NOW + GAME_DAY * 4,
+      biddingEndsAt: NOW + DAY / 4,
+      deadline: NOW + DAY * 4,
       status: 'open',
       deliveredQuantity: 0,
       bids: [],
@@ -353,7 +352,7 @@ describe.each(infrastructurePrograms)('consumo público: $name', (program) => {
       },
       NOW,
     );
-    w.nextEconomicAt = NOW + ECONOMIC_INTERVAL;
+    w.nextEconomicAt = NOW + ROUND;
     advance(w, c.biddingEndsAt!);
     expect(c.status).toBe('delivering');
     const shipments = w.shipments.filter((s) => s.infrastructureId === c.id);

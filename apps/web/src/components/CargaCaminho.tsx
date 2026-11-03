@@ -15,7 +15,7 @@ export function CargaCaminho({ s, world }: { s: Shipment; world: World }) {
   const agora = agoraDoMundo(world);
   const total = Math.max(1, s.arrivesAt - s.departedAt);
   const feito = Math.min(1, Math.max(0, (agora - s.departedAt) / total));
-  const falta = Math.max(0, horasDeJogo(s.arrivesAt - agora));
+  const falta = Math.max(0, horasDeJogo(world, s.arrivesAt - agora));
   const destino = world.establishments.find((e) => e.id === s.destinationId);
   const origem = world.establishments.find((e) => e.id === s.originId);
   const cidade = (id?: string) => {

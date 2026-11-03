@@ -1,16 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { createWorld } from '../packages/simulation/src/seed';
 import { advance, execute } from '../packages/simulation/src/engine';
-import { ECONOMIC_INTERVAL, type ProductId, type World } from '../packages/simulation/src/model';
-import {
-  automationCyclesPerDay,
-  GAME_DAY,
-  retailCapacity,
-} from '../packages/simulation/src/operations';
+import { type ProductId, type World } from '../packages/simulation/src/model';
+import { automationCyclesPerDay, retailCapacity } from '../packages/simulation/src/operations';
 import { dailyNeed } from '../packages/simulation/src/supply';
 import { botRecoveryPlan } from '../packages/simulation/src/director';
 import { dailyDemand, marketView } from '../packages/simulation/src/metrics';
 import { householdProducts } from '../packages/simulation/src/channels';
+import { createClock, economicInterval, gameDay } from '../packages/simulation/src/clock';
+
+// Os mundos destes testes nascem no relógio padrão (120×).
+const DAY = gameDay(createClock());
+const ROUND = economicInterval(createClock());
 
 // Correções da auditoria matemática M02, M03, M04, M05 e M07, provadas sobre as receitas da temporada.
 const NOW = Date.UTC(2026, 9, 30, 12);
@@ -111,14 +112,12 @@ describe('correções da auditoria matemática', () => {
     expect(perDay).toBe(10);
     expect(dailyNeed(w, steel, 'iron')).toBe(perDay * recipe.input.iron!);
     expect(marketView(w, 'iron').industrialDemand).toBe(perDay * recipe.input.iron!);
-    w.nextEconomicAt = NOW + ECONOMIC_INTERVAL;
-    advance(w, NOW + 3 * GAME_DAY);
+    w.nextEconomicAt = NOW + ROUND;
+    advance(w, NOW + 3 * DAY);
     const started = w.jobs
       .filter(
         (j) =>
-          j.establishmentId === steel.id &&
-          j.startedAt >= NOW + GAME_DAY &&
-          j.startedAt < NOW + 2 * GAME_DAY,
+          j.establishmentId === steel.id && j.startedAt >= NOW + DAY && j.startedAt < NOW + 2 * DAY,
       )
       .reduce((n, j) => n + j.cycles, 0);
     expect(started).toBe(perDay);
@@ -129,8 +128,8 @@ describe('correções da auditoria matemática', () => {
       const w = quiet(),
         before = money(w);
       const shops = stores(w, count, 'Itabira', ['rice'], 12);
-      w.nextEconomicAt = NOW + ECONOMIC_INTERVAL;
-      advance(w, NOW + ECONOMIC_INTERVAL * 12);
+      w.nextEconomicAt = NOW + ROUND;
+      advance(w, NOW + ROUND * 12);
       expect(money(w)).toBe(before);
       return sold(
         w,
@@ -146,8 +145,8 @@ describe('correções da auditoria matemática', () => {
   it('M05: sem capacidade para tudo, a loja reparte pela procura e não pela ordem', () => {
     const w = quiet();
     const [shop] = stores(w, 1, 'Campinas', [...householdProducts], 1);
-    w.nextEconomicAt = NOW + ECONOMIC_INTERVAL;
-    advance(w, NOW + ECONOMIC_INTERVAL);
+    w.nextEconomicAt = NOW + ROUND;
+    advance(w, NOW + ROUND);
     const rows = w.consumptionHistory.filter((h) => h.establishmentId === shop.id);
     const milk = rows.find((h) => h.product === 'milk')!,
       oil = rows.find((h) => h.product === 'oil')!;
@@ -167,7 +166,7 @@ describe('correções da auditoria matemática', () => {
     expect(producers.length).toBeGreaterThan(1);
     const recipe = w.season.config.recipes.find((r) => r.id === 'soy-oil')!;
     // Meta: três dias da procura do mundo mais o prazo do lote. Antiga: inteira para cada produtor.
-    const whole = dailyDemand(w, 'oil') * (3 + recipe.duration / GAME_DAY);
+    const whole = dailyDemand(w, 'oil') * (3 + recipe.duration / DAY);
     const shared = whole / producers.length;
     // Entre a meta repartida e a antiga, com folga para as vendas da própria rodada.
     const stock = Math.ceil((shared + whole) / 2);
@@ -179,14 +178,14 @@ describe('correções da auditoria matemática', () => {
     expect(stock).toBeGreaterThan(shared);
     expect(stock).toBeLessThan(whole);
     const jobs = w.jobs.length;
-    w.nextEconomicAt = NOW + ECONOMIC_INTERVAL;
-    advance(w, NOW + ECONOMIC_INTERVAL);
+    w.nextEconomicAt = NOW + ROUND;
+    advance(w, NOW + ROUND);
     const started = w.jobs
       .slice(jobs)
       .filter((j) => producers.some((e) => e.id === j.establishmentId));
     expect(started).toHaveLength(0);
     for (const e of producers) e.inventory.oil = 0;
-    advance(w, NOW + ECONOMIC_INTERVAL * 2);
+    advance(w, NOW + ROUND * 2);
     expect(
       w.jobs.slice(jobs).filter((j) => producers.some((e) => e.id === j.establishmentId)).length,
     ).toBeGreaterThan(0);

@@ -12,9 +12,13 @@ import {
 } from '../packages/simulation/src/metrics';
 import { calibration } from '../packages/simulation/src/calibration';
 import { designItems, designRecipes } from '../packages/simulation/src/catalog';
-import { ECONOMIC_INTERVAL, type Command } from '../packages/simulation/src/model';
+import { type Command } from '../packages/simulation/src/model';
 import { positionAlongRoute } from '../packages/simulation/src/geometry';
 import { shipmentStatus } from '../packages/simulation/src/shipment';
+import { createClock, economicInterval } from '../packages/simulation/src/clock';
+
+// Os mundos destes testes nascem no relógio padrão (120×).
+const ROUND = economicInterval(createClock());
 
 const NOW = 1000000;
 const trade: Command = {
@@ -42,7 +46,7 @@ describe('temporada e indicadores auditáveis', () => {
       expect(productionCharges(w, w.establishments[1], 'steel-bars', 1).processing).toBe(
         before.recipes.find((r) => r.id === 'steel-bars')!.cost,
       );
-      advance(w, NOW + ECONOMIC_INTERVAL * 2);
+      advance(w, NOW + ROUND * 2);
       expect(w.season.config).toEqual(before);
       expect(fetchMock).not.toHaveBeenCalled();
     } finally {
@@ -141,7 +145,7 @@ describe('temporada e indicadores auditáveis', () => {
       e = w.establishments[1],
       money = w.companies.reduce((n, c) => n + c.balance, 0);
     e.enabled = false;
-    advance(w, NOW + ECONOMIC_INTERVAL);
+    advance(w, NOW + ROUND);
     expect(
       w.ledger.some(
         (l) => l.kind === 'payroll' && l.establishmentId === e.id && l.to === 'consumers',
@@ -157,10 +161,10 @@ describe('temporada e indicadores auditáveis', () => {
     e.inventory = {};
     e.automation = true;
     e.automationDailyBudget = 1;
-    advance(w, NOW + ECONOMIC_INTERVAL);
+    advance(w, NOW + ROUND);
     expect(w.shipments.filter((s) => s.destinationId === e.id)).toHaveLength(0);
     e.automationDailyBudget = 3000000;
-    advance(w, NOW + ECONOMIC_INTERVAL * 2);
+    advance(w, NOW + ROUND * 2);
     const spent = w.ledger
       .filter((l) => l.establishmentId === e.id && ['trade', 'freight'].includes(l.kind))
       .reduce((n, l) => n + l.amount, 0);

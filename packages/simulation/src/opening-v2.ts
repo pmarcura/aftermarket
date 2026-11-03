@@ -27,7 +27,8 @@ import {
   regionFor,
   regionsOf,
 } from './metrics';
-import { GAME_DAY, automationCyclesPerDay } from './operations';
+import { automationCyclesPerDay } from './operations';
+import { gameDay } from './clock';
 import { householdItems } from './channels';
 
 // Abertura do mundo versão 2 (etapa B, fatia 8): rivais em todas as especialidades da economia
@@ -316,7 +317,7 @@ export function openV2Rivals(w: World, at: number) {
       const primary = Object.keys(recipe.output)[0] as ProductId;
       stock[primary] = roundFor(
         primary,
-        recipe.output[primary]! * perDay * (1 + recipe.duration / GAME_DAY),
+        recipe.output[primary]! * perDay * (1 + recipe.duration / gameDay(w)),
       );
     } else
       for (const id of householdItems(w))
@@ -478,7 +479,7 @@ export function alignLegacyProducers(w: World) {
     for (const [id, q] of Object.entries(recipe.output) as [ProductId, number][])
       e.inventory[id] = Math.min(
         e.inventory[id] ?? 0,
-        roundFor(id, q * perDay * (1 + recipe.duration / GAME_DAY)),
+        roundFor(id, q * perDay * (1 + recipe.duration / gameDay(w))),
       );
     for (const [id, q] of Object.entries(recipe.input) as [ProductId, number][])
       if (!recipe.output[id]) e.inventory[id] = Math.min(e.inventory[id] ?? 0, roundFor(id, q * 3));

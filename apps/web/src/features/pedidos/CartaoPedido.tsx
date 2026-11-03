@@ -52,7 +52,7 @@ export function CartaoPedido({
   const quem = compra
     ? `Você pede para ${destino?.name ?? 'sua unidade'}`
     : `${comprador?.name ?? 'Uma empresa'}${comprador?.bot ? ' (empresa automática)' : ''} ${venda ? 'quer comprar de você' : 'procura'}`;
-  const horas = horasAte(o.deadline - agora);
+  const horas = horasAte(world, o.deadline - agora);
   const abertoParaMim =
     o.status === 'pending' && o.deadline > agora && (!compra || Boolean(o.proposals?.length));
   const unicaAcao = aceitarPedido

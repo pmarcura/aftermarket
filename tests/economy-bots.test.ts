@@ -1,11 +1,15 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { createWorld } from '../packages/simulation/src/seed';
 import { advance } from '../packages/simulation/src/engine';
-import { GAME_DAY, SCRAP_COLLECTION } from '../packages/simulation/src/operations';
+import { SCRAP_COLLECTION } from '../packages/simulation/src/operations';
 import { seasonPrice, wholesaleReference } from '../packages/simulation/src/metrics';
 import { householdItems } from '../packages/simulation/src/channels';
 import { v2PortfolioFor } from '../packages/simulation/src/opening-v2';
 import type { World } from '../packages/simulation/src/model';
+import { createClock, gameDay } from '../packages/simulation/src/clock';
+
+// Os mundos destes testes nascem no relógio padrão (120×).
+const DAY = gameDay(createClock());
 
 // Fatia 8 da etapa B: rivais em todas as especialidades do mundo versão 2, com os mesmos comandos.
 const NOW = Date.UTC(2026, 9, 27, 12);
@@ -57,7 +61,7 @@ describe('vinte dias de bots', () => {
   beforeAll(() => {
     w = createWorld(NOW);
     before = money(w);
-    advance(w, NOW + 20 * GAME_DAY);
+    advance(w, NOW + 20 * DAY);
   }, 120000);
 
   it('nenhuma especialidade fica parada e o dinheiro se conserva', () => {
@@ -77,7 +81,7 @@ describe('vinte dias de bots', () => {
   it('o governo devolve a arrecadação às famílias, que seguem comprando', () => {
     expect(w.ledger.some((l) => l.from.startsWith('treasury:') && l.to === 'consumers')).toBe(true);
     expect(w.companies.find((c) => c.id === 'consumers')!.balance).toBeGreaterThan(0);
-    const late = w.consumptionHistory.filter((h) => h.at > NOW + 15 * GAME_DAY);
+    const late = w.consumptionHistory.filter((h) => h.at > NOW + 15 * DAY);
     const sold = late.reduce((n, h) => n + h.sold, 0),
       desired = late.reduce((n, h) => n + h.desired, 0);
     expect(sold / desired).toBeGreaterThan(0.3);

@@ -1,5 +1,6 @@
 import type { World, Property, Establishment, Category, Position } from './model';
-import { ECONOMIC_INTERVAL, products, type ProductId } from './model';
+import { products, type ProductId } from './model';
+import { createClock, economicInterval } from './clock';
 import { v2SeasonConfig } from './economy-v2';
 import { referencePrice } from './catalog';
 import { operatingCosts, recordMarket } from './metrics';
@@ -36,8 +37,13 @@ const openingPrice = (id: ProductId) => openingPrices[id] ?? referencePrice(id);
 
 // Mundo da economia alvo (D-028 a D-030, D-042): catálogo de `catalog.ts`, Centro-Sul real e
 // abertura gerada pela calculadora vezes a escala (1 = mundo de referência; 20 = ~500 bots).
-export function createWorld(now = Date.now(), options: { scale?: number } = {}): World {
+export function createWorld(
+  now = Date.now(),
+  options: { scale?: number; timeScale?: number } = {},
+): World {
   const scale = options.scale ?? 1;
+  // Velocidade do relógio congelada na temporada (spec 004); padrão 120×.
+  const clock = createClock(options.timeScale);
   const properties: Property[] = [];
   const establishments: Establishment[] = [];
   const add = (
@@ -289,7 +295,7 @@ export function createWorld(now = Date.now(), options: { scale?: number } = {}):
     revision: 0,
     createdAt: now,
     updatedAt: now,
-    nextEconomicAt: now + ECONOMIC_INTERVAL,
+    nextEconomicAt: now + economicInterval(clock),
     companies: [
       { id: 'player', name: 'Silva Participações', bot: false, balance: 285062500 },
       { id: 'player2', name: 'Costa Empreendimentos', bot: false, balance: 285062500 },
@@ -340,7 +346,7 @@ export function createWorld(now = Date.now(), options: { scale?: number } = {}):
       id: `local-${now}`,
       name: 'Temporada local',
       startedAt: now,
-      config: v2SeasonConfig(scale),
+      config: v2SeasonConfig(scale, clock),
     },
   };
   initializeOperations(world);

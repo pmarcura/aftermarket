@@ -1,15 +1,14 @@
 import { test, expect } from './fixtures';
 import { createWorld } from '../../packages/simulation/src/seed';
 import { execute, advance, RuleError, quote } from '../../packages/simulation/src/engine';
-import {
-  ECONOMIC_INTERVAL,
-  type World,
-  type Command,
-  type Position,
-} from '../../packages/simulation/src/model';
+import { type World, type Command, type Position } from '../../packages/simulation/src/model';
 import { arrears, outstandingLoans } from '../../packages/simulation/src/design';
 import { positionAlongRoute } from '../../packages/simulation/src/geometry';
 import { shipmentRoute } from '../../packages/simulation/src/road-path';
+import { createClock, economicInterval } from '../../packages/simulation/src/clock';
+
+// Os mundos destes testes nascem no relógio padrão (120×).
+const ROUND = economicInterval(createClock());
 
 test('recuperação explica atrasados, crédito, quitação e suspensão; gráfico exporta dados legíveis', async ({
   page,
@@ -27,7 +26,7 @@ test('recuperação explica atrasados, crédito, quitação e suspensão; gráfi
     families = w.companies.find((c) => c.id === 'consumers')!;
   families.balance += player.balance;
   player.balance = 0;
-  advance(w, now + ECONOMIC_INTERVAL);
+  advance(w, now + ROUND);
   expect(arrears(w, 'player')).toBeGreaterThan(0);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));

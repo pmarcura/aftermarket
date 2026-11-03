@@ -7,7 +7,7 @@ import { advance, execute, RuleError } from '../../../packages/simulation/src/en
 import type { Command, World } from '../../../packages/simulation/src/model';
 import { migrateWorld, needsMigration } from '../../../packages/simulation/src/migrate';
 import { archiveHistory } from '../../../packages/simulation/src/history';
-import { GAME_DAY } from '../../../packages/simulation/src/operations';
+import { gameDay } from '../../../packages/simulation/src/clock';
 import type { RoadAccessUpdate } from './road-access';
 
 const SAVE_INTERVAL_MS = 5000;
@@ -19,6 +19,7 @@ export function createStore(
     roadAccess?: boolean;
     scenario?: ScenarioName;
     scale?: number;
+    timeScale?: number;
   } = {},
 ) {
   if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true });
@@ -30,8 +31,11 @@ export function createStore(
     db.prepare('INSERT INTO worlds VALUES(1, ?)').run(
       JSON.stringify(
         options.scenario
-          ? createScenario(Date.now(), options.scenario, 0, { scale: options.scale })
-          : createWorld(),
+          ? createScenario(Date.now(), options.scenario, 0, {
+              scale: options.scale,
+              timeScale: options.timeScale,
+            })
+          : createWorld(Date.now(), { timeScale: options.timeScale }),
       ),
     );
   const existing = JSON.parse(
@@ -73,6 +77,11 @@ export function createStore(
   let world = JSON.parse(
     (db.prepare('SELECT state FROM worlds WHERE id=1').get() as { state: string }).state,
   ) as World;
+  // A velocidade é da temporada (spec 004): trocar a de um mundo existente não é suportado.
+  if (options.timeScale !== undefined && options.timeScale !== world.season.config.clock.timeScale)
+    console.warn(
+      `Este mundo roda a ${world.season.config.clock.timeScale}×; AFTERMARKET_TIME_SCALE=${options.timeScale} vale só para mundo novo (use outro AFTERMARKET_DB_FILE).`,
+    );
   let dirty = false,
     lastSave = Date.now(),
     lastArchive = 0;
@@ -85,7 +94,7 @@ export function createStore(
     // O que passou do prazo do histórico vai para o arquivo, na mesma transação da gravação:
     // nada é apagado.
     const keepDays = world.season.config.history.keepDays;
-    if (world.updatedAt - lastArchive >= GAME_DAY / 4) {
+    if (world.updatedAt - lastArchive >= gameDay(world) / 4) {
       const old = archiveHistory(world, world.updatedAt, keepDays);
       for (const l of old.ledger) archiveRows.ledger.run(l.id, l.at, JSON.stringify(l));
       for (const j of old.jobs) archiveRows.jobs.run(j.id, j.finishesAt, JSON.stringify(j));

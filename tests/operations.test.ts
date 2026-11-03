@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { createWorld } from '../packages/simulation/src/seed';
 import { advance, execute, quote } from '../packages/simulation/src/engine';
-import { ECONOMIC_INTERVAL, type Command, type World } from '../packages/simulation/src/model';
+import { type Command, type World } from '../packages/simulation/src/model';
 import {
-  GAME_DAY,
   gameCalendar,
   inventoryQuality,
   productionCapacity,
@@ -12,6 +11,11 @@ import {
 import { migrateWorld } from '../packages/simulation/src/migrate';
 import { createStore } from '../apps/server/src/store';
 import { rebaseMoney } from '../packages/simulation/src/invariants';
+import { createClock, economicInterval, gameDay } from '../packages/simulation/src/clock';
+
+// Os mundos destes testes nascem no relógio padrão (120×).
+const DAY = gameDay(createClock());
+const ROUND = economicInterval(createClock());
 const NOW = Date.UTC(2026, 9, 26, 12);
 const money = (w: World) => w.companies.reduce((n, c) => n + c.balance, 0);
 const unit = (w: World, id = 'e-industry') => w.establishments.find((e) => e.id === id)!;
@@ -126,7 +130,7 @@ describe('capacidade, automação e qualidade', () => {
       NOW,
     );
     const total = money(w);
-    advance(w, NOW + ECONOMIC_INTERVAL * 4);
+    advance(w, NOW + ROUND * 4);
     expect(e.reserve).toBe(0);
     expect(e.inventory.iron).toBe(650 + 3 * 1.5); // 1,5 t por ciclo de extração
     expect(w.jobs.filter((j) => j.establishmentId === e.id).reduce((n, j) => n + j.cycles, 0)).toBe(
@@ -151,7 +155,7 @@ describe('capacidade, automação e qualidade', () => {
       },
       NOW,
     );
-    advance(w, NOW + ECONOMIC_INTERVAL);
+    advance(w, NOW + ROUND);
     expect(w.jobs.filter((j) => j.establishmentId === 'e-mine')).toHaveLength(0);
     expect(unit(w, 'e-mine').automationStatus).toMatch(/Limite diário/);
   });
@@ -159,10 +163,10 @@ describe('capacidade, automação e qualidade', () => {
     const w = createWorld(NOW);
     passiveOff(w);
     expect(gameCalendar(w, NOW).label).toBe('Segunda');
-    expect(gameCalendar(w, NOW + GAME_DAY * 5).label).toBe('Sábado');
+    expect(gameCalendar(w, NOW + DAY * 5).label).toBe('Sábado');
     expect(w.season.config.operations.weekday.reduce((n, x) => n + x, 0)).toBeCloseTo(7);
     unit(w, 'e-retail').employees = 1;
-    advance(w, NOW + ECONOMIC_INTERVAL);
+    advance(w, NOW + ROUND);
     const rows = w.consumptionHistory.filter((s) => s.establishmentId === 'e-retail');
     expect(rows.reduce((n, s) => n + s.sold, 0)).toBeLessThanOrEqual(
       w.season.config.operations.retailUnitsPerWorker,
@@ -281,7 +285,7 @@ describe('compatibilidade de contratos públicos legados', () => {
   it('preserva a reserva, o pagamento e o consumo contratado antes das disputas estaduais', () => {
     const w = createWorld(NOW);
     passiveOff(w);
-    w.nextEconomicAt = NOW + GAME_DAY * 100;
+    w.nextEconomicAt = NOW + DAY * 100;
     transferToTreasury(w, 50000000);
     const total = money(w);
     const c = {
@@ -295,7 +299,7 @@ describe('compatibilidade de contratos públicos legados', () => {
       maxFreight: 1000000,
       reserved: 24 * 550000 + 1000000,
       createdAt: NOW,
-      deadline: NOW + GAME_DAY * 3,
+      deadline: NOW + DAY * 3,
       status: 'open' as const,
       deliveredQuantity: 0,
     };
@@ -336,7 +340,7 @@ describe('compatibilidade de contratos públicos legados', () => {
       maxFreight: 1000000,
       reserved: 24 * 550000 + 1000000,
       createdAt: NOW,
-      deadline: NOW + GAME_DAY * 3,
+      deadline: NOW + DAY * 3,
       status: 'open',
       deliveredQuantity: 0,
     });

@@ -1,18 +1,12 @@
-import {
-  ECONOMIC_INTERVAL,
-  products,
-  TIME_SCALE,
-  type ProductId,
-  type World,
-  seasonProducts,
-} from './model';
+import { products, type ProductId, type World, seasonProducts } from './model';
 import {
   fleetProducts,
   householdProducts,
   infrastructurePrograms,
   recycledProducts,
 } from './channels';
-import { GAME_DAY, availableStock, productionCapacity } from './operations';
+import { availableStock, productionCapacity } from './operations';
+import { HOUR_MS, economicInterval, gameDay, realToGame } from './clock';
 import { operatingCosts, productionCharges } from './metrics';
 import { materialBoundaries, type MaterialBoundary } from './resource-policy';
 
@@ -411,7 +405,8 @@ export function auditResources(w: World, policy: AuditPolicy = defaultPolicy) {
     const outputValue = entries(r.output).reduce((n, [id, q]) => n + cfg.basePrices[id] * q, 0);
     const variableCost = materials + charges.total;
     const contribution = outputValue - variableCost;
-    const cyclesPerDay = GAME_DAY / (Math.ceil(r.duration / ECONOMIC_INTERVAL) * ECONOMIC_INTERVAL);
+    const round = economicInterval(w);
+    const cyclesPerDay = gameDay(w) / (Math.ceil(r.duration / round) * round);
     const resultPerDay = contribution * cyclesPerDay - fixedPerDay;
     if (resultPerDay < 0)
       warning(
@@ -432,7 +427,7 @@ export function auditResources(w: World, policy: AuditPolicy = defaultPolicy) {
       category: r.category,
       input: r.input,
       output: r.output,
-      hours: (r.duration * TIME_SCALE) / 3600000,
+      hours: realToGame(w, r.duration) / HOUR_MS,
       workers: profile.workers,
       areaM2: profile.areaM2,
       energyKwh: r.energyKwh,

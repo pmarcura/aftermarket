@@ -10,6 +10,7 @@ import { RuleError } from '../../../packages/simulation/src/engine';
 import { commandSchema, product } from './commands';
 import { worldView } from './view';
 import { gzipSync } from 'node:zlib';
+import { createClock } from '../../../packages/simulation/src/clock';
 
 const app = express();
 const port = Number(process.env.AFTERMARKET_PORT ?? 3001);
@@ -21,6 +22,11 @@ const scenario = z
 // Escala do mundo: 1 é o mundo de referência da calculadora; 20 dá cerca de 500 empresas-bot.
 const scale = Number(process.env.AFTERMARKET_WORLD_SCALE ?? 1);
 if (!Number.isFinite(scale) || scale < 1) throw new Error('AFTERMARKET_WORLD_SCALE inválida.');
+// Velocidade do relógio de um mundo novo (spec 004): padrão 120 (1 min real = 2 h de jogo); o
+// playtest lento usa 6 (dia de jogo = 4 h reais). Mundo existente segue a velocidade em que nasceu.
+const timeScale = process.env.AFTERMARKET_TIME_SCALE
+  ? createClock(Number(process.env.AFTERMARKET_TIME_SCALE)).timeScale
+  : undefined;
 const store = createStore(resolve(process.env.AFTERMARKET_DB_FILE ?? '.runtime/world.sqlite'), {
   // Todo mundo jogável valida o acesso dos imóveis e desenha rotas reais. O frete exige rota
   // confirmada só na escala 1; com ~500 bots segue a distância estimada (D-034, D-036): esperar
@@ -29,6 +35,7 @@ const store = createStore(resolve(process.env.AFTERMARKET_DB_FILE ?? '.runtime/w
   roadAccess: true,
   scale,
   scenario,
+  timeScale,
 });
 const roadFetcher = createRoadFetcher();
 const roadAccess = createRoadAccessService(store, { fetcher: roadFetcher });

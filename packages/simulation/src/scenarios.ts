@@ -112,11 +112,11 @@ export function createScenario(
   at: number,
   scenario: ScenarioName = 'baseline',
   seed = 0,
-  options: { scale?: number } = {},
+  options: { scale?: number; timeScale?: number } = {},
 ) {
   if (!scenarioNames.includes(scenario) || !Number.isSafeInteger(seed) || seed < 0 || seed > 10000)
     throw Error('Cenário ou semente inválida.');
-  const w = createWorld(at, { scale: options.scale });
+  const w = createWorld(at, { scale: options.scale, timeScale: options.timeScale });
   for (const [i, c] of w.companies.filter((c) => c.id.startsWith('rival-')).entries())
     c.strategy = (['regional', 'quality', 'value'] as const)[(i + seed) % 3];
   w.season.name = scenario === 'playtest' ? 'Mundo jogável' : 'Temporada local';

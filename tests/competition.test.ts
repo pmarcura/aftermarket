@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { createWorld } from '../packages/simulation/src/seed';
 import { execute, advance, quote } from '../packages/simulation/src/engine';
 import {
-  GAME_DAY,
   inventoryQuality,
   productionQuality,
   treasuryReserved,
@@ -23,10 +22,15 @@ import {
 } from '../packages/simulation/src/supply';
 import { runBotDirector } from '../packages/simulation/src/director';
 import { laborMarket } from '../packages/simulation/src/metrics';
-import { ECONOMIC_INTERVAL, type World } from '../packages/simulation/src/model';
+import { type World } from '../packages/simulation/src/model';
 import { migrateWorld } from '../packages/simulation/src/migrate';
 import { v2PortfolioFor } from '../packages/simulation/src/opening-v2';
 import { rebaseMoney } from '../packages/simulation/src/invariants';
+import { createClock, economicInterval, gameDay } from '../packages/simulation/src/clock';
+
+// Os mundos destes testes nascem no relógio padrão (120×).
+const DAY = gameDay(createClock());
+const ROUND = economicInterval(createClock());
 const NOW = Date.UTC(2026, 9, 26, 12),
   sum = (w: World) => w.companies.reduce((n, c) => n + c.balance, 0),
   unit = (w: World, id = 'e-industry') => w.establishments.find((e) => e.id === id)!;
@@ -39,7 +43,7 @@ function quiet() {
   for (const c of w.companies)
     if (!institutional(c.id) && !['transbrasil', 'rodoleste', 'expresso'].includes(c.id))
       c.bot = false;
-  w.nextEconomicAt = NOW + GAME_DAY * 100;
+  w.nextEconomicAt = NOW + DAY * 100;
   return w;
 }
 function move(w: World, from: string, to: string, amount: number) {
@@ -103,7 +107,7 @@ describe('população de bots e salários estaduais', () => {
     const sp = laborMarket(w, { ...p, state: 'SP' }),
       mg = laborMarket(w, { ...p, state: 'MG' });
     expect(sp.monthlySalary).toBeGreaterThan(mg.monthlySalary);
-    updateWages(w, NOW + GAME_DAY * 7);
+    updateWages(w, NOW + DAY * 7);
     expect(laborMarket(w, { ...p, state: 'SP' }).monthlySalary).toBeGreaterThan(sp.monthlySalary);
   });
   it('protege semente de produção automática sem inventar estoque', () => {
@@ -362,8 +366,8 @@ describe('educação e qualidade', () => {
 describe('disputa e entrega aos tesouros estaduais', () => {
   it('desclassifica melhor proposta sem estoque e adjudica a concorrente válida', () => {
     const w = quiet();
-    w.nextEconomicAt = NOW + ECONOMIC_INTERVAL;
-    advance(w, NOW + ECONOMIC_INTERVAL);
+    w.nextEconomicAt = NOW + ROUND;
+    advance(w, NOW + ROUND);
     const c = w.infrastructure.find((c) => c.state === 'SP')!;
     const a = unit(w),
       b = unit(w, 'e-rival-1');
@@ -404,14 +408,14 @@ describe('disputa e entrega aos tesouros estaduais', () => {
   });
   it('abre editais por caixa estadual, fixa referência +25% e adjudica somente proposta viável', () => {
     const w = quiet();
-    w.nextEconomicAt = NOW + ECONOMIC_INTERVAL;
+    w.nextEconomicAt = NOW + ROUND;
     for (const c of w.companies.filter((c) => c.id.startsWith('treasury:')))
       move(w, c.id, 'consumers', c.balance);
     move(w, 'player', 'treasury:SP', 100000000);
     const total = sum(w);
     unit(w).inventory.steel = 200;
     unit(w).quality!.steel = 95;
-    advance(w, NOW + ECONOMIC_INTERVAL);
+    advance(w, NOW + ROUND);
     const c = w.infrastructure.find((c) => c.state === 'SP')!;
     expect(c).toBeDefined();
     expect(c.unitPrice).toBe(Math.round(c.referencePrice! * 1.25));
@@ -448,8 +452,8 @@ describe('disputa e entrega aos tesouros estaduais', () => {
   });
   it('qualidade ou preço inadequado não comprometem orçamento nem recebem bônus', () => {
     const w = quiet();
-    w.nextEconomicAt = NOW + ECONOMIC_INTERVAL;
-    advance(w, NOW + ECONOMIC_INTERVAL);
+    w.nextEconomicAt = NOW + ROUND;
+    advance(w, NOW + ROUND);
     const c = w.infrastructure.find((c) => c.state === 'SP')!;
     unit(w).inventory.steel = 100;
     unit(w).quality!.steel = 10;
@@ -472,8 +476,8 @@ describe('disputa e entrega aos tesouros estaduais', () => {
   });
   it('a referência de várias empresas é interna e o edital não acompanha mudanças posteriores', () => {
     const w = quiet();
-    w.nextEconomicAt = NOW + ECONOMIC_INTERVAL;
-    advance(w, NOW + ECONOMIC_INTERVAL);
+    w.nextEconomicAt = NOW + ROUND;
+    advance(w, NOW + ROUND);
     const c = w.infrastructure[0],
       fixed = c.referencePrice;
     for (const o of w.offers.filter((o) => o.product === c.product)) o.price *= 2;
@@ -527,7 +531,7 @@ it('bot publica necessidade real e aceita oferta de jogador com débito, frota e
     e = w.establishments.find(
       (e) => e.companyId.startsWith('rival-') && e.specialization === 'steel-bars',
     )!,
-    at = NOW + GAME_DAY / 3,
+    at = NOW + DAY / 3,
     total = sum(w);
   w.companies.find((c) => c.id === e.companyId)!.bot = true;
   e.inventory.iron = 0;
@@ -579,7 +583,7 @@ it('transferência de estoque funciona com produção pausada e projeção respe
     NOW,
   );
   const shipment = w.shipments[0];
-  shipment.arrivesAt = NOW + GAME_DAY * 2;
+  shipment.arrivesAt = NOW + DAY * 2;
   const values = supplyProjection(w, e, 'iron', 5);
   expect(values[0]).toBe(0);
   expect(values[1]).toBe(0);
@@ -614,9 +618,9 @@ it('migração após manutenção não cobra novas regras no passado e conserva 
     NOW,
   );
   w.operationsVersion = 2;
-  w.nextEconomicAt = NOW + ECONOMIC_INTERVAL;
+  w.nextEconomicAt = NOW + ROUND;
   const arrival = w.shipments[0].arrivesAt,
-    at = NOW + GAME_DAY * 30;
+    at = NOW + DAY * 30;
   const migrated = migrateWorld(w, at).world;
   expect(migrated.nextEconomicAt).toBe(at);
   expect(migrated.shipments[0].arrivesAt).toBe(arrival);

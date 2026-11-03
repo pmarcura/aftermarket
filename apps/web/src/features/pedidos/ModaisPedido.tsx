@@ -17,11 +17,12 @@ import {
   type PurchaseOrder,
 } from '../../../../../packages/simulation/src/model';
 import { quote } from '../../../../../packages/simulation/src/engine';
-import { GAME_DAY, availableStock } from '../../../../../packages/simulation/src/operations';
+import { availableStock } from '../../../../../packages/simulation/src/operations';
 import { storageQuantity } from '../../../../../packages/simulation/src/transport';
 import { freeCash } from '../../../../../packages/simulation/src/design';
 import { CampoNumero } from './CampoNumero';
 import { acoesDoPedido } from './dados';
+import { gameDay } from '../../../../../packages/simulation/src/clock';
 import '../../design/pedidos.css';
 
 const PRAZOS = [1, 3, 7, 14] as const;
@@ -227,7 +228,7 @@ export function ModalProposta({
               ? 'A frota escolhida não leva essa quantidade, ou a estrada ainda está sendo traçada.'
               : cotacao.price > frete
                 ? 'O teto de frete está abaixo do preço atual. Suba o teto para enviar.'
-                : cotacao.durationMs > dias * GAME_DAY
+                : cotacao.durationMs > dias * gameDay(world)
                   ? 'O prazo é menor que o tempo de viagem. Escolha mais dias.'
                   : '';
   const carregando = useRoute(origemE?.propertyId, destino?.propertyId);

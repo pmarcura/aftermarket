@@ -10,7 +10,10 @@ import {
 import { createScenario } from '../packages/simulation/src/scenarios';
 import { advance } from '../packages/simulation/src/engine';
 import { seasonProducts, type MarketSample, type World } from '../packages/simulation/src/model';
-import { GAME_DAY } from '../packages/simulation/src/operations';
+import { createClock, gameDay } from '../packages/simulation/src/clock';
+
+// Os mundos destes testes nascem no relógio padrão (120×).
+const DAY = gameDay(createClock());
 
 // Query oracle: mirrors the previous recording contract only in the test.
 function queriedSamples(world: World, at: number): MarketSample[] {
@@ -103,7 +106,7 @@ describe('laboratório headless', () => {
     const at = Date.UTC(2026, 9, 26, 12);
     const world = createScenario(at);
     const regions = regionsOf(world);
-    advance(world, at + GAME_DAY * 2);
+    advance(world, at + DAY * 2);
     const farm = world.establishments.find((establishment) => establishment.category === 'farm')!;
     farm.automation = true;
     farm.inventory.soy = 1;
@@ -166,10 +169,10 @@ describe('laboratório headless', () => {
         regionId: 'state:SP',
       },
     );
-    const expected = queriedSamples(world, at + GAME_DAY * 2);
+    const expected = queriedSamples(world, at + DAY * 2);
     const before = structuredClone(world);
     world.marketHistory = [];
-    recordMarket(world, at + GAME_DAY * 2);
+    recordMarket(world, at + DAY * 2);
     expect(world.marketHistory).toEqual(expected);
     expect({ ...world, marketHistory: before.marketHistory }).toEqual(before);
     // Aggregation is local: inventory/ledger edits must be visible on the next call.
@@ -187,15 +190,13 @@ describe('laboratório headless', () => {
       channel: 'wholesale',
       regionId: regions[0].id,
     });
-    const next = queriedSamples(world, at + GAME_DAY * 3);
-    recordMarket(world, at + GAME_DAY * 3);
+    const next = queriedSamples(world, at + DAY * 3);
+    recordMarket(world, at + DAY * 3);
     expect(world.marketHistory.slice(-next.length)).toEqual(next);
     world.marketHistory = Array.from({ length: 33000 }, () => ({ ...next[0] }));
-    recordMarket(world, at + GAME_DAY * 4);
+    recordMarket(world, at + DAY * 4);
     expect(world.marketHistory).toHaveLength(33000);
-    expect(world.marketHistory.slice(-next.length)).toEqual(
-      queriedSamples(world, at + GAME_DAY * 4),
-    );
+    expect(world.marketHistory.slice(-next.length)).toEqual(queriedSamples(world, at + DAY * 4));
   });
   it('valida as fronteiras sem converter entradas ambíguas', () => {
     expect(validateLabOptions()).toEqual({

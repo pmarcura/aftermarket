@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createScenario } from '../packages/simulation/src/scenarios';
 import { advance, execute, RuleError } from '../packages/simulation/src/engine';
-import { GAME_DAY } from '../packages/simulation/src/operations';
 import { applyLabOpening } from '../packages/simulation/src/lab-experiments';
 import {
   assertMoney,
@@ -16,6 +15,10 @@ import {
   type ProductId,
   type World,
 } from '../packages/simulation/src/model';
+import { createClock, gameDay } from '../packages/simulation/src/clock';
+
+// Os mundos destes testes nascem no relógio padrão (120×).
+const DAY = gameDay(createClock());
 
 const AT = Date.UTC(2026, 9, 26, 12);
 
@@ -266,7 +269,7 @@ describe('invariantes em tempo de execução (spec 005)', () => {
     expect(refused).toBeGreaterThan(100);
     expect(w.shipments.filter((s) => !s.delivered).length).toBeGreaterThan(10);
     // Depois de entregar tudo, a soma continua igual.
-    advance(w, w.updatedAt + 3 * GAME_DAY);
+    advance(w, w.updatedAt + 3 * DAY);
     expect(totalMoney(w)).toBe(money);
   }, 120000);
 
@@ -289,7 +292,7 @@ describe('invariantes em tempo de execução (spec 005)', () => {
         throw new TypeError('defeito injetado no teste');
       },
     });
-    expect(() => advance(w, AT + GAME_DAY)).not.toThrow();
+    expect(() => advance(w, AT + DAY)).not.toThrow();
     const errors = (w.botActivity ?? []).filter((a) => a.kind === 'error');
     expect(errors.length).toBeGreaterThan(0);
     expect(errors.every((a) => a.companyId === broken.id)).toBe(true);

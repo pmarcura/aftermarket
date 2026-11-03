@@ -27,7 +27,7 @@ export function CartaoCarga({ g }: { g: GrupoCarga }) {
     .filter((s) => !s.delivered)
     .sort((a, b) => a.arrivesAt - b.arrivesAt);
   const chegam = naEstrada.length
-    ? horasDeJogo(Math.max(...naEstrada.map((s) => s.arrivesAt)) - agora)
+    ? horasDeJogo(world, Math.max(...naEstrada.map((s) => s.arrivesAt)) - agora)
     : 0;
   const comprador = world.companies.find((c) => c.id === g.first.buyerId)?.name ?? g.destino.name;
   const frase = g.contrato

@@ -1,4 +1,4 @@
-import { GAME_DAY } from './operations';
+import { gameDay } from './clock';
 import { regionsOf } from './metrics';
 import type { Entry, Job, Shipment, World } from './model';
 
@@ -15,7 +15,7 @@ export function emptyBaseline(): HistoryBaseline {
   return { archivedUntil: 0, trade: {}, companies: {}, retail: {} };
 }
 export function archiveHistory(w: World, now: number, keepDays: number) {
-  const cutoff = now - GAME_DAY * keepDays;
+  const cutoff = now - gameDay(w) * keepDays;
   const base = (w.history ??= emptyBaseline());
   const states = new Map(regionsOf(w).map((r) => [r.id, r.state]));
   const ledger: Entry[] = [];

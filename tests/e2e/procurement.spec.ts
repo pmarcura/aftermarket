@@ -1,8 +1,12 @@
 import { test, expect } from './fixtures';
 import { createWorld } from '../../packages/simulation/src/seed';
 import { execute, advance, RuleError } from '../../packages/simulation/src/engine';
-import { ECONOMIC_INTERVAL, type Command } from '../../packages/simulation/src/model';
+import { type Command } from '../../packages/simulation/src/model';
 import { institutional } from '../../packages/simulation/src/competition';
+import { createClock, economicInterval } from '../../packages/simulation/src/clock';
+
+// Os mundos destes testes nascem no relógio padrão (120×).
+const ROUND = economicInterval(createClock());
 test('edital estadual mostra referência, disputa e todos os caminhões indo à prefeitura', async ({
   page,
 }) => {
@@ -18,7 +22,7 @@ test('edital estadual mostra referência, disputa e todos os caminhões indo à 
   const factory = w.establishments.find((e) => e.id === 'e-industry')!;
   factory.inventory.steel = 200;
   factory.quality!.steel = 95;
-  advance(w, now + ECONOMIC_INTERVAL);
+  advance(w, now + ROUND);
   const contract = w.infrastructure.find((c) => c.state === 'SP')!;
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));

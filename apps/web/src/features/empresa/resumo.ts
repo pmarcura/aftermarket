@@ -1,7 +1,7 @@
 import type { Entry, World } from '../../../../../packages/simulation/src/model';
-import { GAME_DAY } from '../../../../../packages/simulation/src/operations';
 import type { ParteEmpilhada } from '../../components/BarrasPixel';
 import { agoraDoMundo, comecoDoDia } from '../inicio/tempo';
+import { gameDay } from '../../../../../packages/simulation/src/clock';
 
 /** Porte da empresa pelo patrimônio líquido, em centavos. É um rótulo de jogo, não uma regra. */
 export const PORTES = [
@@ -90,10 +90,10 @@ export function resumoDaEmpresa(world: World, empresa: string, dias: number, pon
     Math.min(
       dias,
       world.view?.ledgerDays ?? dias,
-      Math.ceil((comecoDoDia(world) + GAME_DAY - world.economyStartedAt) / GAME_DAY),
+      Math.ceil((comecoDoDia(world) + gameDay(world) - world.economyStartedAt) / gameDay(world)),
     ),
   );
-  const inicio = Math.max(world.economyStartedAt, comecoDoDia(world) - (n - 1) * GAME_DAY);
+  const inicio = Math.max(world.economyStartedAt, comecoDoDia(world) - (n - 1) * gameDay(world));
   const largura = Math.max(1, fim - inicio) / pontos;
   const variacao = new Array<number>(pontos).fill(0);
   const porGrupo: Record<GrupoSaida, number> = {

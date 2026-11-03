@@ -9,12 +9,17 @@ import { IconePixel } from '../../components/IconePixel';
 import { matizDoProduto } from '../../design/arte';
 import {
   products,
-  TIME_SCALE,
   type MarketSample,
   type ProductId,
 } from '../../../../../packages/simulation/src/model';
 import { marketView, seasonPrice } from '../../../../../packages/simulation/src/metrics';
 import '../../design/produto-ficha.css';
+import {
+  DAY_MS,
+  HOUR_MS,
+  gameToReal,
+  realToGame,
+} from '../../../../../packages/simulation/src/clock';
 
 const PERIODOS = [
   { id: 'dia', rotulo: '1 dia', horas: 24 },
@@ -103,11 +108,11 @@ function Ficha({ id }: { id: ProductId }) {
   // Série de preço e de negociado, no período escolhido, em horas de jogo.
   const serie = useMemo(() => {
     const horas = PERIODOS.find((p) => p.id === periodo)!.horas;
-    const desde = horas ? world.updatedAt - (horas * 3_600_000) / TIME_SCALE : 0;
+    const desde = horas ? world.updatedAt - gameToReal(world, horas * HOUR_MS) : 0;
     const dados = (amostras ?? []).filter((s) => s.at >= desde);
     const rotulo = (at: number) => {
-      const jogo = world.season.startedAt + (at - world.season.startedAt) * TIME_SCALE;
-      const dia = Math.floor((jogo - world.season.startedAt) / 86_400_000) + 1;
+      const jogo = world.season.startedAt + realToGame(world, at - world.season.startedAt);
+      const dia = Math.floor((jogo - world.season.startedAt) / DAY_MS) + 1;
       return `Dia ${dia} · ${String(new Date(jogo).getUTCHours()).padStart(2, '0')}h`;
     };
     const comPreco = dados.filter((s) => s.price !== null);

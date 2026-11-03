@@ -3,7 +3,7 @@ import { execSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createScenario } from '../packages/simulation/src/scenarios';
 import { advance } from '../packages/simulation/src/engine';
-import { GAME_DAY } from '../packages/simulation/src/operations';
+import { createClock, gameDay } from '../packages/simulation/src/clock';
 import { applyLabOpening } from '../packages/simulation/src/lab-experiments';
 import { archiveHistory } from '../packages/simulation/src/history';
 import { setInvariantChecks } from '../packages/simulation/src/invariants';
@@ -20,7 +20,9 @@ import {
 import type { ProductId, World } from '../packages/simulation/src/model';
 
 // Prova da economia: mundo jogável por N dias em várias sementes, medido contra a ECONOMIA-ALVO.
-// Uso: npm run economy:proof -- [--days=60] [--window=30] [--seeds=0,1,2,3,4] [--scale=1] [--write-doc]
+// Uso: npm run economy:proof -- [--days=60] [--window=30] [--seeds=0,1,2,3,4] [--scale=1] [--timeScale=120] [--write-doc]
+// Dias e janela são de jogo; --timeScale muda só a velocidade do relógio (spec 004, R4): a prova
+// avança o relógio do mundo, não espera tempo real, então um dia de jogo custa a mesma CPU.
 // A régua padrão (constituição §5) é a dos valores padrão; a escala do playtest grande é --scale=20.
 // Sementes em paralelo: rode uma por processo com --out e junte com --from=a.json,b.json --write-doc:
 //   for s in 0 1 2 3 4; do npm run economy:proof -- --scale=20 --seeds=$s --out=test-results/p20-s$s.json & done; wait
@@ -46,6 +48,7 @@ const from = arg('from', '')
         days: number;
         window?: number;
         scale?: number;
+        timeScale?: number;
         commit?: string;
         results: SeedResult[];
       },
@@ -58,13 +61,23 @@ const seeds = from.length
 const window = from[0]?.window ?? Number(arg('window', String(Math.min(30, Math.ceil(days / 2)))));
 const out = arg('out', 'test-results/economy-proof.json');
 const scale = from[0]?.scale ?? Number(arg('scale', '1'));
+const standardTimeScale = createClock().timeScale;
+const timeScale = createClock(
+  from[0]?.timeScale ?? Number(arg('timeScale', String(standardTimeScale))),
+).timeScale;
 // Arquiva o histórico como o servidor (padrão). --no-archive mantém tudo na memória: os resultados
 // são idênticos (provado na spec 003, escala 1, 60 dias, sementes 0 e 3), só mais lentos.
 const archive = !process.argv.includes('--no-archive');
 if (
-  from.some((f) => f.days !== days || (f.window ?? window) !== window || (f.scale ?? 1) !== scale)
+  from.some(
+    (f) =>
+      f.days !== days ||
+      (f.window ?? window) !== window ||
+      (f.scale ?? 1) !== scale ||
+      (f.timeScale ?? standardTimeScale) !== timeScale,
+  )
 )
-  throw new Error('Os arquivos de --from precisam ter os mesmos dias, janela e escala.');
+  throw new Error('Os arquivos de --from precisam ter os mesmos dias, janela, escala e relógio.');
 if (new Set(seeds).size !== seeds.length) throw new Error('Semente repetida na prova.');
 const AT = Date.UTC(2026, 9, 26, 12);
 // A prova é ferramenta do laboratório: conservação do dinheiro verificada a cada comando e evento.
@@ -155,7 +168,8 @@ const uncostedStock = (w: World) =>
   );
 
 function run(seed: number): SeedResult {
-  const w = createScenario(AT, 'playtest', seed, { scale });
+  const w = createScenario(AT, 'playtest', seed, { scale, timeScale });
+  const dayMs = gameDay(w); // dia de jogo em ms reais, na velocidade deste mundo
   const seasonHash = createHash('sha256')
     .update(JSON.stringify(w.season.config))
     .digest('hex')
@@ -170,7 +184,7 @@ function run(seed: number): SeedResult {
     botPolicy: 'mixed',
   });
   const opening = money(w);
-  const from = AT + (days - window) * GAME_DAY;
+  const from = AT + (days - window) * dayMs;
   const desired: Record<string, number> = {},
     sold: Record<string, number> = {};
   const completed = new Set(
@@ -187,10 +201,10 @@ function run(seed: number): SeedResult {
     archivedJobs: Job[] = [];
   const started = performance.now();
   for (let d = 1; d <= days; d++) {
-    const dayStart = AT + (d - 1) * GAME_DAY;
-    advance(w, AT + d * GAME_DAY);
+    const dayStart = AT + (d - 1) * dayMs;
+    advance(w, AT + d * dayMs);
     if (archive) {
-      const old = archiveHistory(w, AT + d * GAME_DAY, w.season.config.history.keepDays);
+      const old = archiveHistory(w, AT + d * dayMs, w.season.config.history.keepDays);
       archivedLedger.push(...old.ledger.filter((l) => l.at > from));
       archivedJobs.push(...old.jobs.filter((j) => j.finishesAt > from));
     }
@@ -200,14 +214,14 @@ function run(seed: number): SeedResult {
         `semente ${seed}: dia ${d}/${days} · ${((performance.now() - started) / 1000).toFixed(0)} s`,
       );
     drift = Math.max(drift, Math.abs(money(w) - opening));
-    if (AT + d * GAME_DAY === from) startStock = stockValue(w);
+    if (AT + d * dayMs === from) startStock = stockValue(w);
     if (dayStart < from) {
       fleet = new Map(w.vehicles.map((v) => [v.id, v.companyId]));
       for (const c of w.infrastructure) if (c.status === 'completed') completed.add(c.id);
       continue;
     }
     for (const s of w.consumptionHistory)
-      if (s.at > dayStart && s.at <= AT + d * GAME_DAY) {
+      if (s.at > dayStart && s.at <= AT + d * dayMs) {
         desired[s.product] = (desired[s.product] ?? 0) + s.desired;
         sold[s.product] = (sold[s.product] ?? 0) + s.sold;
       }
@@ -501,7 +515,21 @@ if (results.length > 1) {
 mkdirSync('test-results', { recursive: true });
 writeFileSync(
   out,
-  JSON.stringify({ days, window, scale, seeds, commit, results, summary }, null, 2),
+  JSON.stringify(
+    {
+      days,
+      window,
+      scale,
+      // Só aparece fora do padrão: o JSON a 120× fica comparável com o de antes da spec 004.
+      ...(timeScale === standardTimeScale ? {} : { timeScale }),
+      seeds,
+      commit,
+      results,
+      summary,
+    },
+    null,
+    2,
+  ),
 );
 console.log(`Relatório completo em ${out}`);
 if (process.argv.includes('--write-doc')) writeDoc();
@@ -680,7 +708,7 @@ function writeDoc() {
   const section = `<!-- escala:${scale} início -->
 ## Escala ${scale}
 
-\`npm run economy:proof -- --days=${days} --window=${window} --seeds=${seeds.join(',')} --scale=${scale} --write-doc\`${from.length > 1 ? ' (uma semente por processo, juntadas com \`--from\`)' : ''}. Código \`${commit}\`; temporada \`${hashes}\`. ${results.length} sementes, janela dos últimos ${window} dias de ${days}. Simulação: ${show(summary.msPerDay, (n) => fmt(n / 1000, 1))} s por dia de jogo por semente.
+\`npm run economy:proof -- --days=${days} --window=${window} --seeds=${seeds.join(',')} --scale=${scale}${timeScale === standardTimeScale ? '' : ` --timeScale=${timeScale}`} --write-doc\`${from.length > 1 ? ' (uma semente por processo, juntadas com \`--from\`)' : ''}. Código \`${commit}\`; temporada \`${hashes}\`. ${results.length} sementes, janela dos últimos ${window} dias de ${days}. Simulação: ${show(summary.msPerDay, (n) => fmt(n / 1000, 1))} s por dia de jogo por semente.
 
 ### KPIs de mundo
 

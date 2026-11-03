@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { Truck, Search, Check } from 'lucide-react';
 import { useGame, cr, num } from '../lib/game';
 import { Badge, Rows } from './ui';
-import { products, TIME_SCALE, type ProductId } from '../../../../packages/simulation/src/model';
+import { products, type ProductId } from '../../../../packages/simulation/src/model';
 import { quote } from '../../../../packages/simulation/src/engine';
 import { fleetAvailability, storageQuantity } from '../../../../packages/simulation/src/transport';
 import { availableStock } from '../../../../packages/simulation/src/operations';
+import { HOUR_MS, realToGame } from '../../../../packages/simulation/src/clock';
 
 export function FleetPicker({
   originId,
@@ -174,7 +175,7 @@ export function FleetPicker({
                   <b>{q ? cr(q.price) : '—'}</b>
                   <small>
                     {q
-                      ? `${q.parts.length} veículos · ${num((q.durationMs * TIME_SCALE) / 3600000, 1)} h no jogo`
+                      ? `${q.parts.length} veículos · ${num(realToGame(world, q.durationMs) / HOUR_MS, 1)} h no jogo`
                       : 'Sem despacho possível'}
                   </small>
                 </div>

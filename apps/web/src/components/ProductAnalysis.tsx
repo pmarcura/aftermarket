@@ -6,12 +6,17 @@ import { Badge, Empty, Modal, Rows, Select, Tabs } from './ui';
 import { EconomicChart } from './EconomicChart';
 import {
   products,
-  TIME_SCALE,
   type Entry,
   type MarketSample,
   type ProductId,
 } from '../../../../packages/simulation/src/model';
 import { marketView, seasonPrice } from '../../../../packages/simulation/src/metrics';
+import {
+  HOUR_MS,
+  economicInterval,
+  gameToReal,
+  realToGame,
+} from '../../../../packages/simulation/src/clock';
 
 /** Cor do tema em hex, lida das variáveis de design.css; o canvas do gráfico não aceita var(). */
 const tema = (nome: string) =>
@@ -79,11 +84,11 @@ export function ProductAnalysis({
     };
   }, [product, regionId]);
   const data = useMemo(() => {
-    const since = period ? Date.now() - (Number(period) * 3600000) / TIME_SCALE : 0;
+    const since = period ? Date.now() - gameToReal(world, Number(period) * HOUR_MS) : 0;
     return (history?.samples ?? []).filter((s) => s.at >= since);
   }, [history, period]);
   const gameTime = (at: number) =>
-    new Date(world.createdAt + (at - world.createdAt) * TIME_SCALE).toLocaleString('pt-BR', {
+    new Date(world.createdAt + realToGame(world, at - world.createdAt)).toLocaleString('pt-BR', {
       day: '2-digit',
       month: '2-digit',
       hour: '2-digit',
@@ -91,9 +96,11 @@ export function ProductAnalysis({
     });
   const candles = useMemo(() => {
     const buckets = new Map<number, { at: number; prices: number[]; volume: number }>();
+    const round = economicInterval(world);
     for (const trade of history?.trades ?? []) {
-      if (period && trade.at < Date.now() - (Number(period) * 3600000) / TIME_SCALE) continue;
-      const at = Math.floor(trade.at / 60000) * 60000,
+      if (period && trade.at < Date.now() - gameToReal(world, Number(period) * HOUR_MS)) continue;
+      // Uma vela por rodada econômica (2 h de jogo).
+      const at = Math.floor(trade.at / round) * round,
         bucket = buckets.get(at) ?? { at, prices: [], volume: 0 };
       bucket.prices.push((trade.unitPrice ?? 0) / 100);
       bucket.volume += trade.quantity ?? 0;

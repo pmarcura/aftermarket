@@ -1,5 +1,6 @@
 import type { World } from './model';
 import { v2SeasonConfig } from './economy-v2';
+import { createClock } from './clock';
 import { initializeOperations } from './operations';
 import { initializeCompetition } from './competition';
 import { initializeDesign } from './design';
@@ -7,6 +8,7 @@ import { totalMoney } from './invariants';
 
 // Campos da temporada que todo mundo salvo precisa ter (D-042: só existe a economia 2).
 const seasonFields = [
+  'clock',
   'design',
   'operations',
   'recipes',
@@ -48,7 +50,9 @@ export function migrateWorld(input: unknown, now = Date.now()): { world: World; 
   // Parâmetros que já pertencem à temporada permanecem exatamente como foram salvos.
   const w = structuredClone(raw),
     cfg = w.season.config as Partial<typeof w.season.config>;
-  const defaults = v2SeasonConfig(cfg.worldScale ?? 1);
+  // Mundo salvo antes da spec 004 recebe o relógio com que nasceu (120×); nada é recalculado,
+  // porque as durações gravadas já estão nessa velocidade.
+  const defaults = v2SeasonConfig(cfg.worldScale ?? 1, createClock(cfg.clock?.timeScale));
   for (const field of seasonFields)
     if (cfg[field] === undefined) (cfg as Record<string, unknown>)[field] = defaults[field];
   initializeOperations(w);

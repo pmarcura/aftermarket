@@ -7,12 +7,7 @@ import {
   RuleError,
   vehicleSalePrice,
 } from '../packages/simulation/src/engine';
-import {
-  ECONOMIC_INTERVAL,
-  type Establishment,
-  type ProductId,
-  type World,
-} from '../packages/simulation/src/model';
+import { type Establishment, type ProductId, type World } from '../packages/simulation/src/model';
 import { SCRAP_COLLECTION } from '../packages/simulation/src/operations';
 import {
   dealershipMarkup,
@@ -20,6 +15,10 @@ import {
   vehicleModels,
 } from '../packages/simulation/src/catalog';
 import { rebaseMoney } from '../packages/simulation/src/invariants';
+import { createClock, economicInterval } from '../packages/simulation/src/clock';
+
+// Os mundos destes testes nascem no relógio padrão (120×).
+const ROUND = economicInterval(createClock());
 
 // Fatias 6 e 7 da etapa B: aço para bens, sucata, reciclagem e caminhão como mercadoria.
 const NOW = Date.UTC(2026, 9, 27, 12);
@@ -73,8 +72,8 @@ describe('aço para bens e caminhões', () => {
     store.employees = 20;
     const collection = w.establishments.find((e) => e.id === SCRAP_COLLECTION)!;
     expect(w.offers.some((o) => o.establishmentId === SCRAP_COLLECTION)).toBe(true);
-    w.nextEconomicAt = NOW + ECONOMIC_INTERVAL;
-    advance(w, NOW + ECONOMIC_INTERVAL * 12);
+    w.nextEconomicAt = NOW + ROUND;
+    advance(w, NOW + ROUND * 12);
     const sold = w.consumptionHistory
       .filter((h) => h.product === 'utensils')
       .reduce((n, h) => n + h.sold, 0);
@@ -94,8 +93,8 @@ describe('aço para bens e caminhões', () => {
       iron: 1.6,
     });
     Object.assign(mill, { automation: true, automationCycles: 1, automationDailyBudget: 1e10 });
-    w.nextEconomicAt = NOW + ECONOMIC_INTERVAL;
-    advance(w, NOW + ECONOMIC_INTERVAL);
+    w.nextEconomicAt = NOW + ROUND;
+    advance(w, NOW + ROUND);
     const job = w.jobs.filter((j) => j.establishmentId === mill.id).at(-1)!;
     expect(job.recipeId).toBe('steel-recycling');
     expect(mill.inventory.iron).toBe(1.6); // o minério ficou guardado

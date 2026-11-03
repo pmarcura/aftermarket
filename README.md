@@ -42,7 +42,7 @@ Nesse modo, interface e API usam http://127.0.0.1:3001.
 4. Em **Oportunidades**, compre um imóvel livre, instale o equipamento de uma receita e contrate a equipe. A produção consome os insumos ao começar e entrega a saída ao terminar.
 5. Em **Configurações**, alterne entre João Silva e Marina Costa. As duas empresas veem a mesma titularidade e os mesmos estoques de mercado.
 
-O relógio do laboratório usa **120×**: um segundo real equivale a dois minutos do jogo. Um ciclo siderúrgico de quatro horas do jogo leva dois minutos reais. Custos e consumo são processados a cada duas horas do jogo. O botão de pausa impede novos ciclos; lotes já reservados terminam normalmente, e contratos fixos continuam sendo cobrados. Água e energia são pagas por consumo.
+Cada mundo tem o seu relógio, gravado na temporada quando nasce (spec 004). O padrão, usado pelo laboratório e pelos testes, é **120×**: um segundo real equivale a dois minutos do jogo e um dia de jogo dura 12 minutos reais; um ciclo siderúrgico de quatro horas do jogo leva dois minutos reais. O playtest lento usa **6×** (D-028: 1 h real = 6 h de jogo), e então **um dia de jogo dura 4 horas reais**: `AFTERMARKET_TIME_SCALE=6 AFTERMARKET_DB_FILE=.runtime/lento.sqlite npm run dev` cria um mundo novo nessa velocidade (um mundo existente continua na velocidade em que nasceu). A economia é a mesma nas duas velocidades: custos e consumo são processados a cada duas horas do jogo, 12 rodadas por dia de jogo; só muda quanto tempo real isso leva. O botão de pausa impede novos ciclos; lotes já reservados terminam normalmente, e contratos fixos continuam sendo cobrados. Água e energia são pagas por consumo.
 
 ## Temporadas e balanceamento
 

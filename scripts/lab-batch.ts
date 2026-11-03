@@ -11,6 +11,8 @@ const seeds = arg('seeds', arg('seed', '0')).split(',').map(Number);
 if (!seeds.length || seeds.length > 10 || new Set(seeds).size !== seeds.length)
   throw Error('Use uma a dez sementes distintas em --seeds=0,1,2.');
 const scenario = arg('scenario', 'baseline');
+// Velocidade do relógio (spec 004), igual nas duas variantes; ausente = padrão do motor.
+const timeScale = arg('timeScale', '');
 const compare = arg('compare', 'playtest');
 function parameters(prefix: string) {
   const shockDay = arg(`${prefix}shock-day`, '');
@@ -68,6 +70,7 @@ const jobs = seeds.flatMap((seed) =>
       seed,
       days,
       demandMultiplier: v.demandMultiplier,
+      ...(timeScale ? { timeScale: Number(timeScale) } : {}),
     }),
   })),
 );

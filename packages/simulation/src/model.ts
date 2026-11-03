@@ -472,8 +472,6 @@ export interface Recipe {
   // Receita que a mesma instalação pode usar no lugar desta, lote a lote (reciclagem).
   alternativeOf?: string;
 }
-export const TIME_SCALE = 120;
-export const ECONOMIC_INTERVAL = 60_000; // duas horas virtuais por minuto real
 export interface ProductInfo {
   name: string;
   category: string;

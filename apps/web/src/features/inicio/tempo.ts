@@ -1,28 +1,30 @@
 import { useEffect, useMemo } from 'react';
 import { useGame } from '../../lib/game';
+import type { World } from '../../../../../packages/simulation/src/model';
+import { weekdayNames } from '../../../../../packages/simulation/src/operations';
 import {
-  ECONOMIC_INTERVAL,
-  TIME_SCALE,
-  type World,
-} from '../../../../../packages/simulation/src/model';
-import { GAME_DAY, weekdayNames } from '../../../../../packages/simulation/src/operations';
-
-const HORA_DO_JOGO = 3_600_000;
+  DAY_MS,
+  HOUR_MS,
+  economicInterval,
+  gameDay,
+  gameToReal,
+  realToGame,
+} from '../../../../../packages/simulation/src/clock';
 
 /** Instante real mais recente que o mundo já calculou. */
 export const agoraDoMundo = (w: World) =>
-  Math.max(w.updatedAt, w.nextEconomicAt - ECONOMIC_INTERVAL);
+  Math.max(w.updatedAt, w.nextEconomicAt - economicInterval(w));
 
-/** Converte um instante real em data do jogo (o relógio do jogo corre TIME_SCALE vezes mais rápido). */
+/** Converte um instante real em data do jogo, pelo relógio deste mundo (season.config.clock). */
 const dataDoJogo = (w: World, real: number) =>
-  w.season.startedAt + (real - w.season.startedAt) * TIME_SCALE;
+  w.season.startedAt + realToGame(w, real - w.season.startedAt);
 const realDoJogo = (w: World, jogo: number) =>
-  w.season.startedAt + (jogo - w.season.startedAt) / TIME_SCALE;
+  w.season.startedAt + gameToReal(w, jogo - w.season.startedAt);
 
 /** "Dia 6 · 14h" contados desde o início da temporada, em horas do jogo. */
 export function relogio(w: World) {
   const jogo = dataDoJogo(w, agoraDoMundo(w));
-  const dia = Math.floor((jogo - w.season.startedAt) / 86_400_000) + 1;
+  const dia = Math.floor((jogo - w.season.startedAt) / DAY_MS) + 1;
   const data = new Date(jogo);
   return { dia, hora: data.getUTCHours(), semana: weekdayNames[data.getUTCDay()] };
 }
@@ -30,11 +32,12 @@ export function relogio(w: World) {
 /** Instante real em que começou o dia corrente do jogo (meia-noite do jogo). */
 export function comecoDoDia(w: World) {
   const jogo = dataDoJogo(w, agoraDoMundo(w));
-  return realDoJogo(w, jogo - (jogo % 86_400_000));
+  return realDoJogo(w, jogo - (jogo % DAY_MS));
 }
 
 /** Duração real em horas do jogo, para textos como "7 h de jogo". */
-export const horasDeJogo = (realMs: number) => Math.round((realMs * TIME_SCALE) / HORA_DO_JOGO);
+export const horasDeJogo = (w: World, realMs: number) =>
+  Math.round(realToGame(w, realMs) / HOUR_MS);
 
 /**
  * Dinheiro da empresa numa só passada pelo histórico. Vendas são sempre "vendas" (loja e para
@@ -43,7 +46,7 @@ export const horasDeJogo = (realMs: number) => Math.round((realMs * TIME_SCALE) 
  */
 export function resumoDoCaixa(w: World, empresa: string, desde: number) {
   const hoje = comecoDoDia(w);
-  const semana = hoje - 6 * GAME_DAY;
+  const semana = hoje - 6 * gameDay(w);
   const r = {
     vendas: 0,
     gastos: 0,
@@ -56,7 +59,8 @@ export function resumoDoCaixa(w: World, empresa: string, desde: number) {
     if (l.from === l.to) continue;
     if (l.to === empresa && (l.kind === 'retail' || l.kind === 'trade')) {
       if (l.at >= desde) r.vendas += l.amount;
-      if (l.at >= semana) r.porDia[Math.min(6, Math.floor((l.at - semana) / GAME_DAY))] += l.amount;
+      if (l.at >= semana)
+        r.porDia[Math.min(6, Math.floor((l.at - semana) / gameDay(w)))] += l.amount;
       if (l.at >= hoje) {
         r.vendasHoje += l.amount;
         if (l.establishmentId)
@@ -119,6 +123,6 @@ export function useAusencia() {
   const desde = lerVisita(chaveDaVisita(world, actor));
   const agora = agoraDoMundo(world);
   // Ausência curta (ou primeira visita) vira "hoje", o mesmo período da barra de cima e dos negócios.
-  const fora = desde !== null && agora - desde >= GAME_DAY / 6 ? desde : null;
+  const fora = desde !== null && agora - desde >= gameDay(world) / 6 ? desde : null;
   return { desde: fora ?? comecoDoDia(world), ausente: fora !== null, agora };
 }

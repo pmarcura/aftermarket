@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useGame } from '../../lib/game';
+import { HOUR_MS, realToGame } from '../../../../../packages/simulation/src/clock';
 import {
-  TIME_SCALE,
   type Establishment,
   type InfrastructureContract,
   type PurchaseOrder,
@@ -13,7 +13,8 @@ import {
 export type Situacao = 'precisa' | 'espera' | 'aberto' | 'caminho' | 'fim';
 
 /** Horas de jogo até um prazo em tempo real. */
-export const horasAte = (ms: number) => Math.max(0, Math.ceil((ms * TIME_SCALE) / 3_600_000));
+export const horasAte = (w: World, ms: number) =>
+  Math.max(0, Math.ceil(realToGame(w, ms) / HOUR_MS));
 
 /** Algo que o jogador pode aceitar agora: o pedido inteiro ou uma proposta específica. */
 export function acoesDoPedido(o: PurchaseOrder, actor: string, agora = Date.now()) {

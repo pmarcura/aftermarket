@@ -1,7 +1,6 @@
 import { test, expect } from './fixtures';
 import { type Page } from '@playwright/test';
 import { createWorld } from '../../packages/simulation/src/seed';
-import { TIME_SCALE } from '../../packages/simulation/src/model';
 
 async function fitsViewport(page: Page, width: number) {
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
@@ -72,7 +71,8 @@ for (const viewport of [
         preferences.getByRole('heading', { name: 'Preferências do mundo', exact: true }),
       ).toBeVisible();
       await expect(
-        preferences.getByText(`1 minuto real = ${TIME_SCALE} minutos no jogo`, { exact: true }),
+        // Mundo do e2e no relógio padrão (spec 004): a linha lê o relógio do mundo.
+        preferences.getByText('1 minuto real = 120 minutos no jogo', { exact: true }),
       ).toBeVisible();
       await expect(preferences.getByText('Dados simulados', { exact: true })).toBeVisible();
       await page.keyboard.press('Escape');

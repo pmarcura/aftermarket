@@ -76,7 +76,8 @@ import {
   wholesaleReference,
 } from './metrics';
 export { distanceKm } from './geometry';
-const randomUUID = () => globalThis.crypto.randomUUID();
+export { newId } from './ids';
+import { newId } from './ids';
 
 export class RuleError extends Error {
   constructor(message: string) {
@@ -135,7 +136,7 @@ function transfer(
   sender.balance -= amount;
   receiver.balance += amount;
   w.ledger.push({
-    id: randomUUID(),
+    id: newId(w),
     at,
     from,
     to,
@@ -475,7 +476,7 @@ function dispatch(
     origin.revenue += cost;
     origin.expenses += Math.round((origin.unitCosts[product] ?? 0) * quantity);
   }
-  const batchId = randomUUID();
+  const batchId = newId(w);
   const routeKey = w.requireRoadRoutes
     ? `${origin.propertyId}:${dest.propertyId}@${w.routes[`${origin.propertyId}:${dest.propertyId}`]?.fetchedAt ?? 'frozen'}`
     : undefined;
@@ -494,7 +495,7 @@ function dispatch(
     vehicle.status = 'route';
     vehicle.odometerKm = (vehicle.odometerKm ?? 0) + part.km;
     w.shipments.push({
-      id: randomUUID(),
+      id: newId(w),
       batchId,
       buyerId,
       sellerId: origin.companyId,
@@ -634,7 +635,7 @@ function executeCommand(w: World, actor: string, command: Command, now: number):
       );
       company(w, actor).financingExpense = (company(w, actor).financingExpense ?? 0) + q.fee;
       w.loans!.push({
-        id: randomUUID(),
+        id: newId(w),
         companyId: actor,
         treasuryId: q.lender,
         principal: command.amount,
@@ -906,7 +907,7 @@ function executeCommand(w: World, actor: string, command: Command, now: number):
         }),
       );
       w.jobs.push({
-        id: randomUUID(),
+        id: newId(w),
         establishmentId: e.id,
         recipeId: recipe.id,
         cycles: command.cycles,
@@ -956,7 +957,7 @@ function executeCommand(w: World, actor: string, command: Command, now: number):
       if (existing) existing.price = command.price;
       else
         w.offers.push({
-          id: randomUUID(),
+          id: newId(w),
           establishmentId: e.id,
           product: command.product,
           price: command.price,
@@ -1062,7 +1063,7 @@ function executeCommand(w: World, actor: string, command: Command, now: number):
       );
       capacity(w, dest, { [offer.product]: command.quantity });
       w.orders.push({
-        id: randomUUID(),
+        id: newId(w),
         buyerId: actor,
         sellerId: origin.companyId,
         originId: origin.id,
@@ -1207,7 +1208,7 @@ function executeCommand(w: World, actor: string, command: Command, now: number):
       );
       capacity(w, dest, { [command.product]: command.quantity });
       w.orders.push({
-        id: randomUUID(),
+        id: newId(w),
         buyerId: actor,
         sellerId: '',
         originId: '',
@@ -1264,7 +1265,7 @@ function executeCommand(w: World, actor: string, command: Command, now: number):
       );
       o.proposals ??= [];
       o.proposals.push({
-        id: randomUUID(),
+        id: newId(w),
         proposedBy: actor,
         sellerId: origin.companyId,
         originId: origin.id,
@@ -1367,7 +1368,7 @@ function executeCommand(w: World, actor: string, command: Command, now: number):
       c.bids ??= [];
       c.bids = c.bids.filter((b) => b.supplierId !== actor);
       c.bids.push({
-        id: randomUUID(),
+        id: newId(w),
         supplierId: actor,
         originId: e.id,
         carrierId: command.carrierId,
@@ -1408,7 +1409,7 @@ function executeCommand(w: World, actor: string, command: Command, now: number):
       );
       e.expenses += t.cost;
       w.training!.push({
-        id: randomUUID(),
+        id: newId(w),
         establishmentId: e.id,
         cost: t.cost,
         targetLevel: t.targetLevel,
@@ -1470,7 +1471,7 @@ function executeCommand(w: World, actor: string, command: Command, now: number):
         );
       }
       w.vehicles.push({
-        id: randomUUID(),
+        id: newId(w),
         companyId: actor,
         name: `${model === 'truckHeavy' ? 'TRK' : 'LEV'}-${String(w.vehicles.length + 100)}`,
         capacityT: spec.capacityT,
@@ -1902,7 +1903,7 @@ function openInfrastructure(w: World, at: number) {
       reserved = unitPrice * quantity + maxFreight;
     if (available < reserved) continue;
     w.infrastructure.push({
-      id: randomUUID(),
+      id: newId(w),
       title: program.name,
       program: program.name,
       product: program.product,
@@ -2260,7 +2261,7 @@ function runAutomations(w: World, at: number) {
               );
         const offer = w.offers.find((o) => o.establishmentId === e.id && o.product === id);
         if (offer) offer.price = price;
-        else w.offers.push({ id: randomUUID(), establishmentId: e.id, product: id, price });
+        else w.offers.push({ id: newId(w), establishmentId: e.id, product: id, price });
       }
     } catch (error) {
       recordBotError(w, at, e.companyId, `preços de ${e.id}`, error);

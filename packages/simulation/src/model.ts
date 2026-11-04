@@ -227,6 +227,8 @@ export interface World {
    * isto. Só o servidor muda; o motor recebe o instante já descontado.
    */
   pausedMs?: number;
+  /** Contador dos códigos de registros novos (spec 014, `ids.ts`). */
+  idSeq?: number;
   nextEconomicAt: number;
   companies: Company[];
   properties: Property[];

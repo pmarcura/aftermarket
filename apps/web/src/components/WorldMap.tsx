@@ -14,6 +14,7 @@ import {
   seasonProducts,
 } from '../../../../packages/simulation/src/model';
 import { createMapStyle } from '../lib/map-style';
+import { attachPixelTown } from './PixelTown';
 import { positionAlongRoute, routeLengths } from '../../../../packages/simulation/src/geometry';
 import { shipmentRoadPath, shipmentRoute } from '../../../../packages/simulation/src/road-path';
 import { shipmentStatus } from '../../../../packages/simulation/src/shipment';
@@ -275,6 +276,7 @@ export function WorldMap({
   const [ready, setReady] = useState(false),
     [failed, setFailed] = useState(false);
   const callback = useRef(onSelect);
+  const detachTown = useRef<(() => void) | null>(null);
   const hoverRef = useRef(hoverCard);
   hoverRef.current = hoverCard;
   const cityRef = useRef(onCitySelect);
@@ -551,6 +553,8 @@ export function WorldMap({
         );
       if (roof && instance.getLayer('buildings'))
         instance.setPaintProperty('buildings', 'fill-pattern', 'town-roof');
+      if (!mini && asphalt && container.current)
+        detachTown.current = attachPixelTown(instance, container.current, PIXEL_RATIO);
       if (instance.getLayer('water'))
         instance.setPaintProperty('water', 'fill-pattern', 'water-pixel');
       if (instance.getLayer('natural-landcover'))
@@ -848,6 +852,7 @@ export function WorldMap({
     return () => {
       clearTimeout(timeout);
       observer.disconnect();
+      detachTown.current?.();
       instance.remove();
       map.current = null;
     };

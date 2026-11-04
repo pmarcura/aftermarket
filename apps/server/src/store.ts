@@ -9,6 +9,7 @@ import { migrateWorld, needsMigration } from '../../../packages/simulation/src/m
 import { archiveHistory } from '../../../packages/simulation/src/history';
 import { gameDay } from '../../../packages/simulation/src/clock';
 import type { RoadAccessUpdate } from './road-access';
+import { readWorldSnapshot, rollbackSnapshot, createSnapshotWriter } from './world-storage';
 
 const SAVE_INTERVAL_MS = 5000;
 
@@ -27,7 +28,9 @@ export function createStore(
   db.exec(
     'PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000; CREATE TABLE IF NOT EXISTS worlds (id INTEGER PRIMARY KEY CHECK(id=1), state TEXT NOT NULL); CREATE TABLE IF NOT EXISTS receipts (id TEXT PRIMARY KEY, actor TEXT NOT NULL, command TEXT NOT NULL);',
   );
-  if (!db.prepare('SELECT id FROM worlds WHERE id=1').get())
+  const existed = Boolean(db.prepare('SELECT id FROM worlds WHERE id=1').get());
+  let backedUp = false;
+  if (!existed)
     db.prepare('INSERT INTO worlds VALUES(1, ?)').run(
       JSON.stringify(
         options.scenario
@@ -38,9 +41,7 @@ export function createStore(
           : createWorld(Date.now(), { timeScale: options.timeScale }),
       ),
     );
-  const existing = JSON.parse(
-    (db.prepare('SELECT state FROM worlds WHERE id=1').get() as { state: string }).state,
-  );
+  const existing = readWorldSnapshot(db);
   if (needsMigration(existing)) {
     // Mundo que o motor não aceita mais (economia 1) é recusado antes de qualquer escrita:
     // nem backup nem conversão; o arquivo fica como está (D-042).
@@ -52,12 +53,11 @@ export function createStore(
       const backup = resolve(dirname(path), 'backups', `pre-operations-${Date.now()}.sqlite`);
       mkdirSync(dirname(backup), { recursive: true });
       db.exec(`VACUUM INTO '${backup.replaceAll("'", "''")}'`);
+      backedUp = true;
     }
     db.exec('BEGIN IMMEDIATE');
     try {
-      const latest = JSON.parse(
-        (db.prepare('SELECT state FROM worlds WHERE id=1').get() as { state: string }).state,
-      );
+      const latest = readWorldSnapshot(db);
       const migrated = migrateWorld(latest);
       if (migrated.changed)
         db.prepare('UPDATE worlds SET state=? WHERE id=1').run(JSON.stringify(migrated.world));
@@ -74,9 +74,19 @@ export function createStore(
   // O mundo vive na memória do servidor: ler e decodificar o JSON inteiro a cada pedido do
   // navegador custava centenas de milissegundos por pedido aos 30 dias. Grava no disco a cada
   // SAVE_INTERVAL_MS e sempre junto com o recibo de cada comando.
-  let world = JSON.parse(
-    (db.prepare('SELECT state FROM worlds WHERE id=1').get() as { state: string }).state,
-  ) as World;
+  let world = needsMigration(existing) ? readWorldSnapshot(db) : existing;
+  const packed =
+    db
+      .prepare("SELECT json_extract(state, '$.storageFormat') AS format FROM worlds WHERE id=1")
+      .get()?.format === 1;
+  if (!packed && existed && !backedUp && path !== ':memory:') {
+    const backup = resolve(dirname(path), 'backups', `pre-ledger-storage-${Date.now()}.sqlite`);
+    mkdirSync(dirname(backup), { recursive: true });
+    db.exec(`VACUUM INTO '${backup.replaceAll("'", "''")}'`);
+  }
+  const saveSnapshot = createSnapshotWriter(db);
+  let committed: (() => void)[] = [];
+  let rolledBack: (() => void)[] = [];
   // A velocidade é da temporada (spec 004): trocar a de um mundo existente não é suportado.
   if (options.timeScale !== undefined && options.timeScale !== world.season.config.clock.timeScale)
     console.warn(
@@ -95,28 +105,46 @@ export function createStore(
     // nada é apagado.
     const keepDays = world.season.config.history.keepDays;
     if (world.updatedAt - lastArchive >= gameDay(world) / 4) {
+      const previous = {
+        ledger: world.ledger,
+        jobs: world.jobs,
+        shipments: world.shipments,
+        history: structuredClone(world.history),
+      };
+      rolledBack.push(() => Object.assign(world, previous));
       const old = archiveHistory(world, world.updatedAt, keepDays);
       for (const l of old.ledger) archiveRows.ledger.run(l.id, l.at, JSON.stringify(l));
       for (const j of old.jobs) archiveRows.jobs.run(j.id, j.finishesAt, JSON.stringify(j));
       for (const sh of old.shipments)
         archiveRows.shipments.run(sh.id, sh.arrivesAt, JSON.stringify(sh));
-      lastArchive = world.updatedAt;
+      const archivedAt = world.updatedAt;
+      committed.push(() => {
+        lastArchive = archivedAt;
+      });
     }
-    db.prepare('UPDATE worlds SET state=? WHERE id=1').run(JSON.stringify(world));
-    dirty = false;
-    lastSave = Date.now();
+    committed.push(saveSnapshot(world));
+    committed.push(() => {
+      dirty = false;
+      lastSave = Date.now();
+    });
   };
   const transaction = <T>(fn: () => T) => {
+    committed = [];
+    rolledBack = [];
     db.exec('BEGIN IMMEDIATE');
     try {
       const result = fn();
       db.exec('COMMIT');
+      for (const commit of committed) commit();
       return result;
     } catch (error) {
       db.exec('ROLLBACK');
+      for (const rollback of rolledBack.reverse()) rollback();
       throw error;
     }
   };
+  // Storage migration must preserve the exact simulation state, including history windows.
+  if (!packed) transaction(() => committed.push(saveSnapshot(world)));
   const flush = () => {
     if (dirty) transaction(writeWorld);
   };
@@ -150,7 +178,7 @@ export function createStore(
         return p && p.coordinates.every((n, i) => n === u.expectedCoordinates[i]);
       });
       if (!applicable.length) return;
-      const before = structuredClone(world);
+      const before = rollbackSnapshot(world);
       try {
         const moved = new Set(
           applicable
@@ -177,7 +205,7 @@ export function createStore(
           }
         }
         world.revision++;
-        transaction(writeWorld);
+        dirty = true;
       } catch (error) {
         world = before;
         throw error;
@@ -198,7 +226,7 @@ export function createStore(
         return world;
       }
       // Um comando recusado no meio do caminho não pode deixar o mundo pela metade.
-      const before = structuredClone(world);
+      const before = rollbackSnapshot(world);
       try {
         advance(world, now);
         execute(world, actor, command, now);
@@ -229,7 +257,7 @@ export function createStore(
         }
       }
       world.revision++;
-      transaction(writeWorld);
+      dirty = true;
     },
     flush,
     close: () => {

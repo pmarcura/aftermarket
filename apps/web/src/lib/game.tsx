@@ -34,6 +34,8 @@ import {
   Package,
 } from 'lucide-react';
 import { Notice } from '../components/Notice';
+import { createWorldConnection } from './world-connection';
+import { createCommandConnection } from './command-connection';
 
 // Formatadores prontos: criar um por número custa caro quando a tela formata milhares deles.
 const moedas = new Map<number, Intl.NumberFormat>();
@@ -167,6 +169,9 @@ export const useGame = () => {
 };
 export function GameProvider({ children }: { children: ReactNode }) {
   const latestWorld = useRef<World | null>(null);
+  const [sendCommand] = useState(() => createCommandConnection());
+  const operationPending = useRef(false);
+  const [connection] = useState(() => createWorldConnection());
   const [world, setWorld] = useState<World | null>(null),
     [error, setError] = useState('');
   const [actor, changeActor] = useState(() =>
@@ -191,44 +196,60 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [pending, setPending] = useState(false),
     [toast, setToast] = useState<{ message: string; error: boolean; id: number }>();
   // Pede só quando o mundo mudou: o servidor responde 204 se a revisão e a empresa são as mesmas.
-  const refresh = useCallback(async () => {
-    const current = latestWorld.current;
-    const since =
-      current?.view?.actor === actorRef.current
-        ? `?since=${current.revision}&actor=${actorRef.current}`
-        : '';
-    const response = await fetch(`/api/world${since}`, {
-      headers: { 'x-company-id': actorRef.current },
-    });
-    if (response.status === 204) {
+  const refresh = useCallback(
+    async (force = false) => {
+      const requestedActor = actorRef.current;
+      const current = latestWorld.current;
+      const since =
+        current?.view?.actor === actorRef.current
+          ? `?since=${current.revision}&actor=${actorRef.current}`
+          : '';
+      const next = await connection.read(requestedActor, since, force);
+      if (requestedActor !== actorRef.current) return;
+      if (!next) {
+        setError('');
+        return;
+      }
+      if (
+        latestWorld.current?.view?.actor === requestedActor &&
+        next.revision < latestWorld.current.revision
+      )
+        return;
+      latestWorld.current = next;
+      setWorld((previous) =>
+        previous?.revision === next.revision &&
+        previous.view?.actor === next.view?.actor &&
+        Object.keys(previous.routes).length === Object.keys(next.routes).length
+          ? previous
+          : next,
+      );
       setError('');
-      return;
-    }
-    if (!response.ok) throw new Error('O servidor não respondeu.');
-    const next: World = await response.json();
-    latestWorld.current = next;
-    setWorld((previous) =>
-      previous?.revision === next.revision &&
-      previous.view?.actor === next.view?.actor &&
-      Object.keys(previous.routes).length === Object.keys(next.routes).length
-        ? previous
-        : next,
-    );
-    setError('');
-  }, []);
+    },
+    [connection],
+  );
   useEffect(() => {
     void refresh().catch(() =>
       setError('Não foi possível conectar ao mundo. Verifique se o servidor está em execução.'),
     );
-    const timer = setInterval(
-      () => void refresh().catch(() => setError('Conexão interrompida. Tentando reconectar…')),
-      3000,
-    );
-    return () => clearInterval(timer);
+    const timer = setInterval(() => {
+      if (!document.hidden)
+        void refresh().catch(() => setError('Conexão interrompida. Tentando reconectar…'));
+    }, 3000);
+    const visible = () => {
+      if (!document.hidden)
+        void refresh().catch(() => setError('Conexão interrompida. Tentando reconectar…'));
+    };
+    document.addEventListener('visibilitychange', visible);
+    return () => {
+      clearInterval(timer);
+      connection.cancel();
+      document.removeEventListener('visibilitychange', visible);
+    };
   }, [refresh]);
   // Trocar de empresa pede o pacote da nova empresa na hora.
   useEffect(() => {
-    if (latestWorld.current && latestWorld.current.view?.actor !== actor) void refresh();
+    if (latestWorld.current && latestWorld.current.view?.actor !== actor)
+      void refresh().catch(() => setError('Não foi possível conectar à empresa. Tente novamente.'));
   }, [actor, refresh]);
   useEffect(() => {
     if (!toast || toast.error) return;
@@ -249,29 +270,28 @@ export function GameProvider({ children }: { children: ReactNode }) {
     navigate('map');
   };
   const run = async (command: Command, message: string) => {
-    if (pending) return false;
+    if (operationPending.current) return false;
+    operationPending.current = true;
     setPending(true);
+    const requestedActor = actor;
     try {
-      const response = await fetch('/api/commands', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-company-id': actor,
-          'Idempotency-Key': crypto.randomUUID(),
-        },
-        body: JSON.stringify(command),
-      });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error);
-      latestWorld.current = result;
-      setWorld(result);
-      notice(message);
+      const result = await sendCommand(requestedActor, command);
+      if (!result) return false;
+      if (actorRef.current === requestedActor) {
+        if (!latestWorld.current || result.revision >= latestWorld.current.revision) {
+          latestWorld.current = result;
+          setWorld(result);
+        }
+        setError('');
+        notice(message);
+      }
       return true;
     } catch (e) {
       notice(e instanceof Error ? e.message : 'Não foi possível concluir. Tente novamente.', true);
       await refresh().catch(() => undefined);
       return false;
     } finally {
+      operationPending.current = false;
       setPending(false);
     }
   };
@@ -282,7 +302,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
         <h1>AFTERMARKET</h1>
         <p>{error || 'Conectando à economia…'}</p>
         {error && (
-          <button onClick={() => void refresh().catch(() => undefined)}>Tentar novamente</button>
+          <button onClick={() => void refresh(true).catch(() => undefined)}>
+            Tentar novamente
+          </button>
         )}
       </div>
     );
@@ -350,6 +372,21 @@ export function GameProvider({ children }: { children: ReactNode }) {
       }}
     >
       {children}
+      {!pending && sendCommand.unconfirmed(actor) && (
+        <div className="connection-banner" role="status">
+          Há uma operação aguardando confirmação.{' '}
+          <button
+            onClick={() =>
+              void run(
+                sendCommand.unconfirmed(actor)!,
+                'Operação confirmada. Seus dados foram atualizados.',
+              )
+            }
+          >
+            Consultar operação
+          </button>
+        </div>
+      )}
       {error && (
         <div className="connection-banner" role="status">
           {error}

@@ -42,7 +42,30 @@ function sharedSummary(w: World) {
   const cached = shared.get(w);
   if (cached && cached.revision === w.revision) return cached;
   const health: WorldViewSummary['health'] = { '': economyHealth(w) };
-  for (const product of seasonProducts(w)) health[product] = economyHealth(w, w.updatedAt, product);
+  const revenues = new Map<string, Map<string, number>>();
+  const since = w.updatedAt - gameDay(w) * 7;
+  for (const entry of w.ledger) {
+    if (
+      entry.at < since ||
+      entry.at > w.updatedAt ||
+      !entry.product ||
+      (entry.kind !== 'trade' && entry.kind !== 'retail')
+    )
+      continue;
+    let sellers = revenues.get(entry.product);
+    if (!sellers) revenues.set(entry.product, (sellers = new Map()));
+    sellers.set(entry.to, (sellers.get(entry.to) ?? 0) + entry.amount);
+  }
+  // economyHealth's other indicators are global, including when product is set.
+  // Compute those once, retaining exactly its revenue order and HHI arithmetic.
+  for (const product of seasonProducts(w)) {
+    const values = [...(revenues.get(product)?.values() ?? [])];
+    const total = values.reduce((sum, value) => sum + value, 0);
+    health[product] = {
+      ...health[''],
+      hhi: total ? values.reduce((sum, value) => sum + (value / total) ** 2 * 10000, 0) : null,
+    };
+  }
   const next = { revision: w.revision, trade: tradeTotalsByScope(w), health };
   shared.set(w, next);
   return next;

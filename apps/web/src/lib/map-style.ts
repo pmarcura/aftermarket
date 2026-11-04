@@ -91,41 +91,35 @@ function roads(kind: 'tunnel' | 'surface' | 'bridge'): LayerSpecification[] {
       ...base,
       id: `roads-${kind}-casing`,
       paint: {
+        // Spec 009: contorno escuro das vias (16-bit), terra para as menores.
         'line-color': [
           'match',
           ['get', 'class'],
-          ['motorway', 'trunk'],
-          '#070906',
-          ['primary', 'secondary'],
-          '#0a0c08',
-          'track',
-          '#0c0e0a',
-          '#0f120c',
+          ['motorway', 'trunk', 'primary'],
+          '#1a2a24',
+          ['secondary', 'tertiary'],
+          '#8a7d62',
+          '#b9a991',
         ],
         'line-width': roadWidth(true),
-        'line-opacity': kind === 'tunnel' ? 0.55 : 0.95,
+        'line-opacity': kind === 'tunnel' ? 0.55 : 1,
       },
     },
     {
       ...base,
       id: `roads-${kind}`,
       paint: {
+        // Rodovias em ouro, estradas de terra em areia (paleta da referência aprovada).
         'line-color': [
           'match',
           ['get', 'class'],
-          'motorway',
-          '#f2bd3c',
-          'trunk',
-          '#dfa62c',
+          ['motorway', 'trunk'],
+          '#eec156',
           'primary',
-          '#ded2b4',
-          'secondary',
-          '#989e84',
-          'tertiary',
-          '#6d735d',
-          'track',
-          '#4b4f3e',
-          '#565b49',
+          '#d5bb97',
+          ['secondary', 'tertiary'],
+          '#cdb796',
+          '#c9b89a',
         ],
         'line-width': roadWidth(),
         'line-opacity': kind === 'tunnel' ? 0.72 : 1,
@@ -150,7 +144,7 @@ function roads(kind: 'tunnel' | 'surface' | 'bridge'): LayerSpecification[] {
         'line-join': 'round' as const,
       },
       paint: {
-        'line-color': '#fff0b8',
+        'line-color': '#fff6c8',
         'line-width': [
           'interpolate',
           ['exponential', 1.2],
@@ -164,13 +158,15 @@ function roads(kind: 'tunnel' | 'surface' | 'bridge'): LayerSpecification[] {
           17,
           3.2,
         ],
-        'line-opacity': kind === 'tunnel' ? 0.35 : 0.65,
+        'line-dasharray': [3, 3],
+        'line-opacity': kind === 'tunnel' ? 0.35 : 0.9,
       },
     },
   ];
 }
 
-/** GPS noturno na paleta grafite da identidade: rodovias em ouro, demais vias em creme apagado.
+/** Mundo 16-bit (spec 009): campo verde vivo, mata em copas, água clara com margem de areia,
+ * rodovias em ouro e estradas de terra. Padrões de pixel entram em WorldMap (addImage).
  * Local, deliberately small basemap. No remote style, labels, sprites or glyphs. */
 export function createMapStyle(): StyleSpecification {
   return {
@@ -187,7 +183,7 @@ export function createMapStyle(): StyleSpecification {
       },
     },
     layers: [
-      { id: 'background', type: 'background', paint: { 'background-color': '#1a1d17' } },
+      { id: 'background', type: 'background', paint: { 'background-color': '#00c369' } },
       {
         id: 'natural-landcover',
         type: 'fill',
@@ -201,12 +197,12 @@ export function createMapStyle(): StyleSpecification {
             'match',
             ['get', 'class'],
             'wood',
-            '#212b1a',
+            '#00804c',
             'sand',
-            '#29291d',
-            '#1f221b',
+            '#d5bb97',
+            '#f3e7cc',
           ],
-          'fill-opacity': 0.65,
+          'fill-opacity': 1,
           'fill-antialias': false,
         },
       },
@@ -216,7 +212,7 @@ export function createMapStyle(): StyleSpecification {
         source: 'openmaptiles',
         'source-layer': 'water',
         filter: ['!=', ['get', 'brunnel'], 'tunnel'],
-        paint: { 'fill-color': '#122932' },
+        paint: { 'fill-color': '#00a9f8', 'fill-antialias': false },
       },
       {
         id: 'water-outline',
@@ -225,9 +221,10 @@ export function createMapStyle(): StyleSpecification {
         'source-layer': 'water',
         filter: ['!=', ['get', 'brunnel'], 'tunnel'],
         paint: {
-          'line-color': '#26586b',
-          'line-width': ['interpolate', ['linear'], ['zoom'], 5, 0.6, 12, 1.3, 16, 2],
-          'line-opacity': 0.75,
+          // Margem de areia, como na referência.
+          'line-color': '#d5bb97',
+          'line-width': ['interpolate', ['linear'], ['zoom'], 5, 1, 12, 2, 16, 3],
+          'line-opacity': 1,
         },
       },
       {
@@ -242,8 +239,8 @@ export function createMapStyle(): StyleSpecification {
         ],
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
-          'line-color': '#2d687d',
-          'line-width': ['interpolate', ['exponential', 1.2], ['zoom'], 5, 0.7, 12, 1.6, 17, 3.6],
+          'line-color': '#00a9f8',
+          'line-width': ['interpolate', ['exponential', 1.2], ['zoom'], 5, 1.2, 12, 2.4, 17, 5],
         },
       },
       {
@@ -253,10 +250,10 @@ export function createMapStyle(): StyleSpecification {
         'source-layer': 'boundary',
         filter: ['all', ['<=', ['get', 'admin_level'], 4], ['!=', ['get', 'maritime'], 1]],
         paint: {
-          'line-color': '#565e47',
+          'line-color': '#006c56',
           'line-width': ['interpolate', ['linear'], ['zoom'], 4, 1, 10, 1.6, 14, 2.2],
           'line-dasharray': [4, 3],
-          'line-opacity': 0.65,
+          'line-opacity': 0.8,
         },
       },
       ...roads('tunnel'),

@@ -23,6 +23,8 @@ maplibregl.setWorkerUrl(workerUrl);
 // - Negócios construídos usam as miniaturas isométricas reais (/arte/*.png) sobre um pedestal
 //   tático chanfrado (com destaque em lavoura/ouro para unidades do próprio jogador).
 // - Terrenos disponíveis usam um marco chanfrado compacto com o ícone da vocação.
+// Resolução do canvas do mapa principal em relação à tela (spec 009: 16-bit = pixels de 2×).
+const PIXEL_RATIO = 0.5;
 const categories = ['farm', 'mine', 'industry', 'retail', 'logistics', 'warehouse'] as const;
 const categorySpriteUrl: Record<(typeof categories)[number], string> = {
   farm: '/arte/lavoura.png',
@@ -336,6 +338,9 @@ export function WorldMap({
       attributionControl: { compact: true },
       interactive: !mini,
       renderWorldCopies: false,
+      // Spec 009: o mapa é desenhado em meia resolução e ampliado sem suavização (CSS
+      // image-rendering: pixelated), o que dá a crocância 16-bit sem custo extra de GPU.
+      pixelRatio: mini ? undefined : PIXEL_RATIO,
     });
     map.current = instance;
     // Inspeção em desenvolvimento (laboratório e testes de navegador); não existe no build final.
@@ -404,40 +409,85 @@ export function WorldMap({
       ctx.fillText(name, 25, Math.round(h / 2) + 1);
       return ctx.getImageData(0, 0, w, h);
     };
-    // Texturas pixel-art nítidas (escala inteira) para água e florestas, sem borrar as estradas.
-    const createWaterPattern = () => {
-      const size = 32;
+    // Texturas 16-bit (spec 009): água com brilho, mata em copas, campo com tufos. Desenhadas em
+    // escala inteira para não borrar; os tiles vetoriais do planeta continuam sendo a geometria.
+    const pixelCanvas = (size: number, draw: (ctx: CanvasRenderingContext2D) => void) => {
       const canvas = document.createElement('canvas');
       canvas.width = canvas.height = size;
       const ctx = canvas.getContext('2d')!;
-      ctx.fillStyle = '#122932';
-      ctx.fillRect(0, 0, size, size);
-      ctx.fillStyle = '#1a3b47';
-      ctx.fillRect(4, 6, 8, 2);
-      ctx.fillRect(2, 8, 4, 2);
-      ctx.fillRect(12, 8, 4, 2);
-      ctx.fillRect(20, 22, 8, 2);
-      ctx.fillRect(18, 24, 4, 2);
-      ctx.fillRect(28, 24, 4, 2);
+      draw(ctx);
       return ctx.getImageData(0, 0, size, size);
     };
-    const createWoodPattern = () => {
-      const size = 24;
-      const canvas = document.createElement('canvas');
-      canvas.width = canvas.height = size;
-      const ctx = canvas.getContext('2d')!;
-      ctx.fillStyle = '#202a19';
-      ctx.fillRect(0, 0, size, size);
-      ctx.fillStyle = '#2a3821';
-      ctx.fillRect(3, 3, 4, 4);
-      ctx.fillRect(5, 1, 2, 2);
-      ctx.fillRect(15, 13, 4, 4);
-      ctx.fillRect(17, 11, 2, 2);
-      ctx.fillStyle = '#192113';
-      ctx.fillRect(3, 7, 4, 2);
-      ctx.fillRect(15, 17, 4, 2);
-      return ctx.getImageData(0, 0, size, size);
-    };
+    const createWaterPattern = () =>
+      pixelCanvas(32, (ctx) => {
+        ctx.fillStyle = '#00a9f8';
+        ctx.fillRect(0, 0, 32, 32);
+        ctx.fillStyle = '#7fd4ff';
+        for (const [x, y, w] of [
+          [4, 6, 6],
+          [14, 9, 4],
+          [22, 20, 6],
+          [6, 24, 4],
+          [26, 4, 3],
+        ])
+          ctx.fillRect(x, y, w, 1);
+        ctx.fillStyle = '#3a9ad8';
+        for (const [x, y, w] of [
+          [9, 14, 5],
+          [19, 27, 5],
+        ])
+          ctx.fillRect(x, y, w, 1);
+      });
+    const createWoodPattern = () =>
+      pixelCanvas(32, (ctx) => {
+        ctx.fillStyle = '#00804c';
+        ctx.fillRect(0, 0, 32, 32);
+        // copas redondas sobrepostas, luz no alto-esquerda, sombra embaixo (como a referência)
+        const copa = (cx: number, cy: number, r: number) => {
+          for (let y = -r; y <= r + 1; y++)
+            for (let x = -r; x <= r; x++) {
+              if (x * x + (y * 1.15) ** 2 > r * r) continue;
+              let c = '#009b72';
+              if (x < 0 && y < 0 && (x + y) % 2 === 0) c = '#38cf73';
+              if (y > r * 0.35) c = '#006c56';
+              ctx.fillStyle = c;
+              ctx.fillRect((((cx + x) % 32) + 32) % 32, (((cy + y) % 32) + 32) % 32, 1, 1);
+            }
+          ctx.fillStyle = '#8a5a32';
+          ctx.fillRect(((cx % 32) + 32) % 32, (((cy + r + 1) % 32) + 32) % 32, 1, 2);
+        };
+        copa(8, 8, 6);
+        copa(22, 6, 5);
+        copa(16, 20, 6);
+        copa(2, 24, 5);
+        copa(28, 24, 5);
+      });
+    const createGrassPattern = () =>
+      pixelCanvas(32, (ctx) => {
+        ctx.fillStyle = '#00c369';
+        ctx.fillRect(0, 0, 32, 32);
+        ctx.fillStyle = '#00a54b';
+        for (const [x, y] of [
+          [3, 5],
+          [19, 3],
+          [11, 14],
+          [26, 17],
+          [6, 25],
+          [21, 27],
+        ]) {
+          ctx.fillRect(x, y + 1, 1, 1);
+          ctx.fillRect(x + 1, y, 1, 1);
+          ctx.fillRect(x + 2, y + 1, 1, 1);
+        }
+        ctx.fillStyle = '#38cf73';
+        for (const [x, y] of [
+          [14, 6],
+          [28, 9],
+          [2, 16],
+          [17, 23],
+        ])
+          ctx.fillRect(x, y, 2, 1);
+      });
     instance.on('load', async () => {
       clearTimeout(timeout);
       setFailed(false);
@@ -445,6 +495,10 @@ export function WorldMap({
         instance.addImage('water-pixel', createWaterPattern(), { pixelRatio: 1 });
       if (!instance.hasImage('wood-pixel'))
         instance.addImage('wood-pixel', createWoodPattern(), { pixelRatio: 1 });
+      if (!instance.hasImage('grass-pixel'))
+        instance.addImage('grass-pixel', createGrassPattern(), { pixelRatio: 1 });
+      if (instance.getLayer('background'))
+        instance.setPaintProperty('background', 'background-pattern', 'grass-pixel');
       if (instance.getLayer('water'))
         instance.setPaintProperty('water', 'fill-pattern', 'water-pixel');
       if (instance.getLayer('natural-landcover'))

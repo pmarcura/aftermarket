@@ -60,7 +60,8 @@ function jogar(store: ReturnType<typeof createStore>, t0: number) {
   return t;
 }
 
-describe('diário + foto', () => {
+// Simulam rodadas e reabrem o banco: limite maior, como os outros testes de simulação.
+describe('diário + foto', { timeout: 30000 }, () => {
   it('queda sem foto: reabrir repete o diário e reconstrói o mundo idêntico', () => {
     const { dir, path } = abrirPasta();
     let store = createStore(path, { scenario: 'baseline', snapshotEveryEntries: 1e9 });

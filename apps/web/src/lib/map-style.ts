@@ -18,12 +18,15 @@ const roadClasses = [
 
 // Every class uses the same continuous zoom curve in all three strata. A bridge
 // or an unnumbered connection must not vanish because its label is unavailable.
+// Spec 009 (calibração de 03/11 com prints reais): vias menores só aparecem de perto e finas,
+// senão a cidade vira um emaranhado de areia no zoom médio.
 const widthStops = [
   { zoom: 4, widths: [1.2, 0.95, 0.65, 0.25, 0, 0, 0, 0] },
   { zoom: 7, widths: [2.1, 1.7, 1.2, 0.65, 0.3, 0, 0, 0] },
-  { zoom: 10, widths: [3.6, 3.0, 2.3, 1.6, 1.05, 0.45, 0, 0] },
-  { zoom: 12, widths: [5.0, 4.2, 3.2, 2.4, 1.75, 1.1, 0.65, 0.7] },
-  { zoom: 14, widths: [7.4, 6.2, 4.8, 3.8, 3.0, 2.1, 1.45, 1.4] },
+  { zoom: 10, widths: [3.6, 3.0, 2.3, 1.4, 0.8, 0, 0, 0] },
+  { zoom: 12, widths: [5.0, 4.2, 3.2, 2.2, 1.3, 0.35, 0.25, 0.25] },
+  { zoom: 13, widths: [6.0, 5.0, 3.8, 2.8, 1.8, 0.8, 0.5, 0.5] },
+  { zoom: 14, widths: [7.4, 6.2, 4.8, 3.8, 2.6, 1.6, 1.0, 0.9] },
   { zoom: 17, widths: [14, 11.8, 9.4, 7.8, 6.4, 4.8, 3.4, 3.1] },
 ];
 
@@ -99,7 +102,7 @@ function roads(kind: 'tunnel' | 'surface' | 'bridge'): LayerSpecification[] {
           '#1a2a24',
           ['secondary', 'tertiary'],
           '#8a7d62',
-          '#b9a991',
+          '#6e6e64',
         ],
         'line-width': roadWidth(true),
         'line-opacity': kind === 'tunnel' ? 0.55 : 1,
@@ -117,9 +120,12 @@ function roads(kind: 'tunnel' | 'surface' | 'bridge'): LayerSpecification[] {
           '#eec156',
           'primary',
           '#d5bb97',
-          ['secondary', 'tertiary'],
+          'secondary',
           '#cdb796',
+          'tertiary',
           '#c9b89a',
+          // ruas de bairro: asfalto claro, quase sem contraste com o chão urbano
+          '#9a9a8c',
         ],
         'line-width': roadWidth(),
         'line-opacity': kind === 'tunnel' ? 0.72 : 1,
@@ -225,6 +231,59 @@ export function createMapStyle(): StyleSpecification {
           'line-color': '#d5bb97',
           'line-width': ['interpolate', ['linear'], ['zoom'], 5, 1, 12, 2, 16, 3],
           'line-opacity': 1,
+        },
+      },
+      {
+        // Chão de cidade (spec 009): áreas residenciais/comerciais/industriais do OSM deixam de
+        // ser pasto. Pedra clara com trama leve; parques continuam verdes.
+        id: 'urban-landuse',
+        type: 'fill',
+        source: 'openmaptiles',
+        'source-layer': 'landuse',
+        minzoom: 9,
+        filter: [
+          'match',
+          ['get', 'class'],
+          ['residential', 'commercial', 'industrial', 'retail', 'neighbourhood', 'suburb'],
+          true,
+          false,
+        ],
+        paint: {
+          'fill-color': [
+            'match',
+            ['get', 'class'],
+            'industrial',
+            '#b9b3a4',
+            ['commercial', 'retail'],
+            '#d9cdb3',
+            '#cdc3ad',
+          ],
+          'fill-opacity': ['interpolate', ['linear'], ['zoom'], 9, 0.55, 12, 0.9, 14, 1],
+          'fill-antialias': false,
+        },
+      },
+      {
+        id: 'parks',
+        type: 'fill',
+        source: 'openmaptiles',
+        'source-layer': 'landuse',
+        minzoom: 11,
+        filter: ['match', ['get', 'class'], ['park', 'garden', 'grass', 'cemetery'], true, false],
+        paint: { 'fill-color': '#38cf73', 'fill-antialias': false },
+      },
+      {
+        // Prédios reais do OSM a partir do zoom 13: telhado cinza com contorno escuro (16-bit).
+        // Os telhados do pacote entram aqui como fill-pattern quando o catálogo estiver mapeado.
+        id: 'buildings',
+        type: 'fill',
+        source: 'openmaptiles',
+        'source-layer': 'building',
+        minzoom: 13,
+        paint: {
+          'fill-color': ['interpolate', ['linear'], ['zoom'], 13, '#a79f8e', 15, '#b5ada0'],
+          'fill-outline-color': '#5a5448',
+          'fill-opacity': ['interpolate', ['linear'], ['zoom'], 13, 0.7, 14.5, 1],
+          'fill-antialias': true,
         },
       },
       {

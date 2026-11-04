@@ -17,3 +17,6 @@ Thumbs.db
 
 # Generated output
 output/
+
+# Peças do MODERN TOWN SET (licença não permite redistribuir): ficam fora do Git
+apps/web/public/arte/town/

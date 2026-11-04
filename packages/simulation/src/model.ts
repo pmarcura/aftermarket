@@ -524,6 +524,8 @@ export interface SupplyPolicy {
   maxDistanceKm: number;
   minQuality: number;
   maxFreightPerUnit: number;
+  // Loja: só compra se mercadoria + frete por unidade deixar esta fração do preço de venda.
+  shelfMargin?: number;
   carrierId: string;
   rules: SupplyRule[];
 }

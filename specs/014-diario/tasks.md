@@ -9,4 +9,8 @@
 - [x] T5 Cópia rasa dos históricos que só crescem (R5): cópia para desfazer de 77 para 16 ms.
 - [x] T6 Testes (A2–A4): `tests/journal.test.ts`.
 - [x] T7 Medição (A5): gravação do clique 1.373 → 30 ms (p50) no HD.
+- [x] T9 Continuidade com a foto (R6): `rev` em cada linha; teste de foto mais nova que o
+      diário. Motivo: trocar o ramo da pasta com o servidor de design ligado rodou um código sem
+      diário, que gravou foto por cima; ao voltar, o diário velho foi repetido sobre ela (as
+      passagens de tempo foram recusadas, o dinheiro fechou).
 - [ ] T8 Revisão do John no PR.

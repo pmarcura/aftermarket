@@ -59,6 +59,8 @@ export type JournalEntry =
   | { kind: 'route'; key: string; route: World['routes'][string] }
   | { kind: 'roadAccess'; updates: RoadAccessUpdate[] }
   | { kind: 'pause'; pausedMs: number };
+/** Linha gravada: a mudança e a revisão do mundo logo antes dela (continuidade com a foto). */
+export type JournalLine = JournalEntry & { rev?: number };
 
 export const JOURNAL_TABLE =
   'CREATE TABLE IF NOT EXISTS world_journal (seq INTEGER PRIMARY KEY AUTOINCREMENT, entry TEXT NOT NULL)';
@@ -72,13 +74,13 @@ export function readJournalSeq(db: DatabaseSync): number {
 }
 
 /** Linhas do diário que a foto ainda não cobre, em ordem. */
-export function readJournal(db: DatabaseSync, after: number): JournalEntry[] {
+export function readJournal(db: DatabaseSync, after: number): JournalLine[] {
   db.exec(JOURNAL_TABLE);
   return (
     db.prepare('SELECT entry FROM world_journal WHERE seq > ? ORDER BY seq').all(after) as {
       entry: string;
     }[]
-  ).map((r) => JSON.parse(r.entry) as JournalEntry);
+  ).map((r) => JSON.parse(r.entry) as JournalLine);
 }
 
 /**

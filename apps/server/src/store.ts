@@ -186,14 +186,15 @@ export function createStore(
       throw error;
     }
   };
-  const anotar = (entry: JournalEntry) => {
-    journal.insert.run(JSON.stringify(entry));
+  // `rev`: revisão do mundo logo antes da mudança. Ao reabrir, só repete o que continua da foto.
+  const anotar = (entry: JournalEntry, rev: number) => {
+    journal.insert.run(JSON.stringify({ ...entry, rev }));
     linhas++;
   };
   /** Linha do diário fora de um comando: se o disco falhar, a foto inteira a substitui. */
-  const anotarFora = (entry: JournalEntry) => {
+  const anotarFora = (entry: JournalEntry, rev: number) => {
     try {
-      anotar(entry);
+      anotar(entry, rev);
     } catch (error) {
       console.error('Falha ao gravar o diário; gravando o mundo inteiro.', error);
       transaction(writeWorld);
@@ -283,9 +284,24 @@ export function createStore(
   };
 
   // Queda ou desligamento sem foto: repete o diário sobre a última foto, na ordem gravada.
+  // Cada linha guarda a revisão do mundo logo antes dela: só repete o que continua exatamente da
+  // foto. Foto mais nova que o diário (gravada por um código que não conhece o diário) descarta o
+  // diário velho em vez de repeti-lo por cima.
   const pendente = readJournal(db, readJournalSeq(db));
-  if (pendente.length) {
-    for (const entry of pendente) aplicar(entry);
+  const primeira = pendente[0]?.rev;
+  if (primeira !== undefined && primeira < world.revision) {
+    console.warn(
+      `Diário antigo descartado: a foto (revisão ${world.revision}) é mais nova que as ${pendente.length} linhas pendentes (desde a revisão ${primeira}).`,
+    );
+    sujo = true;
+  } else if (pendente.length) {
+    for (const linha of pendente) {
+      if (linha.rev !== undefined && linha.rev !== world.revision)
+        throw new Error(
+          `Diário fora de sequência (linha da revisão ${linha.rev}, mundo na ${world.revision}); nada foi gravado.`,
+        );
+      aplicar(linha);
+    }
     // Conferência sempre ligada aqui: o mundo repetido tem de fechar centavo por centavo.
     if (world.invariants && totalMoney(world) !== world.invariants.totalMoney)
       throw new Error('O diário repetido não fecha o dinheiro do mundo; nada foi gravado.');
@@ -336,8 +352,9 @@ export function createStore(
       pausedMs: (world.pausedMs ?? 0) + Math.max(0, real - paradoDesde),
     };
     paradoDesde = null;
+    const rev = world.revision;
     aplicar(entry);
-    anotarFora(entry);
+    anotarFora(entry, rev);
   };
   // Servidor desligado também é mundo parado: ao abrir, o mundo segue de onde ficou.
   if (pausa !== undefined) {
@@ -356,9 +373,10 @@ export function createStore(
     atividade,
     parado: () => paradoDesde !== null,
     roadAccess(updates: RoadAccessUpdate[]) {
-      const before = rollbackSnapshot(world);
+      const before = rollbackSnapshot(world),
+        rev = world.revision;
       try {
-        if (aplicarAcesso(updates)) anotarFora({ kind: 'roadAccess', updates });
+        if (aplicarAcesso(updates)) anotarFora({ kind: 'roadAccess', updates }, rev);
       } catch (error) {
         world = before;
         throw error;
@@ -368,7 +386,8 @@ export function createStore(
       if (pausa !== undefined && paradoDesde === null && real - ultimaAtividade >= pausa)
         parar(real);
       if (paradoDesde !== null) return world;
-      const now = relogio(real);
+      const now = relogio(real),
+        rev = world.revision;
       let mudou = false,
         falhou = true;
       try {
@@ -376,7 +395,7 @@ export function createStore(
         falhou = false;
       } finally {
         // Também anota a rodada que falhou no meio: o que já andou precisa andar igual ao repetir.
-        if (mudou || falhou) anotarFora({ kind: 'advance', now });
+        if (mudou || falhou) anotarFora({ kind: 'advance', now }, rev);
       }
       if (linhas >= fotoLinhas || (linhas > 0 && Date.now() - ultimaFoto >= fotoMs)) flush();
       return world;
@@ -403,7 +422,8 @@ export function createStore(
         t = agora;
       };
       // Um comando recusado no meio do caminho não pode deixar o mundo pela metade.
-      const before = rollbackSnapshot(world);
+      const before = rollbackSnapshot(world),
+        rev = world.revision;
       marcar('copia');
       try {
         advance(world, now);
@@ -413,7 +433,7 @@ export function createStore(
         // Só a linha do diário e o recibo, na mesma transação: a compra está gravada antes de a
         // tela confirmar (spec 012), sem regravar o mundo inteiro.
         transaction(() => {
-          anotar({ kind: 'command', actor, command, key, now });
+          anotar({ kind: 'command', actor, command, key, now }, rev);
           db.prepare('INSERT INTO receipts VALUES(?,?,?)').run(key, actor, serialized);
         });
         marcar('gravacao');
@@ -424,8 +444,9 @@ export function createStore(
       return world;
     },
     route(key: string, route: World['routes'][string]) {
+      const rev = world.revision;
       aplicarRota(key, route);
-      anotarFora({ kind: 'route', key, route });
+      anotarFora({ kind: 'route', key, route }, rev);
     },
     flush,
     close: () => {

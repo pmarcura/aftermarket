@@ -30,6 +30,9 @@ clonava históricos que só crescem (77 ms).
   vivo, confere a soma do dinheiro e tira uma foto nova.
 - **R5 Cópia para desfazer enxuta.** Históricos que só crescem (`marketHistory`,
   `consumptionHistory`, `supplyHistory`, `botActivity`) e `routes` entram por cópia rasa.
+- **R6 Continuidade com a foto.** Cada linha guarda a revisão do mundo logo antes dela. Ao abrir, só
+  repete o que continua exatamente da foto. Foto mais nova que o diário (gravada por um código que
+  não conhece o diário) descarta o diário velho com aviso; buraco no meio recusa abrir.
 
 ## Critérios de aceite
 

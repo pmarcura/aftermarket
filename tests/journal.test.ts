@@ -153,4 +153,32 @@ describe('diário + foto', () => {
       rmSync(dir, { recursive: true, force: true });
     }
   });
+  it('foto mais nova que o diário (código sem diário gravou por cima): descarta o diário velho', () => {
+    const { dir, path } = abrirPasta();
+    let store = createStore(path, { scenario: 'baseline', snapshotEveryEntries: 1e9 });
+    try {
+      jogar(store, store.read().updatedAt);
+      expect(linhasDoDiario(path).n).toBeGreaterThan(0);
+      store.abandonar();
+      // Simula um servidor antigo: gravou uma foto mais nova e não apagou o diário.
+      const db = new DatabaseSync(path);
+      db.exec(
+        "UPDATE worlds SET state = json_set(state, '$.revision', json_extract(state, '$.revision') + 1000)",
+      );
+      const foto = JSON.parse(
+        (db.prepare('SELECT state FROM worlds').get() as { state: string }).state,
+      );
+      db.close();
+      store = createStore(path, { scenario: 'baseline' });
+      // Nada repetido por cima: o mundo é o da foto, e o diário velho foi apagado.
+      expect(store.read().revision).toBe(foto.revision);
+      expect(store.read().updatedAt).toBe(foto.updatedAt);
+      expect(linhasDoDiario(path).n).toBe(0);
+    } finally {
+      try {
+        store.close();
+      } catch {}
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
 });

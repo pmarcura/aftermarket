@@ -239,6 +239,8 @@ export function WorldMap({
   highlightShipmentId,
   economic,
   onRegionSelect,
+  alerts,
+  hoverCard,
 }: {
   mini?: boolean;
   propertyId?: string;
@@ -257,6 +259,10 @@ export function WorldMap({
     state?: string;
   };
   onRegionSelect?: (id: string) => void;
+  /** Spec 008 R1: estado dos negócios do jogador por imóvel (brasa = precisa de você; ouro = atenção). */
+  alerts?: Record<string, 'brasa' | 'ouro'>;
+  /** Spec 008 R1: texto curto mostrado ao passar o mouse sobre um pino (nome, estado, motivo). */
+  hoverCard?: (propertyId: string) => { titulo: string; linhas: string[] } | null;
 }) {
   const { world, actor, selectedId, select, focus, consumeFocus } = useGame();
   const container = useRef<HTMLDivElement>(null),
@@ -264,6 +270,14 @@ export function WorldMap({
   const [ready, setReady] = useState(false),
     [failed, setFailed] = useState(false);
   const callback = useRef(onSelect);
+  const hoverRef = useRef(hoverCard);
+  hoverRef.current = hoverCard;
+  const [hover, setHover] = useState<{
+    x: number;
+    y: number;
+    titulo: string;
+    linhas: string[];
+  } | null>(null);
   const framedRoute = useRef('');
   const framedEconomy = useRef<string | undefined>(undefined);
   const drawnKey = useRef('');
@@ -636,6 +650,19 @@ export function WorldMap({
           'icon-ignore-placement': true,
         },
       });
+      instance.addLayer({
+        id: 'property-alerts',
+        type: 'circle',
+        source: 'properties',
+        filter: ['all', ['!', ['has', 'point_count']], ['!=', ['get', 'alert'], '']],
+        paint: {
+          'circle-radius': mini ? 5 : 7,
+          'circle-color': ['case', ['==', ['get', 'alert'], 'brasa'], '#e4572e', '#f2bd3c'],
+          'circle-stroke-width': 2,
+          'circle-stroke-color': '#0c0e0a',
+          'circle-translate': mini ? [8, -14] : [13, -24],
+        },
+      });
       if (!mini) {
         const pick = (event: maplibregl.MapLayerMouseEvent) => {
           const id = event.features?.[0]?.properties?.id as string | undefined;
@@ -668,6 +695,17 @@ export function WorldMap({
           instance.on('mouseenter', layer, () => (instance.getCanvas().style.cursor = 'pointer'));
           instance.on('mouseleave', layer, () => (instance.getCanvas().style.cursor = ''));
         }
+        // Cartão curto ao passar o mouse sobre um pino (spec 008 R1). No toque não há hover: o
+        // toque seleciona e a gaveta do lote mostra o detalhe.
+        const showCard = (event: maplibregl.MapLayerMouseEvent) => {
+          const id = event.features?.[0]?.properties?.id as string | undefined;
+          const card = id && hoverRef.current ? hoverRef.current(id) : null;
+          setHover(card ? { x: event.point.x, y: event.point.y, ...card } : null);
+        };
+        for (const layer of ['property-dots', 'property-icons']) {
+          instance.on('mousemove', layer, showCard);
+          instance.on('mouseleave', layer, () => setHover(null));
+        }
       }
       setReady(true);
     });
@@ -699,7 +737,7 @@ export function WorldMap({
     const selectedProperty = propertyId ?? selectedId;
     // Só reenvia ao mapa quando algo visível mudou (dono, seleção, filtro), não a cada rodada.
     const key = JSON.stringify([
-      visible.map((p) => [p.id, p.ownerId, p.area]),
+      visible.map((p) => [p.id, p.ownerId, p.area, alerts?.[p.id] ?? '']),
       selectedProperty,
       layers.zoning,
     ]);
@@ -748,10 +786,11 @@ export function WorldMap({
           available: !p.ownerId,
           own: p.ownerId === actor,
           selected: p.id === selectedProperty,
+          alert: alerts?.[p.id] ?? '',
         },
       })),
     });
-  }, [ready, visible, layers.zoning, selectedId, propertyId, actor]);
+  }, [ready, visible, layers.zoning, selectedId, propertyId, actor, alerts]);
   useEffect(() => {
     const m = map.current;
     if (!ready || !m) return;
@@ -1046,11 +1085,30 @@ export function WorldMap({
               type="button"
               data-property={p.id}
               data-owner={p.ownerId ?? 'available'}
+              data-alert={alerts?.[p.id] ?? undefined}
               onClick={() => (callback.current ? callback.current(p.id) : select(p.id))}
             >
               {p.name} · {p.city}
               {p.ownerId ? '' : ' · disponível'}
+              {alerts?.[p.id] === 'brasa'
+                ? ' · precisa de você'
+                : alerts?.[p.id] === 'ouro'
+                  ? ' · atenção'
+                  : ''}
             </button>
+          ))}
+        </div>
+      )}
+      {hover && (
+        <div
+          className="map-hover-card"
+          role="tooltip"
+          style={{ left: hover.x, top: hover.y }}
+          data-testid="map-hover-card"
+        >
+          <strong>{hover.titulo}</strong>
+          {hover.linhas.map((l, i) => (
+            <span key={i}>{l}</span>
           ))}
         </div>
       )}

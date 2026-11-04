@@ -1,6 +1,8 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { X } from 'lucide-react';
 import { useGame, num } from '../../lib/game';
 import { PixelArt } from '../../components/PixelArt';
+import { IconePixel } from '../../components/IconePixel';
 import { spriteDoNegocio } from '../../design/arte';
 import { ProdutoMini } from '../economy/Vitrine';
 import { unidade } from '../economy/Carga';
@@ -21,13 +23,37 @@ import '../../design/cadeia.css';
 /** De onde vem um encaixe: um negócio do jogador, o mercado (o gerente compra) ou a mão do dono. */
 export type Fonte = string | 'mercado' | null;
 
-const COLUNAS = ['Campo', 'Indústria', 'Loja', 'Famílias'] as const;
+/** Três colunas na ordem da cadeia; as famílias são a ponta de cada loja, não uma coluna. */
+const COLUNAS = ['De fora e do campo', 'Indústria', 'Loja'] as const;
 const colunaDe = (e: Establishment) =>
   e.category === 'farm' || e.category === 'mine' ? 0 : e.category === 'retail' ? 2 : 1;
 
-/** Cor de cada produto na peça e no encaixe: o jogador encaixa pela cor e pela figura. */
-const corDe = (id: ProductId) =>
-  `hsl(${(id.split('').reduce((n, c) => n + c.charCodeAt(0), 0) * 47) % 360} 55% 68%)`;
+/**
+ * Cor de cada produto na peça e no encaixe, tirada da ilustração. O verde fica de fora: é a cor do
+ * fio "seu negócio", e uma peça verde pareceria uma ligação.
+ */
+const CORES: Partial<Record<ProductId, string>> = {
+  soy: '#d9b26a',
+  oil: '#f2c84b',
+  soymeal: '#c9a27e',
+  rice: '#e8dcc0',
+  beans: '#c08462',
+  sugar: '#c7dcf0',
+  milk: '#9cc7ee',
+  utensils: '#b8c2c9',
+  iron: '#cf927e',
+  coal: '#9a9a96',
+  steel: '#a9b8c8',
+  scrap: '#ab9f8e',
+  feed: '#d6c38a',
+  cow: '#e0b9a0',
+};
+const corDe = (id: ProductId) => {
+  if (CORES[id]) return CORES[id];
+  let h = (id.split('').reduce((n, c) => n + c.charCodeAt(0), 0) * 47) % 360;
+  if (h > 60 && h < 150) h += 120;
+  return `hsl(${h} 50% 72%)`;
+};
 
 const saidasDe = (world: World, e: Establishment) =>
   e.category === 'retail'
@@ -82,6 +108,16 @@ export function politicaCom(
   return politica;
 }
 
+/** Quanto o estoque de uma loja dura, em dias, no preço de hoje. */
+function diasNaLoja(world: World, loja: Establishment, p: ProductId) {
+  const estoque = loja.inventory[p] ?? 0;
+  if (estoque <= 0) return 0;
+  const vende = mercadoDaCidade(world, loja, p).vendas(
+    loja.prices[p] ?? world.season.config.basePrices[p],
+  );
+  return vende > 0.01 ? estoque / vende : Infinity;
+}
+
 interface Arrasto {
   de: string;
   p: ProductId;
@@ -92,8 +128,9 @@ interface Arrasto {
 
 /**
  * A cadeia do jogador em blocos: cada negócio com as peças do que faz (à direita) e os encaixes do
- * que precisa (à esquerda). Encaixar uma peça cria a rota entre os dois negócios; tocar num encaixe
- * mostra de onde a mercadoria pode vir. Tudo pelo comando `configureSupply`.
+ * que precisa (à esquerda). O mercado é um bloco também, de onde sai o que o gerente compra.
+ * Encaixar uma peça cria a rota entre os dois negócios; tocar num encaixe mostra de onde a
+ * mercadoria pode vir. Tudo pelo comando `configureSupply`.
  */
 export function CadeiaBlocos() {
   const { world, actor, run, pending, openBusiness, navigate } = useGame();
@@ -115,6 +152,15 @@ export function CadeiaBlocos() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [world.revision, actor],
   );
+  // Dias de estoque de cada encaixe de loja: a pergunta que o jogador faz a cada encaixe.
+  const dias = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const e of meus)
+      if (e.category === 'retail')
+        for (const p of usosDe(world, e)) m.set(`${e.id}:${p}`, diasNaLoja(world, e, p));
+    return m;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [world.revision, meus]);
   const [escolhido, setEscolhido] = useState<{ destino: string; p: ProductId } | null>(null);
   const [naMao, setNaMao] = useState<{ de: string; p: ProductId } | null>(null);
   const [arrasto, setArrasto] = useState<Arrasto | null>(null);
@@ -144,7 +190,7 @@ export function CadeiaBlocos() {
     );
   };
 
-  // Fios: recalculados pela posição real de peças e encaixes a cada mudança de layout.
+  // Fios: recalculados pela posição real de peças, encaixes e do bloco do mercado.
   const medir = () => {
     const t = tabuleiro.current;
     if (!t) return;
@@ -160,6 +206,7 @@ export function CadeiaBlocos() {
       const dx = Math.max(40, (b.x - a.x) / 2);
       return `M${a.x},${a.y} C${a.x + dx},${a.y} ${b.x - dx},${b.y} ${b.x},${b.y}`;
     };
+    const mercado = t.querySelector('[data-mercado]');
     const lista: { d: string; tipo: string; chave: string }[] = [];
     t.querySelectorAll<HTMLElement>('[data-encaixe]').forEach((enc) => {
       const [destino, p] = enc.dataset.encaixe!.split(':');
@@ -167,35 +214,22 @@ export function CadeiaBlocos() {
       const fonte = e && fonteDe(e, p as ProductId);
       if (!fonte) return;
       const b = ponto(enc, 'esq');
-      if (fonte === 'mercado') {
+      const origem = fonte === 'mercado' ? mercado : t.querySelector(`[data-peca="${fonte}:${p}"]`);
+      if (origem)
         lista.push({
-          d: `M${b.x - 40},${b.y} L${b.x},${b.y}`,
-          tipo: 'mercado',
+          d: curva(ponto(origem, 'dir'), b),
+          tipo: fonte === 'mercado' ? 'mercado' : 'proprio',
           chave: enc.dataset.encaixe!,
-        });
-        return;
-      }
-      const peca = t.querySelector(`[data-peca="${fonte}:${p}"]`);
-      if (peca)
-        lista.push({
-          d: curva(ponto(peca, 'dir'), b),
-          tipo: 'proprio',
-          chave: enc.dataset.encaixe!,
-        });
-    });
-    t.querySelectorAll<HTMLElement>('[data-familias]').forEach((peca) => {
-      const fam = t.querySelector('[data-bloco-familias]');
-      if (fam)
-        lista.push({
-          d: curva(ponto(peca, 'dir'), ponto(fam, 'esq')),
-          tipo: 'familias',
-          chave: peca.dataset.familias!,
         });
     });
     setFios(lista);
-    setTamanho({ w: t.scrollWidth, h: t.scrollHeight });
+    const colunas = t.querySelector<HTMLElement>('.cb-colunas');
+    setTamanho({
+      w: (colunas?.offsetWidth ?? 0) + (colunas?.offsetLeft ?? 0),
+      h: (colunas?.offsetHeight ?? 0) + (colunas?.offsetTop ?? 0),
+    });
   };
-  useLayoutEffect(medir, [world.revision, meus.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  useLayoutEffect(medir, [world.revision, meus.length, escolhido]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     const t = tabuleiro.current;
     if (!t) return;
@@ -256,17 +290,45 @@ export function CadeiaBlocos() {
   }, [arrasto]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (!naMao) return;
-    const esc = (ev: KeyboardEvent) => ev.key === 'Escape' && setNaMao(null);
+    if (!naMao && !escolhido) return;
+    const esc = (ev: KeyboardEvent) => {
+      if (ev.key !== 'Escape') return;
+      setNaMao(null);
+      setEscolhido(null);
+    };
     window.addEventListener('keydown', esc);
     return () => window.removeEventListener('keydown', esc);
-  }, [naMao]);
+  }, [naMao, escolhido]);
 
   if (meus.length === 0) return null;
   const segurando = arrasto?.mexeu ? arrasto.p : naMao?.p;
-  const lojas = meus.filter((e) => e.category === 'retail');
   const escolhidoE = escolhido && meus.find((e) => e.id === escolhido.destino);
   const fonteEscolhida = escolhidoE && escolhido ? fonteDe(escolhidoE, escolhido.p) : null;
+  const doMercado = meus.reduce(
+    (n, e) => n + [...usosDe(world, e)].filter((p) => fonteDe(e, p) === 'mercado').length,
+    0,
+  );
+  const faltam = meus.reduce(
+    (n, e) =>
+      n +
+      [...usosDe(world, e)].filter((p) => fonteDe(e, p) === null && (e.inventory[p] ?? 0) <= 0)
+        .length,
+    0,
+  );
+
+  /** O que acontece com o que um negócio faz: vai para outro negócio seu, à venda ou parado. */
+  const destinoDaPeca = (origem: Establishment, p: ProductId) => {
+    const destinos = meus.filter((d) => fonteDe(d, p) === origem.id);
+    const aVenda = world.offers.some((o) => o.establishmentId === origem.id && o.product === p);
+    const estoque = Math.floor(origem.inventory[p] ?? 0);
+    const precisam = destinos.reduce(
+      (n, d) => n + (d.supplyPolicy?.rules.find((r) => r.product === p)?.target ?? 0),
+      0,
+    );
+    // Sobra: o que está no armazém passa de cinco vezes o que os seus negócios pedem de uma vez.
+    const sobra = destinos.length > 0 && !aVenda && estoque > precisam * 5 ? estoque - precisam : 0;
+    return { destinos, aVenda, estoque, sobra };
+  };
 
   const tocarEncaixe = (destino: string, p: ProductId) => {
     if (naMao) {
@@ -276,34 +338,53 @@ export function CadeiaBlocos() {
       }
       return;
     }
-    setEscolhido({ destino, p });
+    setEscolhido((atual) => (atual?.destino === destino && atual.p === p ? null : { destino, p }));
+  };
+
+  const textoEncaixe = (e: Establishment, p: ProductId, fonte: Fonte) => {
+    const estoque = Math.floor(e.inventory[p] ?? 0);
+    const d = dias.get(`${e.id}:${p}`);
+    const duracao =
+      d === undefined
+        ? ''
+        : d === 0
+          ? ' · acabou'
+          : d === Infinity
+            ? ''
+            : d > 60
+              ? ' · dura mais de 60 d'
+              : ` · dura ${num(d, d < 10 ? 1 : 0)} d`;
+    if (fonte === null) return estoque <= 0 ? 'falta · de onde vem?' : `na mão${duracao}`;
+    if (fonte === 'mercado') return `do mercado${duracao}`;
+    return `de ${meus.find((x) => x.id === fonte)?.name}${duracao}`;
   };
 
   return (
     <section className="cb" aria-labelledby="cb-titulo">
       <header className="cb-cab">
-        <h2 id="cb-titulo" className="lv-grande">
-          Sua cadeia
-        </h2>
-        <p>
-          Arraste uma peça (o que um negócio faz) até o encaixe da mesma cor (o que outro precisa),
-          ou toque na peça e depois no encaixe. Toque num encaixe para escolher de onde a mercadoria
-          vem.
-        </p>
-        <ul className="cb-legenda" aria-label="Legenda dos fios">
+        <div>
+          <h2 id="cb-titulo" className="lv-grande">
+            Sua cadeia
+          </h2>
+          <p>
+            Arraste o que um negócio faz até o que outro precisa. Toque num encaixe para escolher de
+            onde vem.
+          </p>
+        </div>
+        <ul className="cb-legenda" aria-label="Legenda">
           <li>
             <i className="proprio" /> do seu negócio
           </li>
           <li>
-            <i className="mercado" /> do mercado (o gerente compra)
+            <i className="mercado" /> do mercado
           </li>
-          <li>
-            <i className="mao" /> você compra na mão
+          <li className={faltam ? 'falta' : ''}>
+            <i className="falta" /> {faltam ? `${num(faltam)} faltando` : 'nada faltando'}
           </li>
         </ul>
       </header>
 
-      <div className="cb-palco">
+      <div className={`cb-palco ${escolhidoE ? 'com-lado' : ''}`}>
         <div
           className={`cb-tabuleiro ${segurando ? 'segurando' : ''}`}
           ref={tabuleiro}
@@ -323,150 +404,177 @@ export function CadeiaBlocos() {
             {COLUNAS.map((titulo, i) => (
               <div key={titulo} className="cb-coluna">
                 <h3>{titulo}</h3>
-                {i < 3 &&
-                  meus
-                    .filter((e) => colunaDe(e) === i)
-                    .map((e) => {
-                      const precisa = [...usosDe(world, e)];
-                      const faz = saidasDe(world, e);
-                      return (
-                        <article
-                          key={e.id}
-                          className={`cb-bloco ${!e.enabled || e.mothballed ? 'parado' : ''}`}
+                {i === 0 && (
+                  <article className="cb-bloco mercado">
+                    <div className="cb-bloco-cab estatico" data-mercado>
+                      <IconePixel nome="rival" tamanho={40} />
+                      <span>
+                        <strong>Mercado</strong>
+                        <small>
+                          {doMercado
+                            ? `O gerente compra ${num(doMercado)} ${doMercado === 1 ? 'produto' : 'produtos'} de outras empresas`
+                            : 'Outras empresas vendem aqui'}
+                        </small>
+                      </span>
+                    </div>
+                  </article>
+                )}
+                {meus
+                  .filter((e) => colunaDe(e) === i)
+                  .map((e) => {
+                    const precisa = [...usosDe(world, e)];
+                    const faz = saidasDe(world, e);
+                    return (
+                      <article
+                        key={e.id}
+                        className={`cb-bloco ${!e.enabled || e.mothballed ? 'parado' : ''}`}
+                      >
+                        <button
+                          className="cb-bloco-cab"
+                          onClick={() => openBusiness(e.id)}
+                          aria-label={`Abrir ${e.name}`}
                         >
-                          <button className="cb-bloco-cab" onClick={() => openBusiness(e.id)}>
-                            <PixelArt name={spriteDoNegocio(e, world)} scale={1} />
-                            <span>
-                              <strong>{e.name}</strong>
-                              <small>abrir</small>
-                            </span>
-                          </button>
-                          {precisa.length > 0 && (
-                            <ul className="cb-encaixes" aria-label={`O que ${e.name} precisa`}>
-                              {precisa.map((p) => {
-                                const fonte = fonteDe(e, p);
-                                const estoque = Math.floor(e.inventory[p] ?? 0);
-                                const chave = `${e.id}:${p}`;
-                                const serve =
-                                  segurando === p && (naMao?.de ?? arrasto?.de) !== e.id;
-                                return (
-                                  <li key={p}>
-                                    <button
-                                      data-encaixe={chave}
-                                      className={`cb-encaixe ${fonte === null ? (estoque <= 0 ? 'falta' : 'mao') : fonte === 'mercado' ? 'mercado' : 'proprio'} ${serve ? 'serve' : ''} ${alvo === chave ? 'alvo' : ''} ${escolhido?.destino === e.id && escolhido.p === p ? 'escolhido' : ''}`}
-                                      style={{ ['--cor' as string]: corDe(p) }}
-                                      onClick={() => tocarEncaixe(e.id, p)}
-                                      aria-label={`${products[p].name} para ${e.name}: ${fonte === null ? 'você compra na mão' : fonte === 'mercado' ? 'o gerente compra no mercado' : `vem de ${meus.find((x) => x.id === fonte)?.name}`}. Escolher de onde vem`}
-                                    >
-                                      <ProdutoMini product={p} tamanho={26} />
-                                      <span>
-                                        {products[p].name}
-                                        <small>
-                                          {fonte === null
-                                            ? estoque <= 0
-                                              ? 'falta · de onde vem?'
-                                              : 'você compra na mão'
-                                            : fonte === 'mercado'
-                                              ? 'do mercado'
-                                              : `de ${meus.find((x) => x.id === fonte)?.name}`}
-                                        </small>
-                                      </span>
-                                    </button>
-                                  </li>
-                                );
-                              })}
-                            </ul>
-                          )}
-                          <ul className="cb-pecas" aria-label={`O que ${e.name} faz`}>
-                            {faz.map((p) => {
-                              const q = Math.floor(e.inventory[p] ?? 0);
-                              const mao = naMao?.de === e.id && naMao.p === p;
+                          <PixelArt name={spriteDoNegocio(e, world)} scale={1} />
+                          <span>
+                            <strong>{e.name}</strong>
+                            <small>
+                              {!e.enabled ? 'pausado' : e.mothballed ? 'suspenso' : 'abrir'}
+                            </small>
+                          </span>
+                        </button>
+                        {precisa.length > 0 && (
+                          <ul className="cb-encaixes" aria-label={`O que ${e.name} precisa`}>
+                            {precisa.map((p) => {
+                              const fonte = fonteDe(e, p);
+                              const estoque = Math.floor(e.inventory[p] ?? 0);
+                              const chave = `${e.id}:${p}`;
+                              const serve = segurando === p && (naMao?.de ?? arrasto?.de) !== e.id;
+                              const d = dias.get(chave);
+                              const curto = d !== undefined && d < 2;
                               return (
                                 <li key={p}>
                                   <button
-                                    data-peca={`${e.id}:${p}`}
-                                    className={`cb-peca ${mao ? 'na-mao' : ''} ${sugeridas.has(`${e.id}:${p}`) ? 'sugerida' : ''}`}
+                                    data-encaixe={chave}
+                                    className={`cb-encaixe ${fonte === null ? (estoque <= 0 ? 'falta' : 'mao') : fonte === 'mercado' ? 'mercado' : 'proprio'} ${curto ? 'curto' : ''} ${serve ? 'serve' : ''} ${alvo === chave ? 'alvo' : ''} ${escolhido?.destino === e.id && escolhido.p === p ? 'escolhido' : ''}`}
                                     style={{ ['--cor' as string]: corDe(p) }}
-                                    disabled={pending}
-                                    onPointerDown={(ev) => {
-                                      ev.preventDefault();
-                                      setArrasto({
-                                        de: e.id,
-                                        p,
-                                        x: ev.clientX,
-                                        y: ev.clientY,
-                                        mexeu: false,
-                                      });
-                                    }}
-                                    onKeyDown={(ev) => {
-                                      if (ev.key === 'Enter' || ev.key === ' ') {
-                                        ev.preventDefault();
-                                        setNaMao(mao ? null : { de: e.id, p });
-                                      }
-                                    }}
-                                    aria-pressed={mao}
-                                    aria-label={`${products[p].name} de ${e.name}, ${num(q)} no armazém. Arraste ou toque para encaixar`}
+                                    onClick={() => tocarEncaixe(e.id, p)}
+                                    aria-expanded={escolhido?.destino === e.id && escolhido.p === p}
+                                    aria-label={`${products[p].name} para ${e.name}: ${textoEncaixe(e, p, fonte)}. Escolher de onde vem`}
                                   >
                                     <ProdutoMini product={p} tamanho={26} />
                                     <span>
                                       {products[p].name}
-                                      <small>
-                                        {num(q)} {unidade(p, q)}
-                                      </small>
+                                      <small>{textoEncaixe(e, p, fonte)}</small>
                                     </span>
                                   </button>
                                 </li>
                               );
                             })}
-                            {e.category === 'retail' && (
-                              <li>
-                                <span className="cb-peca familias" data-familias={e.id}>
-                                  <span>
-                                    Famílias
-                                    <small>vende sozinha a quem passa</small>
-                                  </span>
-                                </span>
-                              </li>
-                            )}
                           </ul>
-                        </article>
-                      );
-                    })}
+                        )}
+                        <ul className="cb-pecas" aria-label={`O que ${e.name} faz`}>
+                          {faz.map((p) => {
+                            const mao = naMao?.de === e.id && naMao.p === p;
+                            const { destinos, aVenda, estoque, sobra } = destinoDaPeca(e, p);
+                            return (
+                              <li key={p}>
+                                <button
+                                  data-peca={`${e.id}:${p}`}
+                                  className={`cb-peca ${mao ? 'na-mao' : ''} ${sugeridas.has(`${e.id}:${p}`) ? 'sugerida' : ''}`}
+                                  style={{ ['--cor' as string]: corDe(p) }}
+                                  disabled={pending}
+                                  onPointerDown={(ev) => {
+                                    ev.preventDefault();
+                                    setArrasto({
+                                      de: e.id,
+                                      p,
+                                      x: ev.clientX,
+                                      y: ev.clientY,
+                                      mexeu: false,
+                                    });
+                                  }}
+                                  onKeyDown={(ev) => {
+                                    if (ev.key === 'Enter' || ev.key === ' ') {
+                                      ev.preventDefault();
+                                      setNaMao(mao ? null : { de: e.id, p });
+                                    }
+                                  }}
+                                  aria-pressed={mao}
+                                  aria-label={`${products[p].name} de ${e.name}, ${num(estoque)} no armazém. Arraste ou toque para encaixar`}
+                                >
+                                  <ProdutoMini product={p} tamanho={26} />
+                                  <span>
+                                    {products[p].name}
+                                    <small>
+                                      {num(estoque)} {unidade(p, estoque)}
+                                    </small>
+                                  </span>
+                                </button>
+                                {destinos.length === 0 && !aVenda && estoque > 0 ? (
+                                  <button
+                                    className="cb-destino parado"
+                                    onClick={() => openBusiness(e.id, 'Vendas')}
+                                  >
+                                    Parado, sem comprador · <b>Pôr à venda</b>
+                                  </button>
+                                ) : sobra > 0 ? (
+                                  <button
+                                    className="cb-destino parado"
+                                    onClick={() => openBusiness(e.id, 'Vendas')}
+                                  >
+                                    Sobram {num(sobra)} · <b>Vender o excedente</b>
+                                  </button>
+                                ) : destinos.length > 0 ? (
+                                  <span className="cb-destino">
+                                    vai para {destinos.map((d) => d.name).join(', ')}
+                                  </span>
+                                ) : aVenda ? (
+                                  <span className="cb-destino ok">à venda no mercado</span>
+                                ) : null}
+                              </li>
+                            );
+                          })}
+                          {e.category === 'retail' && (
+                            <li>
+                              <span className="cb-peca familias">
+                                <IconePixel nome="equipe" tamanho={24} />
+                                <span>
+                                  Famílias
+                                  <small>vende a quem passa</small>
+                                </span>
+                              </span>
+                            </li>
+                          )}
+                        </ul>
+                      </article>
+                    );
+                  })}
                 {i === 0 && !meus.some((e) => colunaDe(e) === 0) && (
-                  <button className="cb-bloco fantasma" onClick={() => navigate('map')}>
-                    <strong>Nenhuma fazenda ou mina</strong>
-                    <small>
-                      Produzir a própria matéria-prima corta o frete. Escolher um terreno no mapa.
-                    </small>
+                  <button className="cb-fantasma" onClick={() => navigate('map')}>
+                    <b>+ Fazenda ou mina</b>
+                    <small>Matéria-prima sua corta o frete e o preço de compra.</small>
                   </button>
-                )}
-                {i === 3 && lojas.length > 0 && (
-                  <article className="cb-bloco familias" data-bloco-familias>
-                    <strong>Famílias</strong>
-                    <small>
-                      Compram todo dia nas suas{' '}
-                      {lojas.length === 1 ? 'loja' : `${lojas.length} lojas`}. O preço e a qualidade
-                      decidem quanto.
-                    </small>
-                  </article>
                 )}
               </div>
             ))}
           </div>
         </div>
 
-        <aside className="cb-lado" aria-live="polite">
-          {escolhidoE && escolhido ? (
+        {escolhidoE && escolhido && (
+          <aside className="cb-lado" aria-label="De onde vem" aria-live="polite">
             <article className="lv-nota cb-nota">
+              <button className="cb-fechar" onClick={() => setEscolhido(null)} aria-label="Fechar">
+                <X size={18} />
+              </button>
               <p className="lv-mao cb-recado">
                 {products[escolhido.p].name} → {escolhidoE.name}
               </p>
               <p>
                 {fonteEscolhida === null
-                  ? `Hoje ninguém repõe sozinho: ${escolhidoE.name} tem ${num(Math.floor(escolhidoE.inventory[escolhido.p] ?? 0))} ${unidade(escolhido.p, 2)} e você compra na mão.`
+                  ? `Ninguém repõe sozinho. ${escolhidoE.name} tem ${num(Math.floor(escolhidoE.inventory[escolhido.p] ?? 0))} ${unidade(escolhido.p, 2)}.`
                   : fonteEscolhida === 'mercado'
-                    ? 'O gerente compra no mercado, de quem cobrar menos, e só o que chega com lucro.'
-                    : `Vem da sua ${meus.find((x) => x.id === fonteEscolhida)?.name}: sua frota leva e você paga só diesel, pedágio e motorista.`}
+                    ? 'O gerente compra de quem cobrar menos, e só o que chega com lucro.'
+                    : `Sua ${meus.find((x) => x.id === fonteEscolhida)?.name} manda, e sua frota leva: você paga só diesel, pedágio e motorista.`}
               </p>
               <p>
                 <b>De onde deve vir?</b>
@@ -477,8 +585,11 @@ export function CadeiaBlocos() {
                   .map((x) => (
                     <button
                       key={x.id}
-                      disabled={pending || fonteEscolhida === x.id}
-                      onClick={() => encaixar(escolhidoE.id, escolhido.p, x.id)}
+                      aria-pressed={fonteEscolhida === x.id}
+                      disabled={pending}
+                      onClick={() =>
+                        fonteEscolhida !== x.id && encaixar(escolhidoE.id, escolhido.p, x.id)
+                      }
                     >
                       {x.name}
                       <small>
@@ -487,51 +598,43 @@ export function CadeiaBlocos() {
                     </button>
                   ))}
                 <button
-                  disabled={pending || fonteEscolhida === 'mercado'}
-                  onClick={() => encaixar(escolhidoE.id, escolhido.p, 'mercado')}
+                  aria-pressed={fonteEscolhida === 'mercado'}
+                  disabled={pending}
+                  onClick={() =>
+                    fonteEscolhida !== 'mercado' && encaixar(escolhidoE.id, escolhido.p, 'mercado')
+                  }
                 >
                   Mercado
                   <small>
                     O gerente compra
-                    {escolhidoE.category === 'retail' ? ' e só aceita o que dá lucro' : ''}
+                    {escolhidoE.category === 'retail' ? ', só com lucro' : ''}
                   </small>
                 </button>
                 <button
-                  disabled={pending || fonteEscolhida === null}
-                  onClick={() => encaixar(escolhidoE.id, escolhido.p, null)}
-                >
-                  Na mão
-                  <small>Ninguém repõe sozinho; você manda buscar quando quiser</small>
-                </button>
-              </div>
-              <div className="cb-nota-pe">
-                <button
-                  className="text-button"
+                  aria-pressed={fonteEscolhida === null}
+                  disabled={pending}
                   onClick={() =>
-                    openBusiness(
-                      escolhidoE.id,
-                      escolhidoE.category === 'retail' ? 'Prateleira' : 'Abastecimento',
-                    )
+                    fonteEscolhida !== null && encaixar(escolhidoE.id, escolhido.p, null)
                   }
                 >
-                  Ajustar quantidade e frete
+                  Na mão
+                  <small>Você manda buscar quando quiser</small>
                 </button>
               </div>
+              <button
+                className="text-button cb-ajustar"
+                onClick={() =>
+                  openBusiness(
+                    escolhidoE.id,
+                    escolhidoE.category === 'retail' ? 'Prateleira' : 'Abastecimento',
+                  )
+                }
+              >
+                Ajustar quantidade e frete
+              </button>
             </article>
-          ) : (
-            <article className="lv-nota cb-nota">
-              <p className="lv-mao cb-recado">Como ligar</p>
-              <p>
-                Peças piscando são encaixes que você ainda não fez: um negócio seu tem o que outro
-                compra de fora.
-              </p>
-              <p>
-                Encaixe vermelho é o que falta: toque nele para escolher de onde vem. Cada encaixe
-                guarda quanto manter em estoque; para mudar, use “Ajustar quantidade e frete”.
-              </p>
-            </article>
-          )}
-        </aside>
+          </aside>
+        )}
       </div>
     </section>
   );

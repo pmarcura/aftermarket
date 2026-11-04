@@ -1,0 +1,269 @@
+/* Vender para outras empresas: um cartão por produto, com o mercado e o preço juntos. */
+.vu {
+  display: grid;
+  gap: 18px;
+}
+.vu-topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 24px;
+}
+.vu-topo h2 {
+  margin: 0 0 6px;
+  font-size: 28px;
+  color: var(--creme);
+}
+.vu-topo p {
+  margin: 0;
+  max-width: 68ch;
+  font-size: 14.5px;
+  color: var(--apagado);
+}
+.vu-parado {
+  display: grid;
+  justify-items: end;
+  margin: 0;
+}
+.vu-parado small {
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--apagado);
+}
+.vu-parado b {
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-weight: 900;
+  font-size: 30px;
+  color: var(--ouro);
+}
+.vu-lista {
+  display: grid;
+  gap: 20px;
+}
+
+.vu-card {
+  --tom: var(--lavoura);
+  display: grid;
+  gap: 16px;
+  padding: 18px 20px 20px;
+  background:
+    radial-gradient(circle at 6% 0%, hsl(var(--h, 40) 45% 24% / 0.7), transparent 45%),
+    var(--chapa-2);
+  box-shadow:
+    inset 0 0 0 2px var(--borda),
+    inset 0 5px 0 var(--tom),
+    6px 6px 0 var(--sombra);
+}
+.vu-card.tom-ouro {
+  --tom: var(--ouro);
+}
+.vu-card.tom-apagado {
+  --tom: var(--borda-forte);
+}
+.vu-cab {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 18px;
+  align-items: center;
+}
+.vu-arte img {
+  image-rendering: pixelated;
+}
+.vu-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 9px 3px 8px;
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tom);
+  background: color-mix(in srgb, var(--tom) 14%, var(--chapa));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tom) 55%, transparent);
+}
+.vu-estado::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  background: var(--tom);
+}
+.vu-cab h3 {
+  margin: 8px 0 6px;
+  font-size: 30px;
+  color: var(--creme);
+}
+.vu-cab h3 button,
+.vu-arte button {
+  color: inherit;
+}
+.vu-cab p {
+  margin: 0;
+  font-size: 14.5px;
+  color: var(--apagado);
+}
+.vu-cab p b {
+  color: var(--creme);
+}
+
+.vu-mercado {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 8px 16px;
+  padding: 12px 14px;
+  background: var(--chapa);
+}
+.vu-mercado p {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 10px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--apagado);
+}
+.vu-mercado b {
+  color: var(--creme);
+}
+
+.vu-preco {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 18px;
+  align-items: start;
+}
+.vu-refs {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.vu-refs button {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  min-height: 48px;
+  padding: 8px 12px;
+  text-align: left;
+  color: var(--creme);
+  background: var(--chapa);
+  border: 2px solid var(--borda);
+  cursor: pointer;
+}
+.vu-refs button:hover {
+  border-color: var(--borda-forte);
+}
+.vu-refs button.on {
+  border-color: var(--ouro);
+  background: color-mix(in srgb, var(--ouro) 10%, var(--chapa));
+}
+.vu-refs span {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.vu-refs small {
+  font-size: 13px;
+  color: var(--apagado);
+}
+.vu-refs b {
+  font-family: var(--display);
+  font-stretch: 70%;
+  font-size: 20px;
+  white-space: nowrap;
+  color: var(--ouro);
+}
+
+.vu-decisao {
+  display: grid;
+  gap: 12px;
+  padding: 14px 16px 16px;
+  background: var(--noite-funda);
+  box-shadow: inset 0 0 0 2px var(--borda);
+}
+.vu-efeito {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  margin: 0;
+}
+.vu-efeito > div {
+  display: grid;
+  gap: 2px;
+  padding: 8px 12px;
+  background: var(--chapa);
+}
+.vu-efeito dt {
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--apagado);
+}
+.vu-efeito dd {
+  margin: 0;
+  font-family: var(--display);
+  font-stretch: 70%;
+  font-weight: 800;
+  font-size: 22px;
+  color: var(--creme);
+}
+.vu-efeito dd small {
+  font-family: var(--fonte);
+  font-stretch: 100%;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--apagado);
+}
+.vu-efeito .bom dd {
+  color: var(--lavoura-clara);
+}
+.vu-efeito .ruim {
+  background: color-mix(in srgb, var(--brasa) 12%, var(--chapa));
+}
+.vu-efeito .ruim dd {
+  color: #ffb39e;
+}
+.vu-alerta,
+.vu-dica {
+  margin: 0;
+  padding: 8px 10px;
+  font-size: 13.5px;
+  line-height: 1.4;
+}
+.vu-alerta {
+  background: color-mix(in srgb, var(--brasa) 12%, var(--chapa));
+  box-shadow: inset 4px 0 0 var(--brasa);
+}
+.vu-dica {
+  color: var(--apagado);
+  box-shadow: inset 4px 0 0 var(--ouro);
+}
+.vu-anunciar {
+  min-height: 48px;
+}
+
+@media (max-width: 860px) {
+  .vu-preco {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 560px) {
+  .vu-cab {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .vu-cab h3 {
+    font-size: 24px;
+  }
+}

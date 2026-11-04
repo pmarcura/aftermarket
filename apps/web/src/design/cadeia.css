@@ -4,24 +4,27 @@
   gap: 14px;
 }
 .cb-cab {
-  display: grid;
-  gap: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px 24px;
 }
 .cb-cab h2 {
-  margin: 0;
+  margin: 0 0 6px;
   font-size: 28px;
   color: var(--creme);
 }
 .cb-cab p {
   margin: 0;
-  max-width: 75ch;
+  max-width: 65ch;
   font-size: 14.5px;
   color: var(--apagado);
 }
 .cb-legenda {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 18px;
+  gap: 6px 16px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -33,9 +36,13 @@
   align-items: center;
   gap: 8px;
 }
+.cb-legenda li.falta {
+  color: var(--brasa);
+  font-weight: 600;
+}
 .cb-legenda i {
   display: inline-block;
-  width: 26px;
+  width: 24px;
   height: 4px;
   border-radius: 2px;
   background: var(--lavoura);
@@ -43,22 +50,29 @@
 .cb-legenda i.mercado {
   background: var(--ceu);
 }
-.cb-legenda i.mao {
-  background: var(--borda-forte);
+.cb-legenda i.falta {
+  height: 0;
+  border-top: 3px dashed var(--brasa);
+  background: none;
 }
 
+/* Palco: o tabuleiro ocupa tudo; o papel de escolha só aparece ao tocar num encaixe. */
 .cb-palco {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
+  grid-template-columns: minmax(0, 1fr);
   gap: 18px;
   align-items: start;
+}
+.cb-palco.com-lado {
+  grid-template-columns: minmax(0, 1fr) 290px;
 }
 .cb-tabuleiro {
   position: relative;
   min-width: 0;
   padding: 16px 16px 18px;
   overflow-x: auto;
-  background: var(--chapa);
+  background: var(--chapa) var(--grao);
+  background-blend-mode: soft-light;
   box-shadow:
     inset 0 0 0 2px var(--borda),
     6px 6px 0 var(--sombra);
@@ -76,6 +90,7 @@
   stroke-width: 4;
   stroke-linecap: round;
 }
+/* Hierarquia dos fios: a ligação entre negócios seus é a notícia; o mercado fica ao fundo. */
 .cb-fios path.proprio {
   stroke: var(--lavoura);
   stroke-dasharray: 10 8;
@@ -83,16 +98,13 @@
 }
 .cb-fios path.mercado {
   stroke: var(--ceu);
-  stroke-width: 3;
-  stroke-dasharray: 3 7;
-}
-.cb-fios path.familias {
-  stroke: var(--ouro);
-  stroke-width: 3;
-  stroke-dasharray: 2 8;
+  stroke-width: 2;
+  stroke-dasharray: 3 6;
+  opacity: 0.5;
 }
 .cb-fios path.escolhido {
-  stroke-width: 7;
+  stroke-width: 6;
+  opacity: 1;
 }
 .cb-fios path.arrastando {
   stroke: var(--creme);
@@ -107,9 +119,11 @@
   position: relative;
   z-index: 2;
   display: grid;
-  grid-template-columns: repeat(4, minmax(190px, 1fr));
-  gap: 46px;
-  min-width: 900px;
+  grid-template-columns: repeat(3, minmax(200px, 1fr));
+  gap: 48px;
+  min-width: 696px;
+  /* A ponta das peças da última coluna sai do bloco: espaço para ela não rolar o tabuleiro. */
+  padding-right: 24px;
 }
 .cb-coluna {
   display: grid;
@@ -145,21 +159,12 @@
     inset 0 4px 0 var(--ouro),
     4px 4px 0 var(--sombra);
 }
-.cb-bloco.fantasma {
-  text-align: left;
-  background: transparent;
-  box-shadow: inset 0 0 0 2px var(--borda);
-  outline: 2px dashed var(--borda-forte);
-  outline-offset: -6px;
-  cursor: pointer;
-}
-.cb-bloco.familias {
+.cb-bloco.mercado {
+  background: color-mix(in srgb, var(--ceu) 8%, var(--chapa));
   box-shadow:
-    inset 0 0 0 2px var(--borda),
-    inset 0 4px 0 var(--ouro),
+    inset 0 0 0 2px color-mix(in srgb, var(--ceu) 45%, var(--borda)),
     4px 4px 0 var(--sombra);
 }
-.cb-bloco > strong,
 .cb-bloco-cab strong {
   font-family: var(--display);
   font-stretch: 70%;
@@ -167,10 +172,6 @@
   font-size: 18px;
   line-height: 1;
   text-transform: uppercase;
-}
-.cb-bloco > small {
-  font-size: 13px;
-  color: var(--apagado);
 }
 .cb-bloco-cab {
   display: grid;
@@ -184,18 +185,44 @@
   border: 0;
   cursor: pointer;
 }
+.cb-bloco-cab.estatico {
+  cursor: default;
+}
 .cb-bloco-cab img {
   max-width: 64px;
   height: auto;
 }
 .cb-bloco-cab span {
   display: grid;
-  gap: 2px;
+  gap: 3px;
 }
 .cb-bloco-cab small {
   font-size: 12.5px;
+  line-height: 1.3;
   color: var(--apagado);
+}
+button.cb-bloco-cab small {
   text-decoration: underline dotted;
+}
+.cb-fantasma {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  text-align: left;
+  color: var(--apagado);
+  background: transparent;
+  border: 2px dashed var(--borda-forte);
+  cursor: pointer;
+}
+.cb-fantasma b {
+  font-size: 14px;
+  color: var(--creme);
+}
+.cb-fantasma small {
+  font-size: 12.5px;
+}
+.cb-fantasma:hover {
+  border-color: var(--creme);
 }
 
 /* Encaixes (à esquerda, entalhados) e peças (à direita, com a ponta) */
@@ -215,7 +242,7 @@
   gap: 8px;
   align-items: center;
   width: 100%;
-  min-height: 42px;
+  min-height: 44px;
   font-family: var(--fonte);
   font-size: 13px;
   font-weight: 600;
@@ -242,7 +269,7 @@
   color: var(--apagado);
 }
 .cb-encaixe.mercado {
-  border-color: var(--ceu);
+  border-color: color-mix(in srgb, var(--ceu) 70%, var(--borda));
 }
 .cb-encaixe.mao {
   border-style: dashed;
@@ -251,16 +278,24 @@
 .cb-encaixe.falta {
   border-style: dashed;
   border-color: var(--brasa);
+  background: color-mix(in srgb, var(--brasa) 10%, var(--chapa));
 }
-.cb-encaixe.falta small {
+.cb-encaixe.falta small,
+.cb-encaixe.curto small {
   color: var(--brasa);
+  font-weight: 600;
 }
 .cb-encaixe.escolhido {
+  background: var(--chapa-3);
+  box-shadow: inset 0 0 0 1px var(--creme);
+}
+.cb-encaixe:hover {
   background: var(--chapa-3);
 }
 .cb-peca {
   margin-right: -22px;
   width: calc(100% + 22px);
+  max-width: calc(100% + 22px);
   padding: 5px 30px 5px 8px;
   color: var(--tinta);
   background: var(--cor);
@@ -275,12 +310,12 @@
     0 100%
   );
   touch-action: none;
+  cursor: grab;
 }
 .cb-peca small {
   color: color-mix(in srgb, var(--tinta) 75%, transparent);
 }
 .cb-peca.familias {
-  grid-template-columns: minmax(0, 1fr);
   background: var(--ouro);
   cursor: default;
 }
@@ -295,11 +330,35 @@
 }
 @keyframes cb-pisca {
   50% {
-    filter: brightness(1.35);
+    filter: brightness(1.3);
   }
 }
+/* Destino da peça: o que acontece com o que o negócio faz. */
+.cb-destino {
+  display: block;
+  margin-top: 4px;
+  padding: 0 4px;
+  font-size: 12.5px;
+  line-height: 1.3;
+  text-align: left;
+  color: var(--apagado);
+  background: none;
+  border: 0;
+}
+.cb-destino.ok {
+  color: var(--lavoura);
+}
+button.cb-destino {
+  cursor: pointer;
+}
+.cb-destino.parado {
+  color: var(--ouro);
+}
+.cb-destino.parado b {
+  text-decoration: underline;
+}
 .cb-tabuleiro.segurando .cb-encaixe:not(.serve) {
-  opacity: 0.35;
+  opacity: 0.3;
 }
 .cb-tabuleiro.segurando .cb-encaixe.serve {
   border-style: solid;
@@ -319,9 +378,31 @@
   display: grid;
   gap: 8px;
   padding: 24px 20px 30px;
+  animation: cb-chega 0.2s ease-out;
+}
+@keyframes cb-chega {
+  from {
+    opacity: 0;
+    transform: translateY(6px) rotate(1deg);
+  }
+}
+.cb-fechar {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  color: var(--tinta);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
 }
 .lv-nota .cb-recado {
   margin: 0;
+  padding-right: 28px;
   font-size: 24px;
   line-height: 1.1;
 }
@@ -332,6 +413,7 @@
 .cb-opcoes button {
   display: grid;
   gap: 2px;
+  min-height: 44px;
   padding: 8px 12px;
   font-family: var(--fonte);
   font-size: 14px;
@@ -342,30 +424,60 @@
   border: 2px solid var(--tinta);
   cursor: pointer;
 }
+.cb-opcoes button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--tinta) 8%, transparent);
+}
 .cb-opcoes button small {
   font-size: 12.5px;
   font-weight: 500;
 }
-.cb-opcoes button:disabled {
+.cb-opcoes button[aria-pressed='true'] {
   cursor: default;
+  opacity: 1;
   border-color: var(--lavoura-escura);
   background: color-mix(in srgb, var(--lavoura) 30%, transparent);
 }
-.cb-nota-pe .text-button {
+.cb-ajustar {
+  justify-self: start;
   color: var(--ferrugem);
 }
 
-@media (max-width: 1400px) {
-  .cb-palco {
+@media (max-width: 1100px) {
+  .cb-palco.com-lado {
     grid-template-columns: minmax(0, 1fr);
   }
   .cb-lado {
     position: static;
   }
 }
+/* Celular: os blocos ficam em fila, na ordem da cadeia; cada encaixe diz de onde vem em texto. */
+@media (max-width: 700px) {
+  .cb-tabuleiro {
+    overflow: visible;
+  }
+  .cb-colunas {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+    min-width: 0;
+  }
+  .cb-fios path.mercado,
+  .cb-fios path.proprio {
+    display: none;
+  }
+  .cb-encaixe {
+    margin-left: 0;
+    width: 100%;
+    padding-left: 18px;
+  }
+  .cb-peca {
+    margin-right: 0;
+    width: 100%;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .cb-fios path.proprio,
-  .cb-peca.sugerida {
+  .cb-peca.sugerida,
+  .cb-nota {
     animation: none;
   }
 }

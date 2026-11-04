@@ -191,13 +191,12 @@ test('negocia pedido real, agrupa caminhões e configura abastecimento e educaç
       .click();
     await expect(page.getByRole('heading', { level: 1, name: NOME, exact: true })).toBeVisible();
     await page.getByRole('tab', { name: 'Abastecimento', exact: true }).click();
-    const minerio = page
-      .getByRole('region', { name: /^Repostos sozinhos/ })
-      .getByRole('article')
-      .filter({ hasText: 'Minério de ferro' });
+    // O insumo da linha é um combinado com o gerente; os números exatos ficam no ajuste fino.
+    const minerio = page.getByRole('region', { name: 'Abastecer Minério de ferro', exact: true });
+    await minerio.locator('summary').filter({ hasText: 'Ajuste fino' }).click();
     await minerio.getByLabel('Encher até', { exact: true }).fill('200');
-    await minerio.getByLabel('Repor quando cair a', { exact: true }).fill('100');
-    await minerio.getByRole('button', { name: 'Salvar mudanças', exact: true }).click();
+    await minerio.getByLabel('Pedir quando cair a', { exact: true }).fill('100');
+    await minerio.getByRole('button', { name: 'Salvar', exact: true }).click();
     await expect(page.getByText('Regra de Minério de ferro salva.')).toBeVisible();
 
     await page.locator('summary').filter({ hasText: 'Regras gerais de compra' }).click();

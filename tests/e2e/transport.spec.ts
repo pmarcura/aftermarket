@@ -16,8 +16,8 @@ test('frota mostra limite, ajusta quantidade; erro fica no modal e conexão pers
   }
   origin.inventory.iron = 500;
   dest.inventory = {};
-  // Sem regras de abastecimento, minério e carvão ficam em "Repor você mesmo", onde a fábrica
-  // traz material de outra unidade sua.
+  // Sem regras de abastecimento, o insumo aparece sem combinado, e a fábrica pode trazer
+  // material de outra unidade sua.
   dest.supplyPolicy = undefined;
   dest.capacityT = 10000;
   dest.capacityM3 = 10000;
@@ -58,9 +58,7 @@ test('frota mostra limite, ajusta quantidade; erro fica no modal e conexão pers
   await page.goto('/jogar');
   await page.getByRole('tab', { name: 'Abastecimento', exact: true }).click();
   await page
-    .getByRole('region', { name: /^Repor você mesmo/ })
-    .getByRole('article')
-    .filter({ hasText: 'Minério de ferro' })
+    .getByRole('region', { name: 'Abastecer Minério de ferro', exact: true })
     .getByRole('button', { name: 'Trazer de outra unidade', exact: true })
     .click();
   const dialog = page.getByRole('dialog');
@@ -116,7 +114,7 @@ test('frota mostra limite, ajusta quantidade; erro fica no modal e conexão pers
   // A ligação aparece no tabuleiro da cadeia: o encaixe de minério da indústria vem da mina.
   const cadeia = page.getByRole('region', { name: 'Sua cadeia', exact: true });
   const encaixe = cadeia.getByRole('button', {
-    name: /^Minério de ferro para Indústria de Aço: vem de Mineradora Horizonte/,
+    name: /^Minério de ferro para Indústria de Aço: de Mineradora Horizonte/,
   });
   await expect(encaixe).toBeVisible();
   await cadeia.screenshot({ path: 'test-results/design/supply-network.png' });
@@ -139,7 +137,7 @@ test('frota mostra limite, ajusta quantidade; erro fica no modal e conexão pers
   await expect.poll(() => minerio()?.originId).toBe('e-mine');
   await expect(
     cadeia.getByRole('button', {
-      name: /^Minério de ferro para Indústria de Aço: vem de Mineradora Horizonte/,
+      name: /^Minério de ferro para Indústria de Aço: de Mineradora Horizonte/,
     }),
   ).toBeVisible();
 });

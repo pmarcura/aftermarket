@@ -63,7 +63,7 @@ export const protegerTudo = (world: World, loja: Establishment, p: SupplyPolicy)
 });
 
 /** Uma lacuna do bilhete: mostra a escolha atual e abre as opções com uma linha de ajuda cada. */
-function Lacuna<T extends string | number>({
+export function Lacuna<T extends string | number>({
   valor,
   rotulo,
   opcoes,
@@ -130,13 +130,16 @@ function Lacuna<T extends string | number>({
 }
 
 /** Régua do estoque: quanto há, quanto vem na estrada, onde o gerente pede e até onde enche. */
-function ReguaEstoque({
+export function ReguaEstoque({
   atual,
   aCaminho,
   pede,
   enche,
   un,
+  onde = 'na loja',
 }: {
+  /** Onde o estoque está: "na loja" ou "no armazém". */
+  onde?: string;
   atual: number;
   aCaminho: number;
   pede: number;
@@ -170,7 +173,7 @@ function ReguaEstoque({
       </div>
       <p className="bl-regua-legenda">
         <span>
-          <i className="atual" /> na loja: <b>{num(atual)}</b>
+          <i className="atual" /> {onde}: <b>{num(atual)}</b>
         </span>
         {aCaminho > 0 && (
           <span>

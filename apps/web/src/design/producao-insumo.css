@@ -1,0 +1,60 @@
+/* Insumo da linha: o combinado com o gerente numa unidade de produção. */
+.pi-lista {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr));
+  gap: 18px;
+}
+/* Dentro da regra, o cabeçalho é a figura e o nome lado a lado, não a barra de título. */
+.bl-regra > header.pi-cab,
+.pi-cab {
+  display: grid;
+  justify-content: start;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+}
+.pi-cab img {
+  image-rendering: pixelated;
+}
+.pi-cab h3 {
+  margin: 2px 0 4px;
+  font-size: 26px;
+  color: var(--creme);
+}
+.pi-cab p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--apagado);
+}
+.pi-comecar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+/* Os outros produtos ficam recolhidos: a decisão do dia é o insumo da receita. */
+.abs-mais > summary {
+  width: max-content;
+  font-family: var(--display);
+  font-stretch: 68%;
+  font-weight: 900;
+  font-size: 22px;
+  text-transform: uppercase;
+  color: var(--creme);
+  cursor: pointer;
+}
+.abs-mais[open] > summary {
+  margin-bottom: 14px;
+}
+
+/* Cabeçalho da aba: o título e a chave que pausa todo o abastecimento da unidade. */
+.pi-topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 18px;
+  margin-bottom: 14px;
+}
+.pi-topo h2 {
+  margin: 0;
+}

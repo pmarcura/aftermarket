@@ -133,19 +133,19 @@ export function BusinessesPage() {
                         </b>
                         <small>
                           {x.origem.name} tem {num(x.quantidade)} {unidade(x.produto, x.quantidade)}{' '}
-                          paradas; {x.destino!.name} usa {products[x.produto].name} e hoje compra de
-                          outras empresas, pagando mercadoria e frete.
+                          sem destino; {x.destino!.name} usa {products[x.produto].name} e hoje
+                          compra de outras empresas, pagando mercadoria e frete.
                         </small>
                       </>
                     ) : (
                       <>
                         <b>
-                          {num(x.quantidade)} {unidade(x.produto, x.quantidade)} de{' '}
-                          {products[x.produto].name} paradas em {x.origem.name}
+                          {x.origem.name} tem {num(x.quantidade)} {unidade(x.produto, x.quantidade)}{' '}
+                          de {products[x.produto].name} sem comprador
                         </b>
                         <small>
-                          Nenhum negócio seu usa e não há oferta à venda, então ninguém pode
-                          comprar. Valem cerca de {cr(x.valor, 0)} no preço de referência.
+                          Nenhum negócio seu usa e não há oferta, então ninguém pode comprar. Isso
+                          vale cerca de {cr(x.valor, 0)} na referência: anuncie para virar dinheiro.
                         </small>
                       </>
                     )}

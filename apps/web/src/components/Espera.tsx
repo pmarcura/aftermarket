@@ -3,12 +3,12 @@ import { useGame } from '../lib/game';
 import '../design/espera.css';
 
 /**
- * Feedback de ação em andamento para o jogo inteiro. Todo comando leva alguns segundos para o
- * servidor confirmar; sem aviso o jogador acha que travou e clica de novo (e o clique é ignorado).
- * A barra no topo e o cursor de espera aparecem na hora e somem quando o servidor responde.
+ * Feedback de ação em andamento para o jogo inteiro. A barra no topo e o cursor de espera aparecem
+ * na hora e somem quando o servidor responde. O aviso diz o que está indo e quantas ações estão na
+ * fila: um clique durante outra ação espera a vez em vez de sumir (spec 013, fase 2).
  */
 export function EsperaGlobal() {
-  const { pending } = useGame();
+  const { pending, pendentes } = useGame();
   // Some só depois de um instante, para ações rápidas não piscarem.
   const [visivel, setVisivel] = useState(false);
   // O botão que o jogador acabou de clicar: é ele que mostra o giro enquanto o comando roda.
@@ -44,7 +44,12 @@ export function EsperaGlobal() {
       aria-live="polite"
     >
       <i aria-hidden="true" />
-      {pending && <span>Enviando… aguarde a confirmação</span>}
+      {pending && (
+        <span>
+          Enviando: {pendentes[0]?.rotulo ?? 'operação'}
+          {pendentes.length > 1 && <b> · mais {pendentes.length - 1} na fila</b>}
+        </span>
+      )}
     </div>
   );
 }

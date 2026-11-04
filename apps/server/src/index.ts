@@ -7,10 +7,9 @@ import { createRoadAccessService, createRoadFetcher } from './road-access';
 import type { ScenarioName } from '../../../packages/simulation/src/scenarios';
 import { RuleError } from '../../../packages/simulation/src/engine';
 import { commandSchema, product } from './commands';
-import { worldView } from './view';
 import { gzip } from 'node:zlib';
 import { createClock } from '../../../packages/simulation/src/clock';
-import { createWorldPacketCache } from './world-packet';
+import { createWorldPacketCache, type WorldPacket } from './world-packet';
 import { marketHistories } from './market-history';
 
 const app = express();
@@ -99,6 +98,16 @@ function sendJson(req: express.Request, res: express.Response, body: unknown) {
   } else res.end(json);
 }
 const worldPacket = createWorldPacketCache();
+async function sendPacket(req: express.Request, res: express.Response, packet: WorldPacket) {
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('Vary', 'Accept-Encoding, x-company-id');
+  if (packet.json.length > 2048 && /\bgzip\b/.test(req.get('accept-encoding') ?? '')) {
+    const encoded = await packet.gzip;
+    if (res.destroyed) return;
+    res.setHeader('Content-Encoding', 'gzip');
+    res.end(encoded);
+  } else res.end(packet.json);
+}
 app.get('/api/world', async (req, res, next) => {
   try {
     // Reads never run offline catch-up; the background tick owns progression.
@@ -109,14 +118,7 @@ app.get('/api/world', async (req, res, next) => {
     const inicio = performance.now();
     const packet = worldPacket(w, actor);
     res.setHeader('Server-Timing', `pacote;dur=${(performance.now() - inicio).toFixed(1)}`);
-    res.setHeader('Content-Type', 'application/json; charset=utf-8');
-    res.setHeader('Vary', 'Accept-Encoding, x-company-id');
-    if (packet.json.length > 2048 && /\bgzip\b/.test(req.get('accept-encoding') ?? '')) {
-      const encoded = await packet.gzip;
-      if (res.destroyed) return;
-      res.setHeader('Content-Encoding', 'gzip');
-      res.end(encoded);
-    } else res.end(packet.json);
+    await sendPacket(req, res, packet);
   } catch (error) {
     next(error);
   }
@@ -158,7 +160,7 @@ app.get('/api/market-history', (req, res) => {
   }
   return sendJson(req, res, histories[parsed.data[0]]);
 });
-app.post('/api/commands', (req, res, next) => {
+app.post('/api/commands', async (req, res, next) => {
   try {
     const origin = req.get('origin');
     if (origin && !allowedOrigins.has(origin))
@@ -171,7 +173,9 @@ app.post('/api/commands', (req, res, next) => {
     const parsed = commandSchema.parse(req.body);
     const mundo = store.command(actor, parsed, key);
     const antesDaVista = performance.now();
-    const vista = worldView(mundo, actor);
+    // Mesmo pacote (por revisão e empresa) que a leitura seguinte do navegador vai pedir: a
+    // resposta do clique e o próximo /api/world montam e comprimem o mundo uma vez só.
+    const packet = worldPacket(mundo, actor);
     const fim = performance.now();
     // Tempo de cada etapa visível no navegador (aba Rede → Timing) e no log quando passa de 500 ms.
     const etapas = {
@@ -191,7 +195,7 @@ app.post('/api/commands', (req, res, next) => {
           .map(([nome, ms]) => `${nome} ${Math.round(ms)} ms`)
           .join(' · ')}`,
       );
-    sendJson(req, res, vista);
+    await sendPacket(req, res, packet);
   } catch (error) {
     next(error);
   }

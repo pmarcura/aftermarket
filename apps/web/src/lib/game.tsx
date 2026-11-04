@@ -37,6 +37,8 @@ import { Notice } from '../components/Notice';
 import { createWorldConnection } from './world-connection';
 import { createCommandConnection } from './command-connection';
 import { definirPausa } from './clock';
+import { rotuloDoComando } from './comandos';
+import { createFilaEnvio, type Pendente } from './fila-envio';
 
 // Formatadores prontos: criar um por número custa caro quando a tela formata milhares deles.
 const moedas = new Map<number, Intl.NumberFormat>();
@@ -137,6 +139,8 @@ interface GameContextValue {
   actor: string;
   setActor: (v: string) => void;
   pending: boolean;
+  /** Ações indo ao servidor (a primeira) ou na fila de envio (as demais). */
+  pendentes: Pendente[];
   run: (command: Command, message: string) => Promise<boolean>;
   refresh: () => Promise<void>;
   page: Page;
@@ -171,7 +175,8 @@ export const useGame = () => {
 export function GameProvider({ children }: { children: ReactNode }) {
   const latestWorld = useRef<World | null>(null);
   const [sendCommand] = useState(() => createCommandConnection());
-  const operationPending = useRef(false);
+  const [pendentes, setPendentes] = useState<Pendente[]>([]);
+  const [fila] = useState(() => createFilaEnvio(5, setPendentes));
   const [connection] = useState(() => createWorldConnection());
   const [world, setWorld] = useState<World | null>(null),
     [error, setError] = useState('');
@@ -194,8 +199,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const ordersRequest = useRef(0);
   const [produtoAberto, openProduto] = useState<ProductId | null>(null);
   const [repor, openRepor] = useState<{ destinationId: string; product: ProductId } | null>(null);
-  const [pending, setPending] = useState(false),
-    [toast, setToast] = useState<{ message: string; error: boolean; id: number }>();
+  const pending = pendentes.length > 0;
+  const [toast, setToast] = useState<{ message: string; error: boolean; id: number }>();
   // Pede só quando o mundo mudou: o servidor responde 204 se a revisão e a empresa são as mesmas.
   const refresh = useCallback(
     async (force = false) => {
@@ -271,11 +276,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('aftermarket.company', a);
     navigate('map');
   };
-  const run = async (command: Command, message: string) => {
-    if (operationPending.current) return false;
-    operationPending.current = true;
-    setPending(true);
-    const requestedActor = actor;
+  const enviar = async (command: Command, message: string, requestedActor: string) => {
     try {
       const result = await sendCommand(requestedActor, command);
       if (!result) return false;
@@ -293,10 +294,19 @@ export function GameProvider({ children }: { children: ReactNode }) {
       notice(e instanceof Error ? e.message : 'Não foi possível concluir. Tente novamente.', true);
       await refresh().catch(() => undefined);
       return false;
-    } finally {
-      operationPending.current = false;
-      setPending(false);
     }
+  };
+  // Um clique durante outra ação entra na fila de envio (lib/fila-envio.ts) em vez de sumir.
+  const run = async (command: Command, message: string) => {
+    const requestedActor = actor;
+    const resultado = await fila.enfileirar(
+      `${requestedActor}|${JSON.stringify(command)}`,
+      rotuloDoComando(command),
+      () => enviar(command, message, requestedActor),
+    );
+    if (resultado === 'cheia')
+      notice('Há ações demais esperando confirmação. Aguarde um instante.', true);
+    return resultado === true;
   };
   if (!world)
     return (
@@ -329,6 +339,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         focus,
         consumeFocus,
         pending,
+        pendentes,
         run,
         refresh,
         businessId,

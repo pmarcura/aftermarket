@@ -128,3 +128,61 @@ test('cidade clicável abre painel com procura, lojas e lotes à venda', async (
   }
   expect(errors).toEqual([]);
 });
+
+// Spec 009: de perto, os contornos reais de prédio recebem as peças do pacote como camada de
+// símbolos do MapLibre. O tile de teste (tests/fixtures/mvt.ts) traz quadras com casas e uma
+// avenida; as peças vêm de /arte/town (fora do Git) — sem elas o teste só prova que nada quebra.
+test('cidade de perto: prédios viram peças do pacote numa camada de símbolos', async ({ page }) => {
+  test.setTimeout(90000);
+  const { buildingsTile } = await import('../fixtures/mvt');
+  const tile = Buffer.from(buildingsTile(1));
+  const world = createWorld(Date.now());
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
+  await page.route('**/api/world*', (route) => route.fulfill({ json: world }));
+  // Tiles com prédios em qualquer z ≥ 13 (o TileJSON da fixture declara maxzoom 14; acima é overzoom).
+  await page.route('**/__e2e/vazio.pbf?**', (route) => {
+    const z = Number(new URL(route.request().url()).searchParams.get('z'));
+    return route.fulfill({
+      contentType: 'application/x-protobuf',
+      body: z >= 13 ? tile : Buffer.alloc(0),
+    });
+  });
+  await page.addInitScript((season) => {
+    localStorage.setItem('aftermarket.company', 'player');
+    localStorage.setItem('aftermarket.page', 'map');
+    localStorage.setItem(`aftermarket.welcome.${season}.player`, 'seen');
+  }, world.season.id);
+  await page.goto('/jogar');
+  await page.locator('.main-map [data-map-ready="true"]').waitFor({ timeout: 30000 });
+  const temPecas = await page.evaluate(async () => {
+    const r = await fetch(
+      '/arte/town/Houses%20and%20Buildings/Houses%20(very%20small%20(all%2016x16)/1.png',
+    );
+    return r.ok && (r.headers.get('content-type') ?? '').includes('image');
+  });
+  const industria = world.properties.find((p) => p.id === 'industry')!;
+  await page.evaluate((coords) => {
+    const m = (window as unknown as { aftermarketMap?: maplibregl.Map }).aftermarketMap!;
+    m.jumpTo({ center: coords as [number, number], zoom: 16.2 });
+  }, industria.coordinates);
+  await page.waitForTimeout(2500);
+  const estado = await page.evaluate(() => {
+    const m = (window as unknown as { aftermarketMap?: maplibregl.Map }).aftermarketMap!;
+    return {
+      camada: Boolean(m.getLayer('town-buildings')),
+      pontos: m.getSource('town-buildings') ? m.querySourceFeatures('town-buildings').length : 0,
+      predios: m.querySourceFeatures('openmaptiles', { sourceLayer: 'building' }).length,
+      rendered: m.queryRenderedFeatures(undefined, { layers: ['town-buildings'] }).length,
+    };
+  });
+  await page.screenshot({ path: 'test-results/mapa-vivo-cidade-perto.png' });
+  expect(estado.predios).toBeGreaterThan(100);
+  if (temPecas) {
+    expect(estado.camada).toBe(true);
+    expect(estado.pontos).toBeGreaterThan(100);
+    expect(estado.rendered).toBeGreaterThan(20);
+  }
+  expect(errors).toEqual([]);
+});

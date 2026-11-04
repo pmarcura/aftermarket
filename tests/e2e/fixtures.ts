@@ -12,7 +12,15 @@ const tileJson = (baseURL: string) => ({
   tiles: [`${baseURL}/__e2e/vazio.pbf?z={z}&x={x}&y={y}`],
   minzoom: 0,
   maxzoom: 14,
-  vector_layers: ['landcover', 'water', 'waterway', 'transportation'].map((id) => ({
+  vector_layers: [
+    'landcover',
+    'landuse',
+    'water',
+    'waterway',
+    'transportation',
+    'building',
+    'boundary',
+  ].map((id) => ({
     id,
     fields: {},
   })),

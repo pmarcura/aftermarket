@@ -77,6 +77,15 @@ function orientedBox(pts: [number, number][]) {
 }
 
 export async function attachPixelTown(map: MapLibreMap) {
+  try {
+    return await attach(map);
+  } catch (error) {
+    console.error('[pixel-town] falha ao montar a cidade de perto', error);
+    return () => {};
+  }
+}
+
+async function attach(map: MapLibreMap) {
   // 1 · peças no mapa (uma imagem por peça; pixelRatio 1 = 1 px da peça por px CSS, que o canvas
   //     em meia resolução amplia para 2×, a crocância 16-bit).
   const sizes = new Map<string, { w: number; h: number }>();
@@ -123,10 +132,15 @@ export async function attachPixelTown(map: MapLibreMap) {
         minzoom: MIN_ZOOM,
         layout: {
           'icon-image': ['get', 'sprite'],
+          // Regra do MapLibre: a expressão de zoom tem de ser a mais externa.
           'icon-size': [
-            '*',
+            'interpolate',
+            ['exponential', 2],
+            ['zoom'],
+            15,
             ['get', 'k15'],
-            ['interpolate', ['exponential', 2], ['zoom'], 15, 1, 22, 128],
+            22,
+            ['*', ['get', 'k15'], 128],
           ],
           'icon-rotate': ['get', 'angle'],
           'icon-rotation-alignment': 'map',

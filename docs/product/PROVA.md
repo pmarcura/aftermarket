@@ -97,26 +97,26 @@ Dias de estoque: quanto o estoque do mundo dura no ritmo de vendas da janela (al
 
 ## Escala 20
 
-`npm run economy:proof -- --days=20 --window=10 --seeds=0,1 --scale=20 --write-doc` (uma semente por processo, juntadas com `--from`). Código `6f2774b`; temporada `c28047496501`. 2 sementes, janela dos últimos 10 dias de 20. Simulação: 50,3 [49,3–51,4] s por dia de jogo por semente.
+`npm run economy:proof -- --days=60 --window=30 --seeds=0,1,2,3,4 --scale=20 --write-doc` (uma semente por processo, juntadas com `--from`). Código `9000604`; temporada `df24bc2fda97`. 5 sementes, janela dos últimos 30 dias de 60. Simulação: 5,1 [3,5–5,9] s por dia de jogo por semente.
 
 ### KPIs de mundo
 
 | KPI                                                | Alvo                    |   Mediana [mín–máx] | Mediana | Pior caso |
 | -------------------------------------------------- | ----------------------- | ------------------: | ------- | --------- |
 | Dinheiro conservado (diferença em centavos)        | 0                       |             0 [0–0] | dentro  | dentro    |
-| Empresas-bot quebradas ou suspensas                | 0                       |             0 [0–0] | dentro  | dentro    |
-| Procura atendida pelas lojas                       | ≥ 55%                   |       51% [51%–52%] | fora    | fora      |
-| Aço entregue ao governo (t/dia)                    | ≥ 256 (80% de 320)      | 177,2 [166,8–187,5] | fora    | fora      |
-| Produtos vendidos com estoque fora de 1–7 dias     | 0                       |           5.5 [5–6] | fora    | fora      |
+| Empresas-bot quebradas ou suspensas                | 0                       |             1 [0–1] | fora    | fora      |
+| Procura atendida pelas lojas                       | ≥ 55%                   |       56% [56%–57%] | dentro  | dentro    |
+| Aço entregue ao governo (t/dia)                    | ≥ 256 (80% de 320)      | 199,3 [189,5–215,2] | fora    | fora      |
+| Produtos vendidos com estoque fora de 1–7 dias     | 0                       |             5 [4–5] | fora    | fora      |
 | Produtos com HHI ≥ 2.500 no atacado                | 0                       |             2 [2–2] | fora    | fora      |
-| Receitas com utilização fora de 70–95%             | 0                       |           1.5 [1–2] | fora    | fora      |
-| Receitas com lucro/linha ÷ projeto fora de 0,8–1,2 | 0                       |        11.5 [11–12] | fora    | fora      |
-| Caminhões pesados comprados por dia                | referência 16, sem alvo |    11,4 [11,2–11,6] | —       | —         |
-| Caminhões leves comprados por dia                  | referência 4, sem alvo  |       4,1 [3,7–4,5] | —       | —         |
-| Caminhões importados por dia                       | sem alvo                |      2,65 [2,4–2,9] | —       | —         |
-| Caminhões aposentados por dia                      | sem alvo                |   21,65 [20,8–22,5] | —       | —         |
+| Receitas com utilização fora de 70–95%             | 0                       |             3 [3–3] | fora    | fora      |
+| Receitas com lucro/linha ÷ projeto fora de 0,8–1,2 | 0                       |          11 [11–12] | fora    | fora      |
+| Caminhões pesados comprados por dia                | referência 16, sem alvo |  19,07 [18,6–19,33] | —       | —         |
+| Caminhões leves comprados por dia                  | referência 4, sem alvo  |       3,1 [2,9–3,4] | —       | —         |
+| Caminhões importados por dia                       | sem alvo                |        7 [6,33–7,5] | —       | —         |
+| Caminhões aposentados por dia                      | sem alvo                |    25 [23,87–25,43] | —       | —         |
 
-Quebras por semente: 0: nenhuma; 1: nenhuma.
+Quebras por semente: 0: rival-47 coal-extraction suspensa; 1: rival-34 coal-extraction suspensa; 2: nenhuma; 3: rival-47 coal-extraction suspensa; 4: rival-34 coal-extraction suspensa.
 
 ### Por negócio
 
@@ -124,32 +124,32 @@ Linhas instaladas: equipamento das unidades da especialidade. Linhas de referên
 
 | Negócio                               | Linhas instaladas | Linhas na referência |   Linhas observadas |       Utilização |     Resultado dos bots/dia (R$) |   Lucro/linha/dia (R$) | Projeto/linha/dia (R$) | Observado ÷ projeto | Preço realizado ÷ referência |
 | ------------------------------------- | ----------------: | -------------------: | ------------------: | ---------------: | ------------------------------: | ---------------------: | ---------------------: | ------------------: | ---------------------------: |
-| Extração de minério                   |        46 [46–46] |                 53,8 |      34,2 [33,4–35] |    74% [73%–76%] |       180.151 [178.148–182.153] |    3.916 [3.873–3.960] |                  3.268 |     1,2 [1,18–1,21] |             1,01 [1,01–1,01] |
-| Extração de carvão                    |        41 [41–41] |                 51,2 |      32 [31,9–32,1] |    78% [78%–78%] |       231.508 [229.626–233.391] |    5.647 [5.601–5.692] |                  4.245 |    1,33 [1,32–1,34] |                      1 [1–1] |
-| Aço em alto-forno (com aço reciclado) |        81 [81–81] |                100,9 |      63,6 [63–64,1] |    89% [88%–89%] |       913.717 [898.806–928.627] | 11.280 [11.096–11.465] |                  5.437 |    2,07 [2,04–2,11] |              1,11 [1,1–1,11] |
-| Utensílios de aço                     |        99 [99–99] |                124,2 |    91,5 [90,7–92,4] |    92% [92%–93%] |       310.512 [300.438–320.585] |    3.136 [3.035–3.238] |                  1.110 |    2,83 [2,73–2,92] |             1,05 [1,05–1,06] |
-| Montagem de caminhão pesado           |        13 [13–13] |                   16 |     10,1 [9,9–10,2] |    77% [76%–78%] |          93.339 [88.822–97.857] |    7.180 [6.832–7.527] |                  6.893 |    1,04 [0,99–1,09] |             0,94 [0,94–0,95] |
-| Montagem de caminhão leve             |           2 [2–2] |                    2 |       1,4 [1,3–1,4] |    68% [65%–70%] |                  807 [45–1.568] |           403 [23–784] |                  6.704 |       0,06 [0–0,12] |             0,94 [0,94–0,94] |
-| Colheita de soja                      |        77 [77–77] |                 95,4 |      60,8 [60–61,6] |    79% [78%–80%] |       604.569 [604.049–605.088] |    7.852 [7.845–7.858] |                  5.796 |    1,35 [1,35–1,36] |             0,96 [0,96–0,96] |
-| Esmagamento de soja                   |        49 [49–49] |                 59,6 |      42,8 [42,5–43] |    87% [87%–88%] |       263.310 [251.578–275.042] |    5.374 [5.134–5.613] |                    613 |    8,77 [8,38–9,16] |              1,23 [1,2–1,26] |
-| Fábrica de ração                      |        36 [36–36] |                 45,2 |      32,1 [32–32,2] |    89% [89%–89%] |       135.867 [131.498–140.236] |    3.774 [3.653–3.895] |                  2.273 |    1,66 [1,61–1,71] |             1,07 [1,07–1,07] |
-| Ordenha                               |     254 [254–254] |                  318 | 216,2 [214,6–217,8] |    85% [84%–86%] | 2.879.681 [2.877.816–2.881.546] | 11.337 [11.330–11.345] |                  8.264 |    1,37 [1,37–1,37] |             1,04 [1,04–1,04] |
-| Colheita de arroz                     |     143 [143–143] |                178,9 | 114,4 [114,4–114,4] |    80% [80%–80%] |       183.482 [180.626–186.339] |    1.283 [1.263–1.303] |                    872 |    1,47 [1,45–1,49] |             0,94 [0,93–0,94] |
-| Colheita de feijão                    |     215 [215–215] |                268,3 | 193,5 [193,5–193,5] |    90% [90%–90%] |       403.133 [393.400–412.867] |    1.875 [1.830–1.920] |                    757 |    2,48 [2,42–2,54] |             0,97 [0,96–0,97] |
-| Colheita de cana e açúcar             |        80 [80–80] |                 99,4 |          80 [80–80] | 100% [100%–100%] |       110.815 [110.057–111.572] |    1.385 [1.376–1.395] |                    752 |    1,84 [1,83–1,86] |             0,92 [0,92–0,92] |
-| Lojas                                 |                 — |                    — |                   — |                — |       570.321 [555.300–585.342] |                      — |                      — |                   — |                            — |
-| Distribuidores                        |                 — |                    — |                   — |                — |     996.128 [975.637–1.016.619] |                      — |                      — |                   — |                            — |
+| Extração de minério                   |        57 [57–57] |                 53,8 |        42,6 [42–44] |    75% [74%–77%] |       222.970 [215.230–235.571] |    3.912 [3.776–4.133] |                  3.268 |     1,2 [1,16–1,26] |                   1 [1–1,01] |
+| Extração de carvão                    |        51 [51–51] |                 51,2 |    41,1 [39,5–41,8] |    81% [77%–82%] |       294.127 [280.363–299.892] |    5.767 [5.497–5.880] |                  4.245 |     1,36 [1,3–1,39] |                   1 [1–1,01] |
+| Aço em alto-forno (com aço reciclado) |     101 [101–101] |                100,9 |        80 [78,7–82] |    89% [87%–91%] | 1.146.161 [1.129.795–1.173.594] | 11.348 [11.186–11.620] |                  5.437 |    2,09 [2,06–2,14] |                1,1 [1,1–1,1] |
+| Utensílios de aço                     |     124 [124–124] |                124,2 |   116,3 [116,1–117] |    94% [94%–94%] |       779.496 [748.545–807.513] |    6.286 [6.037–6.512] |                  3.790 |    1,66 [1,59–1,72] |             1,01 [1,01–1,02] |
+| Montagem de caminhão pesado           |        16 [16–16] |                   16 |      13 [12,3–13,5] |    81% [77%–84%] |       531.814 [519.909–556.481] | 33.238 [32.494–34.780] |                 34.823 |       0,95 [0,93–1] |             0,92 [0,92–0,92] |
+| Montagem de caminhão leve             |           2 [2–2] |                    2 |       1,2 [1,1–1,3] |    59% [53%–65%] |          37.846 [31.431–40.040] | 18.923 [15.716–20.020] |                 33.304 |     0,57 [0,47–0,6] |             0,92 [0,92–0,92] |
+| Colheita de soja                      |        96 [96–96] |                 95,4 |    85,3 [83,2–86,4] |    89% [87%–90%] |       652.497 [630.006–684.640] |    6.797 [6.563–7.132] |                  4.596 |    1,48 [1,43–1,55] |             0,97 [0,96–0,98] |
+| Esmagamento de soja                   |        61 [61–61] |                 59,6 |    56,3 [55,4–57,4] |    92% [91%–94%] |       345.170 [321.982–361.216] |    5.659 [5.278–5.922] |                  4.005 |    1,41 [1,32–1,48] |                   1 [0,97–1] |
+| Fábrica de ração                      |        45 [45–45] |                 45,2 |      40,3 [40–41,2] |    89% [89%–91%] |       419.908 [366.966–458.949] |   9.331 [8.155–10.199] |                  5.073 |    1,84 [1,61–2,01] |             1,06 [1,06–1,06] |
+| Ordenha                               |     318 [318–318] |                  318 |   281,3 [278–291,2] |    88% [87%–92%] | 3.940.936 [3.898.572–4.066.284] | 12.393 [12.260–12.787] |                  8.273 |     1,5 [1,48–1,55] |             1,06 [1,06–1,07] |
+| Colheita de arroz                     |     179 [179–179] |                178,9 | 167,1 [167,1–167,1] |    93% [93%–93%] |       487.266 [471.651–496.182] |    2.722 [2.635–2.772] |                  1.658 |    1,64 [1,59–1,67] |             0,92 [0,92–0,92] |
+| Colheita de feijão                    |     268 [268–268] |                268,3 |       268 [268–268] | 100% [100%–100%] |       776.346 [764.291–783.015] |    2.897 [2.852–2.922] |                  1.613 |     1,8 [1,77–1,81] |             0,94 [0,94–0,95] |
+| Colheita de cana e açúcar             |        99 [99–99] |                 99,4 |          99 [99–99] | 100% [100%–100%] |       281.453 [280.104–289.789] |    2.843 [2.829–2.927] |                  1.696 |    1,68 [1,67–1,73] |             0,92 [0,92–0,92] |
+| Lojas                                 |                 — |                    — |                   — |                — |       645.744 [612.286–654.022] |                      — |                      — |                   — |                            — |
+| Distribuidores                        |                 — |                    — |                   — |                — |       858.779 [811.339–884.302] |                      — |                      — |                   — |                            — |
 
 ### Procura atendida por produto
 
 | Produto                 |      Atendida |
 | ----------------------- | ------------: |
-| Feijão 1 kg             | 58% [58%–58%] |
-| Leite 1 L               | 49% [49%–50%] |
-| Óleo de soja 1 L        | 59% [57%–60%] |
-| Arroz 5 kg              | 58% [58%–58%] |
-| Açúcar 5 kg             | 57% [56%–57%] |
-| Utensílios de aço (kit) | 54% [54%–54%] |
+| Feijão 1 kg             | 63% [63%–64%] |
+| Leite 1 L               | 54% [53%–56%] |
+| Óleo de soja 1 L        | 64% [64%–66%] |
+| Arroz 5 kg              | 62% [62%–64%] |
+| Açúcar 5 kg             | 64% [64%–65%] |
+| Utensílios de aço (kit) | 59% [58%–59%] |
 
 ### Estoque e concentração
 
@@ -157,20 +157,20 @@ Dias de estoque: quanto o estoque do mundo dura no ritmo de vendas da janela (al
 
 | Produto                 | Dias de estoque |                 HHI |
 | ----------------------- | --------------: | ------------------: |
-| Feijão 1 kg             |   0,8 [0,7–0,9] |       449 [443–455] |
-| Carvão mineral          |   3,5 [3,5–3,5] |       466 [453–478] |
-| Ração para gado         |   1,2 [1,1–1,3] |       164 [161–167] |
-| Minério de ferro        |     3,9 [3,8–4] |       387 [369–405] |
-| Leite 1 L               |   0,6 [0,6–0,7] |       376 [372–381] |
-| Óleo de soja 1 L        |   2,2 [2,2–2,2] |       423 [400–445] |
-| Arroz 5 kg              |     0,9 [0,7–1] |   1.051 [972–1.130] |
-| Sucata de aço           |   1,7 [1,3–2,1] | 2.724 [2.722–2.725] |
-| Soja em grão            |   1,7 [1,6–1,8] |       382 [379–384] |
-| Farelo de soja          |   1,2 [1,1–1,3] |       363 [341–384] |
-| Aço em barras           |     1,9 [1,8–2] |       163 [158–169] |
-| Açúcar 5 kg             |     1,5 [1–2,1] |       502 [326–679] |
-| Caminhão pesado 30 t    |         0 [0–0] |       788 [785–792] |
-| Caminhão leve 8 t       |         0 [0–0] | 5.058 [5.007–5.109] |
-| Utensílios de aço (kit) |     0,9 [0,8–1] |       213 [210–216] |
+| Feijão 1 kg             |   0,9 [0,7–1,1] |       533 [484–548] |
+| Carvão mineral          |     4,1 [4–4,7] |       374 [348–383] |
+| Ração para gado         |   1,5 [1,2–1,5] |       132 [128–133] |
+| Minério de ferro        |     4,1 [4–4,2] |       331 [314–342] |
+| Leite 1 L               |   0,8 [0,8–0,9] |       344 [333–366] |
+| Óleo de soja 1 L        |     2 [1,7–2,1] |       416 [346–507] |
+| Arroz 5 kg              |     1,8 [1,7–2] |       349 [339–386] |
+| Sucata de aço           |     2,3 [2–2,7] | 4.222 [2.637–4.583] |
+| Soja em grão            |   1,9 [1,8–2,5] |       344 [326–344] |
+| Farelo de soja          |     3 [2,5–3,6] |       223 [220–237] |
+| Aço em barras           |   2,1 [1,7–2,2] |       130 [123–134] |
+| Açúcar 5 kg             |   0,9 [0,8–1,1] |       386 [342–418] |
+| Caminhão pesado 30 t    |         0 [0–0] |       628 [627–634] |
+| Caminhão leve 8 t       |         0 [0–1] | 5.044 [5.003–5.189] |
+| Utensílios de aço (kit) |   1,5 [1,4–1,7] |       215 [193–223] |
 
 <!-- escala:20 fim -->

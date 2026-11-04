@@ -18,7 +18,7 @@ import {
   vehicleModels,
   type VehicleModel,
 } from './economy-design';
-import { openingTransfer, rivalNames, treasuryId } from './competition';
+import { openingTransfer, rivalNames, treasuryId, maxPriceCap } from './competition';
 import { equipmentCostFor } from './design';
 import {
   householdDemand,
@@ -37,8 +37,10 @@ import { householdItems } from './channels';
 
 // Abertura gerada pela calculadora (etapa 2): as linhas que a economia alvo pede para cada
 // receita, vezes a escala do mundo, divididas em empresas pequenas de 1 a 4 linhas, cada uma num
-// polo real da atividade. Os bots ficam com BOT_SHARE das linhas; o resto é espaço dos jogadores.
-const BOT_SHARE = 0.8;
+// polo real da atividade. Os bots ficam com BOT_SHARE das linhas. Com 0,8 (antes) a oferta dos bots atendia só 45% da
+// procura na escala 20 (spec 006): com 5–50 jogadores, os 20% "reservados" nunca se enchiam. Jogadores
+// entram comprando terrenos novos e competem com os bots, que perdem mercado em vez de ceder vaga.
+const BOT_SHARE = 1;
 const STORE_STAFF = 40; // equipe máxima de uma loja-bot; cidades grandes recebem várias lojas
 export interface RivalTemplate {
   recipe?: string;
@@ -83,8 +85,10 @@ export function v2PortfolioFor(w: World): RivalTemplate[] {
   }
   return out;
 }
-// Lojas-bot atendem 60% da procura das famílias da sua cidade (produção dos bots cobre algo parecido).
-const RETAIL_COVERAGE = 0.6;
+// Lojas-bot atendem 70% da procura das famílias da sua cidade, a mesma parcela para a qual a
+// cadeia produtiva é dimensionada (designWorld.servedShare). Com 60%, a loja era o gargalo: 51%
+// atendidos na escala 20 em todos os produtos (spec 006).
+const RETAIL_COVERAGE = 0.7;
 const RETAIL_STOCK_DAYS = 3;
 const DISTRIBUTOR_POPULATION = 600000;
 const DISTRIBUTOR_STOCK_DAYS = 7;
@@ -144,7 +148,7 @@ export function v2SupplyPolicy(w: World, e: Establishment): SupplyPolicy {
           minimum: Math.ceil(Math.max(batch * 2, daily)),
           target,
           maxBuy: target,
-          maxPrice: Math.round(w.season.config.basePrices[product] * 1.5),
+          maxPrice: maxPriceCap(w, product),
           // Teto de frete por produto: 30% do preço do próprio item (carvão distante segue viável).
           maxFreightPerUnit: freightCap(w, product),
         };
@@ -170,7 +174,7 @@ export function v2SupplyPolicy(w: World, e: Establishment): SupplyPolicy {
                 : Math.ceil(target / 3),
             target,
             maxBuy: target,
-            maxPrice: Math.round(w.season.config.basePrices[product] * 1.5),
+            maxPrice: maxPriceCap(w, product),
             maxFreightPerUnit: freightCap(w, product),
           };
         })

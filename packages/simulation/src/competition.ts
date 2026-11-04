@@ -45,6 +45,9 @@ export const competitionRules = {
   botCount: 30,
   botCapital: 100000000,
   governmentBonus: 1.25,
+  // Teto do preço que uma regra de compra automática aceita pagar, em múltiplos do preço de atacado.
+  // Mundos antigos sem o campo seguem com 1,5.
+  maxPriceFactor: 1.5,
   biddingHours: 6,
   maxOpenContracts: 5,
   educationPerWorker: 35000,
@@ -52,6 +55,10 @@ export const competitionRules = {
   educationHours: 12,
   stateFactors,
 };
+export function maxPriceCap(w: World, product: ProductId) {
+  const factor = (w.season.config.competition as { maxPriceFactor?: number }).maxPriceFactor ?? 1.5;
+  return Math.round(w.season.config.basePrices[product] * factor);
+}
 export const treasuryId = (state: string) => `treasury:${state}`;
 export const institutional = (id: string) =>
   id === 'treasury' || id === 'consumers' || id.startsWith('treasury:');
@@ -137,7 +144,7 @@ export function defaultSupplyPolicy(w: World, e: Establishment): SupplyPolicy {
         minimum: q ? Math.ceil(q * 2) : Math.ceil(target / 3),
         target,
         maxBuy: target,
-        maxPrice: Math.round(w.season.config.basePrices[product] * 1.5),
+        maxPrice: maxPriceCap(w, product),
       };
     }),
   };

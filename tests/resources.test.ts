@@ -183,7 +183,7 @@ describe('admissão de recursos', () => {
     const rice = report.recipes.find((r) => r.id === 'rice-harvest')!;
     expect(rice.hours).toBe(96);
     expect(rice.cyclesPerDay).toBeCloseTo(1 / 4);
-    expect(rice.breakEvenUtilization).toBeCloseTo(0.2083, 3);
+    expect(rice.breakEvenUtilization).toBeCloseTo(0.1646, 3);
   });
 });
 

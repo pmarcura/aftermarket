@@ -278,12 +278,12 @@ export function createMapStyle(): StyleSpecification {
         type: 'line',
         source: 'openmaptiles',
         'source-layer': 'building',
-        minzoom: 13,
+        minzoom: 14,
         layout: { 'line-join': 'round', 'line-cap': 'round' },
         paint: {
           'line-color': '#cdc3ad',
           'line-width': ['interpolate', ['exponential', 1.4], ['zoom'], 13, 5, 15, 12, 17, 26],
-          'line-opacity': ['interpolate', ['linear'], ['zoom'], 13, 0.6, 14, 1],
+          'line-opacity': ['interpolate', ['linear'], ['zoom'], 14, 0.6, 15, 1],
         },
       },
       {
@@ -293,11 +293,11 @@ export function createMapStyle(): StyleSpecification {
         type: 'fill',
         source: 'openmaptiles',
         'source-layer': 'building',
-        minzoom: 13,
+        minzoom: 14,
         paint: {
           'fill-color': ['interpolate', ['linear'], ['zoom'], 13, '#a79f8e', 15, '#b5ada0'],
           'fill-outline-color': '#5a5448',
-          'fill-opacity': ['interpolate', ['linear'], ['zoom'], 13, 0.7, 14.5, 1],
+          'fill-opacity': ['interpolate', ['linear'], ['zoom'], 14, 0.7, 15, 1],
           'fill-antialias': true,
         },
       },
@@ -306,7 +306,7 @@ export function createMapStyle(): StyleSpecification {
         type: 'line',
         source: 'openmaptiles',
         'source-layer': 'building',
-        minzoom: 13,
+        minzoom: 14,
         paint: {
           'line-color': '#5a5448',
           'line-width': ['interpolate', ['linear'], ['zoom'], 13, 0.6, 16, 1.5],

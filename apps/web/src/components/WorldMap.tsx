@@ -530,7 +530,7 @@ export function WorldMap({
             type: 'line',
             source: 'openmaptiles',
             'source-layer': 'transportation',
-            minzoom: 15,
+            minzoom: 15.5,
             filter: [
               'all',
               ['==', ['geometry-type'], 'LineString'],

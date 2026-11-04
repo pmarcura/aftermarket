@@ -3,8 +3,12 @@
  *
  * Nos zooms altos, cada contorno real de prédio (camada `building` do OSM) recebe um sprite do
  * pacote escolhido pelo tamanho e pela forma do lote (casinha, sobrado, prédio, galpão), girado
- * no eixo do terreno; carros do pacote circulam pelas ruas reais. É um canvas por cima do mapa,
- * desenhado em meia resolução e ampliado sem suavização, como o próprio mapa.
+ * no eixo do terreno. É um canvas por cima do mapa, desenhado em meia resolução e ampliado sem
+ * suavização, como o próprio mapa.
+ *
+ * Desempenho (04/11): o desenho só acontece quando o mapa para (moveend/idle); durante o arraste
+ * a imagem anterior desliza junto por CSS, e há um teto de prédios por tela. Carros decorativos
+ * foram retirados (decisão do John): no mapa só andam os caminhões do jogo.
  *
  * As peças ficam em /arte/town (fora do Git, licença do pacote). Sem elas, nada é desenhado e o
  * mapa segue com os telhados de textura.
@@ -13,7 +17,8 @@ import type { Map as MapLibreMap } from 'maplibre-gl';
 
 type Ring = [number, number][];
 
-const MIN_ZOOM = 15.2;
+const MIN_ZOOM = 15.5;
+const MAX_BUILDINGS = 1800;
 const BASE = '/arte/town/';
 const HB = 'Houses and Buildings/';
 const CATALOG = {
@@ -32,16 +37,6 @@ const CATALOG = {
   big: [1, 2, 3, 4, 5].map((n) => `${HB}Buildings (all 48x48)/${n}.png`),
   huge: [1, 2, 3].map((n) => `${HB}Buildings (all 64x64)/${n}.png`),
   shop: [1, 2, 3, 4, 5, 6, 7].map((n) => `${HB}Special buildings (all 32x32)/${n}.png`),
-  car: [
-    ['Cars Type 1 (regular)', 'Red'],
-    ['Cars Type 1 (regular)', 'Blue'],
-    ['Cars Type 1 (regular)', 'Black'],
-    ['Cars Type 2 (beetle)', 'Yellow'],
-    ['Cars Type 2 (beetle)', 'Green'],
-    ['Cars Type 3 (minivan)', 'Orange'],
-    ['Cars Type 4 (jeep)', 'Crimson'],
-    ['Cars Type 5 (lightweight Truck)', 'Violet'],
-  ].map(([t, c]) => `Cars and People/CARS (all 16x16)/${t}/${c}/Right.png`),
 };
 type Group = keyof typeof CATALOG;
 
@@ -146,7 +141,9 @@ export function attachPixelTown(map: MapLibreMap, host: HTMLElement, pixelRatio:
     const scale = pixelRatio; // px do canvas por px de tela
     const buildings = map.queryRenderedFeatures(undefined, { layers: ['building-outline'] });
     const seen = new Set<string>();
+    let drawn = 0;
     for (const f of buildings) {
+      if (drawn >= MAX_BUILDINGS) break;
       const g = f.geometry;
       const rings: Ring[] =
         g.type === 'Polygon'
@@ -176,6 +173,7 @@ export function attachPixelTown(map: MapLibreMap, host: HTMLElement, pixelRatio:
         else group = short > 30 ? 'huge' : 'big';
         const img = pick(group, seed);
         if (!img) continue;
+        drawn++;
         // encaixe: a peça cobre o retângulo do lote; se o lote for muito comprido, repete a
         // peça ao longo do eixo (galpões e fileiras de sobrados) em vez de esticar.
         const targetW = Math.max(box.w, box.h),
@@ -203,66 +201,44 @@ export function attachPixelTown(map: MapLibreMap, host: HTMLElement, pixelRatio:
         ctx.restore();
       }
     }
-    // carros: pontos ao longo das ruas reais, deslocados pelo tempo (vida na cidade)
-    const roads = map.queryRenderedFeatures(undefined, { layers: ['roads-pixel'] });
-    const t = (performance.now() / 1000) % 1000;
-    for (const f of roads) {
-      const g = f.geometry;
-      const lines: Ring[] =
-        g.type === 'LineString'
-          ? [g.coordinates as Ring]
-          : g.type === 'MultiLineString'
-            ? (g.coordinates as Ring[])
-            : [];
-      for (const line of lines) {
-        const pts = line.map(([lng, lat]) => {
-          const p = map.project([lng, lat]);
-          return [p.x * scale, p.y * scale] as [number, number];
-        });
-        for (let i = 0; i < pts.length - 1; i++) {
-          const [x0, y0] = pts[i],
-            [x1, y1] = pts[i + 1];
-          const len = Math.hypot(x1 - x0, y1 - y0);
-          if (len < 40) continue;
-          const seed = hash(Math.round(line[i][0] * 1e4), Math.round(line[i][1] * 1e4));
-          const n = Math.min(3, Math.floor(len / 90));
-          for (let c = 0; c < n; c++) {
-            const speed = 18 + ((seed >> (c * 3)) % 12);
-            const u = ((((seed % 97) / 97 + c / n + (t * speed) / len) % 1) + 1) % 1;
-            const img = pick('car', seed + c);
-            if (!img) continue;
-            const side = c % 2 ? 1 : -1;
-            const ang = Math.atan2(y1 - y0, x1 - x0) + (side > 0 ? 0 : Math.PI);
-            const nx = -(y1 - y0) / len,
-              ny = (x1 - x0) / len;
-            const px = x0 + (x1 - x0) * (side > 0 ? u : 1 - u) + nx * side * 4,
-              py = y0 + (y1 - y0) * (side > 0 ? u : 1 - u) + ny * side * 4;
-            ctx.save();
-            ctx.translate(Math.round(px), Math.round(py));
-            ctx.rotate(ang);
-            ctx.drawImage(img, -8, -8, 16, 16);
-            ctx.restore();
-          }
-        }
-      }
-    }
-    if (roads.length) schedule();
   };
   const schedule = () => {
     if (!raf && !stopped) raf = requestAnimationFrame(draw);
   };
-  const onMove = () => schedule();
+  // Durante o arraste a imagem anterior desliza junto (sem redesenhar); zoom limpa.
+  let origin: { x: number; y: number; zoom: number } | null = null;
+  const onMoveStart = () => {
+    const c = map.project(map.getCenter());
+    origin = { x: c.x, y: c.y, zoom: map.getZoom() };
+  };
+  const onMove = () => {
+    if (!origin) return;
+    if (map.getZoom() !== origin.zoom) {
+      canvas.style.opacity = '0';
+      return;
+    }
+    const c = map.project(map.getCenter());
+    canvas.style.transform = `translate(${Math.round(origin.x - c.x)}px, ${Math.round(origin.y - c.y)}px)`;
+  };
+  const onMoveEnd = () => {
+    origin = null;
+    canvas.style.transform = '';
+    canvas.style.opacity = '';
+    schedule();
+  };
+  map.on('movestart', onMoveStart);
   map.on('move', onMove);
-  map.on('moveend', onMove);
-  map.on('idle', onMove);
+  map.on('moveend', onMoveEnd);
+  map.on('idle', schedule);
   loading.then(schedule);
   schedule();
   return () => {
     stopped = true;
     if (raf) cancelAnimationFrame(raf);
+    map.off('movestart', onMoveStart);
     map.off('move', onMove);
-    map.off('moveend', onMove);
-    map.off('idle', onMove);
+    map.off('moveend', onMoveEnd);
+    map.off('idle', schedule);
     canvas.remove();
   };
 }

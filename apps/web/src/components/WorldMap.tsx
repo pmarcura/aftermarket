@@ -241,6 +241,7 @@ export function WorldMap({
   onRegionSelect,
   alerts,
   hoverCard,
+  onCitySelect,
 }: {
   mini?: boolean;
   propertyId?: string;
@@ -263,6 +264,8 @@ export function WorldMap({
   alerts?: Record<string, 'brasa' | 'ouro'>;
   /** Spec 008 R1: texto curto mostrado ao passar o mouse sobre um pino (nome, estado, motivo). */
   hoverCard?: (propertyId: string) => { titulo: string; linhas: string[] } | null;
+  /** Spec 008 R2: toque na placa da cidade abre o painel dela. */
+  onCitySelect?: (regionId: string) => void;
 }) {
   const { world, actor, selectedId, select, focus, consumeFocus } = useGame();
   const container = useRef<HTMLDivElement>(null),
@@ -272,6 +275,8 @@ export function WorldMap({
   const callback = useRef(onSelect);
   const hoverRef = useRef(hoverCard);
   hoverRef.current = hoverCard;
+  const cityRef = useRef(onCitySelect);
+  cityRef.current = onCitySelect;
   const [hover, setHover] = useState<{
     x: number;
     y: number;
@@ -706,6 +711,16 @@ export function WorldMap({
           instance.on('mousemove', layer, showCard);
           instance.on('mouseleave', layer, () => setHover(null));
         }
+        instance.on('click', 'city-labels', (event) => {
+          const id = event.features?.[0]?.properties?.id as string | undefined;
+          if (id) cityRef.current?.(id);
+        });
+        instance.on(
+          'mouseenter',
+          'city-labels',
+          () => (instance.getCanvas().style.cursor = 'pointer'),
+        );
+        instance.on('mouseleave', 'city-labels', () => (instance.getCanvas().style.cursor = ''));
       }
       setReady(true);
     });
@@ -1079,6 +1094,17 @@ export function WorldMap({
           negócio também é um botão que só aparece quando recebe foco. */}
       {!mini && !economic && (
         <div className="map-access" role="group" aria-label="Negócios no mapa">
+          {onCitySelect &&
+            regionsOf(world).map((r) => (
+              <button
+                key={`city-${r.id}`}
+                type="button"
+                data-city={r.id}
+                onClick={() => onCitySelect(r.id)}
+              >
+                Cidade de {r.name}
+              </button>
+            ))}
           {visible.map((p) => (
             <button
               key={p.id}

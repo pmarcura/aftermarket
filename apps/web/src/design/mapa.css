@@ -419,3 +419,64 @@
     width: min(380px, 92vw);
   }
 }
+
+/* Spec 008 R2 · painel da cidade */
+.cidade-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font: 600 13px/1.3 var(--fonte);
+}
+.cidade-tabela th {
+  text-align: left;
+  color: var(--apagado);
+  font-weight: 600;
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--borda);
+}
+.cidade-tabela td {
+  padding: 5px 6px;
+  border-bottom: 1px solid var(--borda);
+  color: var(--creme);
+}
+.cidade-tabela td:nth-child(n + 2),
+.cidade-tabela th:nth-child(n + 2) {
+  text-align: right;
+}
+.cidade-tabela .brasa {
+  color: var(--brasa, #e4572e);
+}
+.cidade-tabela .apagado,
+.cidade-nota {
+  color: var(--apagado);
+}
+.cidade-nota {
+  margin: 8px 0 0;
+  font: 500 12px/1.4 var(--fonte);
+}
+.cidade-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.cidade-lista li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: baseline;
+}
+.cidade-lista .link {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--creme);
+  font: 600 14px/1.3 var(--fonte);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.cidade-lista small {
+  color: var(--apagado);
+  white-space: nowrap;
+}

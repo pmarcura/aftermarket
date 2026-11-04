@@ -1,4 +1,5 @@
 import { test, expect } from './fixtures';
+import type * as maplibregl from 'maplibre-gl';
 import { createWorld } from '../../packages/simulation/src/seed';
 
 // Spec 008 R1: o pino do negócio do jogador mostra o estado (precisa de você / atenção), a mesma
@@ -42,7 +43,9 @@ test('pino com estado e cartão ao passar o mouse', async ({ page }) => {
   const selos = await page.evaluate(() => {
     const m = (window as unknown as { aftermarketMap?: maplibregl.Map }).aftermarketMap;
     if (!m) return null;
-    return m.querySourceFeatures('properties').filter((f) => f.properties?.alert).length;
+    return m
+      .querySourceFeatures('properties')
+      .filter((f: { properties?: { alert?: string } }) => f.properties?.alert).length;
   });
   expect(selos).not.toBeNull();
   expect(selos!).toBeGreaterThanOrEqual(2);
@@ -72,6 +75,54 @@ test('pino com estado e cartão ao passar o mouse', async ({ page }) => {
     await expect(cartao).toContainText(industria.name);
     await expect(cartao).toContainText('sem');
     await page.screenshot({ path: 'test-results/mapa-vivo.png' });
+  }
+  expect(errors).toEqual([]);
+});
+
+// Spec 008 R2: a placa da cidade abre um painel com população, procura por produto, lojas e lotes
+// à venda; "ver lote" seleciona o lote no mapa.
+test('cidade clicável abre painel com procura, lojas e lotes à venda', async ({ page }) => {
+  test.setTimeout(60000);
+  const world = createWorld(Date.now());
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.route('**/api/world*', (route) => route.fulfill({ json: world }));
+  await page.addInitScript((season) => {
+    localStorage.setItem('aftermarket.company', 'player');
+    localStorage.setItem('aftermarket.page', 'map');
+    localStorage.setItem(`aftermarket.welcome.${season}.player`, 'seen');
+  }, world.season.id);
+  await page.goto('/jogar');
+  await page.locator('.main-map [data-map-ready="true"]').waitFor({ timeout: 30000 });
+
+  // Pelo teclado: cada cidade é um botão do grupo de acesso.
+  const campinas = world.season.config.regions.find((r) => r.name === 'Campinas')!;
+  const botaoCidade = page.locator(`.main-map .map-access button[data-city="${campinas.id}"]`);
+  await botaoCidade.focus();
+  await page.keyboard.press('Enter');
+  const painel = page.getByRole('complementary', { name: 'Cidade de Campinas' });
+  await expect(painel).toBeVisible();
+  await expect(painel).toContainText('habitantes');
+  await expect(painel.locator('.cidade-tabela tbody tr')).toHaveCount(
+    Object.keys(world.season.config.consumption).filter(
+      (id) => (world.season.config.consumption as Record<string, number>)[id] > 0,
+    ).length,
+  );
+  await expect(painel).toContainText('Loja Campinas');
+  const lotesLivres = world.properties.filter((p) => p.city === 'Campinas' && !p.ownerId);
+  await expect(painel.getByRole('region', { name: 'Lotes à venda' })).toContainText(
+    String(lotesLivres.length),
+  );
+  await page.screenshot({ path: 'test-results/mapa-vivo-cidade.png' });
+
+  // "Ver lote" fecha o painel e abre a gaveta do lote.
+  if (lotesLivres.length) {
+    await painel.getByRole('button', { name: lotesLivres[0].name, exact: true }).click();
+    await expect(painel).toBeHidden();
+    // A gaveta de um lote livre mostra o preço do terreno escolhido.
+    await expect(page.getByRole('complementary', { name: 'Detalhes do imóvel' })).toContainText(
+      `${lotesLivres[0].area}`.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' m²',
+    );
   }
   expect(errors).toEqual([]);
 });

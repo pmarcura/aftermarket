@@ -44,6 +44,7 @@ import { InfrastructureDetails } from '../components/InfrastructureDetails';
 import '../design/mapa.css';
 import { usePendencias } from '../features/inicio/pendencias';
 import { estadoDe } from '../features/business/BusinessCards';
+import { CidadePainel } from '../features/mapa/CidadePainel';
 
 const spritePorCategoria: Record<Category, Sprite> = {
   retail: 'loja',
@@ -80,7 +81,8 @@ export function MapPage() {
   const [layers, setLayers] = useState<Layers>(defaultLayers),
     [expanded, setExpanded] = useState(false);
   const [ownership, setOwnership] = useState<'' | 'mine' | 'others' | 'available'>(''),
-    [details, setDetails] = useState(false);
+    [details, setDetails] = useState(false),
+    [cidade, setCidade] = useState<string | null>(null);
   const p = world.properties.find((x) => x.id === selectedId),
     e = world.establishments.find((x) => x.propertyId === selectedId);
   const owner = world.companies.find((c) => c.id === p?.ownerId);
@@ -156,6 +158,10 @@ export function MapPage() {
           ownership={ownership}
           alerts={alerts}
           hoverCard={hoverCard}
+          onCitySelect={(id) => {
+            select(null);
+            setCidade(id);
+          }}
         />
         <div className="map-hud-top">
           <div className="map-filter-bar" role="group" aria-label="Filtrar mapa">
@@ -226,6 +232,7 @@ export function MapPage() {
         </div>
       </div>
 
+      {cidade && !p && <CidadePainel regionId={cidade} onClose={() => setCidade(null)} />}
       {p && sprite && (
         <aside
           className="lote-gaveta"

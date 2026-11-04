@@ -1,6 +1,6 @@
 # Spec 006 · Fechar exploits de preço e rebalancear a temporada
 
-Estado: **rascunho** (aguarda ok do John). Branch `spec/006-rebalanceamento`. Parte do baseline oficial da escala 20 (`docs/product/PROVA.md`, código `aa35efc`).
+Estado: **verificada com dívida** (03/11/2026; ver `tasks.md`). R1, R2 e R6 ficam para a 006b. Branch `spec/006-rebalanceamento`. Parte do baseline oficial da escala 20 (`docs/product/PROVA.md`, código `aa35efc`).
 
 ## Problema
 

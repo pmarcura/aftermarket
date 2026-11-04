@@ -25,7 +25,9 @@ O servidor de design caiu e cada clique levava de 1 a 40 segundos. Medido no mun
   `AFTERMARKET_IDLE_PAUSE=0|1` força. O motor recebe o instante já descontado (`World.pausedMs`).
 - **R2 Linha do dia.** Custos fixos e vendas ao consumidor das lojas de bots têm uma linha por
   estabelecimento, natureza (e produto) e dia de jogo, somando as rodadas. O dinheiro continua
-  andando a cada rodada. Lojas de jogadores mantêm uma linha por rodada (a fita da loja).
+  andando a cada rodada. A rodada exatamente na virada do dia fica numa linha própria, para
+  recortes por instante (reajuste de salários, prova) contarem o mesmo de antes. Lojas de
+  jogadores mantêm uma linha por rodada (a fita da loja).
 - **R3 Registros encerrados gravados uma vez** (armazenamento formato 2), com backup antes da
   migração e leitor dos formatos 0, 1 e 2.
 - **R4 `-wal` limitado** a 64 MB depois de cada checkpoint.

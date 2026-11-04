@@ -23,7 +23,7 @@ describe('custos fixos em uma linha por dia', () => {
     const linhas = new Map<string, number>();
     for (const l of w.ledger) {
       if (!l.daily) continue;
-      const chave = `${l.establishmentId}|${l.kind}|${l.from}|${l.to}|${l.product ?? ''}|${Math.ceil((l.at - w.season.startedAt) / dia)}`;
+      const chave = `${l.establishmentId}|${l.kind}|${l.from}|${l.to}|${l.product ?? ''}|${Math.floor((l.at - w.season.startedAt) / dia)}`;
       linhas.set(chave, (linhas.get(chave) ?? 0) + 1);
     }
     expect(linhas.size).toBeGreaterThan(0);

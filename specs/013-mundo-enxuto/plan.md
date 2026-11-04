@@ -35,24 +35,20 @@ Teste: `tests/idle-pause.test.ts` (para, não pula o tempo, reabre, e sem a opç
 
 5. **Feito.** Custos fixos (salário, manutenção, energia, água) continuam cobrados a cada
    rodada, mas o extrato tem uma linha por estabelecimento, natureza e dia de jogo
-   (`Entry.daily`), que soma as rodadas. Dia = (início, fim]: a rodada da virada fecha o dia
-   anterior, então réguas por instante (`at > from`) contam o mesmo de antes.
+   (`Entry.daily`), que soma as rodadas. A rodada exatamente na virada do dia fica numa linha
+   própria: o reajuste semanal de salários (`at >= updatedAt`) e a prova (`at > from`) recortam o
+   extrato a partir de viradas e contam exatamente o mesmo de antes.
    - A linha é trocada por objeto novo, nunca alterada (o desfazer guarda o extrato por
      referência). O gravador lembra o objeto gravado dos últimos 2 dias e regrava o trocado
      (`UPDATE world_ledger ... WHERE id`), na mesma transação.
    - Energia e água de produção, motorista do frete e obrigações em atraso não mudam.
-   - Medido (playtest, escala 20, 584 estabelecimentos, dias 2–3): **40.159 → 17.147 linhas
-     por dia de jogo (−57%)**.
-   - Prova A/B (`economy:proof --days=20 --window=10 --seeds=0,1`, código antes × depois):
-     vendas, aço, caminhões, quebras e dinheiro idênticos; única diferença 7,2 centavos/dia
-     na margem medida das lojas da semente 0.
+   - Medição e prova A/B (JSON idêntico) em `validation.md`.
    - Testes: `tests/daily-costs.test.ts` (uma linha por dia; saldo = extrato; regravação e
      reabertura iguais).
 6. **Feito.** Vendas ao consumidor das lojas de bots: uma linha por loja, produto e dia, com
    quantidade somada e preço médio ponderado. Lojas de jogadores seguem com uma linha por
    rodada, porque a fita da loja (`Fita.tsx`) e os gráficos por hora usam esse detalhe.
-   - Medido (mesmo cenário): **40.159 → 11.363 linhas por dia (−72%)**; varejo 6.313 → 528.
-   - Prova A/B igual à do item 5 (só os 7,2 centavos/dia da margem medida).
+   - Com os itens 5 e 6 e a spec 006: **47.196 → 16.544 linhas por dia (−65%)**.
    - O que sobra são eventos reais entre empresas: produção (operação, energia e água do
      lote), frete e motorista, pregão.
 7. Negócios entre empresas (pregão, frete, contratos, ativos) seguem um a um.

@@ -152,22 +152,24 @@ function transfer(
  * (eram 48 linhas por estabelecimento por dia, 73% do extrato) e para as vendas ao consumidor das
  * lojas de bots. Lojas de jogadores mantêm uma linha por rodada: é a fita da loja.
  *
- * Dia de jogo = (início, fim]: a rodada da virada fecha o dia anterior, e a linha do dia fica com
- * o instante da primeira rodada depois da virada; réguas por instante contam o mesmo de antes.
+ * A rodada exatamente na virada do dia fica numa linha própria, como antes; a linha do dia soma as
+ * outras 11 rodadas e leva o instante da primeira delas. Assim toda regra ou régua que recorta o
+ * extrato por instante a partir de uma virada (reajuste semanal de salários, prova econômica)
+ * conta exatamente o mesmo que contava com uma linha por rodada.
  *
  * A linha do dia é trocada por um objeto novo, nunca alterada: a cópia de desfazer
  * (`rollbackSnapshot`) guarda os lançamentos por referência, e o gravador regrava o que mudou.
  */
 function dailyBook(w: World, at: number) {
   const day = gameDay(w),
-    start = w.season.startedAt + (Math.ceil((at - w.season.startedAt) / day) - 1) * day;
+    start = w.season.startedAt + Math.floor((at - w.season.startedAt) / day) * day;
   const open = new Map<string, number>();
   for (let i = w.ledger.length - 1; i >= 0; i--) {
     const l = w.ledger[i];
     if (l.at <= start) break;
     if (l.daily && l.establishmentId) open.set(bookKey(l), i);
   }
-  return { start, open };
+  return { start, boundary: at === start, open };
 }
 const bookKey = (l: Pick<Entry, 'establishmentId' | 'kind' | 'from' | 'to' | 'product'>) =>
   `${l.establishmentId}|${l.kind}|${l.from}|${l.to}|${l.product ?? ''}`;
@@ -186,6 +188,11 @@ function accrue(
   > = {},
 ) {
   if (to === 'treasury') to = treasuryId(actorState(w, from, establishmentId));
+  // Rodada da virada: linha própria (ver dailyBook).
+  if (book.boundary) {
+    transfer(w, from, to, amount, description, kind, at, establishmentId, metadata);
+    return;
+  }
   const key = bookKey({ establishmentId, kind, from, to, product: metadata.product }),
     index = book.open.get(key);
   if (index === undefined) {

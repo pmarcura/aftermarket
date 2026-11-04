@@ -2,10 +2,15 @@
 
 ## A1 · Economia idêntica (04/11/2026)
 
-`economy:proof --days=20 --window=10 --seeds=0,1`: código de `4d4b941` (worktree limpo) × código
-com a 013. Vendas, aço ao governo, caminhões, quebras e dinheiro idênticos nas duas sementes.
-Única diferença no JSON fora do tempo de execução: `margins.retail` da semente 0, 1.973.159,66 →
-1.973.166,86 (7,2 centavos por dia de jogo na margem medida das lojas).
+`economy:proof --days=20 --window=10 --seeds=0,1` sobre o ramo já juntado com o `main` (specs 006
+e 008): código sem a 013 (`cd7b541` + `origin/main`, worktree limpo) × código com a 013.
+**JSON idêntico**, exceto o tempo de execução (`msPerDay`): 0 diferenças em vendas, aço,
+caminhões, quebras, dinheiro, margens, receitas, estoque parado, concentração e cobertura.
+
+Primeira tentativa (rodada da virada somada à linha do dia anterior) mudava o reajuste semanal de
+salários (`updateWages` soma a folha com `at >= updatedAt`, a partir de uma virada) em ~0,001% e
+por tabela 174 números minúsculos (maior: 0,05% na razão de lucro de utensílios). Correção: a
+rodada exatamente na virada fica numa linha própria; a linha do dia soma as outras 11.
 
 ## A2–A4 · Testes
 
@@ -15,19 +20,20 @@ Bateria inteira: 40 arquivos, 277 testes.
 
 ## A5 · Linhas por dia
 
-Playtest escala 20, semente 0, 584 estabelecimentos, média dos dias 2–3:
+Playtest escala 20, semente 0, 685 estabelecimentos (com a 006), média dos dias 2–3:
 
 | Natureza                          | Antes      | Depois            |
 | --------------------------------- | ---------- | ----------------- |
-| Salários                          | 7.541      | 1.788             |
-| Energia                           | 7.523      | 1.770             |
-| Água                              | 7.523      | 1.770             |
-| Varejo                            | 6.313      | 528               |
-| Manutenção                        | 6.276      | 523               |
-| Demais (produção, pregão, frete…) | 4.983      | 4.984             |
-| **Total**                         | **40.159** | **11.363 (−72%)** |
+| Energia                           | 9.104      | 2.864             |
+| Água                              | 9.104      | 2.864             |
+| Salários                          | 8.898      | 2.658             |
+| Manutenção                        | 7.488      | 1.248             |
+| Varejo                            | 6.828      | 1.135             |
+| Demais (produção, pregão, frete…) | 5.774      | 5.775             |
+| **Total**                         | **47.196** | **16.544 (−65%)** |
 
-O que sobra são eventos reais entre empresas e da produção. Salários, energia e água restantes
+Cada estabelecimento fica com 2 linhas por natureza e dia (a rodada da virada e a do resto do
+dia). O que sobra são eventos reais entre empresas e da produção: salários, energia e água restantes
 vêm do motorista do frete e do consumo de cada lote produzido.
 
 ## A6 · Linha de base do clique (`npm run perf:click`)

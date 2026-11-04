@@ -34,7 +34,7 @@ flowchart LR
 
 ## Os furos que continuam
 
-Medidos na escala 20 pela régua antiga (29/10, PROVA-V2-ESCALA-20 no histórico do Git; régua nova em [PROVA](PROVA.md)): arroz, feijão, utensílios e caminhão leve no vermelho; aço ao governo abaixo da meta (cerca de 180 de 320 t/dia); lojas atendem 51% da procura (alvo 70%). Ficam para as specs de balanceamento (003 e 006).
+Medidos na escala 20 pela régua da spec 003 ([PROVA](PROVA.md), 03/11/2026, spec 006): a calculadora fecha em todas as receitas (preços na faixa real, equipamento que se paga em ~42 dias); bots abrem com 100% das linhas e lojas-bot cobrem 70% da procura. Resultado: lojas atendem 56% da procura (era 45%; alvo ≥ 55%), aço ao governo ~200 de 320 t/dia (era 180; alvo 256), caminhões pesados no ritmo de referência. Continua fora: aço ao governo, caminhão leve (lucro abaixo do projeto), aço em alto-forno e feijão (lucro acima), sucata concentrada (HHI > 2.500), 1 mina de carvão excedente suspensa por semente. Tetos de preço dos bots (1,5×) e bônus do governo (1,25) ficaram: apertá-los hoje derruba a procura atendida (medido na 006).
 
 ## Contas dos bots corrigidas
 

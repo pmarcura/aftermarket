@@ -46,6 +46,8 @@ e limites em [VALIDAÇÃO DA INTERFACE](../docs/design/VALIDACAO-INTERFACE-2026-
 
 ## Próximo passo
 
+**Spec 006 (03/11, John):** calculadora fecha em todas as receitas; bots abrem com 100% das linhas e lojas-bot cobrem 70% da procura. Na escala 20 as lojas atendem 56% da procura (era 45%). Sobra dívida medida em `specs/006-rebalanceamento/tasks.md` (aço ao governo, caminhão leve, sucata concentrada, tetos de preço dos bots). Próximas: **008 · Mapa vivo** (jogabilidade no mapa) e **007 · Servidor hospedado**.
+
 **Continuação em outra conversa:** tudo o que falta, na ordem combinada com o Pedro, está em [HANDOFF](HANDOFF.md) (calibrar o Brasil real com ~500 bots, modelo de grupo D-035, telas da proposta de UX, laboratório, genética, gado e frigorífico, interação entre jogadores, Claude jogar contra os bots, depois C e D).
 
 Etapa **B** concluída em 28/10: as dez fatias do [B-PLAN](phases/B-economia/B-PLAN.md) e a prova de 90 dias em 3 sementes (PROVA-V2 de 28/10, hoje no histórico do Git; a prova vigente é a [PROVA](../docs/product/PROVA.md), `npm run economy:proof`). O balanceamento da fatia 10 está em D-033: bots miram o preço de referência, empresas antigas alinhadas, bots sem compra de imóveis, lotes livres baratos, editais menores e caminhões com vida útil comprimida.

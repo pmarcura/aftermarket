@@ -1,3 +1,4 @@
+import { agora } from '../lib/clock';
 import { useEffect, useMemo, useState } from 'react';
 import { Download, Info, SlidersHorizontal, ArrowUpRight } from 'lucide-react';
 import type { EChartsCoreOption } from 'echarts/core';
@@ -84,7 +85,7 @@ export function ProductAnalysis({
     };
   }, [product, regionId]);
   const data = useMemo(() => {
-    const since = period ? Date.now() - gameToReal(world, Number(period) * HOUR_MS) : 0;
+    const since = period ? agora() - gameToReal(world, Number(period) * HOUR_MS) : 0;
     return (history?.samples ?? []).filter((s) => s.at >= since);
   }, [history, period]);
   const gameTime = (at: number) =>
@@ -98,7 +99,7 @@ export function ProductAnalysis({
     const buckets = new Map<number, { at: number; prices: number[]; volume: number }>();
     const round = economicInterval(world);
     for (const trade of history?.trades ?? []) {
-      if (period && trade.at < Date.now() - gameToReal(world, Number(period) * HOUR_MS)) continue;
+      if (period && trade.at < agora() - gameToReal(world, Number(period) * HOUR_MS)) continue;
       // Uma vela por rodada econômica (2 h de jogo).
       const at = Math.floor(trade.at / round) * round,
         bucket = buckets.get(at) ?? { at, prices: [], volume: 0 };

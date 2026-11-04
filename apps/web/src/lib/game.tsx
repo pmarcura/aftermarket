@@ -36,6 +36,7 @@ import {
 import { Notice } from '../components/Notice';
 import { createWorldConnection } from './world-connection';
 import { createCommandConnection } from './command-connection';
+import { definirPausa } from './clock';
 
 // Formatadores prontos: criar um por número custa caro quando a tela formata milhares deles.
 const moedas = new Map<number, Intl.NumberFormat>();
@@ -216,6 +217,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       )
         return;
       latestWorld.current = next;
+      definirPausa(next.pausedMs);
       setWorld((previous) =>
         previous?.revision === next.revision &&
         previous.view?.actor === next.view?.actor &&
@@ -280,6 +282,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       if (actorRef.current === requestedActor) {
         if (!latestWorld.current || result.revision >= latestWorld.current.revision) {
           latestWorld.current = result;
+          definirPausa(result.pausedMs);
           setWorld(result);
         }
         setError('');

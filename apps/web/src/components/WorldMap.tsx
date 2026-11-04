@@ -1,3 +1,4 @@
+import { agora } from '../lib/clock';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import * as maplibregl from 'maplibre-gl';
@@ -849,7 +850,7 @@ export function WorldMap({
         m.flyTo({
           center: positionAlongRoute(
             selected.path,
-            shipmentStatus(selected.s, Date.now()).progress,
+            shipmentStatus(selected.s, agora()).progress,
             selected.lengths,
           ).position,
           zoom: Math.max(m.getZoom(), 11),
@@ -868,7 +869,7 @@ export function WorldMap({
           geometry: { type: 'LineString'; coordinates: Position[] };
         }[] = [];
         for (const item of moving) {
-          const status = shipmentStatus(item.s, Date.now()),
+          const status = shipmentStatus(item.s, agora()),
             point = positionAlongRoute(item.path, status.progress, item.lengths);
           item.marker.setLngLat(point.position);
           item.element.classList.toggle('focused', item.s.id === highlightShipmentId);

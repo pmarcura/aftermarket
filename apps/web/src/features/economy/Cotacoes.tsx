@@ -1,3 +1,4 @@
+import { agora } from '../../lib/clock';
 import { lazy, Suspense, useMemo, useState } from 'react';
 import { ArrowDownRight, ArrowUpRight, Minus } from 'lucide-react';
 import { useGame, cr, num } from '../../lib/game';
@@ -28,7 +29,7 @@ const AnaliseAvancada = lazy(() =>
 
 /** Tempo de jogo decorrido, em palavras curtas. */
 function haQuanto(world: World, at: number) {
-  const horas = realToGame(world, Date.now() - at) / HOUR_MS;
+  const horas = realToGame(world, agora() - at) / HOUR_MS;
   if (horas < 1) return 'agora';
   if (horas < 24) return `há ${Math.round(horas)} h`;
   return `há ${Math.round(horas / 24)} d`;

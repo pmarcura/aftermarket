@@ -13,6 +13,14 @@ import { readWorldSnapshot, rollbackSnapshot, createSnapshotWriter } from './wor
 
 const SAVE_INTERVAL_MS = 5000;
 
+/** Tempo de cada etapa do último comando, em ms. */
+export interface Etapas {
+  copia: number;
+  avanco: number;
+  comando: number;
+  gravacao: number;
+}
+
 export function createStore(
   path: string,
   options: {
@@ -21,12 +29,14 @@ export function createStore(
     scenario?: ScenarioName;
     scale?: number;
     timeScale?: number;
+    /** Parar o relógio do mundo depois deste tempo real sem ninguém jogando (spec 013). */
+    pauseWhenIdleMs?: number;
   } = {},
 ) {
   if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true });
   const db = new DatabaseSync(path);
   db.exec(
-    'PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000; CREATE TABLE IF NOT EXISTS worlds (id INTEGER PRIMARY KEY CHECK(id=1), state TEXT NOT NULL); CREATE TABLE IF NOT EXISTS receipts (id TEXT PRIMARY KEY, actor TEXT NOT NULL, command TEXT NOT NULL);',
+    'PRAGMA journal_mode=WAL; PRAGMA journal_size_limit=67108864; PRAGMA busy_timeout=5000; CREATE TABLE IF NOT EXISTS worlds (id INTEGER PRIMARY KEY CHECK(id=1), state TEXT NOT NULL); CREATE TABLE IF NOT EXISTS receipts (id TEXT PRIMARY KEY, actor TEXT NOT NULL, command TEXT NOT NULL);',
   );
   const existed = Boolean(db.prepare('SELECT id FROM worlds WHERE id=1').get());
   let backedUp = false;
@@ -75,16 +85,19 @@ export function createStore(
   // navegador custava centenas de milissegundos por pedido aos 30 dias. Grava no disco a cada
   // SAVE_INTERVAL_MS e sempre junto com o recibo de cada comando.
   let world = needsMigration(existing) ? readWorldSnapshot(db) : existing;
-  const packed =
-    db
-      .prepare("SELECT json_extract(state, '$.storageFormat') AS format FROM worlds WHERE id=1")
-      .get()?.format === 1;
+  const format = db
+    .prepare("SELECT json_extract(state, '$.storageFormat') AS format FROM worlds WHERE id=1")
+    .get()?.format;
+  // Formato 2 guarda registros encerrados à parte; mundos 0 e 1 migram uma vez, com backup antes.
+  const packed = format === 2;
   if (!packed && existed && !backedUp && path !== ':memory:') {
-    const backup = resolve(dirname(path), 'backups', `pre-ledger-storage-${Date.now()}.sqlite`);
+    const nome = format === 1 ? 'pre-frozen-storage' : 'pre-ledger-storage';
+    const backup = resolve(dirname(path), 'backups', `${nome}-${Date.now()}.sqlite`);
     mkdirSync(dirname(backup), { recursive: true });
     db.exec(`VACUUM INTO '${backup.replaceAll("'", "''")}'`);
   }
   const saveSnapshot = createSnapshotWriter(db);
+  saveSnapshot.conhecer(world);
   let committed: (() => void)[] = [];
   let rolledBack: (() => void)[] = [];
   // A velocidade é da temporada (spec 004): trocar a de um mundo existente não é suportado.
@@ -92,6 +105,7 @@ export function createStore(
     console.warn(
       `Este mundo roda a ${world.season.config.clock.timeScale}×; AFTERMARKET_TIME_SCALE=${options.timeScale} vale só para mundo novo (use outro AFTERMARKET_DB_FILE).`,
     );
+  let ultimoClique: Etapas | null = null;
   let dirty = false,
     lastSave = Date.now(),
     lastArchive = 0;
@@ -170,8 +184,39 @@ export function createStore(
     world.revision++;
     transaction(writeWorld);
   }
+  // Relógio do mundo = relógio real menos o tempo parado. Vale sempre, mesmo com a pausa desligada,
+  // para um mundo que já pausou não "pular" o tempo em que ficou parado.
+  const relogio = (real: number) => real - (world.pausedMs ?? 0);
+  const pausa = options.pauseWhenIdleMs;
+  let ultimaAtividade = Date.now(),
+    paradoDesde: number | null = null;
+  const parar = (desde: number) => {
+    paradoDesde = desde;
+    flush();
+  };
+  const retomar = (real: number) => {
+    if (paradoDesde === null) return;
+    world.pausedMs = (world.pausedMs ?? 0) + Math.max(0, real - paradoDesde);
+    paradoDesde = null;
+    world.revision++;
+    dirty = true;
+  };
+  // Servidor desligado também é mundo parado: ao abrir, o mundo segue de onde ficou.
+  if (pausa !== undefined) {
+    paradoDesde = (world.pausedMs ?? 0) + world.updatedAt;
+    retomar(Math.max(Date.now(), paradoDesde));
+  }
+  /** Alguém está jogando: se o mundo estava parado, volta a andar a partir de agora. */
+  const atividade = (real = Date.now()) => {
+    ultimaAtividade = real;
+    retomar(real);
+  };
   return {
     read: () => world,
+    /** Etapas do último comando aceito ou recusado (ms). */
+    ultimoClique: () => ultimoClique,
+    atividade,
+    parado: () => paradoDesde !== null,
     roadAccess(updates: RoadAccessUpdate[]) {
       const applicable = updates.filter((u) => {
         const p = world.properties.find((p) => p.id === u.id);
@@ -192,6 +237,7 @@ export function createStore(
             if (s.mapRouteKey === key) {
               s.mapRoute = structuredClone(route.coordinates);
               delete s.mapRouteKey;
+              saveSnapshot.reabrir('shipments', [s.id]);
             }
           delete world.routes[key];
         }
@@ -211,12 +257,18 @@ export function createStore(
         throw error;
       }
     },
-    tick(now = Date.now()) {
-      if (advance(world, now)) dirty = true;
+    tick(real = Date.now()) {
+      if (pausa !== undefined && paradoDesde === null && real - ultimaAtividade >= pausa)
+        parar(real);
+      if (paradoDesde !== null) return world;
+      if (advance(world, relogio(real))) dirty = true;
       if (dirty && Date.now() - lastSave >= SAVE_INTERVAL_MS) transaction(writeWorld);
       return world;
     },
-    command(actor: string, command: Command, key: string, now = Date.now()) {
+    command(actor: string, command: Command, key: string, real = Date.now()) {
+      if (pausa !== undefined) atividade(real);
+      ultimoClique = null;
+      const now = relogio(real);
       const receipt = db.prepare('SELECT actor,command FROM receipts WHERE id=?').get(key) as
         { actor: string; command: string } | undefined;
       const serialized = JSON.stringify(command);
@@ -225,15 +277,28 @@ export function createStore(
           throw new RuleError('O identificador da operação já foi usado em outra solicitação.');
         return world;
       }
+      // Etapas do clique em ms (spec 013, fase 0): régua `perf:click` e cabeçalho Server-Timing.
+      const etapas: Etapas = { copia: 0, avanco: 0, comando: 0, gravacao: 0 };
+      ultimoClique = etapas;
+      let t = performance.now();
+      const marcar = (nome: keyof Etapas) => {
+        const agora = performance.now();
+        etapas[nome] = agora - t;
+        t = agora;
+      };
       // Um comando recusado no meio do caminho não pode deixar o mundo pela metade.
       const before = rollbackSnapshot(world);
+      marcar('copia');
       try {
         advance(world, now);
+        marcar('avanco');
         execute(world, actor, command, now);
+        marcar('comando');
         transaction(() => {
           writeWorld();
           db.prepare('INSERT INTO receipts VALUES(?,?,?)').run(key, actor, serialized);
         });
+        marcar('gravacao');
       } catch (error) {
         world = before;
         throw error;
@@ -254,6 +319,8 @@ export function createStore(
         ) {
           s.mapRouteKey = key;
           s.mapRouteSource = 'osrm';
+          // Carga entregue também recebe o desenho: o registro gravado precisa ser refeito.
+          saveSnapshot.reabrir('shipments', [s.id]);
         }
       }
       world.revision++;

@@ -24,6 +24,7 @@
     "lab": "tsx scripts/start-lab.ts",
     "lab:batch": "tsx scripts/lab-batch.ts",
     "lab:benchmark": "tsx scripts/lab-benchmark.ts",
+    "perf:click": "tsx scripts/perf-click.ts",
     "resources:audit": "tsx scripts/audit-resources.ts",
     "resources:catalog": "tsx scripts/audit-resources.ts --write-doc",
     "resources:check": "tsx scripts/audit-resources.ts --check",

@@ -1,3 +1,4 @@
+import { agora } from '../lib/clock';
 import { useState } from 'react';
 import { Bell, X } from 'lucide-react';
 import { useGame, num } from '../lib/game';
@@ -117,7 +118,7 @@ export function NotificationCenter({
                 onClick={() => {
                   const next = {
                     ...reads,
-                    [actor]: Math.max(Date.now(), ...deliveries.map((g) => g.at)),
+                    [actor]: Math.max(agora(), ...deliveries.map((g) => g.at)),
                   };
                   setReads(next);
                   localStorage.setItem('aftermarket.alerts.read', JSON.stringify(next));

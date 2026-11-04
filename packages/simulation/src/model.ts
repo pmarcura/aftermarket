@@ -179,6 +179,8 @@ export interface Entry {
   amount: number;
   description: string;
   establishmentId?: string;
+  /** Linha de custo fixo do dia (spec 013): soma as rodadas do mesmo dia de jogo. */
+  daily?: true;
   kind:
     | 'trade'
     | 'freight'
@@ -220,6 +222,11 @@ export interface World {
   revision: number;
   createdAt: number;
   updatedAt: number;
+  /**
+   * Tempo real em que o mundo ficou parado (spec 013): o relógio do mundo é o relógio real menos
+   * isto. Só o servidor muda; o motor recebe o instante já descontado.
+   */
+  pausedMs?: number;
   nextEconomicAt: number;
   companies: Company[];
   properties: Property[];

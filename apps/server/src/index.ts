@@ -28,7 +28,17 @@ if (!Number.isFinite(scale) || scale < 1) throw new Error('AFTERMARKET_WORLD_SCA
 const timeScale = process.env.AFTERMARKET_TIME_SCALE
   ? createClock(Number(process.env.AFTERMARKET_TIME_SCALE)).timeScale
   : undefined;
-const store = createStore(resolve(process.env.AFTERMARKET_DB_FILE ?? '.runtime/world.sqlite'), {
+// Mundos de teste e design param quando ninguém joga (spec 013): sem isso, um mundo esquecido
+// ligado no relógio rápido crescia ~1,6 GB por dia. O mundo principal (.runtime/world.sqlite)
+// continua andando; AFTERMARKET_IDLE_PAUSE=0 ou =1 força o comportamento.
+const dbFile = resolve(process.env.AFTERMARKET_DB_FILE ?? '.runtime/world.sqlite');
+const IDLE_PAUSE_MS = 3 * 60_000;
+const pauseWhenIdle =
+  process.env.AFTERMARKET_IDLE_PAUSE !== undefined
+    ? process.env.AFTERMARKET_IDLE_PAUSE === '1'
+    : dbFile !== resolve('.runtime/world.sqlite');
+const store = createStore(dbFile, {
+  pauseWhenIdleMs: pauseWhenIdle ? IDLE_PAUSE_MS : undefined,
   // Todo mundo jogável valida o acesso dos imóveis e desenha rotas reais. O frete exige rota
   // confirmada só na escala 1; com ~500 bots segue a distância estimada (D-034, D-036): esperar
   // o serviço público de rotas (1 pedido a cada 1,2 s) travaria a economia.
@@ -57,8 +67,10 @@ const allowedOrigins = new Set([
   `http://localhost:${process.env.AFTERMARKET_PREVIEW_PORT ?? 4173}`,
 ]);
 app.use(express.json({ limit: '16kb' }));
-app.use('/api', (_req, res, next) => {
+app.use('/api', (req, res, next) => {
   res.setHeader('Cache-Control', 'no-store');
+  // Qualquer pedido do navegador conta como alguém jogando (a tela aberta consulta o mundo).
+  if (req.path !== '/health') store.atividade();
   next();
 });
 app.get('/api/health', (_req, res) =>
@@ -94,7 +106,9 @@ app.get('/api/world', async (req, res, next) => {
     const actor = actorOf(req);
     if (Number(req.query.since) === w.revision && req.query.actor === actor)
       return res.status(204).end();
+    const inicio = performance.now();
     const packet = worldPacket(w, actor);
+    res.setHeader('Server-Timing', `pacote;dur=${(performance.now() - inicio).toFixed(1)}`);
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     res.setHeader('Vary', 'Accept-Encoding, x-company-id');
     if (packet.json.length > 2048 && /\bgzip\b/.test(req.get('accept-encoding') ?? '')) {
@@ -153,7 +167,31 @@ app.post('/api/commands', (req, res, next) => {
     if (actor !== 'player' && actor !== 'player2')
       return res.status(403).json({ error: 'Escolha uma empresa de teste válida.' });
     const key = z.uuid().parse(req.get('idempotency-key'));
-    sendJson(req, res, worldView(store.command(actor, commandSchema.parse(req.body), key), actor));
+    const inicio = performance.now();
+    const parsed = commandSchema.parse(req.body);
+    const mundo = store.command(actor, parsed, key);
+    const antesDaVista = performance.now();
+    const vista = worldView(mundo, actor);
+    const fim = performance.now();
+    // Tempo de cada etapa visível no navegador (aba Rede → Timing) e no log quando passa de 500 ms.
+    const etapas = {
+      ...(store.ultimoClique() ?? {}),
+      vista: fim - antesDaVista,
+      total: fim - inicio,
+    };
+    res.setHeader(
+      'Server-Timing',
+      Object.entries(etapas)
+        .map(([nome, ms]) => `${nome};dur=${ms.toFixed(1)}`)
+        .join(', '),
+    );
+    if (etapas.total > 500)
+      console.warn(
+        `Clique lento (${parsed.type}): ${Object.entries(etapas)
+          .map(([nome, ms]) => `${nome} ${Math.round(ms)} ms`)
+          .join(' · ')}`,
+      );
+    sendJson(req, res, vista);
   } catch (error) {
     next(error);
   }
@@ -206,7 +244,9 @@ const tick = setInterval(() => {
   }
 }, 2000);
 const server = app.listen(port, '127.0.0.1', () =>
-  console.log(`AFTERMARKET API · http://127.0.0.1:${port} · SQLite persistente`),
+  console.log(
+    `AFTERMARKET API · http://127.0.0.1:${port} · SQLite persistente${pauseWhenIdle ? ' · para quando ninguém joga' : ''}`,
+  ),
 );
 function stop() {
   clearInterval(tick);

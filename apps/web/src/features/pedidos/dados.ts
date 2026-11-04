@@ -1,3 +1,4 @@
+import { agora as relogioDoMundo } from '../../lib/clock';
 import { useMemo } from 'react';
 import { useGame } from '../../lib/game';
 import { HOUR_MS, realToGame } from '../../../../../packages/simulation/src/clock';
@@ -17,7 +18,7 @@ export const horasAte = (w: World, ms: number) =>
   Math.max(0, Math.ceil(realToGame(w, ms) / HOUR_MS));
 
 /** Algo que o jogador pode aceitar agora: o pedido inteiro ou uma proposta específica. */
-export function acoesDoPedido(o: PurchaseOrder, actor: string, agora = Date.now()) {
+export function acoesDoPedido(o: PurchaseOrder, actor: string, agora = relogioDoMundo()) {
   const compra = o.buyerId === actor;
   const venda = o.sellerId === actor;
   const pendente = o.status === 'pending' && o.deadline > agora;

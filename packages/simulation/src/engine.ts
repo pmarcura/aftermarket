@@ -146,6 +146,71 @@ function transfer(
     ...metadata,
   });
 }
+/**
+ * Livro do dia (spec 013): o dinheiro anda a cada rodada, mas o extrato tem uma linha por
+ * estabelecimento, natureza (e produto) e dia de jogo, somando as rodadas. Vale para custos fixos
+ * (eram 48 linhas por estabelecimento por dia, 73% do extrato) e para as vendas ao consumidor das
+ * lojas de bots. Lojas de jogadores mantêm uma linha por rodada: é a fita da loja.
+ *
+ * Dia de jogo = (início, fim]: a rodada da virada fecha o dia anterior, e a linha do dia fica com
+ * o instante da primeira rodada depois da virada; réguas por instante contam o mesmo de antes.
+ *
+ * A linha do dia é trocada por um objeto novo, nunca alterada: a cópia de desfazer
+ * (`rollbackSnapshot`) guarda os lançamentos por referência, e o gravador regrava o que mudou.
+ */
+function dailyBook(w: World, at: number) {
+  const day = gameDay(w),
+    start = w.season.startedAt + (Math.ceil((at - w.season.startedAt) / day) - 1) * day;
+  const open = new Map<string, number>();
+  for (let i = w.ledger.length - 1; i >= 0; i--) {
+    const l = w.ledger[i];
+    if (l.at <= start) break;
+    if (l.daily && l.establishmentId) open.set(bookKey(l), i);
+  }
+  return { start, open };
+}
+const bookKey = (l: Pick<Entry, 'establishmentId' | 'kind' | 'from' | 'to' | 'product'>) =>
+  `${l.establishmentId}|${l.kind}|${l.from}|${l.to}|${l.product ?? ''}`;
+function accrue(
+  w: World,
+  book: ReturnType<typeof dailyBook>,
+  from: string,
+  to: string,
+  amount: number,
+  description: string,
+  kind: Entry['kind'],
+  at: number,
+  establishmentId: string,
+  metadata: Partial<
+    Pick<Entry, 'product' | 'quantity' | 'unitPrice' | 'regionId' | 'channel'>
+  > = {},
+) {
+  if (to === 'treasury') to = treasuryId(actorState(w, from, establishmentId));
+  const key = bookKey({ establishmentId, kind, from, to, product: metadata.product }),
+    index = book.open.get(key);
+  if (index === undefined) {
+    transfer(w, from, to, amount, description, kind, at, establishmentId, metadata);
+    w.ledger[w.ledger.length - 1].daily = true;
+    book.open.set(key, w.ledger.length - 1);
+    return;
+  }
+  ensure(Number.isSafeInteger(amount) && amount >= 0, 'Valor financeiro inválido.');
+  ensure(
+    freeCash(w, from) >= amount,
+    'Saldo insuficiente ou vinculado a pedidos. Libere a reserva ou reduza a operação.',
+  );
+  company(w, from).balance -= amount;
+  company(w, to).balance += amount;
+  const prior = w.ledger[index];
+  ensure(prior.at > book.start, 'Lançamento do dia fora de ordem.');
+  const next: Entry = { ...prior, amount: prior.amount + amount, description };
+  if (metadata.quantity !== undefined) {
+    next.quantity = (prior.quantity ?? 0) + metadata.quantity;
+    // Preço médio do dia, ponderado pela quantidade.
+    next.unitPrice = next.quantity ? Math.round(next.amount / next.quantity) : metadata.unitPrice;
+  }
+  w.ledger[index] = next;
+}
 export function loadOf(inventory: Partial<Record<ProductId, number>>) {
   let mass = 0,
     volume = 0;
@@ -1482,6 +1547,7 @@ function economicTick(w: World, at: number) {
     }
   // Auditoria M05: sem capacidade para tudo, cada produto recebe parte proporcional à procura.
   const service = new Map<string, number>();
+  const book = dailyBook(w, at);
   for (const e of retail) {
     const rows = wanted.filter((x) => x.e === e && x.desired > 0);
     const asked = rows.reduce((n, x) => n + Math.min(x.desired, x.e.inventory[x.product]!), 0);
@@ -1519,23 +1585,39 @@ function economicTick(w: World, at: number) {
     });
     if (!quantity) continue;
     const amount = quantity * e.prices[product]!;
-    transfer(
-      w,
-      'consumers',
-      e.companyId,
-      amount,
-      `Varejo · ${e.name} · ${quantity} ${products[product].unit} de ${products[product].name}`,
-      'retail',
-      at,
-      e.id,
-      {
-        product,
-        quantity,
-        unitPrice: e.prices[product]!,
-        regionId,
-        channel: 'retail',
-      },
-    );
+    const sale = {
+      product,
+      quantity,
+      unitPrice: e.prices[product]!,
+      regionId,
+      channel: 'retail' as const,
+    };
+    // Loja de bot: uma linha por produto e dia. Loja de jogador: uma por rodada (a fita da loja).
+    if (company(w, e.companyId).bot)
+      accrue(
+        w,
+        book,
+        'consumers',
+        e.companyId,
+        amount,
+        `Varejo · ${e.name} · vendas do dia de ${products[product].name}`,
+        'retail',
+        at,
+        e.id,
+        sale,
+      );
+    else
+      transfer(
+        w,
+        'consumers',
+        e.companyId,
+        amount,
+        `Varejo · ${e.name} · ${quantity} ${products[product].unit} de ${products[product].name}`,
+        'retail',
+        at,
+        e.id,
+        sale,
+      );
     e.inventory[product]! -= quantity;
     e.revenue += amount;
     e.expenses += Math.round((e.unitCosts[product] ?? 0) * quantity);
@@ -1552,30 +1634,41 @@ function economicTick(w: World, at: number) {
     if (institutional(e.companyId)) continue;
     const costs = operatingCosts(w, e);
     e.dailyCost = costs.total;
-    const parts: { kind: Entry['kind']; amount: number; to: string; description: string }[] = [
+    // `daily` é o texto da linha do dia no extrato; `description`, o da obrigação em atraso.
+    const parts: {
+      kind: Entry['kind'];
+      amount: number;
+      to: string;
+      description: string;
+      daily: string;
+    }[] = [
       {
         kind: 'payroll',
         amount: Math.round(costs.payroll / 12),
         to: 'consumers',
         description: 'Salários e encargos do cenário',
+        daily: 'Salários e encargos do dia',
       },
       {
         kind: 'maintenance',
         amount: Math.round(costs.maintenance / 12),
         to: 'treasury',
         description: 'Manutenção da instalação',
+        daily: 'Manutenção da instalação no dia',
       },
       {
         kind: 'energy',
         amount: Math.round(costs.energy / 12),
         to: 'treasury',
         description: `Energia da instalação · ${(costs.energyKwh / 12).toFixed(2)} kWh`,
+        daily: 'Energia da instalação no dia',
       },
       {
         kind: 'water',
         amount: Math.round(costs.water / 12),
         to: 'treasury',
         description: `Água e esgoto · ${(costs.waterM3 / 12).toFixed(2)} m³`,
+        daily: 'Água e esgoto no dia',
       },
     ];
     const total = parts.reduce((n, p) => n + p.amount, 0);
@@ -1603,12 +1696,13 @@ function economicTick(w: World, at: number) {
       continue;
     }
     for (const part of parts)
-      transfer(
+      accrue(
         w,
+        book,
         e.companyId,
         part.to,
         part.amount,
-        `${part.description} · ${e.name}`,
+        `${part.daily} · ${e.name}`,
         part.kind,
         at,
         e.id,

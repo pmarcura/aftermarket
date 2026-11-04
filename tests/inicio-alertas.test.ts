@@ -3,7 +3,7 @@ import { createWorld } from '../packages/simulation/src/seed';
 import { retailCapacity } from '../packages/simulation/src/operations';
 import { contaDaPrateleira, equipeDaLoja } from '../apps/web/src/features/business/precificacao';
 
-// Alertas do Início (spec 008, R2): a equipe curta aparece com a mesma conta da aba Equipe.
+// Alertas do Início (spec 011, R2): a equipe curta aparece com a mesma conta da aba Equipe.
 describe('equipe da loja no Início', () => {
   const world = createWorld(Date.UTC(2026, 0, 5, 12));
   const loja = world.establishments.find(

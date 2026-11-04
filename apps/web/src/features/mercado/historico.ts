@@ -18,25 +18,39 @@ export function useHistorico(ids: ProductId[], intervalo = 30000) {
   const chave = ids.join(',');
   useEffect(() => {
     let ativo = true;
-    const ler = () =>
-      Promise.all(
-        ids.map((id) =>
-          fetch(`/api/market-history?product=${id}&region=`)
-            .then((r) => (r.ok ? r.json() : undefined))
-            .then((v) => [id, v] as const)
-            .catch(() => [id, undefined] as const),
-        ),
-      ).then((pares) => {
-        if (!ativo) return;
-        const novo: Historico = {};
-        for (const [id, v] of pares) if (v) novo[id] = { samples: v.samples, trades: v.trades };
-        setH(novo);
-      });
+    let pending = false;
+    let controller: AbortController | undefined;
+    const ler = async () => {
+      if (pending || !ids.length || document.hidden) return;
+      pending = true;
+      controller = new AbortController();
+      const timeout = setTimeout(() => controller?.abort(), 15000);
+      try {
+        const response = await fetch(
+          `/api/market-history?products=${encodeURIComponent(chave)}&region=`,
+          { signal: controller.signal },
+        );
+        if (!response.ok) return;
+        const values = (await response.json()) as Historico;
+        if (ativo) setH(values);
+      } catch {
+        /* Keep the last valid prices; next interval retries. */
+      } finally {
+        clearTimeout(timeout);
+        pending = false;
+      }
+    };
     void ler();
     const t = setInterval(() => void ler(), intervalo);
+    const visible = () => {
+      if (!document.hidden) void ler();
+    };
+    document.addEventListener('visibilitychange', visible);
     return () => {
       ativo = false;
       clearInterval(t);
+      controller?.abort();
+      document.removeEventListener('visibilitychange', visible);
     };
     // A lista de produtos só muda com a temporada.
     // eslint-disable-next-line react-hooks/exhaustive-deps

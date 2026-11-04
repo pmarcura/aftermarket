@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useGame, cr, num, ProductIcon } from '../../lib/game';
+import { useGame, cr, num } from '../../lib/game';
+import { ProdutoMini } from '../economy/Vitrine';
 import { Carimbo } from '../../components/Livro';
 import { unidade } from '../economy/Carga';
 import { comecoDoDia } from '../inicio/tempo';
@@ -87,7 +88,7 @@ export function Fita({ loja }: { loja: Establishment }) {
                 <ul>
                   {g.itens.slice(0, i === 0 ? 8 : 4).map((l) => (
                     <li key={l.id}>
-                      {l.product && <ProductIcon product={l.product} size={20} />}
+                      {l.product && <ProdutoMini product={l.product} tamanho={26} />}
                       <span>
                         {num(l.quantity ?? 0)}{' '}
                         {l.product ? unidade(l.product, l.quantity ?? 0) : ''} de{' '}

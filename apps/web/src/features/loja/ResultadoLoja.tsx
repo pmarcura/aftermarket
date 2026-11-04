@@ -1,11 +1,14 @@
 import { useMemo, useState } from 'react';
-import { useGame, cr, num, ProductIcon } from '../../lib/game';
+import { useGame, cr, num } from '../../lib/game';
+import { ProdutoMini } from '../economy/Vitrine';
 import { GraficoPixel } from '../../components/GraficoPixel';
 import { Ficha } from '../inicio/pecas';
 import { NumeroVivo } from '../inicio/vivo';
 import { comecoDoDia } from '../inicio/tempo';
 import { unidade } from '../economy/Carga';
 import { Consumption } from '../business/Financas';
+import { IconePixel } from '../../components/IconePixel';
+import { FRETE_ALTO, freteRecente, nomeTransportadora } from './frete';
 import {
   products,
   type Entry,
@@ -19,13 +22,14 @@ import '../../design/inicio-ajustes.css';
 import '../../design/loja-resultado.css';
 
 type Periodo = 'hoje' | 'semana';
-type Custo = 'mercadoria' | 'equipe' | 'energia' | 'outros';
+type Custo = 'mercadoria' | 'frete' | 'equipe' | 'energia' | 'outros';
 
 const DEGRAUS: { id: Custo; rotulo: string }[] = [
-  { id: 'mercadoria', rotulo: 'Mercadoria vendida' },
+  { id: 'mercadoria', rotulo: 'Mercadoria' },
+  { id: 'frete', rotulo: 'Frete' },
   { id: 'equipe', rotulo: 'Equipe' },
   { id: 'energia', rotulo: 'Energia e água' },
-  { id: 'outros', rotulo: 'Manutenção e outros' },
+  { id: 'outros', rotulo: 'Outros custos' },
 ];
 
 const grupoDe = (kind: Entry['kind']): Custo | null =>
@@ -48,7 +52,16 @@ function resultadoDaLoja(world: World, loja: Establishment, dias: number) {
   const balde = (at: number) => Math.min(dias - 1, Math.floor((at - inicio) / gameDay(world)));
   const vendas = new Array<number>(dias).fill(0);
   const custosDia = new Array<number>(dias).fill(0);
-  const custos: Record<Custo, number> = { mercadoria: 0, equipe: 0, energia: 0, outros: 0 };
+  const custos: Record<Custo, number> = {
+    mercadoria: 0,
+    frete: 0,
+    equipe: 0,
+    energia: 0,
+    outros: 0,
+  };
+  let pagoMercadoria = 0;
+  let pagoFrete = 0;
+  const transportadoras = new Map<string, number>();
   const porProduto = new Map<ProductId, { qtd: number; receita: number; custo: number }>();
   let compras = 0;
   for (const l of world.ledger) {
@@ -72,6 +85,11 @@ function resultadoDaLoja(world: World, loja: Establishment, dias: number) {
     if (l.from !== loja.companyId) continue;
     if (l.kind === 'trade' || l.kind === 'freight') {
       compras += l.amount;
+      if (l.kind === 'trade') pagoMercadoria += l.amount;
+      else {
+        pagoFrete += l.amount;
+        transportadoras.set(l.to, (transportadoras.get(l.to) ?? 0) + l.amount);
+      }
       continue;
     }
     const g = grupoDe(l.kind);
@@ -79,6 +97,11 @@ function resultadoDaLoja(world: World, loja: Establishment, dias: number) {
     custos[g] += l.amount;
     custosDia[i] += l.amount;
   }
+  // O custo da mercadoria vendida já traz o frete (o custo médio inclui o frete de cada carga).
+  // A parte do frete sai pela proporção do que a loja pagou em frete e em mercadoria no período.
+  const parteFrete = pagoFrete / Math.max(1, pagoMercadoria + pagoFrete);
+  custos.frete = Math.round(custos.mercadoria * parteFrete);
+  custos.mercadoria -= custos.frete;
   const totalVendas = vendas.reduce((n, v) => n + v, 0);
   const totalCustos = Object.values(custos).reduce((n, v) => n + v, 0);
   return {
@@ -88,12 +111,23 @@ function resultadoDaLoja(world: World, loja: Establishment, dias: number) {
     custos,
     lucro: totalVendas - totalCustos,
     compras,
+    pagoFrete,
+    parteFrete,
+    transportadoras: [...transportadoras].sort((a, b) => b[1] - a[1]),
     lucroDia: vendas.map((v, i) => v - custosDia[i]),
     produtos: [...porProduto]
       .map(([id, p]) => ({ id, ...p, lucro: p.receita - p.custo }))
       .sort((a, b) => b.lucro - a.lucro),
   };
 }
+
+/** Valor da cascata: a partir de R$ 10 mil, arredondado em mil para caber sete colunas. */
+const curto = (centavos: number) =>
+  // O R$ vem com espaço que não quebra; com espaço comum, o valor cabe em duas linhas.
+  (Math.abs(centavos) >= 1000000 ? `${cr(centavos / 1000, 0)} mil` : cr(centavos, 0)).replace(
+    /\s/g,
+    ' ',
+  );
 
 /** Cascata do lucro: das vendas, cada custo desce um degrau até o que sobra. */
 function Cascata({ r }: { r: ReturnType<typeof resultadoDaLoja> }) {
@@ -117,19 +151,19 @@ function Cascata({ r }: { r: ReturnType<typeof resultadoDaLoja> }) {
       aria-label={`Vendas ${cr(r.vendas, 0)}; ${degraus.map((d) => `${d.rotulo} −${cr(d.valor, 0)}`).join('; ')}; lucro ${cr(r.lucro, 0)}.`}
     >
       <div className="rl-coluna vendas">
-        <span className="rl-valor">{cr(r.vendas, 0)}</span>
+        <span className="rl-valor">{curto(r.vendas)}</span>
         <i style={bar(0, r.vendas)} />
         <span className="rl-rotulo">Vendas</span>
       </div>
-      {degraus.map((d, k) => (
-        <div key={d.id} className={`rl-coluna custo c${k}`}>
-          <span className="rl-valor">−{cr(d.valor, 0)}</span>
+      {degraus.map((d) => (
+        <div key={d.id} className={`rl-coluna custo d-${d.id}`}>
+          <span className="rl-valor">−{curto(d.valor)}</span>
           <i style={bar(d.de, d.ate)} />
           <span className="rl-rotulo">{d.rotulo}</span>
         </div>
       ))}
       <div className={`rl-coluna lucro ${r.lucro >= 0 ? 'pos' : 'neg'}`}>
-        <span className="rl-valor">{cr(r.lucro, 0)}</span>
+        <span className="rl-valor">{curto(r.lucro)}</span>
         <i style={bar(0, r.lucro)} />
         <span className="rl-rotulo">Lucro</span>
       </div>
@@ -155,6 +189,11 @@ export function ResultadoLoja({ loja }: { loja: Establishment }) {
     () => (periodo === 'semana' ? r : resultadoDaLoja(world, loja, 7)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [r, periodo, world.revision, loja.id],
+  );
+  const fretes = useMemo(
+    () => freteRecente(world, loja.id),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [world.revision, loja.id],
   );
   const margem = r.vendas > 0 ? r.lucro / r.vendas : 0;
   const maiorProduto = Math.max(1, ...r.produtos.map((p) => Math.abs(p.lucro)));
@@ -230,7 +269,30 @@ export function ResultadoLoja({ loja }: { loja: Establishment }) {
         <h4 id="rl-cascata" className="lv-grande">
           De onde vem o lucro
         </h4>
-        <Cascata r={r} />
+        <div className="rl-cascata-rolo">
+          <Cascata r={r} />
+        </div>
+        {r.pagoFrete > 0 && (
+          <p className={`rl-frete ${r.custos.frete > r.vendas * 0.15 ? 'alto' : ''}`}>
+            <IconePixel nome="caminhao" tamanho={28} />
+            <span>
+              O frete levou <b>{num((r.custos.frete / Math.max(1, r.vendas)) * 100)}%</b> das vendas
+              {r.custos.frete > r.vendas * 0.15
+                ? ': cargas pequenas pagam a viagem inteira. Repor menos vezes e em mais quantidade baixa esse custo.'
+                : '.'}{' '}
+              <small>
+                Foi para{' '}
+                {r.transportadoras
+                  .slice(0, 3)
+                  .map(
+                    ([id, v]) => `${nomeTransportadora(world, id, loja.companyId)} (${cr(v, 0)})`,
+                  )
+                  .join(', ')}
+                {r.transportadoras.length > 3 ? ` e mais ${r.transportadoras.length - 3}` : ''}.
+              </small>
+            </span>
+          </p>
+        )}
       </section>
 
       <section className="rl-bloco" aria-labelledby="rl-produtos">
@@ -245,13 +307,25 @@ export function ResultadoLoja({ loja }: { loja: Establishment }) {
               const m = p.receita > 0 ? p.lucro / p.receita : 0;
               return (
                 <li key={p.id} className={p.lucro >= 0 ? 'pos' : 'neg'}>
-                  <ProductIcon product={p.id} size={22} />
+                  <ProdutoMini product={p.id} tamanho={40} />
                   <span className="rl-prod-nome">
                     <b>{products[p.id].name}</b>
                     <small>
                       {num(p.qtd)} {unidade(p.id, p.qtd)} · vendeu {cr(p.receita, 0)} · margem{' '}
                       {num(m * 100)}%
                     </small>
+                    {(fretes.get(p.id)?.parte ?? 0) > FRETE_ALTO && (
+                      <em className="rl-prod-frete">
+                        Frete: {num(fretes.get(p.id)!.parte * 100)}% do custo nas últimas cargas (
+                        {cr(fretes.get(p.id)!.porUnidade)} por unidade)
+                      </em>
+                    )}
+                    {p.lucro < 0 && p.qtd > 0 && (
+                      <em className="rl-prod-porque">
+                        Cada unidade chegou a {cr(p.custo / p.qtd)} com frete e vendeu a{' '}
+                        {cr(p.receita / p.qtd)}.
+                      </em>
+                    )}
                   </span>
                   <span className="rl-prod-barra">
                     <i style={{ width: `${(Math.abs(p.lucro) / maiorProduto) * 100}%` }} />

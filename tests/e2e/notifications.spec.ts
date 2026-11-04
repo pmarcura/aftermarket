@@ -35,7 +35,7 @@ for (const initialPage of ['inicio', 'orders'] as const) {
         await route.fulfill({ json: world });
         return;
       }
-      // O pregão do Início lê o histórico de preços (spec 008); aqui ele chega vazio.
+      // O pregão do Início lê o histórico de preços (spec 011); aqui ele chega vazio.
       if (new URL(route.request().url()).pathname === '/api/market-history') {
         await route.fulfill({ json: { samples: [], trades: [] } });
         return;

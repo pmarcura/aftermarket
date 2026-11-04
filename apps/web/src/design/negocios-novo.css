@@ -5,45 +5,6 @@
   align-content: start;
 }
 
-/* Faixa de resumo: três números grandes, cada um com a sua figura. */
-.neg-faixa {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  background: var(--chapa);
-  border: 2px solid var(--borda);
-  box-shadow: 6px 6px 0 var(--lavoura-escura);
-}
-.neg-faixa > div {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  grid-template-rows: auto auto;
-  align-items: center;
-  column-gap: 14px;
-  padding: 16px 22px;
-}
-.neg-faixa > div + div {
-  border-left: 2px dashed var(--borda);
-}
-.neg-faixa svg {
-  grid-row: 1 / span 2;
-}
-.neg-faixa b {
-  font-family: var(--display);
-  font-stretch: 66%;
-  font-size: 33px;
-  font-weight: 800;
-  line-height: 1.1;
-  color: var(--creme);
-}
-.neg-faixa span {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--apagado);
-}
-.neg-faixa .atencao b {
-  color: var(--brasa);
-}
-
 /* Filtros (só a partir de 8 negócios). */
 .neg-filtros {
   display: flex;
@@ -107,76 +68,6 @@
 .neg-grade > li {
   display: grid;
 }
-.neg-item {
-  height: 100%;
-  grid-template-rows: auto 1fr;
-}
-.neg-item .item-hero {
-  grid-template-columns: auto 1fr;
-  gap: 22px;
-  padding: 20px 24px;
-}
-.neg-item.alerta {
-  border-color: var(--brasa);
-  box-shadow: 6px 6px 0 color-mix(in srgb, var(--brasa) 45%, var(--sombra));
-}
-.neg-item.parado .item-hero {
-  filter: saturate(0.5);
-}
-.neg-cena {
-  position: relative;
-  min-width: 170px;
-  min-height: 124px;
-}
-.neg-item .item-ident h3 {
-  font-size: 26px;
-}
-.neg-item .item-fatos {
-  gap: 4px 20px;
-}
-.neg-corpo {
-  grid-template-columns: 1fr;
-  align-content: space-between;
-  gap: 16px;
-  padding: 18px 24px 22px;
-}
-.neg-aviso {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin: 0;
-  padding: 12px 16px;
-  background: var(--noite-funda);
-  border-left: 6px solid var(--tom, var(--lavoura));
-}
-.neg-aviso.ok {
-  --tom: var(--borda-forte);
-}
-.neg-aviso span {
-  display: grid;
-  gap: 3px;
-}
-.neg-aviso b {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--creme);
-}
-.neg-aviso small {
-  font-size: 14px;
-  color: var(--apagado);
-}
-.neg-botoes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-.neg-botoes button {
-  flex: 1;
-  min-width: 140px;
-  min-height: 50px;
-  font-size: 16px;
-}
-
 /* Cartão de abrir negócio. */
 .neg-novo {
   display: grid;
@@ -231,55 +122,6 @@
   font-size: 24px;
   font-weight: 800;
 }
-.neg-rotas {
-  display: grid;
-  gap: 10px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.neg-rotas li {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  grid-template-rows: auto auto;
-  align-items: center;
-  gap: 2px 16px;
-  padding: 12px 16px;
-  background: var(--chapa-2);
-  border-left: 6px solid var(--lavoura);
-}
-.neg-rotas li.pausada {
-  border-left-color: var(--ouro);
-}
-.neg-rotas li > .abre-produto {
-  grid-row: 1 / span 2;
-}
-.neg-rota-produto {
-  font-size: 14px;
-  font-weight: 700;
-}
-.neg-rotas li > button {
-  grid-row: 1 / span 2;
-  grid-column: 3;
-}
-.neg-rota-caminho {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-}
-.neg-rota-caminho strong {
-  font-size: 16px;
-  font-weight: 700;
-}
-.neg-rotas small {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--apagado);
-}
 .neg-vazio-mini {
   margin: 0;
   padding: 14px 16px;
@@ -301,50 +143,374 @@
   font-size: 16px;
 }
 
+@media (max-width: 600px) {
+  .neg-pedidos {
+    flex-wrap: wrap;
+  }
+}
+
+/* ---------- A conta da empresa: nota de papel e três números ao lado ---------- */
+.ng-conta {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: center;
+}
+.ng-nota {
+  display: grid;
+  gap: 8px;
+  padding: 34px 28px 40px;
+}
+.ng-total {
+  font-size: clamp(40px, 6vw, 60px);
+}
+.ng-total.pos {
+  color: var(--lavoura-escura);
+}
+.ng-total.neg {
+  color: var(--tinta-perde, #a3361c);
+}
+/* A voz do dono no papel: a nota força 15 px em parágrafos. */
+.lv-nota .ng-recado {
+  margin: 0;
+  font-size: 26px;
+  line-height: 1.1;
+}
+.ng-conta-lado {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+}
+.ng-conta-lado > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--chapa);
+  box-shadow: inset 0 0 0 2px var(--borda);
+}
+.ng-conta-lado dt {
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 12.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--apagado);
+}
+.ng-conta-lado dd {
+  margin: 0;
+  font-family: var(--display);
+  font-stretch: 70%;
+  font-weight: 800;
+  font-size: 24px;
+  color: var(--creme);
+}
+.ng-conta-lado .atencao dd {
+  color: var(--brasa);
+}
+
+/* ---------- Entre seus negócios: ligações que faltam e estoque parado ---------- */
+.ng-cadeia {
+  display: grid;
+  gap: 12px;
+}
+.ng-cadeia h2 {
+  margin: 0;
+  font-size: 28px;
+  color: var(--creme);
+}
+.ng-cadeia ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ng-sugestao {
+  --tom: var(--ceu);
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--chapa) var(--grao);
+  background-blend-mode: soft-light;
+  box-shadow:
+    inset 0 0 0 2px var(--borda),
+    inset 5px 0 0 var(--tom),
+    4px 4px 0 var(--sombra);
+}
+.ng-sugestao.vender {
+  --tom: var(--ouro);
+}
+.ng-sugestao-arte {
+  display: grid;
+  place-items: center;
+  height: 60px;
+}
+.ng-sugestao-arte img {
+  max-height: 60px;
+  width: auto;
+  image-rendering: pixelated;
+}
+.ng-sugestao-texto {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.ng-sugestao-texto b {
+  font-size: 16px;
+  color: var(--creme);
+}
+.ng-sugestao-texto small {
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--apagado);
+}
+.ng-sugestao button {
+  white-space: nowrap;
+}
+
+/* ---------- Cartão do negócio ---------- */
+.ng-card {
+  --tom: var(--lavoura);
+  display: grid;
+  gap: 14px;
+  align-content: start;
+  height: 100%;
+  padding: 0 0 16px;
+  background: var(--chapa-2) var(--grao);
+  background-blend-mode: soft-light;
+  box-shadow:
+    inset 0 0 0 2px var(--borda),
+    inset 0 5px 0 var(--tom),
+    6px 6px 0 var(--sombra);
+}
+.ng-card.tom-brasa {
+  --tom: var(--brasa);
+}
+.ng-card.tom-ouro {
+  --tom: var(--ouro);
+}
+.ng-card.tom-ceu {
+  --tom: var(--ceu);
+}
+.ng-card.tom-apagado {
+  --tom: var(--borda-forte);
+}
+.ng-topo {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 18px;
+  align-items: center;
+  width: 100%;
+  padding: 18px 18px 14px;
+  text-align: left;
+  color: inherit;
+  background: radial-gradient(circle at 18% 40%, hsl(var(--h, 40) 50% 26% / 0.8), transparent 60%);
+}
+.ng-cena {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-width: 120px;
+  min-height: 96px;
+}
+.ng-card.parado .ng-cena {
+  filter: grayscale(0.7) brightness(0.8);
+}
+.ng-ident {
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+  min-width: 0;
+}
+.ng-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 9px 3px 8px;
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tom);
+  background: color-mix(in srgb, var(--tom) 14%, var(--chapa));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tom) 55%, transparent);
+}
+.ng-estado::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  background: var(--tom);
+}
+.ng-nome {
+  margin: 0;
+  font-family: var(--display);
+  font-stretch: 68%;
+  font-weight: 900;
+  font-size: 30px;
+  line-height: 0.95;
+  text-transform: uppercase;
+  text-wrap: balance;
+  color: var(--creme);
+}
+.ng-onde {
+  font-size: 13.5px;
+  color: var(--apagado);
+}
+.ng-faz {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  margin: 0 18px;
+  padding: 8px 12px;
+  background: var(--chapa);
+  color: var(--apagado);
+}
+.ng-faz.vazio {
+  font-size: 14px;
+}
+.ng-faz small {
+  flex-basis: 100%;
+  font-size: 13.5px;
+}
+.ng-faz-rotulo {
+  margin-right: 4px;
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.ng-numeros {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 2px;
+  margin: 0 18px;
+}
+.ng-numeros > div {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  min-width: 0;
+  padding: 10px 12px;
+  background: var(--chapa);
+}
+.ng-numeros dt {
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--apagado);
+}
+.ng-numeros dd {
+  margin: 0;
+  font-family: var(--display);
+  font-stretch: 70%;
+  font-weight: 800;
+  font-size: 21px;
+  line-height: 1.05;
+  white-space: nowrap;
+  color: var(--creme);
+}
+.ng-resultado dd {
+  font-size: 25px;
+}
+.ng-resultado.pos dd {
+  color: var(--lavoura-clara);
+}
+.ng-resultado.neg {
+  background: color-mix(in srgb, var(--brasa) 12%, var(--chapa));
+}
+.ng-resultado.neg dd {
+  color: #ffb39e;
+}
+.ng-armazem {
+  display: grid;
+  gap: 4px;
+  margin: 0 18px;
+  padding: 0;
+  list-style: none;
+}
+.ng-armazem li {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  font-size: 14px;
+}
+.ng-armazem em {
+  font-style: normal;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--lavoura);
+}
+.ng-armazem li.parado em {
+  color: var(--ouro);
+}
+.ng-alerta {
+  --tom: var(--ouro);
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 10px;
+  margin: 0 18px;
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--tom) 12%, var(--chapa));
+  box-shadow: inset 4px 0 0 var(--tom);
+}
+.ng-alerta.tom-brasa {
+  --tom: var(--brasa);
+}
+.ng-alerta span {
+  display: grid;
+  gap: 2px;
+}
+.ng-alerta b {
+  font-size: 15px;
+}
+.ng-alerta small {
+  font-size: 13.5px;
+  color: var(--apagado);
+}
+.ng-pe {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 18px;
+}
+.ng-pe button {
+  flex: 1;
+  min-width: 140px;
+}
+
 @media (max-width: 900px) {
-  .neg-faixa > div {
-    grid-template-columns: 1fr;
-    justify-items: start;
-    row-gap: 2px;
-    padding: 12px 14px;
-  }
-  .neg-faixa svg {
-    grid-row: auto;
-    width: 26px;
-    height: 26px;
-  }
-  .neg-faixa b {
-    font-size: 20px;
-  }
-  .neg-faixa span {
-    font-size: 13px;
+  .ng-conta {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 @media (max-width: 600px) {
-  .neg-item .item-hero {
-    grid-template-columns: 1fr;
-    gap: 14px;
-    padding: 18px 16px;
+  .ng-topo {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: start;
   }
-  .neg-cena {
+  .ng-cena {
     min-width: 0;
-    min-height: 0;
-    justify-self: start;
   }
-  .neg-item .item-ident h3 {
-    font-size: 22px;
+  .ng-numeros {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
-  .neg-corpo {
-    padding: 16px;
-  }
-  .neg-rotas li {
-    grid-template-columns: auto 1fr;
-  }
-  .neg-rotas li > button {
+  .ng-numeros .ng-resultado {
     grid-column: 1 / -1;
-    grid-row: auto;
   }
-  .neg-pedidos {
-    flex-wrap: wrap;
+  .ng-sugestao {
+    grid-template-columns: 48px minmax(0, 1fr);
+  }
+  .ng-sugestao button {
+    grid-column: 1 / -1;
   }
 }

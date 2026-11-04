@@ -138,7 +138,7 @@
 .rl-cascata {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 12px;
   height: 280px;
   padding: 30px 0 46px;
@@ -186,14 +186,20 @@
     color-mix(in srgb, var(--brasa) 70%, var(--chapa)) 6px 12px
   );
 }
-.rl-coluna.c1 i {
+.rl-coluna.d-mercadoria i {
+  background: var(--apagado);
+}
+.rl-coluna.d-equipe i {
   background: var(--ceu);
 }
-.rl-coluna.c2 i {
+.rl-coluna.d-energia i {
   background: var(--ouro);
 }
-.rl-coluna.c3 i {
+.rl-coluna.d-outros i {
   background: #b9a2d8;
+}
+.rl-coluna:nth-child(7) i {
+  animation-delay: 0.48s;
 }
 .rl-coluna.lucro.pos i {
   background: var(--lavoura-clara);
@@ -256,7 +262,7 @@
 }
 .rl-produtos li {
   display: grid;
-  grid-template-columns: 26px minmax(0, 1.2fr) minmax(0, 1fr) auto;
+  grid-template-columns: 44px minmax(0, 1.2fr) minmax(0, 1fr) 11ch;
   gap: 14px;
   align-items: center;
   padding: 10px 12px;
@@ -271,6 +277,16 @@
 .rl-prod-nome small {
   font-size: 13.5px;
   color: var(--apagado);
+}
+.rl-prod-porque {
+  margin-top: 2px;
+  font-size: 13.5px;
+  font-style: normal;
+  color: #ffb39e;
+}
+.rl-produtos li > .produto-mini,
+.rl-produtos li > svg {
+  justify-self: center;
 }
 .rl-prod-barra {
   display: block;
@@ -299,6 +315,7 @@
   font-weight: 900;
   font-size: 24px;
   white-space: nowrap;
+  text-align: right;
   color: var(--lavoura-clara);
 }
 .rl-produtos li.neg .rl-prod-lucro {
@@ -311,21 +328,30 @@
   }
 }
 @media (max-width: 640px) {
+  /* Sete degraus não cabem em 345 px: o gráfico rola de lado dentro do próprio bloco. */
+  .rl-cascata-rolo {
+    min-width: 0;
+    overflow-x: auto;
+  }
   .rl-cascata {
-    gap: 4px;
+    min-width: 520px;
+    gap: 6px;
     height: 240px;
   }
   .rl-valor {
-    font-size: 14px;
+    top: -32px;
+    font-size: 12.5px;
+    line-height: 1;
+    white-space: normal;
   }
   .rl-coluna.lucro .rl-valor {
-    font-size: 16px;
+    font-size: 13.5px;
   }
   .rl-rotulo {
     font-size: 10.5px;
   }
   .rl-produtos li {
-    grid-template-columns: 22px minmax(0, 1fr) auto;
+    grid-template-columns: 40px minmax(0, 1fr) auto;
   }
   .rl-prod-barra {
     grid-column: 2 / -1;
@@ -339,4 +365,37 @@
   .rl *::before {
     animation: none !important;
   }
+}
+
+/* Frete: quanto das vendas foi para as transportadoras e para quem. */
+.rl-frete {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  margin: 14px 0 0;
+  padding: 12px 14px;
+  font-size: 15px;
+  line-height: 1.45;
+  background: var(--chapa-2);
+  box-shadow: inset 4px 0 0 var(--ceu);
+}
+.rl-frete.alto {
+  background: color-mix(in srgb, var(--brasa) 12%, var(--chapa));
+  box-shadow: inset 4px 0 0 var(--brasa);
+}
+.rl-frete.alto b {
+  color: var(--brasa);
+}
+.rl-frete small {
+  display: block;
+  margin-top: 4px;
+  font-size: 13.5px;
+  color: var(--apagado);
+}
+.rl-prod-frete {
+  margin-top: 2px;
+  font-size: 13.5px;
+  font-style: normal;
+  color: var(--ouro);
 }

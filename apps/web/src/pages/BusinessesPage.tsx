@@ -5,9 +5,11 @@ import { PageHeading } from '../components/ui';
 import { SecaoAbas } from '../components/SecaoAbas';
 import { PixelArt } from '../components/PixelArt';
 import { IconePixel } from '../components/IconePixel';
-import { BarrasPixel } from '../components/BarrasPixel';
-import { categoryInfo } from '../../../../packages/simulation/src/model';
-import { SupplyNetwork } from '../features/business/SupplyNetwork';
+import { ProdutoArte } from '../features/economy/Vitrine';
+import { unidade } from '../features/economy/Carga';
+import { sugestoesDaCadeia } from '../features/business/cadeia';
+import { categoryInfo, products } from '../../../../packages/simulation/src/model';
+import { CadeiaBlocos, politicaCom } from '../features/business/CadeiaBlocos';
 import { BusinessCard, urgenciaDe } from '../features/business/BusinessCards';
 import { usePendencias } from '../features/inicio/pendencias';
 import { comecoDoDia, useResumoDoCaixa } from '../features/inicio/tempo';
@@ -17,9 +19,14 @@ import '../design/negocios-novo.css';
 const MUITOS = 8;
 
 export function BusinessesPage() {
-  const { world, actor, navigate } = useGame();
+  const { world, actor, navigate, openBusiness, run, pending } = useGame();
   const [busca, setBusca] = useState(''),
     [tipo, setTipo] = useState('all');
+  const sugestoes = useMemo(
+    () => sugestoesDaCadeia(world, actor),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [world.revision, actor],
+  );
   const pendencias = usePendencias();
   const { vendasHoje, porNegocioHoje } = useResumoDoCaixa(comecoDoDia(world));
   const meus = world.establishments.filter((e) => e.companyId === actor);
@@ -49,11 +56,24 @@ export function BusinessesPage() {
   const precisam = meus.filter(
     (e) => alertaDe.has(e.id) || !e.enabled || e.installed === false || e.mothballed,
   ).length;
-  const rank = [...meus]
-    .map((e) => ({ rotulo: e.name, valor: porNegocioHoje.get(e.id) ?? 0, tom: 'ouro' as const }))
-    .filter((i) => i.valor > 0)
-    .sort((a, b) => b.valor - a.valor)
-    .slice(0, 5);
+  // A conta da empresa: o que entrou menos o que saiu em cada negócio, desde a abertura.
+  const resultados = meus
+    .filter((e) => e.installed !== false)
+    .map((e) => ({ e, valor: e.revenue - e.expenses }));
+  const total = resultados.reduce((n, x) => n + x.valor, 0);
+  const custoDia = meus.reduce((n, e) => n + e.dailyCost, 0);
+  const melhor = [...resultados].sort((a, b) => b.valor - a.valor)[0];
+  const pior = [...resultados].sort((a, b) => a.valor - b.valor)[0];
+  const recado =
+    resultados.length === 0
+      ? ''
+      : total >= 0
+        ? pior && pior.valor < 0
+          ? `${melhor.e.name} segura as contas`
+          : 'todos se pagam!'
+        : melhor && melhor.valor > 0
+          ? `${pior.e.name} come o que ${melhor.e.name} ganha`
+          : 'ainda no vermelho...';
 
   return (
     <>
@@ -64,28 +84,97 @@ export function BusinessesPage() {
       />
       <div className="page-body neg-pagina">
         {meus.length > 0 && (
-          <section className="neg-faixa" aria-label="Resumo">
-            <div>
-              <IconePixel nome="predio" tamanho={32} />
-              <b>{num(meus.length)}</b>
-              <span>{meus.length === 1 ? 'negócio' : 'negócios'}</span>
-            </div>
-            <div>
-              <IconePixel nome="moeda" tamanho={32} />
-              <b>{cr(vendasHoje, 0)}</b>
-              <span>vendidos hoje</span>
-            </div>
-            <div className={precisam ? 'atencao' : ''}>
-              <IconePixel nome={precisam ? 'alerta' : 'estrela'} tamanho={32} />
-              <b>{num(precisam)}</b>
-              <span>
-                {precisam
-                  ? precisam === 1
-                    ? 'precisa de você'
-                    : 'precisam de você'
-                  : 'tudo em dia'}
-              </span>
-            </div>
+          <section className="ng-conta" aria-label="A conta da empresa">
+            <article className="lv-nota ng-nota">
+              <span className="lv-etiqueta lv-rotulo">Resultado dos negócios</span>
+              <b className={`lv-numero ng-total ${total >= 0 ? 'pos' : 'neg'}`}>
+                {total >= 0 ? '+' : '−'}
+                {cr(Math.abs(total), 0)}
+              </b>
+              {recado && <p className="lv-mao ng-recado">{recado}</p>}
+              <p>
+                Dinheiro que entrou menos o que saiu, desde a abertura de cada negócio. Estoque
+                parado ainda não conta: só vira dinheiro quando vende.
+              </p>
+            </article>
+            <dl className="ng-conta-lado">
+              <div>
+                <dt>Custam por dia</dt>
+                <dd>{cr(custoDia, 0)}</dd>
+              </div>
+              <div>
+                <dt>Vendido hoje</dt>
+                <dd>{cr(vendasHoje, 0)}</dd>
+              </div>
+              <div className={precisam ? 'atencao' : ''}>
+                <dt>Precisam de você</dt>
+                <dd>{precisam ? `${num(precisam)} de ${num(meus.length)}` : 'nenhum'}</dd>
+              </div>
+            </dl>
+          </section>
+        )}
+
+        {sugestoes.length > 0 && (
+          <section className="ng-cadeia" aria-labelledby="ng-cadeia-titulo">
+            <h2 id="ng-cadeia-titulo" className="lv-grande">
+              Entre seus negócios
+            </h2>
+            <ul>
+              {sugestoes.map((x) => (
+                <li key={x.id} className={`ng-sugestao ${x.tipo}`}>
+                  <span className="ng-sugestao-arte">
+                    <ProdutoArte product={x.produto} escala={1} />
+                  </span>
+                  <span className="ng-sugestao-texto">
+                    {x.tipo === 'abastecer' ? (
+                      <>
+                        <b>
+                          Levar {products[x.produto].name} de {x.origem.name} para {x.destino!.name}
+                        </b>
+                        <small>
+                          {x.origem.name} tem {num(x.quantidade)} {unidade(x.produto, x.quantidade)}{' '}
+                          paradas; {x.destino!.name} usa {products[x.produto].name} e hoje compra de
+                          outras empresas, pagando mercadoria e frete.
+                        </small>
+                      </>
+                    ) : (
+                      <>
+                        <b>
+                          {num(x.quantidade)} {unidade(x.produto, x.quantidade)} de{' '}
+                          {products[x.produto].name} paradas em {x.origem.name}
+                        </b>
+                        <small>
+                          Nenhum negócio seu usa e não há oferta à venda, então ninguém pode
+                          comprar. Valem cerca de {cr(x.valor, 0)} no preço de referência.
+                        </small>
+                      </>
+                    )}
+                  </span>
+                  {x.tipo === 'abastecer' ? (
+                    <button
+                      className="primary"
+                      disabled={pending}
+                      onClick={() =>
+                        void run(
+                          {
+                            type: 'configureSupply',
+                            establishmentId: x.destino!.id,
+                            policy: politicaCom(world, x.destino!, x.produto, x.origem.id),
+                          },
+                          `${x.origem.name} agora abastece ${x.destino!.name} com ${products[x.produto].name}.`,
+                        )
+                      }
+                    >
+                      Ligar os dois
+                    </button>
+                  ) : (
+                    <button className="primary" onClick={() => openBusiness(x.origem.id, 'Vendas')}>
+                      Pôr à venda
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
           </section>
         )}
 
@@ -152,20 +241,7 @@ export function BusinessesPage() {
           <p className="neg-vazio-mini">Nenhum negócio com esse nome ou tipo.</p>
         )}
 
-        {rank.length > 1 && (
-          <section className="neg-bloco" aria-labelledby="neg-rank">
-            <header className="neg-bloco-cab">
-              <h2 id="neg-rank">Quem vendeu mais hoje</h2>
-            </header>
-            <BarrasPixel
-              titulo="Vendas de hoje por negócio"
-              itens={rank}
-              formato={(v) => cr(v, 0)}
-            />
-          </section>
-        )}
-
-        <SupplyNetwork />
+        <CadeiaBlocos />
 
         {pedidosEsperando > 0 && (
           <section className="neg-pedidos" aria-label="Pedidos">

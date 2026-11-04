@@ -137,7 +137,7 @@ test('negocia pedido real, agrupa caminhões e configura abastecimento e educaç
       .getByRole('button', { name: 'Negócios', exact: true })
       .click();
     await page
-      .locator('article.neg-item')
+      .locator('article.ng-card')
       .filter({ has: page.getByRole('heading', { name: 'Mineradora Horizonte', exact: true }) })
       .getByRole('button', { name: /^Abrir/ })
       .click();
@@ -185,7 +185,7 @@ test('negocia pedido real, agrupa caminhões e configura abastecimento e educaç
       .getByRole('button', { name: 'Negócios', exact: true })
       .click();
     await page
-      .locator('article.neg-item')
+      .locator('article.ng-card')
       .filter({ has: page.getByRole('heading', { name: NOME, exact: true }) })
       .getByRole('button', { name: /^Abrir/ })
       .click();

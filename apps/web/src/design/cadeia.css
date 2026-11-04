@@ -1,0 +1,371 @@
+/* Sua cadeia: negócios em blocos, peças à direita, encaixes à esquerda e fios entre eles. */
+.cb {
+  display: grid;
+  gap: 14px;
+}
+.cb-cab {
+  display: grid;
+  gap: 8px;
+}
+.cb-cab h2 {
+  margin: 0;
+  font-size: 28px;
+  color: var(--creme);
+}
+.cb-cab p {
+  margin: 0;
+  max-width: 75ch;
+  font-size: 14.5px;
+  color: var(--apagado);
+}
+.cb-legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+  color: var(--apagado);
+}
+.cb-legenda li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.cb-legenda i {
+  display: inline-block;
+  width: 26px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--lavoura);
+}
+.cb-legenda i.mercado {
+  background: var(--ceu);
+}
+.cb-legenda i.mao {
+  background: var(--borda-forte);
+}
+
+.cb-palco {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 18px;
+  align-items: start;
+}
+.cb-tabuleiro {
+  position: relative;
+  min-width: 0;
+  padding: 16px 16px 18px;
+  overflow-x: auto;
+  background: var(--chapa);
+  box-shadow:
+    inset 0 0 0 2px var(--borda),
+    6px 6px 0 var(--sombra);
+}
+.cb-fios {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: visible;
+}
+.cb-fios path {
+  fill: none;
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+.cb-fios path.proprio {
+  stroke: var(--lavoura);
+  stroke-dasharray: 10 8;
+  animation: cb-corre 1.2s linear infinite;
+}
+.cb-fios path.mercado {
+  stroke: var(--ceu);
+  stroke-width: 3;
+  stroke-dasharray: 3 7;
+}
+.cb-fios path.familias {
+  stroke: var(--ouro);
+  stroke-width: 3;
+  stroke-dasharray: 2 8;
+}
+.cb-fios path.escolhido {
+  stroke-width: 7;
+}
+.cb-fios path.arrastando {
+  stroke: var(--creme);
+  stroke-dasharray: 4 6;
+}
+@keyframes cb-corre {
+  to {
+    stroke-dashoffset: -36;
+  }
+}
+.cb-colunas {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(190px, 1fr));
+  gap: 46px;
+  min-width: 900px;
+}
+.cb-coluna {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+}
+.cb-coluna > h3 {
+  margin: 0;
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 12.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--apagado);
+}
+
+/* Bloco de negócio */
+.cb-bloco {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px 12px;
+  color: var(--creme);
+  background: var(--chapa-2);
+  border: 0;
+  box-shadow:
+    inset 0 0 0 2px var(--borda),
+    inset 0 4px 0 var(--lavoura),
+    4px 4px 0 var(--sombra);
+}
+.cb-bloco.parado {
+  box-shadow:
+    inset 0 0 0 2px var(--borda),
+    inset 0 4px 0 var(--ouro),
+    4px 4px 0 var(--sombra);
+}
+.cb-bloco.fantasma {
+  text-align: left;
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--borda);
+  outline: 2px dashed var(--borda-forte);
+  outline-offset: -6px;
+  cursor: pointer;
+}
+.cb-bloco.familias {
+  box-shadow:
+    inset 0 0 0 2px var(--borda),
+    inset 0 4px 0 var(--ouro),
+    4px 4px 0 var(--sombra);
+}
+.cb-bloco > strong,
+.cb-bloco-cab strong {
+  font-family: var(--display);
+  font-stretch: 70%;
+  font-weight: 900;
+  font-size: 18px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.cb-bloco > small {
+  font-size: 13px;
+  color: var(--apagado);
+}
+.cb-bloco-cab {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding: 0;
+  text-align: left;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.cb-bloco-cab img {
+  max-width: 64px;
+  height: auto;
+}
+.cb-bloco-cab span {
+  display: grid;
+  gap: 2px;
+}
+.cb-bloco-cab small {
+  font-size: 12.5px;
+  color: var(--apagado);
+  text-decoration: underline dotted;
+}
+
+/* Encaixes (à esquerda, entalhados) e peças (à direita, com a ponta) */
+.cb-encaixes,
+.cb-pecas {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cb-encaixe,
+.cb-peca {
+  --cor: var(--borda-forte);
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+  min-height: 42px;
+  font-family: var(--fonte);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: left;
+  cursor: pointer;
+}
+.cb-encaixe small,
+.cb-peca small {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+}
+.cb-encaixe {
+  margin-left: -24px;
+  width: calc(100% + 24px);
+  padding: 5px 10px 5px 24px;
+  color: var(--creme);
+  background: var(--chapa);
+  border: 2px solid var(--cor);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 0 70%, 13px 50%, 0 30%);
+}
+.cb-encaixe small {
+  color: var(--apagado);
+}
+.cb-encaixe.mercado {
+  border-color: var(--ceu);
+}
+.cb-encaixe.mao {
+  border-style: dashed;
+  border-color: var(--borda-forte);
+}
+.cb-encaixe.falta {
+  border-style: dashed;
+  border-color: var(--brasa);
+}
+.cb-encaixe.falta small {
+  color: var(--brasa);
+}
+.cb-encaixe.escolhido {
+  background: var(--chapa-3);
+}
+.cb-peca {
+  margin-right: -22px;
+  width: calc(100% + 22px);
+  padding: 5px 30px 5px 8px;
+  color: var(--tinta);
+  background: var(--cor);
+  border: 0;
+  clip-path: polygon(
+    0 0,
+    calc(100% - 18px) 0,
+    calc(100% - 18px) 30%,
+    100% 50%,
+    calc(100% - 18px) 70%,
+    calc(100% - 18px) 100%,
+    0 100%
+  );
+  touch-action: none;
+}
+.cb-peca small {
+  color: color-mix(in srgb, var(--tinta) 75%, transparent);
+}
+.cb-peca.familias {
+  grid-template-columns: minmax(0, 1fr);
+  background: var(--ouro);
+  cursor: default;
+}
+.cb-peca.na-mao,
+.cb-peca:focus-visible,
+.cb-encaixe:focus-visible {
+  outline: 3px solid var(--creme);
+  outline-offset: 2px;
+}
+.cb-peca.sugerida {
+  animation: cb-pisca 1.4s ease-in-out infinite;
+}
+@keyframes cb-pisca {
+  50% {
+    filter: brightness(1.35);
+  }
+}
+.cb-tabuleiro.segurando .cb-encaixe:not(.serve) {
+  opacity: 0.35;
+}
+.cb-tabuleiro.segurando .cb-encaixe.serve {
+  border-style: solid;
+  border-color: var(--creme);
+  background: var(--chapa-3);
+}
+.cb-tabuleiro.segurando .cb-encaixe.serve.alvo {
+  background: color-mix(in srgb, var(--lavoura) 25%, var(--chapa));
+}
+
+/* Lado: o encaixe escolhido num papel */
+.cb-lado {
+  position: sticky;
+  top: 12px;
+}
+.cb-nota {
+  display: grid;
+  gap: 8px;
+  padding: 24px 20px 30px;
+}
+.lv-nota .cb-recado {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.1;
+}
+.cb-opcoes {
+  display: grid;
+  gap: 6px;
+}
+.cb-opcoes button {
+  display: grid;
+  gap: 2px;
+  padding: 8px 12px;
+  font-family: var(--fonte);
+  font-size: 14px;
+  font-weight: 700;
+  text-align: left;
+  color: var(--tinta);
+  background: transparent;
+  border: 2px solid var(--tinta);
+  cursor: pointer;
+}
+.cb-opcoes button small {
+  font-size: 12.5px;
+  font-weight: 500;
+}
+.cb-opcoes button:disabled {
+  cursor: default;
+  border-color: var(--lavoura-escura);
+  background: color-mix(in srgb, var(--lavoura) 30%, transparent);
+}
+.cb-nota-pe .text-button {
+  color: var(--ferrugem);
+}
+
+@media (max-width: 1400px) {
+  .cb-palco {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .cb-lado {
+    position: static;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cb-fios path.proprio,
+  .cb-peca.sugerida {
+    animation: none;
+  }
+}

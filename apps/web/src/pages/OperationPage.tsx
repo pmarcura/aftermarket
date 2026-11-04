@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { BotaoProduto } from '../components/BotaoProduto';
 import { Minus, Plus, ShoppingCart } from 'lucide-react';
 import { useGame, cr, num } from '../lib/game';
@@ -37,7 +37,20 @@ export function OperationPage() {
       (x) =>
         x.companyId === actor && ['industry', 'farm', 'mine', 'warehouse'].includes(x.category),
     );
-  const [tab, setTab] = useState('Produção'),
+  // Quem abre a unidade pode pedir uma aba (Meus negócios leva direto a Vendas, por exemplo).
+  // O pedido fica preso à unidade aberta: a troca de unidade abaixo só o usa para ela.
+  const pedida = useRef<{ id?: string; aba: string } | null>(null);
+  const [tab, setTab] = useState(() => {
+      try {
+        const aba = sessionStorage.getItem('aftermarket.loja.aba');
+        sessionStorage.removeItem('aftermarket.loja.aba');
+        if (aba && ['Vendas', 'Equipe', 'Finanças', 'Abastecimento'].includes(aba))
+          pedida.current = { id: e?.id, aba };
+      } catch {
+        /* sem armazenamento: abre na primeira aba */
+      }
+      return pedida.current?.aba ?? 'Produção';
+    }),
     [recipeId, setRecipe] = useState('steel-bars'),
     [queue, setQueue] = useState(false),
     [cycles, setCycles] = useState(1);
@@ -48,7 +61,13 @@ export function OperationPage() {
   const options = world.season.config.recipes.filter((r) => r.category === e?.category),
     recipe = options.find((r) => r.id === recipeId) ?? options[0];
   useEffect(() => {
-    setTab(e?.category === 'warehouse' ? 'Estoque' : 'Produção');
+    setTab(
+      pedida.current && pedida.current.id === e?.id
+        ? pedida.current.aba
+        : e?.category === 'warehouse'
+          ? 'Estoque'
+          : 'Produção',
+    );
     setRecipe(e?.specialization ?? '');
     setQueue(false);
     setAuto(false);

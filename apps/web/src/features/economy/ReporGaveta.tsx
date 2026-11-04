@@ -10,9 +10,12 @@ import { ProdutoArte } from './Vitrine';
 import { unidade } from './Carga';
 import { avaliar, type Avaliacao } from './compra';
 import { horasDeJogo } from '../inicio/tempo';
+import { FRETE_ALTO, nomeTransportadora } from '../loja/frete';
 import { products, type Offer } from '../../../../../packages/simulation/src/model';
+import { availableStock } from '../../../../../packages/simulation/src/operations';
 import { dailyNeed } from '../../../../../packages/simulation/src/supply';
 import { freeCash } from '../../../../../packages/simulation/src/design';
+import { distanceKm } from '../../../../../packages/simulation/src/geometry';
 import '../../design/gaveta.css';
 
 interface Opcao {
@@ -24,6 +27,9 @@ interface Opcao {
   distanciaKm: number;
   horas: number;
 }
+
+/** Estimativa grosseira do custo de um caminhão por km de estrada (só ordena os fornecedores). */
+const VIAGEM_POR_KM = 480 * 1.3;
 
 const PRAZOS = [
   { dias: 3, rotulo: 'Pouco', ajuda: 'o básico' },
@@ -55,7 +61,11 @@ function Gaveta() {
   const [mexeu, setMexeu] = useState(false);
   const [quantidade, setQuantidade] = useState(() => Math.max(1, Math.ceil(porDia * 7)));
   const [escolhida, setEscolhida] = useState('');
-  const [enviado, setEnviado] = useState<{ horas: number; total: number } | null>(null);
+  const [enviado, setEnviado] = useState<{
+    horas: number;
+    total: number;
+    quantidade: number;
+  } | null>(null);
 
   useEffect(() => {
     const no = ref.current!;
@@ -76,23 +86,34 @@ function Gaveta() {
           e &&
           e.enabled &&
           e.id !== loja.id &&
-          (e.inventory[produto] ?? 0) > 0
+          availableStock(world, e, produto) >= 1
         );
       }).length,
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [world.revision, produto, loja.id],
   );
 
+  const destinoXY = world.properties.find((x) => x.id === loja.propertyId)!.coordinates;
+  const naPortaAproximado = (o: Offer, e: (typeof world.establishments)[number]) => {
+    const xy = world.properties.find((x) => x.id === e.propertyId)!.coordinates;
+    const carga = Math.max(1, Math.min(quantidade, Math.floor(availableStock(world, e, produto))));
+    return o.price + (distanceKm(xy, destinoXY) * VIAGEM_POR_KM) / carga;
+  };
   const opcoes = useMemo<Opcao[]>(() => {
     const candidatas = world.offers
       .filter((o) => o.product === produto)
       .map((o) => ({ o, e: world.establishments.find((x) => x.id === o.establishmentId)! }))
-      .filter(({ e }) => e && e.enabled && e.id !== loja.id && (e.inventory[produto] ?? 0) > 0)
-      .sort((a, b) => a.o.price - b.o.price)
+      .filter(
+        ({ e }) => e && e.enabled && e.id !== loja.id && availableStock(world, e, produto) >= 1,
+      )
+      // Pré-seleção pelo custo na porta, não só pelo preço: a viagem custa quase o mesmo com
+      // pouca ou muita carga, e o mais barato a 1.500 km perde para o atacado da cidade.
+      .map((c) => ({ ...c, naPorta: naPortaAproximado(c.o, c.e) }))
+      .sort((a, b) => a.naPorta - b.naPorta)
       .slice(0, 8);
     const lista: Opcao[] = [];
     for (const { o, e } of candidatas) {
-      const q = Math.min(quantidade, Math.floor(e.inventory[produto] ?? 0));
+      const q = Math.min(quantidade, Math.floor(availableStock(world, e, produto)));
       const aval = avaliar(world, actor, o, loja, q);
       if (!aval?.frete) continue;
       const p = world.properties.find((x) => x.id === e.propertyId)!;
@@ -141,11 +162,31 @@ function Gaveta() {
     (m, o) => (!m || o.distanciaKm < m.distanciaKm ? o : m),
     undefined,
   );
+  // Frete por unidade do fornecedor escolhido em cada tamanho de carga: a viagem custa quase o
+  // mesmo com 8 ou com 300 unidades, então levar mais é o que derruba o frete de cada uma.
+  const fretePorTamanho = useMemo(() => {
+    if (!atual) return [];
+    const vendedor = world.establishments.find((e) => e.id === atual.oferta.establishmentId);
+    const livre = vendedor ? Math.floor(availableStock(world, vendedor, produto)) : 0;
+    return PRAZOS.map((p) => {
+      const q = Math.max(1, Math.min(livre, Math.ceil(porDia * p.dias)));
+      const a = avaliar(world, actor, atual.oferta, loja, q);
+      return a?.frete ? { quantidade: q, porUnidade: a.frete.price / q } : undefined;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [world.revision, atual?.oferta.id, porDia]);
+  const freteAtual = atual?.aval.frete?.price ?? 0;
+  const parteFrete = atual ? freteAtual / Math.max(1, atual.aval.total) : 0;
+  const maisBaratoNoFrete = fretePorTamanho
+    .filter((x): x is NonNullable<typeof x> => Boolean(x))
+    .filter((x) => x.quantidade > (atual?.aval.quantidade ?? 0))
+    .sort((a, b) => a.porUnidade - b.porUnidade)[0];
   const rota = useRouteStatus(atual?.propriedadeId, loja.propertyId);
   const caixa = freeCash(world, actor);
   const total = atual?.aval.total ?? 0;
   const semCaixa = total > caixa;
-  const duraDias = (estoque + quantidade) / porDia;
+  const cotada = atual?.aval.quantidade ?? 0;
+  const duraDias = (estoque + cotada) / porDia;
 
   const fechar = () => openRepor(null);
   const despachar = async () => {
@@ -164,6 +205,7 @@ function Gaveta() {
     );
     if (ok)
       setEnviado({
+        quantidade: atual.aval.quantidade,
         horas: atual.horas,
         total: atual.aval.total,
       });
@@ -196,7 +238,7 @@ function Gaveta() {
             <h2>O caminhão saiu!</h2>
             <p>
               <b>
-                {num(quantidade)} {unidade(produto, quantidade)}
+                {num(enviado.quantidade)} {unidade(produto, enviado.quantidade)}
               </b>{' '}
               de {info.name} a caminho da {loja.name}.
             </p>
@@ -240,7 +282,7 @@ function Gaveta() {
                   ) : (
                     <>Hoje a prateleira está vazia.</>
                   )}{' '}
-                  Vende cerca de {num(porDia, 1)} por dia.
+                  Com a equipe de hoje, vende cerca de {num(porDia, 1)} por dia.
                 </p>
               </div>
             </header>
@@ -248,7 +290,7 @@ function Gaveta() {
             <section className="gaveta-bloco" aria-labelledby="gaveta-quanto">
               <h3 id="gaveta-quanto">Quanto você quer?</h3>
               <div className="gaveta-prazos" role="radiogroup" aria-label="Quantidade">
-                {PRAZOS.map((p) => (
+                {PRAZOS.map((p, i) => (
                   <button
                     key={p.dias}
                     role="radio"
@@ -261,7 +303,11 @@ function Gaveta() {
                       {num(Math.min(teto, Math.ceil(porDia * p.dias)))}{' '}
                       {unidade(produto, Math.min(teto, Math.ceil(porDia * p.dias)))}
                     </span>
-                    <small>{p.ajuda}</small>
+                    <small>
+                      {fretePorTamanho[i]
+                        ? `frete ${cr(fretePorTamanho[i]!.porUnidade)} cada`
+                        : p.ajuda}
+                    </small>
                   </button>
                 ))}
               </div>
@@ -288,9 +334,26 @@ function Gaveta() {
                   {num(quantidade)} {unidade(produto, quantidade)}
                 </b>
               </label>
+              {cotada > 0 && cotada < quantidade && (
+                <p role="status">
+                  O fornecedor tem {num(cotada)} {unidade(produto, cotada)} livres. O total abaixo é
+                  para essa quantidade.
+                </p>
+              )}
               <p className="gaveta-dura">
                 Com isso o estoque dura cerca de <b>{num(duraDias, 1)} dias</b>.
               </p>
+              {atual && parteFrete > FRETE_ALTO && (
+                <p className="gaveta-frete-alto" role="status">
+                  <IconePixel nome="caminhao" tamanho={24} />
+                  <span>
+                    O frete é <b>{num(parteFrete * 100)}%</b> do que você vai pagar: a viagem custa{' '}
+                    {cr(freteAtual, 0)} para levar {num(cotada)} {unidade(produto, cotada)}.
+                    {maisBaratoNoFrete &&
+                      ` Levando ${num(maisBaratoNoFrete.quantidade)}, o frete cai para ${cr(maisBaratoNoFrete.porUnidade)} por unidade.`}
+                  </span>
+                </p>
+              )}
             </section>
 
             <section className="gaveta-bloco" aria-labelledby="gaveta-quem">
@@ -345,12 +408,31 @@ function Gaveta() {
                           <span className="gaveta-preco">
                             <IconePixel nome="moeda" tamanho={22} />
                             <b>{cr(o.aval.naPorta)}</b>
-                            <small>cada, já com frete</small>
+                            <small>
+                              cada: {cr(o.aval.mercadoria / o.aval.quantidade)} +{' '}
+                              <span
+                                className={
+                                  (o.aval.frete?.price ?? 0) / Math.max(1, o.aval.total) >
+                                  FRETE_ALTO
+                                    ? 'frete-alto'
+                                    : ''
+                                }
+                              >
+                                {cr((o.aval.frete?.price ?? 0) / o.aval.quantidade)} de frete
+                              </span>
+                            </small>
                           </span>
                           <span className="gaveta-prazo">
                             <IconePixel nome="prazo" tamanho={18} /> ~{num(o.horas)} h · total{' '}
-                            {cr(o.aval.total, 0)}
+                            {cr(o.aval.total, 0)} · {num(o.aval.quantidade)}{' '}
+                            {unidade(produto, o.aval.quantidade)}
                           </span>
+                          {o.aval.frete && (
+                            <span className="gaveta-leva">
+                              <IconePixel nome="caminhao" tamanho={18} /> Leva:{' '}
+                              {nomeTransportadora(world, o.aval.frete.carrierId, actor)}
+                            </span>
+                          )}
                         </button>
                       </li>
                     );
@@ -363,6 +445,11 @@ function Gaveta() {
               <div className="gaveta-conta">
                 <span>Total a pagar</span>
                 <b>{cr(total, 0)}</b>
+                {atual && (
+                  <small>
+                    mercadoria {cr(atual.aval.mercadoria, 0)} · frete {cr(freteAtual, 0)}
+                  </small>
+                )}
                 <small className={semCaixa ? 'falta' : ''}>
                   {semCaixa
                     ? `Faltam ${cr(total - caixa, 0)} no caixa`
@@ -374,7 +461,11 @@ function Gaveta() {
                 disabled={!atual || semCaixa || pending || (!rota.ready && rota.loading)}
                 onClick={despachar}
               >
-                {rota.loading ? 'Traçando a estrada…' : 'Despachar caminhão'}
+                {pending
+                  ? 'Confirmando compra…'
+                  : rota.loading
+                    ? 'Traçando a estrada…'
+                    : 'Despachar caminhão'}
               </button>
               {rota.error && <p className="gaveta-erro">{rota.error}</p>}
             </footer>

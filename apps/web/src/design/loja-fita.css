@@ -165,7 +165,7 @@
 }
 .talao ul li {
   display: grid;
-  grid-template-columns: 22px minmax(0, 1fr) auto;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
   gap: 8px;
   align-items: center;
   padding: 5px 0;

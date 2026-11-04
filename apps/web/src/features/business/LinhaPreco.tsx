@@ -86,14 +86,13 @@ export function LinhaPreco({
   const faltam = lucroMelhor - lucro;
   const menorCidade = m.concorrentes[0]?.preco;
 
-  // Marcos do trilho: cada um com a sua ilustração; os que ficam perto sobem para a segunda fileira.
+  // Marcos do trilho: cada um com a sua ilustração.
   const marcos: {
     chave: string;
     icone: NomeIcone;
     rotulo: string;
     nome: string;
     v: number;
-    linha: number;
   }[] = [
     ...(m.custo > inicio
       ? [
@@ -103,7 +102,6 @@ export function LinhaPreco({
             rotulo: 'Seu custo',
             nome: 'custo',
             v: m.custo,
-            linha: 0,
           },
         ]
       : []),
@@ -115,7 +113,6 @@ export function LinhaPreco({
             rotulo: `Menor em ${m.cidade}`,
             nome: m.concorrentes[0].loja.name,
             v: menorCidade,
-            linha: 0,
           },
         ]
       : []),
@@ -127,7 +124,6 @@ export function LinhaPreco({
             rotulo: 'Menor do mapa',
             nome: 'mapa',
             v: m.menorDoPais,
-            linha: 0,
           },
         ]
       : []),
@@ -137,16 +133,15 @@ export function LinhaPreco({
       rotulo: 'Preço justo',
       nome: 'justo',
       v: m.justo,
-      linha: 0,
     },
   ].sort((a, b) => a.v - b.v);
-  // Quem está perto de outro marco sobe uma fileira, até três.
-  for (let i = 1; i < marcos.length; i++)
-    marcos[i].linha = Math.min(
-      3,
-      marcos.slice(0, i).filter((o) => x(marcos[i].v) - x(o.v) < 9).length,
-    );
-  const fileiras = Math.max(0, ...marcos.map((mk) => mk.linha));
+  // Marcos perto um do outro viram um grupo só, lado a lado sobre uma haste, em vez de uma torre.
+  const grupos: (typeof marcos)[] = [];
+  for (const mk of marcos) {
+    const ultimo = grupos.at(-1);
+    if (ultimo && x(mk.v) - x(ultimo[0].v) < 10) ultimo.push(mk);
+    else grupos.push([mk]);
+  }
 
   // Uma frase que diz o que fazer.
   const veredito =
@@ -227,22 +222,31 @@ export function LinhaPreco({
       )}
 
       <div className="item-corpo">
+        <p className={`item-veredito ${veredito.tom}`}>{veredito.texto}</p>
         <div className="item-pista">
-          <p className={`item-veredito ${veredito.tom}`}>{veredito.texto}</p>
           <div className="pista" aria-label="Trilho de preço">
-            <div className="pista-marcos" style={{ height: 46 + fileiras * 34 }}>
-              {marcos.map((mk) => (
-                <button
-                  type="button"
-                  key={mk.chave}
-                  className={`pista-marco ${referencia === mk.chave ? 'aberto' : ''}`}
-                  style={{ left: `${x(mk.v)}%`, ['--n' as string]: mk.linha }}
-                  title={`${mk.rotulo}: ${cr(mk.v)}. Clique para entender.`}
-                  aria-label={`${mk.rotulo}: ${cr(mk.v)}. Ver detalhes`}
-                  onClick={() => abrirReferencia(mk.chave)}
+            <div className="pista-marcos">
+              {grupos.map((g) => (
+                <span
+                  key={g[0].chave}
+                  className="pista-grupo"
+                  style={{
+                    left: `${x(g.reduce((n, mk) => n + mk.v, 0) / g.length)}%`,
+                  }}
                 >
-                  <IconePixel nome={mk.icone} tamanho={28} />
-                </button>
+                  {g.map((mk) => (
+                    <button
+                      type="button"
+                      key={mk.chave}
+                      className={`pista-marco ${referencia === mk.chave ? 'aberto' : ''}`}
+                      title={`${mk.rotulo}: ${cr(mk.v)}. Clique para entender.`}
+                      aria-label={`${mk.rotulo}: ${cr(mk.v)}. Ver detalhes`}
+                      onClick={() => abrirReferencia(mk.chave)}
+                    >
+                      <IconePixel nome={mk.icone} tamanho={26} />
+                    </button>
+                  ))}
+                </span>
               ))}
             </div>
             <div className="pista-trilho" style={{ background: gradiente }}>
@@ -291,7 +295,7 @@ export function LinhaPreco({
                     <small>{mk.rotulo}</small>
                     <b>{cr(mk.v)}</b>
                   </span>
-                  <em aria-hidden="true">{referencia === mk.chave ? 'fechar' : 'entender'}</em>
+                  <em aria-hidden="true">{referencia === mk.chave ? 'fechar' : 'por quê?'}</em>
                 </button>
               </li>
             ))}
@@ -396,24 +400,35 @@ export function LinhaPreco({
             </div>
           </div>
           <div className="item-botoes">
-            {Math.abs(preco - m.melhor) > passo && (
+            {preco === salvo ? (
+              <span className="item-salvo">
+                <IconePixel nome="estrela" tamanho={18} /> Este é o preço na prateleira
+              </span>
+            ) : (
+              <>
+                <BotaoEspera
+                  className="primary"
+                  esperando="Salvando…"
+                  disabled={pending}
+                  onClick={() =>
+                    run(
+                      { type: 'setPrice', establishmentId: loja.id, product, price: preco },
+                      `Preço de ${products[product].name} ajustado para ${cr(preco)}.`,
+                    )
+                  }
+                >
+                  Salvar {cr(preco)}
+                </BotaoEspera>
+                <button className="text-button" onClick={() => setPreco(salvo)}>
+                  Voltar para {cr(salvo)}
+                </button>
+              </>
+            )}
+            {veredito.tom !== 'bom' && Math.abs(preco - m.melhor) > passo && (
               <button className="text-button" onClick={() => setPreco(m.melhor)}>
-                Testar {cr(m.melhor)}
+                Testar o de maior lucro: {cr(m.melhor)}
               </button>
             )}
-            <BotaoEspera
-              className="primary"
-              esperando="Salvando…"
-              disabled={pending || preco === salvo}
-              onClick={() =>
-                run(
-                  { type: 'setPrice', establishmentId: loja.id, product, price: preco },
-                  `Preço de ${products[product].name} ajustado para ${cr(preco)}.`,
-                )
-              }
-            >
-              {preco === salvo ? 'Preço salvo' : `Salvar ${cr(preco)}`}
-            </BotaoEspera>
           </div>
         </div>
       </div>

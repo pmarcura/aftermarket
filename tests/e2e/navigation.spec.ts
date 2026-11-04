@@ -108,7 +108,7 @@ for (const viewport of [
       await menu.getByRole('button', { name: 'Negócios', exact: true }).click();
       await expect(page.getByRole('heading', { name: 'Meus negócios', exact: true })).toBeVisible();
       const card = page
-        .locator('article.neg-item')
+        .locator('article.ng-card')
         .filter({ has: page.getByRole('heading', { name: store.name, exact: true }) });
       await card.getByRole('button', { name: /^Abrir/ }).click();
       await expect(

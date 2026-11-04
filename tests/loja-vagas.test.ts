@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createWorld } from '../packages/simulation/src/seed';
 import { vagasDaLoja } from '../apps/web/src/features/loja/vagas';
 
-// Vagas vazias da prateleira (spec 008, tela 2): produtos que a cidade procura e a loja não tem.
+// Vagas vazias da prateleira (spec 011, tela 2): produtos que a cidade procura e a loja não tem.
 describe('vagas da loja', () => {
   const world = createWorld(Date.UTC(2026, 0, 5, 12));
   const loja = world.establishments.find(

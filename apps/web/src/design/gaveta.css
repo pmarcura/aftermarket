@@ -269,7 +269,7 @@
 }
 .gaveta-preco small {
   grid-column: 1 / -1;
-  font-size: 11.5px;
+  font-size: 13px;
   color: var(--apagado);
 }
 .gaveta-vazio {
@@ -433,4 +433,32 @@
   max-width: 38ch;
   font-size: 14px;
   line-height: 1.5;
+}
+
+/* Frete à vista: quem leva, quanto do preço é frete e quando vale levar mais. */
+.gaveta-leva {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--apagado);
+}
+.gaveta-preco .frete-alto {
+  color: var(--brasa);
+  font-weight: 700;
+}
+.gaveta-frete-alto {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  margin: 0;
+  padding: 10px 12px;
+  font-size: 14.5px;
+  line-height: 1.4;
+  background: color-mix(in srgb, var(--brasa) 12%, var(--chapa));
+  box-shadow: inset 4px 0 0 var(--brasa);
+}
+.gaveta-frete-alto b {
+  color: var(--brasa);
 }

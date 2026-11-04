@@ -9,13 +9,15 @@ import { unidade } from '../economy/Carga';
 import { contaDaPrateleira } from '../business/precificacao';
 import { LinhaPreco } from '../business/LinhaPreco';
 import { Fita } from './Fita';
-import { Ficha } from '../inicio/pecas';
+import { IconePixel } from '../../components/IconePixel';
+import { openShipmentsTo } from '../../../../../packages/simulation/src/indexes';
 import {
   products,
   type Establishment,
   type ProductId,
 } from '../../../../../packages/simulation/src/model';
 import { RegraAutomatica, useRegra } from './RegraAutomatica';
+import { FRETE_ALTO, freteRecente, type FreteDoProduto } from './frete';
 import { vagasDaLoja, type Vaga } from './vagas';
 import '../../design/inicio-ajustes.css';
 import '../../design/loja-balcao.css';
@@ -23,10 +25,8 @@ import '../../design/loja-balcao.css';
 type Item = ReturnType<typeof contaDaPrateleira>['itens'][number];
 type Vista = 'prateleira' | 'lista';
 
-const CAIXAS = 12;
-/** Caixas cheias: a prateleira cheia equivale a uma semana de vendas. */
-const cheiasDe = (dias: number) =>
-  dias === Infinity ? CAIXAS : Math.min(CAIXAS, Math.round((dias / 7) * CAIXAS));
+/** Uma semana de vendas enche a barra do estoque. */
+const SEMANA = 7;
 const tomDe = (dias: number) => (dias < 1 ? 'brasa' : dias < 3 ? 'ouro' : 'lavoura');
 const duraTexto = (dias: number) =>
   dias === 0
@@ -43,71 +43,121 @@ function lerVista(): Vista {
   }
 }
 
-function Caixas({ dias }: { dias: number }) {
-  const cheias = cheiasDe(dias);
+/** Quanto do estoque resta, de vazio a uma semana de vendas, numa barra contínua. */
+function BarraEstoque({ dias }: { dias: number }) {
+  const parte = dias === Infinity ? 1 : Math.min(1, dias / SEMANA);
   return (
-    <span className={`bl-caixas tom-${tomDe(dias)}`} aria-hidden="true">
-      {Array.from({ length: CAIXAS }, (_, i) => (
-        <i key={i} className={i < cheias ? '' : 'vazia'} style={{ ['--i' as string]: i }} />
-      ))}
+    <span className={`bl-barra-estoque tom-${tomDe(dias)}`} aria-hidden="true">
+      <i style={{ width: `${Math.max(parte > 0 ? 4 : 0, parte * 100)}%` }} />
     </span>
   );
+}
+
+interface Estado {
+  tom: 'brasa' | 'ouro' | 'lavoura' | 'ceu';
+  palavra: string;
+}
+
+/** Uma palavra de estado por produto, na ordem do que mais pede atenção. */
+function estadoDe(x: Item, aCaminho: number): Estado {
+  if (x.estoque <= 0)
+    return aCaminho > 0
+      ? { tom: 'ceu', palavra: 'A caminho' }
+      : { tom: 'brasa', palavra: 'Esgotado' };
+  if (x.lucro < 0) return { tom: 'brasa', palavra: 'Dá prejuízo' };
+  if (x.dias < 2) return { tom: 'ouro', palavra: 'Acabando' };
+  return { tom: 'lavoura', palavra: 'Vendendo' };
 }
 
 function SlotProduto({
   loja,
   x,
+  frete,
   aberto,
   onAbrir,
 }: {
   loja: Establishment;
   x: Item;
+  frete?: FreteDoProduto;
   aberto: boolean;
   onAbrir: () => void;
 }) {
-  const { openRepor } = useGame();
+  const { world, openRepor } = useGame();
   const { regra, ligada } = useRegra(loja, x.id);
   const nome = products[x.id].name;
+  const aCaminho = openShipmentsTo(world, loja.id, x.id).reduce((n, s) => n + s.quantity, 0);
+  const estado = estadoDe(x, aCaminho);
+  const repor = () => openRepor({ destinationId: loja.id, product: x.id });
+  // Uma ação principal: repor o que acabou, rever o preço do que dá prejuízo.
+  const principal =
+    estado.palavra === 'Esgotado' || estado.palavra === 'Acabando'
+      ? { rotulo: 'Repor', agir: repor }
+      : estado.palavra === 'Dá prejuízo'
+        ? { rotulo: 'Rever preço', agir: onAbrir }
+        : null;
   return (
-    <li className={`bl-slot tom-${tomDe(x.dias)} ${aberto ? 'aberto' : ''}`}>
-      <button className="bl-slot-corpo" onClick={onAbrir} aria-pressed={aberto}>
+    <li className={`bl-card tom-${estado.tom} ${aberto ? 'aberto' : ''}`}>
+      <button className="bl-card-abrir" onClick={onAbrir} aria-pressed={aberto}>
         <span className="sr-only">Abrir o painel do balcão de {nome}. </span>
-        <span className="bl-topo">
+        <span className="bl-palco">
           <span className="bl-sprite lv-adesivo">
             <ProdutoArte product={x.id} escala={2} />
           </span>
-          <span className="lv-preco bl-preco">{cr(x.preco)}</span>
         </span>
-        <strong className="bl-nome">{nome}</strong>
-        <Caixas dias={x.dias} />
-        <span className="bl-dura">
-          <span>
-            {num(x.estoque)} {unidade(x.id, x.estoque)}
-          </span>
-          <b>{duraTexto(x.dias)}</b>
+        <span className="bl-cabeca">
+          <span className="bl-estado">{estado.palavra}</span>
+          <strong className="bl-nome">{nome}</strong>
+          <span className="lv-preco bl-preco">{cr(x.preco)}</span>
+          {frete && frete.parte > FRETE_ALTO && (
+            <span className="bl-frete-alto">
+              <IconePixel nome="caminhao" tamanho={16} /> Frete {num(frete.parte * 100)}% do custo
+            </span>
+          )}
         </span>
       </button>
-      <div className="bl-chips">
-        <Ficha rotulo="Vende" tom="ceu" valor={`~${num(x.vende)} / dia`} />
-        <Ficha rotulo="Lucro" tom="lavoura" valor={`${cr(x.lucro, 0)} / dia`} />
-      </div>
-      <div className="bl-acoes">
+
+      <dl className="bl-numeros">
+        <div className={`bl-lucro ${x.estoque <= 0 ? 'nada' : x.lucro < 0 ? 'neg' : 'pos'}`}>
+          <dt>Lucro por dia</dt>
+          <dd>{x.estoque <= 0 ? '—' : `${x.lucro < 0 ? '−' : '+'}${cr(Math.abs(x.lucro), 0)}`}</dd>
+        </div>
+        <div>
+          <dt>Vende</dt>
+          <dd>~{num(x.vende)}/dia</dd>
+        </div>
+        <div className="bl-estoque">
+          <dt>Estoque</dt>
+          <dd>
+            {num(x.estoque)} {unidade(x.id, x.estoque)}
+            <small>
+              {x.estoque <= 0 && aCaminho > 0 ? `${num(aCaminho)} na estrada` : duraTexto(x.dias)}
+            </small>
+          </dd>
+          <BarraEstoque dias={x.dias} />
+        </div>
+      </dl>
+
+      <footer className="bl-card-pe">
+        {principal ? (
+          <button className="primary" onClick={principal.agir}>
+            {principal.rotulo}
+          </button>
+        ) : (
+          <button className="secondary" onClick={repor}>
+            Repor
+          </button>
+        )}
         <button
-          className={x.dias < 1 ? 'primary' : 'secondary'}
-          onClick={() => openRepor({ destinationId: loja.id, product: x.id })}
-        >
-          Repor
-        </button>
-        <button
-          className="bl-auto"
+          className={`bl-auto ${ligada ? 'ligada' : regra ? 'pausada' : ''}`}
           onClick={onAbrir}
-          aria-label={`Regra de repor ${nome} sozinho: ${ligada ? 'ligada' : regra ? 'pausada' : 'desligada'}. Abrir o painel`}
+          aria-label={`Repor ${nome} sozinho: ${ligada ? 'ligado' : regra ? 'pausado' : 'desligado'}. Abrir o painel`}
         >
-          <Carimbo tom={ligada ? 'lavoura' : regra ? 'ouro' : 'ceu'} giro={ligada ? -3 : 2}>
-            {ligada ? 'auto: ligado' : regra ? 'auto: pausado' : 'auto: desligado'}
-          </Carimbo>
+          <IconePixel nome="caminhao" tamanho={20} />
+          <span>
+            Repõe sozinho <b>{ligada ? 'ligado' : regra ? 'pausado' : 'desligado'}</b>
+          </span>
         </button>
-      </div>
+      </footer>
     </li>
   );
 }
@@ -116,37 +166,43 @@ function SlotVazio({ loja, v }: { loja: Establishment; v: Vaga }) {
   const { openRepor } = useGame();
   const nome = products[v.id].name;
   return (
-    <li className="bl-slot vazio">
-      <div className="bl-slot-corpo estatico">
-        <span className="bl-topo">
+    <li className={`bl-card vazio tom-${v.aCaminho ? 'ceu' : 'brasa'}`}>
+      <div className="bl-card-abrir estatico">
+        <span className="bl-palco">
           <span className="bl-sprite">
             <ProdutoArte product={v.id} escala={2} />
           </span>
-          <Carimbo tom={v.aCaminho ? 'ceu' : 'brasa'} giro={-4}>
-            {v.aCaminho ? 'a caminho' : 'vaga vazia'}
-          </Carimbo>
         </span>
-        <strong className="bl-nome">{nome}</strong>
-        <p className="bl-procura">
-          A cidade procura ~{num(v.procuraDia)} {unidade(v.id, v.procuraDia)} por dia e a loja não
-          vende {v.aCaminho ? 'ainda' : 'nenhum'}.
-        </p>
-        <p className={`bl-perda ${v.aCaminho ? 'ok' : ''}`}>
-          {v.aCaminho ? 'Já pedido' : `−${cr(v.lucroDia, 0)}`}
-          <small>{v.aCaminho ? 'a carga está na estrada' : 'por dia, estimativa'}</small>
-        </p>
+        <span className="bl-cabeca">
+          <span className="bl-estado">{v.aCaminho ? 'A caminho' : 'Vaga vazia'}</span>
+          <strong className="bl-nome">{nome}</strong>
+          <small className="bl-conta">
+            compra a {cr(v.custo)} e vende a {cr(v.preco)}
+          </small>
+        </span>
       </div>
-      <div className="bl-acoes">
+
+      <dl className="bl-numeros">
+        <div className={`bl-lucro ${v.aCaminho ? 'nada' : 'neg'}`}>
+          <dt>{v.aCaminho ? 'Já pedido' : 'Deixa de ganhar'}</dt>
+          <dd>{v.aCaminho ? 'na estrada' : `−${cr(v.lucroDia, 0)}/dia`}</dd>
+        </div>
+        <div>
+          <dt>A cidade procura</dt>
+          <dd>
+            ~{num(v.procuraDia)} {unidade(v.id, v.procuraDia)}/dia
+          </dd>
+        </div>
+      </dl>
+
+      <footer className="bl-card-pe">
         <button
           className={v.aCaminho ? 'secondary' : 'primary'}
           onClick={() => openRepor({ destinationId: loja.id, product: v.id })}
         >
           {v.aCaminho ? 'Pedir mais' : 'Mandar buscar'}
         </button>
-        <small className="bl-conta">
-          compra a {cr(v.custo)} e vende a {cr(v.preco)}
-        </small>
-      </div>
+      </footer>
     </li>
   );
 }
@@ -242,7 +298,7 @@ function Lista({
                 </span>
               </td>
               <td>
-                <Caixas dias={x.dias} />
+                <BarraEstoque dias={x.dias} />
                 <small>
                   {num(x.estoque)} · {duraTexto(x.dias)}
                 </small>
@@ -296,6 +352,11 @@ export function Balcao({ loja }: { loja: Establishment }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [world.revision, loja.id],
   );
+  const fretes = useMemo(
+    () => freteRecente(world, loja.id),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [world.revision, loja.id],
+  );
   const vagas = useMemo(
     () => vagasDaLoja(world, loja),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -344,8 +405,6 @@ export function Balcao({ loja }: { loja: Establishment }) {
 
   const ganho = conta.melhor - conta.agora;
   const linhas: (Item | Vaga)[] = [...conta.itens, ...vagas];
-  const fileiras: (Item | Vaga)[][] = [];
-  for (let i = 0; i < linhas.length; i += 2) fileiras.push(linhas.slice(i, i + 2));
 
   return (
     <div className="bl">
@@ -413,23 +472,22 @@ export function Balcao({ loja }: { loja: Establishment }) {
       <div className="bl-area">
         <div className="bl-prat">
           {vista === 'prateleira' ? (
-            fileiras.map((fila, k) => (
-              <ul className="bl-tabua" key={k}>
-                {fila.map((x) =>
-                  'estoque' in x ? (
-                    <SlotProduto
-                      key={x.id}
-                      loja={loja}
-                      x={x}
-                      aberto={atual?.id === x.id}
-                      onAbrir={() => abrir(x.id)}
-                    />
-                  ) : (
-                    <SlotVazio key={x.id} loja={loja} v={x} />
-                  ),
-                )}
-              </ul>
-            ))
+            <ul className="bl-grade">
+              {linhas.map((x) =>
+                'estoque' in x ? (
+                  <SlotProduto
+                    key={x.id}
+                    loja={loja}
+                    x={x}
+                    frete={fretes.get(x.id)}
+                    aberto={atual?.id === x.id}
+                    onAbrir={() => abrir(x.id)}
+                  />
+                ) : (
+                  <SlotVazio key={x.id} loja={loja} v={x} />
+                ),
+              )}
+            </ul>
           ) : (
             <Lista
               loja={loja}

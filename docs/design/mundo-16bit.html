@@ -189,7 +189,7 @@
           cidade abre o tabuleiro.
         </p>
         <div class="tela">
-          <canvas id="mundo" width="480" height="270"></canvas>
+          <canvas id="mundo" width="960" height="540"></canvas>
           <div class="hud">
             <span>Dia <b>12</b></span
             ><span>Caixa <b>R$ 1,2 mi</b></span
@@ -335,108 +335,185 @@
           g = c.getContext('2d'),
           W = c.width,
           H = c.height,
-          T = 6; // tile de 6 px no mock (32 px no jogo)
-        let seed = 7;
+          T = 2; // "pixel" de 2 px num quadro de 960×540 (equivale a 16 px por tile no jogo)
+        let seed = 11;
         const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-        const noise = (x, y) =>
-          Math.sin(x * 0.07 + 1.3) * Math.cos(y * 0.09 + 0.4) + Math.sin((x + y) * 0.05) * 0.6;
+        // Ruído suave (soma de senos) para relevo, mata e costa: formas orgânicas, não quadriculado.
+        const n2 = (x, y) =>
+          Math.sin(x * 0.011 + 1.3) * Math.cos(y * 0.015 + 0.4) +
+          0.5 * Math.sin(x * 0.027 - y * 0.019) +
+          0.25 * Math.sin((x + y) * 0.045 + 2.0) +
+          0.12 * Math.sin(x * 0.09) * Math.cos(y * 0.08);
+        const costa = (x) => H * 0.8 + Math.sin(x * 0.012) * 26 + Math.cos(x * 0.031) * 9;
+        const rio = (x) => H * 0.46 + Math.sin(x * 0.009) * 46 + Math.cos(x * 0.023) * 12;
+        const px = (x, y, col) => {
+          g.fillStyle = col;
+          g.fillRect(x, y, T, T);
+        };
+        const dither = (x, y) => ((x / T + y / T) & 1) === 0;
         for (let y = 0; y < H; y += T)
           for (let x = 0; x < W; x += T) {
-            const n = noise(x, y),
+            const n = n2(x, y),
               r = rnd();
-            let col = r > 0.5 ? PAL.campo : PAL.campo2;
-            if (n > 0.9) col = r > 0.5 ? PAL.serra : PAL.serra2;
-            else if (n > 0.35) col = r > 0.5 ? PAL.mata : PAL.mata2;
-            if (y > H * 0.78 + Math.sin(x * 0.03) * 10) col = r > 0.5 ? PAL.agua : PAL.agua2;
-            g.fillStyle = col;
-            g.fillRect(x, y, T, T);
+            let col = r > 0.93 ? PAL.campo2 : PAL.campo;
+            // trama de pasto
+            if (((x / T) % 7 === 0 && (y / T) % 5 === 0) || r > 0.985) col = PAL.campo2;
+            if (n > 0.55)
+              col = dither(x, y) && n < 0.68 ? PAL.campo2 : r > 0.9 ? PAL.mata2 : PAL.mata;
+            if (n > 1.15)
+              col = dither(x, y) && n < 1.3 ? PAL.mata2 : r > 0.85 ? PAL.serra2 : PAL.serra;
+            if (n > 1.55) col = r > 0.6 ? '#c9b89a' : PAL.serra2; // cume claro
+            const dc = y - costa(x);
+            if (dc > 0)
+              col =
+                dc < T * 2
+                  ? '#d8c48a'
+                  : dc < T * 5 && dither(x, y)
+                    ? PAL.agua2
+                    : r > 0.94
+                      ? PAL.agua2
+                      : PAL.agua;
+            const dr = Math.abs(y - rio(x));
+            if (dr < 7)
+              col = dr < 4 ? (r > 0.9 ? PAL.agua2 : PAL.agua) : dither(x, y) ? PAL.agua2 : col;
+            px(x, y, col);
           }
-        // rio
-        for (let x = 0; x < W; x += T) {
-          const y =
-            Math.round((H * 0.45 + Math.sin(x * 0.02) * 30 + Math.cos(x * 0.05) * 8) / T) * T;
-          g.fillStyle = PAL.agua;
-          g.fillRect(x, y, T, T * 2);
-        }
+        // sombra das serras (lado sudeste) para dar volume
+        for (let y = T; y < H; y += T)
+          for (let x = T; x < W; x += T)
+            if (n2(x, y) > 1.15 && n2(x - T * 3, y - T * 3) <= 1.15 && dither(x, y))
+              px(x, y, '#5e5240');
         const cidades = [
-          ['Campinas', 0.5, 0.52, 3, 'alerta'],
+          ['Campinas', 0.5, 0.5, 3, 'alerta'],
           ['São Paulo', 0.62, 0.62, 3],
-          ['Ribeirão', 0.42, 0.28, 2],
+          ['Ribeirão Preto', 0.42, 0.26, 2],
           ['Curitiba', 0.36, 0.86, 2, 'alerta'],
-          ['Uberlândia', 0.2, 0.18, 2],
-          ['Londrina', 0.14, 0.6, 2],
-          ['Jundiaí', 0.56, 0.58, 1],
-          ['Itabira', 0.86, 0.22, 1],
-          ['BH', 0.8, 0.3, 3],
+          ['Uberlândia', 0.2, 0.16, 2],
+          ['Londrina', 0.14, 0.58, 2],
+          ['Jundiaí', 0.56, 0.57, 1],
+          ['Itabira', 0.86, 0.2, 1],
+          ['Belo Horizonte', 0.8, 0.3, 3],
           ['Criciúma', 0.3, 0.95, 1],
+          ['Sorocaba', 0.47, 0.6, 1],
         ];
         const P = (c) => [Math.round((c[1] * W) / T) * T, Math.round((c[2] * H) / T) * T];
-        const road = (a, b, col, w) => {
+        // Estrada: curva suave (quadrática) entre as cidades, desenhada pixel a pixel com contorno.
+        const road = (a, b, tipo) => {
           const [x0, y0] = P(a),
             [x1, y1] = P(b);
-          const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)) / T;
+          const mx = (x0 + x1) / 2 + (y1 - y0) * 0.18,
+            my = (y0 + y1) / 2 - (x1 - x0) * 0.18;
+          const n = Math.hypot(x1 - x0, y1 - y0) / T;
+          const pts = [];
           for (let i = 0; i <= n; i++) {
-            const x = Math.round((x0 + ((x1 - x0) * i) / n) / T) * T,
-              y = Math.round((y0 + ((y1 - y0) * i) / n) / T) * T;
-            g.fillStyle = PAL.sombra;
-            g.fillRect(x - 1, y - 1, w * T + 2, w * T + 2);
-            g.fillStyle = col;
-            g.fillRect(x, y, w * T, w * T);
+            const t = i / n,
+              x = (1 - t) * (1 - t) * x0 + 2 * (1 - t) * t * mx + t * t * x1,
+              y = (1 - t) * (1 - t) * y0 + 2 * (1 - t) * t * my + t * t * y1;
+            pts.push([Math.round(x / T) * T, Math.round(y / T) * T]);
           }
+          const w = tipo === 'rodovia' ? 2 : 1;
+          for (const [x, y] of pts)
+            (px(x - T, y - T, PAL.sombra), px(x + w * T, y + w * T, PAL.sombra));
+          for (const [x, y] of pts)
+            for (let i = 0; i < w; i++)
+              for (let j = 0; j < w; j++)
+                px(x + i * T, y + j * T, tipo === 'rodovia' ? PAL.rodovia : PAL.estrada);
+          if (tipo === 'rodovia') pts.forEach(([x, y], i) => i % 6 < 3 && px(x, y, '#fff6c8'));
         };
         const liga = [
-          [0, 1, 1],
-          [0, 2, 1],
-          [0, 6, 1],
-          [1, 3, 1],
-          [3, 9, 0],
-          [2, 4, 0],
-          [4, 8, 1],
-          [8, 7, 0],
-          [0, 5, 0],
-          [1, 8, 1],
+          [0, 1, 'rodovia'],
+          [0, 2, 'rodovia'],
+          [0, 6, 'rodovia'],
+          [6, 1, 'rodovia'],
+          [1, 3, 'rodovia'],
+          [3, 9, 'estrada'],
+          [2, 4, 'estrada'],
+          [4, 8, 'rodovia'],
+          [8, 7, 'estrada'],
+          [0, 5, 'estrada'],
+          [1, 8, 'rodovia'],
+          [0, 10, 'estrada'],
+          [10, 1, 'estrada'],
         ];
-        for (const [a, b, r] of liga)
-          road(cidades[a], cidades[b], r ? PAL.rodovia : PAL.estrada, r ? 1 : 1);
+        for (const [a, b, t] of liga) road(cidades[a], cidades[b], t);
+        // Cidade: aglomerado de prédios (quantidade pelo tamanho), telhados, sombra e placa.
+        const predio = (x, y, w, h, cor, telhado) => {
+          for (let i = 0; i < w; i++)
+            for (let j = 0; j < h; j++)
+              px(x + i * T, y - j * T, (i + j) % 3 === 0 ? PAL.cidade2 : cor);
+          for (let i = 0; i < w; i++) px(x + i * T, y - h * T, telhado);
+          px(x + w * T, y - h * T + T, PAL.sombra);
+          for (let j = 0; j < h; j++) px(x + w * T, y - j * T, '#8a7d62');
+          for (let i = 0; i < w; i += 2)
+            for (let j = 1; j < h; j += 2) px(x + i * T, y - j * T, PAL.luz);
+        };
         for (const cd of cidades) {
           const [x, y] = P(cd),
-            s = cd[3];
-          g.fillStyle = PAL.sombra;
-          g.fillRect(x - s * T - 1, y - s * T - 1, s * 2 * T + 2, s * 2 * T + 2);
-          for (let i = -s; i < s; i++)
-            for (let j = -s; j < s; j++) {
-              g.fillStyle = (i + j) % 2 ? PAL.cidade : PAL.cidade2;
-              g.fillRect(x + i * T, y + j * T, T, T);
-            }
-          g.fillStyle = PAL.telhado;
-          g.fillRect(x - T, y - s * T - T, 2 * T, T);
+            s = cd[3],
+            n = [6, 11, 18][s - 1],
+            R = 9 + s * 7;
+          // chão urbano
+          for (let dy = -R; dy <= R; dy += T)
+            for (let dx = -R - 4; dx <= R + 4; dx += T)
+              if (dx * dx * 0.6 + dy * dy < R * R)
+                px(x + dx, y + dy, dither(dx, dy) ? '#6e6a5a' : '#7c7868');
+          seed = 100 + cd[0].length * 7;
+          const preds = [];
+          for (let k = 0; k < n; k++)
+            preds.push({
+              x: x - R + Math.floor((rnd() * (2 * R - 6)) / T) * T,
+              y: y - R / 2 + Math.floor((rnd() * R) / T) * T + 6,
+              w: 2 + Math.floor(rnd() * 2),
+              h: 2 + Math.floor(rnd() * (2 + s)),
+            });
+          preds.sort((a, b) => a.y - b.y);
+          for (const p of preds)
+            predio(p.x, p.y, p.w, p.h, PAL.cidade, s === 3 && p.h > 3 ? '#b54a3a' : PAL.telhado);
+          if (s === 3) {
+            // torre marcante na metrópole
+            predio(x + 2, y + 2, 2, 7, '#e8dcc0', '#c8382a');
+          }
           if (cd[4]) {
             g.fillStyle = PAL.sombra;
-            g.fillRect(x + s * T - 2, y - s * T - 8, 10, 10);
+            g.fillRect(x + R - 2, y - R - 10, 12, 12);
             g.fillStyle = PAL.alerta;
-            g.fillRect(x + s * T - 1, y - s * T - 7, 8, 8);
+            g.fillRect(x + R, y - R - 8, 8, 8);
+            g.fillStyle = PAL.luz;
+            g.fillRect(x + R + 3, y - R - 6, 2, 3);
+            g.fillRect(x + R + 3, y - R - 2, 2, 1);
           }
+          g.font = 'bold 11px monospace';
           g.fillStyle = PAL.sombra;
-          g.font = '7px monospace';
-          g.fillText(cd[0], x - s * T + 1, y + s * T + 9);
+          for (const [ox, oy] of [
+            [1, 0],
+            [-1, 0],
+            [0, 1],
+            [0, -1],
+            [1, 1],
+          ])
+            g.fillText(cd[0], x - R + ox, y + R + 12 + oy);
           g.fillStyle = PAL.cidade;
-          g.fillText(cd[0], x - s * T, y + s * T + 8);
+          g.fillText(cd[0], x - R, y + R + 12);
         }
-        // caminhões
-        const trucks = [
-          [0.55, 0.57],
-          [0.46, 0.4],
-          [0.7, 0.45],
-        ];
-        for (const t of trucks) {
-          const [x, y] = P([0, t[0], t[1]]);
+        // caminhões (sprite 10×6 com cabine e carga, sombra)
+        const truck = (fx, fy, dir) => {
+          const [x, y] = P([0, fx, fy]);
           g.fillStyle = PAL.sombra;
-          g.fillRect(x - 1, y - 1, 10, 7);
-          g.fillStyle = PAL.caminhao;
-          g.fillRect(x, y, 5, 5);
-          g.fillStyle = PAL.alerta;
-          g.fillRect(x + 5, y + 1, 3, 4);
-        }
+          g.fillRect(x - 1, y - 1, 14, 9);
+          g.fillStyle = '#cfcfc0';
+          g.fillRect(x, y, 8, 6);
+          g.fillStyle = '#9a9a8a';
+          g.fillRect(x, y + 4, 8, 2);
+          g.fillStyle = dir ? '#d94a2e' : '#3a7ad9';
+          g.fillRect(dir ? x + 8 : x - 4, y + 1, 4, 5);
+          g.fillStyle = PAL.sombra;
+          g.fillRect(x + 1, y + 6, 2, 2);
+          g.fillRect(x + 6, y + 6, 2, 2);
+        };
+        truck(0.545, 0.545, 1);
+        truck(0.455, 0.39, 0);
+        truck(0.705, 0.44, 1);
+        truck(0.33, 0.56, 0);
       })();
 
       // ---------- Tabuleiro da cidade ----------

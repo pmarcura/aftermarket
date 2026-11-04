@@ -12,6 +12,7 @@ import { totalMoney } from '../../../packages/simulation/src/invariants';
 import type { RoadAccessUpdate } from './road-access';
 import {
   JOURNAL_TABLE,
+  STORAGE_FORMAT,
   readJournal,
   readJournalSeq,
   readWorldSnapshot,
@@ -52,7 +53,7 @@ export function createStore(
   if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true });
   const db = new DatabaseSync(path);
   db.exec(
-    `PRAGMA journal_mode=WAL; PRAGMA journal_size_limit=67108864; PRAGMA busy_timeout=5000; CREATE TABLE IF NOT EXISTS worlds (id INTEGER PRIMARY KEY CHECK(id=1), state TEXT NOT NULL); CREATE TABLE IF NOT EXISTS receipts (id TEXT PRIMARY KEY, actor TEXT NOT NULL, command TEXT NOT NULL); ${JOURNAL_TABLE};`,
+    'PRAGMA journal_mode=WAL; PRAGMA journal_size_limit=67108864; PRAGMA busy_timeout=5000; CREATE TABLE IF NOT EXISTS worlds (id INTEGER PRIMARY KEY CHECK(id=1), state TEXT NOT NULL); CREATE TABLE IF NOT EXISTS receipts (id TEXT PRIMARY KEY, actor TEXT NOT NULL, command TEXT NOT NULL);',
   );
   const existed = Boolean(db.prepare('SELECT id FROM worlds WHERE id=1').get());
   let backedUp = false;
@@ -103,14 +104,22 @@ export function createStore(
   const format = db
     .prepare("SELECT json_extract(state, '$.storageFormat') AS format FROM worlds WHERE id=1")
     .get()?.format;
-  // Formato 2 guarda registros encerrados à parte; mundos 0 e 1 migram uma vez, com backup antes.
-  const packed = format === 2;
+  // Formato 3 = registros encerrados à parte + diário. Mundos nos formatos 0, 1 e 2 migram uma vez,
+  // depois de validados (acima) e com backup antes da primeira mudança de esquema (AGENTS.md).
+  const packed = format === STORAGE_FORMAT;
   if (!packed && existed && !backedUp && path !== ':memory:') {
-    const nome = format === 1 ? 'pre-frozen-storage' : 'pre-ledger-storage';
+    const nome =
+      format === 2
+        ? 'pre-journal-storage'
+        : format === 1
+          ? 'pre-frozen-storage'
+          : 'pre-ledger-storage';
     const backup = resolve(dirname(path), 'backups', `${nome}-${Date.now()}.sqlite`);
     mkdirSync(dirname(backup), { recursive: true });
     db.exec(`VACUUM INTO '${backup.replaceAll("'", "''")}'`);
   }
+  // Migração explícita do diário: a tabela só nasce aqui, depois da validação e do backup.
+  db.exec(JOURNAL_TABLE);
   const saveSnapshot = createSnapshotWriter(db);
   saveSnapshot.conhecer(world);
   let committed: (() => void)[] = [];

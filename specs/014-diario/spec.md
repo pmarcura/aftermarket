@@ -30,6 +30,9 @@ clonava históricos que só crescem (77 ms).
   vivo, confere a soma do dinheiro e tira uma foto nova.
 - **R5 Cópia para desfazer enxuta.** Históricos que só crescem (`marketHistory`,
   `consumptionHistory`, `supplyHistory`, `botActivity`) e `routes` entram por cópia rasa.
+- **R7 Migração explícita (formato 3).** A tabela do diário só nasce depois da validação do mundo e
+  do backup (`pre-journal-storage`); a foto grava `storageFormat: 3`. Código antigo, que lê até o
+  formato 2, recusa abrir um mundo com diário em vez de gravar uma foto por cima dele.
 - **R6 Continuidade com a foto.** Cada linha guarda a revisão do mundo logo antes dela. Ao abrir, só
   repete o que continua exatamente da foto. Foto mais nova que o diário (gravada por um código que
   não conhece o diário) descarta o diário velho com aviso; buraco no meio recusa abrir.

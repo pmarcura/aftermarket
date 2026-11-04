@@ -21,20 +21,24 @@ const LISTAS = Object.keys(ENCERRADO) as Lista[];
 const encerrado = (lista: Lista, item: unknown) =>
   (ENCERRADO[lista] as (x: unknown) => boolean)(item);
 
-/** Read the original snapshot and storage formats 1 and 2 without writing or migrating. */
+/**
+ * Lê a foto original e os formatos de armazenamento 1, 2 e 3 sem gravar nem migrar.
+ * 1: extrato em tabela própria. 2: + registros encerrados à parte (spec 013). 3: + diário (spec 014).
+ * Código antigo, que lê até o 2, recusa um mundo com diário em vez de gravar uma foto por cima dele.
+ */
 export function readWorldSnapshot(db: DatabaseSync): World {
   const row = db.prepare('SELECT state FROM worlds WHERE id=1').get() as
     { state: string } | undefined;
   if (!row) throw new Error('Mundo não encontrado.');
   const stored = JSON.parse(row.state);
-  if (stored.storageFormat !== undefined && ![1, 2].includes(stored.storageFormat))
+  if (stored.storageFormat !== undefined && ![1, 2, STORAGE_FORMAT].includes(stored.storageFormat))
     throw new Error('Formato de armazenamento não suportado.');
   if (stored.storageFormat >= 1) {
     stored.ledger = [];
     for (const entry of db.prepare('SELECT payload FROM world_ledger ORDER BY seq').iterate())
       stored.ledger.push(JSON.parse(entry.payload as string));
   }
-  if (stored.storageFormat === 2) {
+  if (stored.storageFormat >= 2) {
     const congelados = new Map<string, string>();
     for (const r of db.prepare('SELECT kind, id, payload FROM world_frozen').iterate())
       congelados.set(`${r.kind}:${r.id}`, r.payload as string);
@@ -62,6 +66,9 @@ export type JournalEntry =
 /** Linha gravada: a mudança e a revisão do mundo logo antes dela (continuidade com a foto). */
 export type JournalLine = JournalEntry & { rev?: number };
 
+/** Formato gravado por este código: 3 = formato 2 + diário. */
+export const STORAGE_FORMAT = 3;
+
 export const JOURNAL_TABLE =
   'CREATE TABLE IF NOT EXISTS world_journal (seq INTEGER PRIMARY KEY AUTOINCREMENT, entry TEXT NOT NULL)';
 
@@ -75,7 +82,9 @@ export function readJournalSeq(db: DatabaseSync): number {
 
 /** Linhas do diário que a foto ainda não cobre, em ordem. */
 export function readJournal(db: DatabaseSync, after: number): JournalLine[] {
-  db.exec(JOURNAL_TABLE);
+  // Ler nunca cria a tabela: ela só nasce na migração explícita, depois do backup.
+  if (!db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='world_journal'").get())
+    return [];
   return (
     db.prepare('SELECT entry FROM world_journal WHERE seq > ? ORDER BY seq').all(after) as {
       entry: string;
@@ -180,7 +189,13 @@ export function createSnapshotWriter(db: DatabaseSync) {
       descongelar.run(lista, id);
     }
     db.prepare('UPDATE worlds SET state=? WHERE id=1').run(
-      JSON.stringify({ ...world, ...listas, ledger: [], storageFormat: 2, journalSeq }),
+      JSON.stringify({
+        ...world,
+        ...listas,
+        ledger: [],
+        storageFormat: STORAGE_FORMAT,
+        journalSeq,
+      }),
     );
     // Advance the cursors only AFTER the caller commits. A failed receipt must roll it back too.
     const last = world.ledger.at(-1)?.id;

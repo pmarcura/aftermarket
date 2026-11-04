@@ -13,4 +13,6 @@
       diário. Motivo: trocar o ramo da pasta com o servidor de design ligado rodou um código sem
       diário, que gravou foto por cima; ao voltar, o diário velho foi repetido sobre ela (as
       passagens de tempo foram recusadas, o dinheiro fechou).
+- [x] T10 Migração explícita (R7): formato 3, backup `pre-journal-storage` antes de criar a
+      tabela; mundo recusado não ganha a tabela. Revisão do PR #10.
 - [ ] T8 Revisão do John no PR.

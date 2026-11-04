@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
@@ -174,6 +174,56 @@ describe('diário + foto', () => {
       expect(store.read().revision).toBe(foto.revision);
       expect(store.read().updatedAt).toBe(foto.updatedAt);
       expect(linhasDoDiario(path).n).toBe(0);
+    } finally {
+      try {
+        store.close();
+      } catch {}
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+  it('mundo no formato 2 migra para o 3 com backup antes de criar o diário', () => {
+    const { dir, path } = abrirPasta();
+    let store = createStore(path, { scenario: 'baseline' });
+    try {
+      const mundo = structuredClone(store.read());
+      store.close();
+      // Volta o arquivo ao formato 2 (antes do diário): sem tabela e sem journalSeq.
+      const db = new DatabaseSync(path);
+      db.exec(
+        "DROP TABLE world_journal; UPDATE worlds SET state = json_remove(json_set(state, '$.storageFormat', 2), '$.journalSeq')",
+      );
+      db.close();
+      store = createStore(path, { scenario: 'baseline' });
+      expect(store.read()).toEqual(mundo);
+      const backups = readdirSync(join(dir, 'backups')).filter((n) =>
+        n.startsWith('pre-journal-storage-'),
+      );
+      expect(backups).toHaveLength(1);
+      // O backup é o arquivo de antes da migração: formato 2, sem diário.
+      const copia = new DatabaseSync(join(dir, 'backups', backups[0]), { readOnly: true });
+      const nomes = (
+        copia.prepare("SELECT name FROM sqlite_master WHERE type='table'").all() as {
+          name: string;
+        }[]
+      ).map((t) => t.name);
+      const formato = (
+        copia.prepare("SELECT json_extract(state, '$.storageFormat') AS f FROM worlds").get() as {
+          f: number;
+        }
+      ).f;
+      copia.close();
+      expect(nomes).not.toContain('world_journal');
+      expect(formato).toBe(2);
+      store.close();
+      const final = new DatabaseSync(path, { readOnly: true });
+      expect(
+        (
+          final.prepare("SELECT json_extract(state, '$.storageFormat') AS f FROM worlds").get() as {
+            f: number;
+          }
+        ).f,
+      ).toBe(3);
+      final.close();
     } finally {
       try {
         store.close();

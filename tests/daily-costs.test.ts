@@ -17,7 +17,8 @@ const AT = Date.UTC(2026, 9, 26, 12);
 const calendario = (w: Parameters<typeof gameCalendar>[0], at: number) =>
   Math.floor(gameCalendar(w, at).date.getTime() / DAY_MS);
 
-describe('custos fixos em uma linha por dia', () => {
+// Simulam dias de jogo: limite maior, como os outros testes de simulação (CI é mais lento).
+describe('custos fixos em uma linha por dia', { timeout: 30000 }, () => {
   it('3 dias: no máximo uma linha por estabelecimento, natureza e dia, e o extrato fecha com os saldos', () => {
     const w = createScenario(AT, 'baseline', 0);
     const antes = new Map(w.companies.map((c) => [c.id, c.balance])),

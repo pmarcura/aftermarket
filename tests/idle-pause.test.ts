@@ -9,7 +9,8 @@ import { createStore } from '../apps/server/src/store';
 const MIN = 60_000,
   HORA = 60 * MIN;
 
-describe('pausa de mundo ocioso', () => {
+// Simulam dias de jogo: limite maior, como os outros testes de simulação (CI é mais lento).
+describe('pausa de mundo ocioso', { timeout: 30000 }, () => {
   it('para sem atividade, não pula o tempo parado e segue assim depois de reabrir', () => {
     const dir = mkdtempSync(join(tmpdir(), 'aftermarket-pausa-'));
     const path = join(dir, 'mundo.sqlite');
@@ -58,9 +59,10 @@ describe('pausa de mundo ocioso', () => {
   it('sem a opção, o mundo nunca para (mundo principal)', () => {
     const store = createStore(':memory:', { scenario: 'baseline' });
     const t0 = Date.now();
-    store.tick(t0 + 10 * HORA);
+    // 10 min reais sem ninguém (10× o limite de pausa do outro teste): o mundo segue andando.
+    store.tick(t0 + 10 * MIN);
     expect(store.parado()).toBe(false);
-    expect(store.read().updatedAt).toBeGreaterThan(t0 + 9 * HORA);
+    expect(store.read().updatedAt).toBeGreaterThan(t0 + 9 * MIN);
     expect(store.read().pausedMs).toBeUndefined();
     store.close();
   });

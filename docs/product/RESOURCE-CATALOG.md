@@ -10,26 +10,26 @@ Estrutura: **válida**. Equilíbrio: **não demonstrado**. 20 itens / 14 receita
 
 | Item / ID                            | Unidade; kg; m³  |      Abertura | Receita de origem           | Uso produtivo                      | Destino final alcançável | Estoque; ofertado; fornecedores |
 | ------------------------------------ | ---------------- | ------------: | --------------------------- | ---------------------------------- | ------------------------ | ------------------------------- |
-| Minério de ferro / `iron`            | t; 1.000; 0,45   |     R$ 500,00 | iron-extraction             | steel-bars                         | iron → steel             | 976,7; 148,5; 4                 |
-| Carvão mineral / `coal`              | t; 1.000; 1,3    |   R$ 1.850,00 | coal-extraction             | steel-bars, steel-recycling        | coal → steel             | 237; 80; 1                      |
-| Aço em barras / `steel`              | t; 1.000; 0,15   |   R$ 5.000,00 | steel-bars, steel-recycling | utensils, truck-heavy, truck-light | steel                    | 89,8; 0; 0                      |
-| Soja em grão / `soy`                 | t; 1.000; 1,4    |   R$ 2.100,00 | soy-harvest                 | soy-oil                            | soy → oil                | 280,5; 37,5; 1                  |
+| Minério de ferro / `iron`            | t; 1.000; 0,45   |     R$ 500,00 | iron-extraction             | steel-bars                         | iron → steel             | 1.001; 148,5; 4                 |
+| Carvão mineral / `coal`              | t; 1.000; 1,3    |   R$ 1.850,00 | coal-extraction             | steel-bars, steel-recycling        | coal → steel             | 245; 80; 1                      |
+| Aço em barras / `steel`              | t; 1.000; 0,15   |   R$ 5.000,00 | steel-bars, steel-recycling | utensils, truck-heavy, truck-light | steel                    | 97,76; 0; 0                     |
+| Soja em grão / `soy`                 | t; 1.000; 1,4    |   R$ 2.100,00 | soy-harvest                 | soy-oil                            | soy → oil                | 321; 37,5; 1                    |
 | Farelo de soja / `soymeal`           | kg; 1; 0,0017    |       R$ 2,05 | soy-oil                     | feed-mill                          | soymeal → feed → milk    | 6.000; 0; 0                     |
-| Óleo de soja 1 L / `oil`             | un; 0,92; 0,0013 |      R$ 10,50 | soy-oil                     | —                                  | oil                      | 32.504; 2.600; 1                |
-| Arroz 5 kg / `rice`                  | un; 5; 0,007     |      R$ 28,90 | rice-harvest                | —                                  | rice                     | 21.498; 2.000; 1                |
-| Feijão 1 kg / `beans`                | un; 1; 0,0015    |      R$ 11,45 | beans-harvest               | —                                  | beans                    | 57.162; 1.500; 1                |
-| Açúcar 5 kg / `sugar`                | un; 5; 0,006     |      R$ 23,00 | sugar-harvest               | —                                  | sugar                    | 15.702; 1.500; 1                |
-| Leite 1 L / `milk`                   | un; 1,03; 0,0012 |       R$ 6,17 | milk-production             | —                                  | milk                     | 324.215; 1.800; 1               |
+| Óleo de soja 1 L / `oil`             | un; 0,92; 0,0013 |      R$ 10,50 | soy-oil                     | —                                  | oil                      | 40.942; 2.600; 1                |
+| Arroz 5 kg / `rice`                  | un; 5; 0,007     |      R$ 28,90 | rice-harvest                | —                                  | rice                     | 26.694; 2.000; 1                |
+| Feijão 1 kg / `beans`                | un; 1; 0,0015    |      R$ 11,45 | beans-harvest               | —                                  | beans                    | 69.795; 1.500; 1                |
+| Açúcar 5 kg / `sugar`                | un; 5; 0,006     |      R$ 23,00 | sugar-harvest               | —                                  | sugar                    | 19.322; 1.500; 1                |
+| Leite 1 L / `milk`                   | un; 1,03; 0,0012 |       R$ 6,17 | milk-production             | —                                  | milk                     | 409.613; 1.800; 1               |
 | Sucata de aço / `scrap`              | t; 1.000; 2,5    |   R$ 1.200,00 |                             | steel-recycling                    | scrap → steel            | 0; 0; 0                         |
-| Utensílios de aço (kit) / `utensils` | un; 5; 0,02      |      R$ 82,50 | utensils                    | —                                  | utensils                 | 11.522; 0; 0                    |
+| Utensílios de aço (kit) / `utensils` | un; 5; 0,02      |      R$ 82,50 | utensils                    | —                                  | utensils                 | 13.770; 0; 0                    |
 | Caminhão pesado 30 t / `truckHeavy`  | un; 9.000; 60    | R$ 332.000,00 | truck-heavy                 | —                                  | truckHeavy               | 2; 0; 0                         |
 | Caminhão leve 8 t / `truckLight`     | un; 3.500; 25    | R$ 160.000,00 | truck-light                 | —                                  | truckLight               | 3; 0; 0                         |
-| Semente de soja / `soySeed`          | t; 1.000; 1,4    |   R$ 5.250,00 | soy-harvest                 | soy-harvest                        | soySeed → soy → oil      | 12,825; 0; 0                    |
-| Ração para gado / `feed`             | kg; 1; 0,0016    |       R$ 3,30 | feed-mill                   | milk-production                    | feed → milk              | 91.552,5; 0; 0                  |
-| Vaca leiteira / `cow`                | un; 550; 3       |   R$ 2.500,00 | milk-production             | —                                  | cow                      | 2.250; 0; 0                     |
-| Semente de arroz / `riceSeed`        | kg; 1; 0,0017    |       R$ 7,30 | rice-harvest                | rice-harvest                       | riceSeed → rice          | 3.400; 0; 0                     |
-| Semente de feijão / `beanSeed`       | kg; 1; 0,0015    |      R$ 13,90 | beans-harvest               | beans-harvest                      | beanSeed → beans         | 4.200; 0; 0                     |
-| Muda de cana / `caneSeedling`        | t; 1.000; 1,6    |     R$ 250,00 | sugar-harvest               | sugar-harvest                      | caneSeedling → sugar     | 144; 0; 0                       |
+| Semente de soja / `soySeed`          | t; 1.000; 1,4    |   R$ 5.250,00 | soy-harvest                 | soy-harvest                        | soySeed → soy → oil      | 14,025; 0; 0                    |
+| Ração para gado / `feed`             | kg; 1; 0,0016    |       R$ 3,30 | feed-mill                   | milk-production                    | feed → milk              | 106.740; 0; 0                   |
+| Vaca leiteira / `cow`                | un; 550; 3       |   R$ 2.500,00 | milk-production             | —                                  | cow                      | 2.700; 0; 0                     |
+| Semente de arroz / `riceSeed`        | kg; 1; 0,0017    |       R$ 7,30 | rice-harvest                | rice-harvest                       | riceSeed → rice          | 3.800; 0; 0                     |
+| Semente de feijão / `beanSeed`       | kg; 1; 0,0015    |      R$ 13,90 | beans-harvest               | beans-harvest                      | beanSeed → beans         | 4.600; 0; 0                     |
+| Muda de cana / `caneSeedling`        | t; 1.000; 1,6    |     R$ 250,00 | sugar-harvest               | sugar-harvest                      | caneSeedling → sugar     | 160; 0; 0                       |
 
 Todos os itens podem ser anunciados no atacado e negociados/transferidos com estoque, caixa, espaço e frota. Somente os cinco itens nos canais familiares são efetivamente consumidos pelas lojas. Aço é consumido pelos editais; farelo depende da produção de leite. Um caminho no grafo não garante demanda, margem, rota disponível ou compra.
 

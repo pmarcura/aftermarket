@@ -8,9 +8,10 @@ paleta e estas regras, e substituem uma a uma as peças provisórias.
 
 ## Regras fixas
 
-- Vista **top-down levemente inclinada** no mundo (como a referência); **isométrica 2:1** no
-  tabuleiro da cidade.
-- Tile de **32 × 32 px** no mundo; peça isométrica com base de 64 × 32 px na cidade. Múltiplos
+- Vista **top-down levemente inclinada** no mundo (referência do mapa) e **top-down** na cidade
+  (referência `references/16bit/cidade-referencia-john.png`, 03/11): ruas de asfalto com faixas,
+  prédios vistos de cima com fachada sugerida, telhados variados, árvores, estacionamentos.
+- Tile de **32 × 32 px** no mundo e na cidade (prédios ocupam 1×1 a 3×3 tiles). Múltiplos
   inteiros; sem anti-aliasing; sem gradientes; sombras por trama (dither) ou cor chapada.
 - Paleta única, abaixo. Qualquer peça nova usa só estas cores (até 32). Fundo transparente nas
   peças soltas (PNG).
@@ -65,7 +66,7 @@ paleta e estas regras, e substituem uma a uma as peças provisórias.
 | `mundo/caminhao-{pesado,leve}-{n,ne,l,se,s,so,o,no}.png` | caminhão 16 px                                | 2 × 8                |
 | `mundo/arvore-{1..3}.png`, `mundo/pedra.png`             | detalhes soltos                               | 4                    |
 
-### Cidade (isométrico 64 × 32 de base)
+### Cidade (top-down, 32 px)
 
 | Arquivo                                                                           | Peça                         | Variações                       |
 | --------------------------------------------------------------------------------- | ---------------------------- | ------------------------------- |
@@ -108,11 +109,12 @@ Base comum, colar antes de cada prompt:
    a lado, fundo transparente: vila (6 casas de telhado terracota e uma igreja), cidade (20
    prédios baixos, praça, telhados mistos) e metrópole (40 prédios, 3 torres altas com janelas
    acesas, viaduto). Mesma paleta; chão urbano em pedra clara #cdb796; contorno escuro."
-3. **Prédios isométricos (cidade).** "Peças isométricas 2:1 com base de 64 × 32 px, fundo
-   transparente, lado a lado em uma fileira: loja de varejo (toldo, vitrine) em 3 tamanhos;
-   fábrica com chaminé em 3 tamanhos; fazenda com talhões e sede em 3 tamanhos; mina com boca e
-   esteira; armazém com silos; pátio de transportadora com caminhão. Sombra projetada para
-   sudeste. Mesma paleta e contorno."
+3. **Peças da cidade (top-down).** "Folha de tiles de 32 px, vista de cima como num jogo de SNES
+   urbano: ruas de asfalto cinza com faixas brancas e calçada (reta, curva, cruzamento, T);
+   estacionamento com vagas; praça com árvores; quadra de esporte; prédios de 2, 4, 8 e 12 andares
+   em 1, 2 e 3 tiles de largura, telhado com caixa d'água e ar-condicionado, fachada sugerida na
+   borda inferior; loja com toldo; fábrica com telhado serrilhado e pátio; galpão; sede de fazenda
+   com talhões; mina com boca e esteira. Fundo transparente, grade exata."
 4. **Caminhões.** "Sprite sheet de um caminhão pesado e um leve, 16 × 16 px no mundo (8
    direções) e 32 × 32 isométrico na cidade (4 direções), cabine vermelha #b54a3a, baú
    #cfcfc0, fundo transparente, grade exata."

@@ -1,6 +1,6 @@
 # Spec 009 · Mundo 16-bit
 
-Estado: **aprovada em direção** (John, 03/11/2026); detalhes abertos marcados com _(decidir)_. Mock visual: [`docs/design/mundo-16bit.html`](../../docs/design/mundo-16bit.html). Depende da 008 (a cidade clicável vira a porta do tabuleiro).
+Estado: **aprovada em direção** (John, 03/11/2026); detalhes abertos marcados com _(decidir)_. Referência de estilo escolhida pelo John (03/11): `docs/design/references/16bit/mundo-referencia-john.png`; direção de arte, paleta, catálogo e prompts em [`docs/design/PECAS-16BIT.md`](../../docs/design/PECAS-16BIT.md). O mock por código (`docs/design/mundo-16bit.html`) serviu só para combinar leitura e escala; foi julgado feio e o visual passa a ser definido pelas peças geradas. Depende da 008 (a cidade clicável vira a porta do tabuleiro).
 
 ## Direção (decisão do John)
 

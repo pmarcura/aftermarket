@@ -553,8 +553,7 @@ export function WorldMap({
         );
       if (roof && instance.getLayer('buildings'))
         instance.setPaintProperty('buildings', 'fill-pattern', 'town-roof');
-      if (!mini && asphalt && container.current)
-        detachTown.current = attachPixelTown(instance, container.current, PIXEL_RATIO);
+      if (!mini && asphalt) attachPixelTown(instance).then((off) => (detachTown.current = off));
       if (instance.getLayer('water'))
         instance.setPaintProperty('water', 'fill-pattern', 'water-pixel');
       if (instance.getLayer('natural-landcover'))
@@ -792,7 +791,7 @@ export function WorldMap({
             instance.getSource('properties') as GeoJSONSource
           ).getClusterExpansionZoom(feature.properties!.cluster_id as number);
           instance.easeTo({
-            center: (feature.geometry as { coordinates: [number, number] }).coordinates,
+            center: (feature.geometry as unknown as { coordinates: [number, number] }).coordinates,
             zoom,
             duration: 500,
           });

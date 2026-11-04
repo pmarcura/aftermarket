@@ -486,15 +486,3 @@
   image-rendering: pixelated;
   image-rendering: crisp-edges;
 }
-
-/* Spec 009: cidade de perto com as peças do pacote, canvas por cima do mapa. */
-.main-map canvas.pixel-town {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
-  z-index: 2;
-}

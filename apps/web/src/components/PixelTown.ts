@@ -1,24 +1,20 @@
 /**
  * Spec 009 · cidade de perto com as peças do pacote (MODERN TOWN SET), sobre a geometria real.
  *
- * Nos zooms altos, cada contorno real de prédio (camada `building` do OSM) recebe um sprite do
- * pacote escolhido pelo tamanho e pela forma do lote (casinha, sobrado, prédio, galpão), girado
- * no eixo do terreno. É um canvas por cima do mapa, desenhado em meia resolução e ampliado sem
- * suavização, como o próprio mapa.
+ * Arquitetura (04/11, depois do teste do John): os prédios são uma **camada de símbolos do
+ * próprio MapLibre**. Quando os tiles de `building` chegam, cada contorno real vira um ponto com
+ * a peça escolhida (pelo tamanho e forma do lote), o ângulo do terreno e a escala; o mapa desenha
+ * na GPU, com arraste, zoom e inércia iguais ao resto. Nada de canvas por cima nem redesenho.
  *
- * Desempenho (04/11): o desenho só acontece quando o mapa para (moveend/idle); durante o arraste
- * a imagem anterior desliza junto por CSS, e há um teto de prédios por tela. Carros decorativos
- * foram retirados (decisão do John): no mapa só andam os caminhões do jogo.
- *
- * As peças ficam em /arte/town (fora do Git, licença do pacote). Sem elas, nada é desenhado e o
- * mapa segue com os telhados de textura.
+ * As peças ficam em /arte/town (fora do Git, licença do pacote). Sem elas, a camada não existe.
  */
-import type { Map as MapLibreMap } from 'maplibre-gl';
+import type { Map as MapLibreMap, GeoJSONSource } from 'maplibre-gl';
+import type { Feature } from 'geojson';
 
 type Ring = [number, number][];
-
-const MIN_ZOOM = 15.5;
-const MAX_BUILDINGS = 1800;
+const SOURCE = 'town-buildings';
+const LAYER = 'town-buildings';
+const MIN_ZOOM = 15;
 const BASE = '/arte/town/';
 const HB = 'Houses and Buildings/';
 const CATALOG = {
@@ -39,29 +35,8 @@ const CATALOG = {
   shop: [1, 2, 3, 4, 5, 6, 7].map((n) => `${HB}Special buildings (all 32x32)/${n}.png`),
 };
 type Group = keyof typeof CATALOG;
+const groups = Object.keys(CATALOG) as Group[];
 
-const cache = new Map<string, HTMLImageElement | null>();
-let loading: Promise<void> | undefined;
-function load(path: string) {
-  return new Promise<HTMLImageElement | null>((resolve) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = () => resolve(null);
-    img.src = BASE + path;
-  });
-}
-async function preload() {
-  const all = (Object.keys(CATALOG) as Group[]).flatMap((g) => CATALOG[g]);
-  await Promise.all(
-    all.map(async (p) => {
-      if (!cache.has(p)) cache.set(p, await load(p));
-    }),
-  );
-}
-function pick(group: Group, seed: number) {
-  const list = CATALOG[group].map((p) => cache.get(p)).filter(Boolean) as HTMLImageElement[];
-  return list.length ? list[Math.abs(seed) % list.length] : null;
-}
 const hash = (x: number, y: number) => {
   const h = Math.imul((x * 73856093) ^ (y * 19349663), 2654435761);
   return (h ^ (h >>> 15)) >>> 0;
@@ -98,52 +73,90 @@ function orientedBox(pts: [number, number][]) {
     cv = (minV + maxV) / 2;
   const c = Math.cos(angle),
     s = Math.sin(angle);
-  return {
-    cx: cu * c - cv * s,
-    cy: cu * s + cv * c,
-    w: maxU - minU,
-    h: maxV - minV,
-    angle,
-  };
+  return { cx: cu * c - cv * s, cy: cu * s + cv * c, w: maxU - minU, h: maxV - minV, angle };
 }
 
-export function attachPixelTown(map: MapLibreMap, host: HTMLElement, pixelRatio: number) {
-  const canvas = document.createElement('canvas');
-  canvas.className = 'pixel-town';
-  canvas.setAttribute('aria-hidden', 'true');
-  host.appendChild(canvas);
-  const ctx = canvas.getContext('2d')!;
-  let raf = 0,
-    stopped = false;
-  loading ??= preload();
+export async function attachPixelTown(map: MapLibreMap) {
+  // 1 · peças no mapa (uma imagem por peça; pixelRatio 1 = 1 px da peça por px CSS, que o canvas
+  //     em meia resolução amplia para 2×, a crocância 16-bit).
+  const sizes = new Map<string, { w: number; h: number }>();
+  const loaded: Record<Group, string[]> = {
+    tiny: [],
+    small: [],
+    medium: [],
+    tower: [],
+    big: [],
+    huge: [],
+    shop: [],
+  };
+  await Promise.all(
+    groups.flatMap((g) =>
+      CATALOG[g].map(async (path, i) => {
+        const id = `town-${g}-${i}`;
+        try {
+          if (!map.hasImage(id)) {
+            const res = await map.loadImage(BASE + path);
+            map.addImage(id, res.data, { pixelRatio: 1 });
+          }
+          const img = map.getImage(id);
+          if (img) sizes.set(id, { w: img.data.width, h: img.data.height });
+          loaded[g].push(id);
+        } catch {
+          /* peça ausente: segue sem ela */
+        }
+      }),
+    ),
+  );
+  if (!loaded.small.length) return () => {};
+  for (const g of groups) loaded[g].sort();
 
-  const draw = () => {
-    raf = 0;
-    if (stopped) return;
-    const rect = host.getBoundingClientRect();
-    const W = Math.max(1, Math.round(rect.width * pixelRatio)),
-      H = Math.max(1, Math.round(rect.height * pixelRatio));
-    if (canvas.width !== W || canvas.height !== H) {
-      canvas.width = W;
-      canvas.height = H;
-    }
-    ctx.clearRect(0, 0, W, H);
-    ctx.imageSmoothingEnabled = false;
+  // 2 · fonte de pontos e camada de símbolos. icon-size = (largura do lote em px no zoom 15 ÷
+  //     largura da peça) × 2^(zoom−15): a peça acompanha o lote em qualquer zoom.
+  if (!map.getSource(SOURCE))
+    map.addSource(SOURCE, { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+  if (!map.getLayer(LAYER))
+    map.addLayer(
+      {
+        id: LAYER,
+        type: 'symbol',
+        source: SOURCE,
+        minzoom: MIN_ZOOM,
+        layout: {
+          'icon-image': ['get', 'sprite'],
+          'icon-size': [
+            '*',
+            ['get', 'k15'],
+            ['interpolate', ['exponential', 2], ['zoom'], 15, 1, 22, 128],
+          ],
+          'icon-rotate': ['get', 'angle'],
+          'icon-rotation-alignment': 'map',
+          'icon-pitch-alignment': 'map',
+          'icon-allow-overlap': true,
+          'icon-ignore-placement': true,
+          'symbol-sort-key': ['get', 'order'],
+        },
+      },
+      map.getLayer('property-halo') ? 'property-halo' : undefined,
+    );
+
+  // 3 · dos contornos reais aos pontos. Roda quando os tiles chegam ou o mapa para; cada prédio
+  //     é calculado uma vez (cache por posição).
+  const cache = new Map<string, Feature[]>();
+  let pending = 0;
+  const rebuild = () => {
+    pending = 0;
     const zoom = map.getZoom();
-    const on = zoom >= MIN_ZOOM;
-    canvas.style.display = on ? '' : 'none';
+    const vis = zoom >= MIN_ZOOM;
     if (map.getLayer('buildings'))
-      map.setLayoutProperty('buildings', 'visibility', on ? 'none' : 'visible');
-    if (!on) return;
-    // metros por pixel de tela no centro da vista
-    const center = map.getCenter();
-    const mpp = (40075016.686 * Math.cos((center.lat * Math.PI) / 180)) / 256 / Math.pow(2, zoom);
-    const scale = pixelRatio; // px do canvas por px de tela
-    const buildings = map.queryRenderedFeatures(undefined, { layers: ['building-outline'] });
+      map.setLayoutProperty('buildings', 'visibility', vis ? 'none' : 'visible');
+    if (!vis) return;
+    const lat = map.getCenter().lat;
+    // metros por px CSS no zoom 15
+    const mpp15 = (40075016.686 * Math.cos((lat * Math.PI) / 180)) / 256 / Math.pow(2, 15);
+    const feats = map.querySourceFeatures('openmaptiles', { sourceLayer: 'building' });
+    const out: Feature[] = [];
     const seen = new Set<string>();
-    let drawn = 0;
-    for (const f of buildings) {
-      if (drawn >= MAX_BUILDINGS) break;
+    for (const f of feats) {
       const g = f.geometry;
       const rings: Ring[] =
         g.type === 'Polygon'
@@ -152,93 +165,81 @@ export function attachPixelTown(map: MapLibreMap, host: HTMLElement, pixelRatio:
             ? (g.coordinates as Ring[][]).map((p) => p[0])
             : [];
       for (const ring of rings) {
-        const pts = ring.map(([lng, lat]) => {
-          const p = map.project([lng, lat]);
-          return [p.x * scale, p.y * scale] as [number, number];
-        });
-        const box = orientedBox(pts);
-        const key = `${Math.round(box.cx)}:${Math.round(box.cy)}`;
+        if (ring.length < 4) continue;
+        const key = `${ring[0][0].toFixed(6)},${ring[0][1].toFixed(6)},${ring.length}`;
         if (seen.has(key)) continue;
         seen.add(key);
-        const wM = (box.w / scale) * mpp,
-          hM = (box.h / scale) * mpp;
-        const long = Math.max(wM, hM),
-          short = Math.min(wM, hM);
-        const seed = hash(Math.round(ring[0][0] * 1e5), Math.round(ring[0][1] * 1e5));
-        let group: Group;
-        if (long < 9) group = 'tiny';
-        else if (long < 16) group = 'small';
-        else if (long < 26) group = seed % 7 === 0 ? 'shop' : 'medium';
-        else if (long < 40) group = short > 18 ? 'big' : 'tower';
-        else group = short > 30 ? 'huge' : 'big';
-        const img = pick(group, seed);
-        if (!img) continue;
-        drawn++;
-        // encaixe: a peça cobre o retângulo do lote; se o lote for muito comprido, repete a
-        // peça ao longo do eixo (galpões e fileiras de sobrados) em vez de esticar.
-        const targetW = Math.max(box.w, box.h),
-          targetH = Math.min(box.w, box.h);
-        const k = Math.max(
-          targetH / img.height,
-          Math.min(targetW / img.width, (targetH / img.height) * 1.4),
-        );
-        const drawW = img.width * k,
-          drawH = img.height * k;
-        const repeats = Math.max(1, Math.round(targetW / drawW));
-        const angle = box.w >= box.h ? box.angle : box.angle + Math.PI / 2;
-        ctx.save();
-        ctx.translate(Math.round(box.cx), Math.round(box.cy));
-        ctx.rotate(angle);
-        const startX = -(repeats * drawW) / 2;
-        for (let r = 0; r < repeats; r++)
-          ctx.drawImage(
-            img,
-            Math.round(startX + r * drawW),
-            Math.round(-drawH / 2),
-            Math.round(drawW),
-            Math.round(drawH),
-          );
-        ctx.restore();
+        let built = cache.get(key);
+        if (!built) {
+          built = [];
+          // projeção local em metros (equiretangular no centro do lote)
+          const lat0 = ring[0][1],
+            kx = 111320 * Math.cos((lat0 * Math.PI) / 180),
+            ky = 110540;
+          const pts = ring.map(([lng, la]) => [lng * kx, -la * ky] as [number, number]);
+          const box = orientedBox(pts);
+          const long = Math.max(box.w, box.h),
+            short = Math.min(box.w, box.h);
+          if (long >= 3) {
+            const seed = hash(Math.round(ring[0][0] * 1e5), Math.round(ring[0][1] * 1e5));
+            let group: Group;
+            if (long < 9) group = 'tiny';
+            else if (long < 16) group = 'small';
+            else if (long < 26) group = seed % 7 === 0 ? 'shop' : 'medium';
+            else if (long < 40) group = short > 18 ? 'big' : 'tower';
+            else group = short > 30 ? 'huge' : 'big';
+            const list = loaded[group].length ? loaded[group] : loaded.small;
+            const sprite = list[seed % list.length];
+            const size = sizes.get(sprite) ?? { w: 24, h: 24 };
+            // encaixe: cobre a largura menor do lote; em lotes compridos repete ao longo do eixo
+            const shortPx = short / mpp15,
+              longPx = long / mpp15;
+            const k15 = Math.max(
+              shortPx / size.h,
+              Math.min(longPx / size.w, (shortPx / size.h) * 1.4),
+            );
+            const drawW = size.w * k15;
+            const repeats = Math.max(1, Math.min(6, Math.round(longPx / drawW)));
+            const angleRad = box.w >= box.h ? box.angle : box.angle + Math.PI / 2;
+            const angle = (angleRad * 180) / Math.PI;
+            const ux = Math.cos(angleRad),
+              uy = Math.sin(angleRad);
+            for (let r = 0; r < repeats; r++) {
+              const off = (r - (repeats - 1) / 2) * drawW * mpp15; // metros ao longo do eixo
+              const mx = box.cx + ux * off,
+                my = box.cy + uy * off;
+              built.push({
+                type: 'Feature',
+                geometry: { type: 'Point', coordinates: [mx / kx, -my / ky] },
+                properties: { sprite, k15, angle, order: my },
+              });
+            }
+          }
+          cache.set(key, built);
+        }
+        for (const b of built) out.push(b);
       }
     }
+    (map.getSource(SOURCE) as GeoJSONSource).setData({ type: 'FeatureCollection', features: out });
   };
   const schedule = () => {
-    if (!raf && !stopped) raf = requestAnimationFrame(draw);
+    if (pending) return;
+    pending = window.setTimeout(rebuild, 120);
   };
-  // Durante o arraste a imagem anterior desliza junto (sem redesenhar); zoom limpa.
-  let origin: { x: number; y: number; zoom: number } | null = null;
-  const onMoveStart = () => {
-    const c = map.project(map.getCenter());
-    origin = { x: c.x, y: c.y, zoom: map.getZoom() };
+  const onData = (e: { sourceId?: string; isSourceLoaded?: boolean }) => {
+    if (e.sourceId === 'openmaptiles' && e.isSourceLoaded) schedule();
   };
-  const onMove = () => {
-    if (!origin) return;
-    if (map.getZoom() !== origin.zoom) {
-      canvas.style.opacity = '0';
-      return;
-    }
-    const c = map.project(map.getCenter());
-    canvas.style.transform = `translate(${Math.round(origin.x - c.x)}px, ${Math.round(origin.y - c.y)}px)`;
-  };
-  const onMoveEnd = () => {
-    origin = null;
-    canvas.style.transform = '';
-    canvas.style.opacity = '';
-    schedule();
-  };
-  map.on('movestart', onMoveStart);
-  map.on('move', onMove);
-  map.on('moveend', onMoveEnd);
-  map.on('idle', schedule);
-  loading.then(schedule);
+  map.on('sourcedata', onData);
+  map.on('moveend', schedule);
+  map.on('zoomend', schedule);
   schedule();
   return () => {
-    stopped = true;
-    if (raf) cancelAnimationFrame(raf);
-    map.off('movestart', onMoveStart);
-    map.off('move', onMove);
-    map.off('moveend', onMoveEnd);
-    map.off('idle', schedule);
-    canvas.remove();
+    map.off('sourcedata', onData);
+    map.off('moveend', schedule);
+    map.off('zoomend', schedule);
+    if (pending) clearTimeout(pending);
+    if (map.getLayer(LAYER)) map.removeLayer(LAYER);
+    if (map.getSource(SOURCE)) map.removeSource(SOURCE);
+    if (map.getLayer('buildings')) map.setLayoutProperty('buildings', 'visibility', 'visible');
   };
 }

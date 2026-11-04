@@ -272,6 +272,21 @@ export function createMapStyle(): StyleSpecification {
         paint: { 'fill-color': '#38cf73', 'fill-antialias': false },
       },
       {
+        // Lote em volta de cada prédio real: onde o OSM não marca o uso do solo, as quadras com
+        // casas viram quadras de cidade por si mesmas (calibração de 03/11, prints de Campinas).
+        id: 'building-lots',
+        type: 'line',
+        source: 'openmaptiles',
+        'source-layer': 'building',
+        minzoom: 13,
+        layout: { 'line-join': 'round', 'line-cap': 'round' },
+        paint: {
+          'line-color': '#cdc3ad',
+          'line-width': ['interpolate', ['exponential', 1.4], ['zoom'], 13, 5, 15, 12, 17, 26],
+          'line-opacity': ['interpolate', ['linear'], ['zoom'], 13, 0.6, 14, 1],
+        },
+      },
+      {
         // Prédios reais do OSM a partir do zoom 13: telhado cinza com contorno escuro (16-bit).
         // Os telhados do pacote entram aqui como fill-pattern quando o catálogo estiver mapeado.
         id: 'buildings',
@@ -284,6 +299,17 @@ export function createMapStyle(): StyleSpecification {
           'fill-outline-color': '#5a5448',
           'fill-opacity': ['interpolate', ['linear'], ['zoom'], 13, 0.7, 14.5, 1],
           'fill-antialias': true,
+        },
+      },
+      {
+        id: 'building-outline',
+        type: 'line',
+        source: 'openmaptiles',
+        'source-layer': 'building',
+        minzoom: 13,
+        paint: {
+          'line-color': '#5a5448',
+          'line-width': ['interpolate', ['linear'], ['zoom'], 13, 0.6, 16, 1.5],
         },
       },
       {

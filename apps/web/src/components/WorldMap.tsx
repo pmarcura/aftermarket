@@ -499,6 +499,58 @@ export function WorldMap({
         instance.addImage('grass-pixel', createGrassPattern(), { pixelRatio: 1 });
       if (instance.getLayer('background'))
         instance.setPaintProperty('background', 'background-pattern', 'grass-pixel');
+      // Peças do pacote (apps/web/public/arte/town, fora do Git): asfalto das ruas e telhado dos
+      // prédios nos zooms próximos. Se o pacote não estiver na máquina, o mapa segue sem elas.
+      const pack = async (id: string, path: string) => {
+        if (instance.hasImage(id)) return true;
+        try {
+          const res = await instance.loadImage(`/arte/town/${path}`);
+          instance.addImage(id, res.data, { pixelRatio: 1 });
+          return true;
+        } catch {
+          return false;
+        }
+      };
+      const [asphalt, roof] = await Promise.all([
+        pack(
+          'town-road',
+          'ROADS and ROAD ELEMENTS (all 16x16)/Roads Type 2 (medium)/Horizontal.png',
+        ),
+        pack(
+          'town-roof',
+          'Grounds (Asphalt and grass) (all 16x16)/Asphalt pavement 01 (GREY)/MAIN GROUND (16x16)/C1.png',
+        ),
+      ]);
+      if (asphalt && !instance.getLayer('roads-pixel'))
+        instance.addLayer(
+          {
+            id: 'roads-pixel',
+            type: 'line',
+            source: 'openmaptiles',
+            'source-layer': 'transportation',
+            minzoom: 15,
+            filter: [
+              'all',
+              ['==', ['geometry-type'], 'LineString'],
+              [
+                'match',
+                ['get', 'class'],
+                ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'minor'],
+                true,
+                false,
+              ],
+              ['!=', ['get', 'brunnel'], 'tunnel'],
+            ],
+            layout: { 'line-cap': 'butt', 'line-join': 'round' },
+            paint: {
+              'line-pattern': 'town-road',
+              'line-width': ['interpolate', ['exponential', 1.2], ['zoom'], 15, 10, 17, 24],
+            },
+          },
+          instance.getLayer('highway-surface-spine') ? 'highway-surface-spine' : undefined,
+        );
+      if (roof && instance.getLayer('buildings'))
+        instance.setPaintProperty('buildings', 'fill-pattern', 'town-roof');
       if (instance.getLayer('water'))
         instance.setPaintProperty('water', 'fill-pattern', 'water-pixel');
       if (instance.getLayer('natural-landcover'))

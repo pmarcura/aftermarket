@@ -57,4 +57,12 @@ diário (spec 014) troca essa etapa por uma linha pequena. A rodada econômica (
 clique quando cai no meio dele; a spec 015 tira isso da fila dos cliques.
 
 O mundo `design-b` (2,5 GB, extrato antigo de antes desta spec) é muito pior: 1–40 s por clique
-no HD. Um mundo de design novo começa com as regras desta spec.
+no HD. O mundo de design passou a ser `design-c` (fora do Git, no SSD): o estado do `design-b` sem o
+arquivo `history_*` antigo, que o jogo só escreve e nunca lê; 2,5 GB → 263 MB.
+
+No `design-c` (dia 132, estado de 18 MB), o `Server-Timing` de 5 cliques reais mostrou gravação de
+0,27–2,1 s com o servidor ao vivo no SSD (0,39 s isolado). Do custo isolado, ~0,18 s é CPU: JSON
+do estado 130 ms, troca de encerrados 20 ms, mapa da janela do extrato 18 ms. O resto é o SQLite
+gravando ~18 MB por clique. Maiores partes do estado: `marketHistory` 4,6 MB, `routes` 3,6 MB,
+`consumptionHistory` 2,7 MB. A spec 014 (diário) tira essa gravação do clique; os históricos em
+janela são candidatos a sair do estado na mesma fase.

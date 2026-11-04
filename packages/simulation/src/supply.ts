@@ -220,6 +220,10 @@ export function supplyCandidates(
   // ligada para todas as lojas, a prova (5 sementes) deu +47% ao varejo e tirou venda de
   // fábricas de utensílios e atacados; decisão de economia pendente.
   const shelfCeiling = retailCeiling(w, e, product, policy);
+  // Custo da mercadoria na conta da trava: preço da oferta, ou o custo do estoque na unidade de
+  // origem quando a loja se abastece de outra unidade própria (como em supplyForecast).
+  const goodsCost = (o: (typeof options)[number]) =>
+    o.internal ? (o.origin.unitCosts[product] ?? 0) : o.price;
   // Teto de frete do produto: o da regra, se houver; senão o da política inteira.
   const freightCap =
     policy.rules.find((r) => r.product === product)?.maxFreightPerUnit ?? policy.maxFreightPerUnit;
@@ -293,7 +297,7 @@ export function supplyCandidates(
             q.distanceKm <= policy.maxDistanceKm &&
             quantity > 0 &&
             (!freightCap || q.price / quantity <= freightCap) &&
-            (!shelfCeiling || o.price + q.price / quantity <= shelfCeiling);
+            (!shelfCeiling || goodsCost(o) + q.price / quantity <= shelfCeiling);
           if (!eligible && tracing) {
             if (q.routeRequired)
               trace(
@@ -313,7 +317,11 @@ export function supplyCandidates(
                 'A distância cotada excedeu o máximo da política.',
                 o.origin.id,
               );
-            else if (shelfCeiling && quantity > 0 && o.price + q.price / quantity > shelfCeiling)
+            else if (
+              shelfCeiling &&
+              quantity > 0 &&
+              goodsCost(o) + q.price / quantity > shelfCeiling
+            )
               trace(
                 'landed-above-shelf',
                 'Mercadoria e frete por unidade passariam do preço de venda menos a margem mínima.',

@@ -1,4 +1,12 @@
-import { HOUR_MS, MINUTE_MS, economicInterval, gameDay, gameToReal } from './clock';
+import {
+  DAY_MS,
+  HOUR_MS,
+  MINUTE_MS,
+  economicInterval,
+  gameDay,
+  gameToReal,
+  realToGame,
+} from './clock';
 import {
   products,
   type World,
@@ -153,10 +161,15 @@ function transfer(
  * (eram 48 linhas por estabelecimento por dia, 73% do extrato) e para as vendas ao consumidor das
  * lojas de bots. Lojas de jogadores mantêm uma linha por rodada: é a fita da loja.
  *
- * A rodada exatamente na virada do dia fica numa linha própria, como antes; a linha do dia soma as
- * outras 11 rodadas e leva o instante da primeira delas. Assim toda regra ou régua que recorta o
- * extrato por instante a partir de uma virada (reajuste semanal de salários, prova econômica)
- * conta exatamente o mesmo que contava com uma linha por rodada.
+ * Duas viradas cortam a linha do dia:
+ * - A virada da temporada (início + N dias de jogo), usada pelo reajuste semanal de salários e pela
+ *   prova econômica. A rodada exatamente nela fica numa linha própria, como antes; a linha do dia
+ *   soma as outras rodadas e leva o instante da primeira delas. Toda régua que recorta o extrato a
+ *   partir dessa virada conta exatamente o mesmo que contava com uma linha por rodada.
+ * - A meia-noite do calendário do jogo, usada pelas telas ("hoje", resultado por dia). O calendário
+ *   começa na hora em que o mundo nasceu, então as duas viradas só coincidem se ele nasceu à
+ *   meia-noite. A rodada da meia-noite abre a linha do dia novo, e nenhuma linha atravessa a
+ *   meia-noite.
  *
  * A linha do dia é trocada por um objeto novo, nunca alterada: a cópia de desfazer
  * (`rollbackSnapshot`) guarda os lançamentos por referência, e o gravador regrava o que mudou.
@@ -164,10 +177,14 @@ function transfer(
 function dailyBook(w: World, at: number) {
   const day = gameDay(w),
     start = w.season.startedAt + Math.floor((at - w.season.startedAt) / day) * day;
+  // Dia do calendário do jogo (mesma conta de `gameCalendar` e das telas).
+  const calendarDay = (x: number) =>
+    Math.floor((w.season.startedAt + realToGame(w, x - w.season.startedAt)) / DAY_MS);
+  const today = calendarDay(at);
   const open = new Map<string, number>();
   for (let i = w.ledger.length - 1; i >= 0; i--) {
     const l = w.ledger[i];
-    if (l.at <= start) break;
+    if (l.at <= start || calendarDay(l.at) !== today) break;
     if (l.daily && l.establishmentId) open.set(bookKey(l), i);
   }
   return { start, boundary: at === start, open };

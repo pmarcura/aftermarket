@@ -20,11 +20,11 @@ Na vida real, uma loja não fretou um caminhão para 84 caixas de leite. Ela aba
 
 O abastecimento automático da loja passa a vir só de **acordos** e **rotas**. A compra avulsa continua existindo na mão, pela gaveta Mandar buscar.
 
-| Jeito | Quem leva | O que se combina |
-| --- | --- | --- |
-| Fornecedor entrega | Caminhão do vendedor ou transportadora que ele escolher | Produto, quantidade por entrega, a cada quantos dias, preço posto na loja, número de entregas |
-| Busco eu (rota da frota) | Caminhões do comprador | Quais fornecedores visitar, o que trazer de cada um, a cada quantos dias |
-| Transportadora contratada | Transportadora (bot; jogador depois da etapa D) | Rota, frequência e preço por viagem |
+| Jeito                     | Quem leva                                               | O que se combina                                                                              |
+| ------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Fornecedor entrega        | Caminhão do vendedor ou transportadora que ele escolher | Produto, quantidade por entrega, a cada quantos dias, preço posto na loja, número de entregas |
+| Busco eu (rota da frota)  | Caminhões do comprador                                  | Quais fornecedores visitar, o que trazer de cada um, a cada quantos dias                      |
+| Transportadora contratada | Transportadora (bot; jogador depois da etapa D)         | Rota, frequência e preço por viagem                                                           |
 
 ## Requisitos
 

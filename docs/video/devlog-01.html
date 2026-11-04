@@ -1,157 +1,558 @@
 <!doctype html>
 <html lang="pt-BR">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Devlog 01 · Roteiro</title>
-<style>
-:root{--bg:#14161a;--panel:#1d2026;--line:#2e333b;--tx:#e9ece6;--mut:#9aa19a;--lime:#a6e22e;--gold:#e5b94a;--brasa:#e5654a;--sky:#6fb3e0}
-@media (prefers-color-scheme:light){:root{--bg:#f1efe8;--panel:#fff;--line:#d9d5c8;--tx:#1b1d20;--mut:#5d625c;--lime:#4d7c0f;--gold:#9a6b00;--brasa:#b4412b;--sky:#1f6a99}}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.55 system-ui,Segoe UI,Inter,sans-serif}
-main{max-width:980px;margin:0 auto;padding:32px 16px 80px}
-h1{font:400 22px/1.3 "Press Start 2P",ui-monospace,monospace;margin:8px 0 6px}
-h2{font:400 15px/1.4 "Press Start 2P",ui-monospace,monospace;color:var(--lime);margin:44px 0 14px}
-h3{margin:0 0 4px;font-size:17px}
-p{margin:6px 0}.mut{color:var(--mut)}
-.tag{display:inline-block;font:12px ui-monospace,monospace;border:1px solid var(--line);padding:2px 8px;margin:0 6px 6px 0;color:var(--mut)}
-.card{background:var(--panel);border:1px solid var(--line);padding:16px;margin:12px 0}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
-.scene{display:grid;grid-template-columns:92px 1fr;gap:14px;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--lime);padding:14px;margin:12px 0}
-.time{font:12px ui-monospace,monospace;color:var(--gold)}
-.fala{font-size:18px;margin:6px 0 10px}
-.row{font-size:14px;margin:3px 0}.row b{color:var(--sky);font-weight:600}.row i{font-style:normal;color:var(--brasa);font-weight:600}
-@media (max-width:620px){.scene{grid-template-columns:1fr}}
-table{border-collapse:collapse;width:100%;font-size:14px}td,th{border:1px solid var(--line);padding:8px;text-align:left;vertical-align:top}th{color:var(--mut);font-weight:600}
-.no{color:var(--brasa)}.ok{color:var(--lime)}
-label{display:block;margin:6px 0;font-size:15px}
-pre{background:var(--panel);border:1px solid var(--line);padding:12px;overflow:auto;font-size:13px}
-</style>
-</head>
-<body>
-<main>
-<div class="tag">DEVLOG 01</div><div class="tag">vertical 9:16</div><div class="tag">~75 segundos</div><div class="tag">Reels · TikTok · Shorts · LinkedIn</div>
-<h1>Aftermarket<br>primeiro vídeo</h1>
-<p class="mut">Um jogo de Pedro Marçura · em desenvolvimento. Este documento tem tudo para gravar, montar e postar o primeiro devlog.</p>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Devlog 01 · Roteiro</title>
+    <style>
+      :root {
+        --bg: #14161a;
+        --panel: #1d2026;
+        --line: #2e333b;
+        --tx: #e9ece6;
+        --mut: #9aa19a;
+        --lime: #a6e22e;
+        --gold: #e5b94a;
+        --brasa: #e5654a;
+        --sky: #6fb3e0;
+      }
+      @media (prefers-color-scheme: light) {
+        :root {
+          --bg: #f1efe8;
+          --panel: #fff;
+          --line: #d9d5c8;
+          --tx: #1b1d20;
+          --mut: #5d625c;
+          --lime: #4d7c0f;
+          --gold: #9a6b00;
+          --brasa: #b4412b;
+          --sky: #1f6a99;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--tx);
+        font:
+          16px/1.55 system-ui,
+          Segoe UI,
+          Inter,
+          sans-serif;
+      }
+      main {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 32px 16px 80px;
+      }
+      h1 {
+        font:
+          400 22px/1.3 'Press Start 2P',
+          ui-monospace,
+          monospace;
+        margin: 8px 0 6px;
+      }
+      h2 {
+        font:
+          400 15px/1.4 'Press Start 2P',
+          ui-monospace,
+          monospace;
+        color: var(--lime);
+        margin: 44px 0 14px;
+      }
+      h3 {
+        margin: 0 0 4px;
+        font-size: 17px;
+      }
+      p {
+        margin: 6px 0;
+      }
+      .mut {
+        color: var(--mut);
+      }
+      .tag {
+        display: inline-block;
+        font:
+          12px ui-monospace,
+          monospace;
+        border: 1px solid var(--line);
+        padding: 2px 8px;
+        margin: 0 6px 6px 0;
+        color: var(--mut);
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        padding: 16px;
+        margin: 12px 0;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 12px;
+      }
+      .scene {
+        display: grid;
+        grid-template-columns: 92px 1fr;
+        gap: 14px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-left: 4px solid var(--lime);
+        padding: 14px;
+        margin: 12px 0;
+      }
+      .time {
+        font:
+          12px ui-monospace,
+          monospace;
+        color: var(--gold);
+      }
+      .fala {
+        font-size: 18px;
+        margin: 6px 0 10px;
+      }
+      .row {
+        font-size: 14px;
+        margin: 3px 0;
+      }
+      .row b {
+        color: var(--sky);
+        font-weight: 600;
+      }
+      .row i {
+        font-style: normal;
+        color: var(--brasa);
+        font-weight: 600;
+      }
+      @media (max-width: 620px) {
+        .scene {
+          grid-template-columns: 1fr;
+        }
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 14px;
+      }
+      td,
+      th {
+        border: 1px solid var(--line);
+        padding: 8px;
+        text-align: left;
+        vertical-align: top;
+      }
+      th {
+        color: var(--mut);
+        font-weight: 600;
+      }
+      .no {
+        color: var(--brasa);
+      }
+      .ok {
+        color: var(--lime);
+      }
+      label {
+        display: block;
+        margin: 6px 0;
+        font-size: 15px;
+      }
+      pre {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        padding: 12px;
+        overflow: auto;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="tag">DEVLOG 01</div>
+      <div class="tag">vertical 9:16</div>
+      <div class="tag">~75 segundos</div>
+      <div class="tag">Reels · TikTok · Shorts · LinkedIn</div>
+      <h1>Aftermarket<br />primeiro vídeo</h1>
+      <p class="mut">
+        Um jogo de Pedro Marçura · em desenvolvimento. Este documento tem tudo para gravar, montar e
+        postar o primeiro devlog.
+      </p>
 
-<h2>1 · A ideia em uma frase</h2>
-<div class="card">
-<h3>“Sou designer, não programador, e estou fazendo um jogo de economia do Brasil com IA. O que faz funcionar é o processo.”</h3>
-<p class="mut">Por que funciona: tem uma pessoa real (você), uma tese contra o senso comum (“IA faz jogo num prompt” é mentira), e o produto aparece na tela o tempo todo. Fala de jogo e de design ao mesmo tempo, então atrai dois públicos: quem joga e quem trabalha com design/IA.</p>
-</div>
+      <h2>1 · A ideia em uma frase</h2>
+      <div class="card">
+        <h3>
+          “Sou designer, não programador, e estou fazendo um jogo de economia do Brasil com IA. O
+          que faz funcionar é o processo.”
+        </h3>
+        <p class="mut">
+          Por que funciona: tem uma pessoa real (você), uma tese contra o senso comum (“IA faz jogo
+          num prompt” é mentira), e o produto aparece na tela o tempo todo. Fala de jogo e de design
+          ao mesmo tempo, então atrai dois públicos: quem joga e quem trabalha com design/IA.
+        </p>
+      </div>
 
-<h2>2 · Roteiro cena a cena</h2>
-<p class="mut">Fala em primeira pessoa, ritmo rápido, uma ideia por cena. Corte a cada 3–6 segundos. Legenda queimada em todas as falas (a maioria assiste sem som).</p>
+      <h2>2 · Roteiro cena a cena</h2>
+      <p class="mut">
+        Fala em primeira pessoa, ritmo rápido, uma ideia por cena. Corte a cada 3–6 segundos.
+        Legenda queimada em todas as falas (a maioria assiste sem som).
+      </p>
 
-<div class="scene"><div><div class="time">0–3 s</div><b>GANCHO</b></div><div>
-<div class="fala">“Sou designer, não sei programar… e estou construindo um jogo de economia do Brasil inteiro com IA.”</div>
-<div class="row"><b>Imagem:</b> mapa noturno do jogo, caminhões andando nas estradas reais, zoom lento. Você aparece só na voz (ou 1 s de rosto no começo).</div>
-<div class="row"><i>Motion:</i> título que “digita” em pixel: <i>DESIGNER + IA = UM JOGO?</i></div></div></div>
+      <div class="scene">
+        <div>
+          <div class="time">0–3 s</div>
+          <b>GANCHO</b>
+        </div>
+        <div>
+          <div class="fala">
+            “Sou designer, não sei programar… e estou construindo um jogo de economia do Brasil
+            inteiro com IA.”
+          </div>
+          <div class="row">
+            <b>Imagem:</b> mapa noturno do jogo, caminhões andando nas estradas reais, zoom lento.
+            Você aparece só na voz (ou 1 s de rosto no começo).
+          </div>
+          <div class="row">
+            <i>Motion:</i> título que “digita” em pixel: <i>DESIGNER + IA = UM JOGO?</i>
+          </div>
+        </div>
+      </div>
 
-<div class="scene"><div><div class="time">3–10 s</div><b>TESE</b></div><div>
-<div class="fala">“Todo mundo diz que a IA faz um jogo em um prompt. Não faz. Faz uma coisa bonita que não para em pé. O que muda tudo é o processo.”</div>
-<div class="row"><b>Imagem:</b> tela cheia de texto/prompt, depois corta para o jogo rodando de verdade.</div>
-<div class="row"><i>Motion:</i> carimbo vermelho “1 PROMPT” riscado; carimbo verde “PROCESSO”.</div></div></div>
+      <div class="scene">
+        <div>
+          <div class="time">3–10 s</div>
+          <b>TESE</b>
+        </div>
+        <div>
+          <div class="fala">
+            “Todo mundo diz que a IA faz um jogo em um prompt. Não faz. Faz uma coisa bonita que não
+            para em pé. O que muda tudo é o processo.”
+          </div>
+          <div class="row">
+            <b>Imagem:</b> tela cheia de texto/prompt, depois corta para o jogo rodando de verdade.
+          </div>
+          <div class="row">
+            <i>Motion:</i> carimbo vermelho “1 PROMPT” riscado; carimbo verde “PROCESSO”.
+          </div>
+        </div>
+      </div>
 
-<div class="scene"><div><div class="time">10–24 s</div><b>O JOGO</b></div><div>
-<div class="fala">“É o Aftermarket. Um mundo só, uma economia compartilhada. Você escolhe uma cidade, compra um imóvel, monta sua produção e vende. O vizinho pode ser seu fornecedor… ou seu pior concorrente.”</div>
-<div class="row"><b>Imagem:</b> (1) mapa, clique numa cidade; (2) comprar imóvel; (3) loja com prateleira; (4) pedido/contraproposta entre empresas; (5) caminhão de entrega chegando.</div>
-<div class="row"><i>Motion:</i> linhas de rota brilhando entre cidades; nome do jogo com selo “EM DESENVOLVIMENTO”.</div></div></div>
+      <div class="scene">
+        <div>
+          <div class="time">10–24 s</div>
+          <b>O JOGO</b>
+        </div>
+        <div>
+          <div class="fala">
+            “É o Aftermarket. Um mundo só, uma economia compartilhada. Você escolhe uma cidade,
+            compra um imóvel, monta sua produção e vende. O vizinho pode ser seu fornecedor… ou seu
+            pior concorrente.”
+          </div>
+          <div class="row">
+            <b>Imagem:</b> (1) mapa, clique numa cidade; (2) comprar imóvel; (3) loja com
+            prateleira; (4) pedido/contraproposta entre empresas; (5) caminhão de entrega chegando.
+          </div>
+          <div class="row">
+            <i>Motion:</i> linhas de rota brilhando entre cidades; nome do jogo com selo “EM
+            DESENVOLVIMENTO”.
+          </div>
+        </div>
+      </div>
 
-<div class="scene"><div><div class="time">24–42 s</div><b>O PROCESSO</b></div><div>
-<div class="fala">“Minha regra tem três partes. Eu decido o design: como o jogo deve sentir e quão real ele é. A IA faz o código e a conta, e eu faço ela se provar com centenas de empresas-robô jogando sozinhas. E a interface é uma tela de cada vez. Se parecer planilha, eu rejeito.”</div>
-<div class="row"><b>Imagem:</b> laboratório de simulação (<code>/lab</code>) com gráficos correndo; depois a tela de Loja.</div>
-<div class="row"><i>Motion:</i> três números “1 · 2 · 3” entrando com cada regra; lower third “Eu decido / A IA executa / Os robôs testam”.</div></div></div>
+      <div class="scene">
+        <div>
+          <div class="time">24–42 s</div>
+          <b>O PROCESSO</b>
+        </div>
+        <div>
+          <div class="fala">
+            “Minha regra tem três partes. Eu decido o design: como o jogo deve sentir e quão real
+            ele é. A IA faz o código e a conta, e eu faço ela se provar com centenas de
+            empresas-robô jogando sozinhas. E a interface é uma tela de cada vez. Se parecer
+            planilha, eu rejeito.”
+          </div>
+          <div class="row">
+            <b>Imagem:</b> laboratório de simulação (<code>/lab</code>) com gráficos correndo;
+            depois a tela de Loja.
+          </div>
+          <div class="row">
+            <i>Motion:</i> três números “1 · 2 · 3” entrando com cada regra; lower third “Eu decido
+            / A IA executa / Os robôs testam”.
+          </div>
+        </div>
+      </div>
 
-<div class="scene"><div><div class="time">42–56 s</div><b>PONTO DE VISTA DE DESIGN</b></div><div>
-<div class="fala">“Jogo de economia costuma parecer planilha. Eu quis o contrário: livro-caixa, papel, carimbo, pixel art. Dado denso, mas com cara de coisa de verdade.”</div>
-<div class="row"><b>Imagem:</b> split antes/depois de uma tela (use a Loja ou o Início: versão antiga em tabela vs. versão atual com carimbos e ilustração pixel).</div>
-<div class="row"><i>Motion:</i> divisória que desliza revelando o “depois”; fontes e paleta aparecendo como chips (grafite · lavoura · ouro).</div></div></div>
+      <div class="scene">
+        <div>
+          <div class="time">42–56 s</div>
+          <b>PONTO DE VISTA DE DESIGN</b>
+        </div>
+        <div>
+          <div class="fala">
+            “Jogo de economia costuma parecer planilha. Eu quis o contrário: livro-caixa, papel,
+            carimbo, pixel art. Dado denso, mas com cara de coisa de verdade.”
+          </div>
+          <div class="row">
+            <b>Imagem:</b> split antes/depois de uma tela (use a Loja ou o Início: versão antiga em
+            tabela vs. versão atual com carimbos e ilustração pixel).
+          </div>
+          <div class="row">
+            <i>Motion:</i> divisória que desliza revelando o “depois”; fontes e paleta aparecendo
+            como chips (grafite · lavoura · ouro).
+          </div>
+        </div>
+      </div>
 
-<div class="scene"><div><div class="time">56–66 s</div><b>HONESTIDADE</b></div><div>
-<div class="fala">“Ainda está em desenvolvimento. Dá erro, trava, a economia ainda desbalanceia. Mas está de pé, e em breve vai para playtest com amigos.”</div>
-<div class="row"><b>Imagem:</b> gravação real de algo com defeito pequeno (tela de carregando, aviso) logo seguido de algo funcionando.</div>
-<div class="row"><i>Motion:</i> nada além de texto discreto: “playtest com amigos: em breve”.</div></div></div>
+      <div class="scene">
+        <div>
+          <div class="time">56–66 s</div>
+          <b>HONESTIDADE</b>
+        </div>
+        <div>
+          <div class="fala">
+            “Ainda está em desenvolvimento. Dá erro, trava, a economia ainda desbalanceia. Mas está
+            de pé, e em breve vai para playtest com amigos.”
+          </div>
+          <div class="row">
+            <b>Imagem:</b> gravação real de algo com defeito pequeno (tela de carregando, aviso)
+            logo seguido de algo funcionando.
+          </div>
+          <div class="row">
+            <i>Motion:</i> nada além de texto discreto: “playtest com amigos: em breve”.
+          </div>
+        </div>
+      </div>
 
-<div class="scene"><div><div class="time">66–75 s</div><b>CHAMADA</b></div><div>
-<div class="fala">“Vou postar o devlog toda semana. Me segue pra ver o jogo crescer, e comenta de qual cidade você jogaria.”</div>
-<div class="row"><b>Imagem:</b> mapa do Brasil com o jogo ao fundo; fecha em tela cheia com logo.</div>
-<div class="row"><i>Motion:</i> pin pixel caindo numa cidade; assinatura final: <b>Um jogo de Pedro Marçura</b>.</div></div></div>
+      <div class="scene">
+        <div>
+          <div class="time">66–75 s</div>
+          <b>CHAMADA</b>
+        </div>
+        <div>
+          <div class="fala">
+            “Vou postar o devlog toda semana. Me segue pra ver o jogo crescer, e comenta de qual
+            cidade você jogaria.”
+          </div>
+          <div class="row">
+            <b>Imagem:</b> mapa do Brasil com o jogo ao fundo; fecha em tela cheia com logo.
+          </div>
+          <div class="row">
+            <i>Motion:</i> pin pixel caindo numa cidade; assinatura final:
+            <b>Um jogo de Pedro Marçura</b>.
+          </div>
+        </div>
+      </div>
 
-<h2>3 · O que gravar (checklist de capturas)</h2>
-<p class="mut">Gravar em tela cheia 1920×1080, 60 fps, em mundo à parte (não toque no mundo principal). Esconda a barra de saldo de teste e qualquer número de versão de teste.</p>
-<pre>$env:AFTERMARKET_DB_FILE=".runtime/video.sqlite"
+      <h2>3 · O que gravar (checklist de capturas)</h2>
+      <p class="mut">
+        Gravar em tela cheia 1920×1080, 60 fps, em mundo à parte (não toque no mundo principal).
+        Esconda a barra de saldo de teste e qualquer número de versão de teste.
+      </p>
+      <pre>
+$env:AFTERMARKET_DB_FILE=".runtime/video.sqlite"
 npm run dev</pre>
-<div class="card">
-<label><input type="checkbox"> Mapa noturno, 10 s limpos, zoom lento, caminhões na estrada</label>
-<label><input type="checkbox"> Clique numa cidade + comprar imóvel (5 s)</label>
-<label><input type="checkbox"> Loja com prateleira em cartões e trilho de preço</label>
-<label><input type="checkbox"> Pedido/contraproposta entre empresas</label>
-<label><input type="checkbox"> Caminhão de entrega chegando e aviso de entrega</label>
-<label><input type="checkbox"> Laboratório <code>/lab</code> rodando simulação (gráficos subindo)</label>
-<label><input type="checkbox"> Tela “antes” (versão antiga em tabela) e “depois” na mesma tela, mesmo enquadramento</label>
-<label><input type="checkbox"> Landing page em <code>/</code> com o planeta de GPS</label>
-<label><input type="checkbox"> Voz limpa em ambiente silencioso (celular perto da boca, 20 cm)</label>
-<label><input type="checkbox"> 1 s do seu rosto para abrir (opcional, aumenta retenção)</label>
-</div>
+      <div class="card">
+        <label
+          ><input type="checkbox" /> Mapa noturno, 10 s limpos, zoom lento, caminhões na
+          estrada</label
+        >
+        <label><input type="checkbox" /> Clique numa cidade + comprar imóvel (5 s)</label>
+        <label><input type="checkbox" /> Loja com prateleira em cartões e trilho de preço</label>
+        <label><input type="checkbox" /> Pedido/contraproposta entre empresas</label>
+        <label><input type="checkbox" /> Caminhão de entrega chegando e aviso de entrega</label>
+        <label
+          ><input type="checkbox" /> Laboratório <code>/lab</code> rodando simulação (gráficos
+          subindo)</label
+        >
+        <label
+          ><input type="checkbox" /> Tela “antes” (versão antiga em tabela) e “depois” na mesma
+          tela, mesmo enquadramento</label
+        >
+        <label><input type="checkbox" /> Landing page em <code>/</code> com o planeta de GPS</label>
+        <label
+          ><input type="checkbox" /> Voz limpa em ambiente silencioso (celular perto da boca, 20
+          cm)</label
+        >
+        <label
+          ><input type="checkbox" /> 1 s do seu rosto para abrir (opcional, aumenta retenção)</label
+        >
+      </div>
 
-<h2>4 · O que fazemos no Motion</h2>
-<table>
-<tr><th>Peça</th><th>Onde entra</th><th>Duração</th></tr>
-<tr><td>Título pixel digitando “DESIGNER + IA = UM JOGO?”</td><td>Gancho</td><td>3 s</td></tr>
-<tr><td>Carimbos “1 PROMPT” riscado / “PROCESSO”</td><td>Tese</td><td>3 s</td></tr>
-<tr><td>Logo do Aftermarket + selo “EM DESENVOLVIMENTO”</td><td>Entrada do jogo</td><td>2 s</td></tr>
-<tr><td>Rotas brilhando entre cidades</td><td>O jogo</td><td>4 s</td></tr>
-<tr><td>Três regras do processo (cartões numerados)</td><td>Processo</td><td>10 s</td></tr>
-<tr><td>Divisória antes/depois deslizando</td><td>Design</td><td>5 s</td></tr>
-<tr><td>Chips de paleta e fontes</td><td>Design</td><td>3 s</td></tr>
-<tr><td>Pin pixel caindo numa cidade + assinatura final</td><td>Chamada</td><td>4 s</td></tr>
-<tr><td>Legendas animadas palavra a palavra</td><td>Todas as falas</td><td>—</td></tr>
-</table>
-<p class="mut">Estilo: grafite com quadriculado, verde-lavoura para ação, ouro para dinheiro, títulos em Press Start 2P, texto pequeno em Archivo (mesma identidade do jogo, ver <code>docs/design/IDENTIDADE-JOGO.md</code>).</p>
+      <h2>4 · O que fazemos no Motion</h2>
+      <table>
+        <tr>
+          <th>Peça</th>
+          <th>Onde entra</th>
+          <th>Duração</th>
+        </tr>
+        <tr>
+          <td>Título pixel digitando “DESIGNER + IA = UM JOGO?”</td>
+          <td>Gancho</td>
+          <td>3 s</td>
+        </tr>
+        <tr>
+          <td>Carimbos “1 PROMPT” riscado / “PROCESSO”</td>
+          <td>Tese</td>
+          <td>3 s</td>
+        </tr>
+        <tr>
+          <td>Logo do Aftermarket + selo “EM DESENVOLVIMENTO”</td>
+          <td>Entrada do jogo</td>
+          <td>2 s</td>
+        </tr>
+        <tr>
+          <td>Rotas brilhando entre cidades</td>
+          <td>O jogo</td>
+          <td>4 s</td>
+        </tr>
+        <tr>
+          <td>Três regras do processo (cartões numerados)</td>
+          <td>Processo</td>
+          <td>10 s</td>
+        </tr>
+        <tr>
+          <td>Divisória antes/depois deslizando</td>
+          <td>Design</td>
+          <td>5 s</td>
+        </tr>
+        <tr>
+          <td>Chips de paleta e fontes</td>
+          <td>Design</td>
+          <td>3 s</td>
+        </tr>
+        <tr>
+          <td>Pin pixel caindo numa cidade + assinatura final</td>
+          <td>Chamada</td>
+          <td>4 s</td>
+        </tr>
+        <tr>
+          <td>Legendas animadas palavra a palavra</td>
+          <td>Todas as falas</td>
+          <td>—</td>
+        </tr>
+      </table>
+      <p class="mut">
+        Estilo: grafite com quadriculado, verde-lavoura para ação, ouro para dinheiro, títulos em
+        Press Start 2P, texto pequeno em Archivo (mesma identidade do jogo, ver
+        <code>docs/design/IDENTIDADE-JOGO.md</code>).
+      </p>
 
-<h2>5 · Texto de postagem</h2>
-<div class="card">
-<p><b>Legenda (curta):</b><br>Sou designer, não programador. Estou fazendo um jogo de economia do Brasil com IA, e o segredo não é um prompt, é o processo. Aftermarket, em desenvolvimento. Um jogo de Pedro Marçura. Devlog toda semana.</p>
-<p><b>Pergunta para comentário:</b> De qual cidade você jogaria?</p>
-<p><b>Hashtags:</b> #devlog #indiegame #gamedev #designer #ux #ia #jogodeeconomia #pixelart #brasil</p>
-<p><b>Título (YouTube Shorts/LinkedIn):</b> Um designer fazendo um jogo de economia com IA — Devlog 01</p>
-</div>
+      <h2>5 · Texto de postagem</h2>
+      <div class="card">
+        <p>
+          <b>Legenda (curta):</b><br />Sou designer, não programador. Estou fazendo um jogo de
+          economia do Brasil com IA, e o segredo não é um prompt, é o processo. Aftermarket, em
+          desenvolvimento. Um jogo de Pedro Marçura. Devlog toda semana.
+        </p>
+        <p><b>Pergunta para comentário:</b> De qual cidade você jogaria?</p>
+        <p>
+          <b>Hashtags:</b> #devlog #indiegame #gamedev #designer #ux #ia #jogodeeconomia #pixelart
+          #brasil
+        </p>
+        <p>
+          <b>Título (YouTube Shorts/LinkedIn):</b> Um designer fazendo um jogo de economia com IA —
+          Devlog 01
+        </p>
+      </div>
 
-<h2>6 · Capa (thumbnail)</h2>
-<div class="grid">
-<div class="card"><h3>Texto grande</h3><p>“DESIGNER FAZENDO JOGO COM IA”</p></div>
-<div class="card"><h3>Imagem</h3><p>Mapa noturno + caminhão amarelo em destaque, seu rosto pequeno no canto (opcional).</p></div>
-<div class="card"><h3>Cores</h3><p>Grafite de fundo, texto lime, número “01” em ouro.</p></div>
-</div>
+      <h2>6 · Capa (thumbnail)</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>Texto grande</h3>
+          <p>“DESIGNER FAZENDO JOGO COM IA”</p>
+        </div>
+        <div class="card">
+          <h3>Imagem</h3>
+          <p>Mapa noturno + caminhão amarelo em destaque, seu rosto pequeno no canto (opcional).</p>
+        </div>
+        <div class="card">
+          <h3>Cores</h3>
+          <p>Grafite de fundo, texto lime, número “01” em ouro.</p>
+        </div>
+      </div>
 
-<h2>7 · Cuidados</h2>
-<table>
-<tr><th>Fazer</th><th>Evitar</th></tr>
-<tr><td class="ok">Mostrar telas e fluxos reais do jogo</td><td class="no">Mockups ilustrados que não são o jogo de fato</td></tr>
-<tr><td class="ok">Dizer claramente que está em desenvolvimento</td><td class="no">Prometer data de lançamento ou “MMO massivo”</td></tr>
-<tr><td class="ok">Mensagem que dura: um mundo, economia compartilhada</td><td class="no">Números de teste (quantidade de cidades, robôs, mercadorias)</td></tr>
-<tr><td class="ok">Dizer que usou IA, com franqueza</td><td class="no">Fingir que a IA fez tudo sozinha, ou que você fez sem ela</td></tr>
-</table>
+      <h2>7 · Cuidados</h2>
+      <table>
+        <tr>
+          <th>Fazer</th>
+          <th>Evitar</th>
+        </tr>
+        <tr>
+          <td class="ok">Mostrar telas e fluxos reais do jogo</td>
+          <td class="no">Mockups ilustrados que não são o jogo de fato</td>
+        </tr>
+        <tr>
+          <td class="ok">Dizer claramente que está em desenvolvimento</td>
+          <td class="no">Prometer data de lançamento ou “MMO massivo”</td>
+        </tr>
+        <tr>
+          <td class="ok">Mensagem que dura: um mundo, economia compartilhada</td>
+          <td class="no">Números de teste (quantidade de cidades, robôs, mercadorias)</td>
+        </tr>
+        <tr>
+          <td class="ok">Dizer que usou IA, com franqueza</td>
+          <td class="no">Fingir que a IA fez tudo sozinha, ou que você fez sem ela</td>
+        </tr>
+      </table>
 
-<h2>8 · Plano de produção</h2>
-<table>
-<tr><th>Etapa</th><th>Quem</th><th>Saída</th></tr>
-<tr><td>1. Ajustar o roteiro com sua voz (leia em voz alta e corte o que travar)</td><td>Pedro + Claude</td><td>Roteiro final</td></tr>
-<tr><td>2. Preparar mundo de gravação e lista de capturas</td><td>Claude</td><td>Mundo limpo, sem saldo de teste</td></tr>
-<tr><td>3. Gravar tela e voz</td><td>Pedro</td><td>Clipes brutos</td></tr>
-<tr><td>4. Peças de motion</td><td>Claude</td><td>Animações da seção 4</td></tr>
-<tr><td>5. Montagem (CapCut/DaVinci) e legendas</td><td>Pedro</td><td>Vídeo final 9:16</td></tr>
-<tr><td>6. Postar em 3 redes no mesmo dia</td><td>Pedro</td><td>Devlog 01 no ar</td></tr>
-</table>
+      <h2>8 · Plano de produção</h2>
+      <table>
+        <tr>
+          <th>Etapa</th>
+          <th>Quem</th>
+          <th>Saída</th>
+        </tr>
+        <tr>
+          <td>1. Ajustar o roteiro com sua voz (leia em voz alta e corte o que travar)</td>
+          <td>Pedro + Claude</td>
+          <td>Roteiro final</td>
+        </tr>
+        <tr>
+          <td>2. Preparar mundo de gravação e lista de capturas</td>
+          <td>Claude</td>
+          <td>Mundo limpo, sem saldo de teste</td>
+        </tr>
+        <tr>
+          <td>3. Gravar tela e voz</td>
+          <td>Pedro</td>
+          <td>Clipes brutos</td>
+        </tr>
+        <tr>
+          <td>4. Peças de motion</td>
+          <td>Claude</td>
+          <td>Animações da seção 4</td>
+        </tr>
+        <tr>
+          <td>5. Montagem (CapCut/DaVinci) e legendas</td>
+          <td>Pedro</td>
+          <td>Vídeo final 9:16</td>
+        </tr>
+        <tr>
+          <td>6. Postar em 3 redes no mesmo dia</td>
+          <td>Pedro</td>
+          <td>Devlog 01 no ar</td>
+        </tr>
+      </table>
 
-<h2>9 · Próximos devlogs (ideias)</h2>
-<div class="grid">
-<div class="card"><h3>02 · Como testo a economia</h3><p>500 robôs jogando sozinhos enquanto eu durmo.</p></div>
-<div class="card"><h3>03 · UX de jogo de planilha</h3><p>Uma tela do antes ao depois, passo a passo.</p></div>
-<div class="card"><h3>04 · O que a IA errou</h3><p>Erros reais e como o processo pegou.</p></div>
-<div class="card"><h3>05 · Playtest com amigos</h3><p>Primeiros jogadores humanos no mundo.</p></div>
-</div>
-</main>
-</body>
+      <h2>9 · Próximos devlogs (ideias)</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>02 · Como testo a economia</h3>
+          <p>500 robôs jogando sozinhos enquanto eu durmo.</p>
+        </div>
+        <div class="card">
+          <h3>03 · UX de jogo de planilha</h3>
+          <p>Uma tela do antes ao depois, passo a passo.</p>
+        </div>
+        <div class="card">
+          <h3>04 · O que a IA errou</h3>
+          <p>Erros reais e como o processo pegou.</p>
+        </div>
+        <div class="card">
+          <h3>05 · Playtest com amigos</h3>
+          <p>Primeiros jogadores humanos no mundo.</p>
+        </div>
+      </div>
+    </main>
+  </body>
 </html>

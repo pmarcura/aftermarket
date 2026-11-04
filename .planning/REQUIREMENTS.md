@@ -2,14 +2,14 @@
 
 ## Carregamento · spec 012 (03/11/2026)
 
-| ID | Requisito | Estado | Evidência |
-| --- | --- | --- | --- |
-| PERF-01 | Comprovar alinhamento com main e spec 005 | Verificado | Zero commits atrasados; merge da PR #6 ancestral do design |
-| PERF-02 | Reduzir repetição de view, serialização, compressão e histórico preservando indicadores | Implementado local | Cache por revisão/empresa, gzip assíncrono, histórico agrupado; equivalência e testes HTTP |
-| PERF-03 | Limitar conexão pendente e sobreposição, retomar ao voltar à aba | Implementado local | Deadline 15 s, retry real, uma tentativa por empresa; teste de reconexão |
-| PERF-04 | Manter API fluida durante tick e gravação com 550 bots | Parcial | Leitura sem tick; motor e save ainda na thread HTTP. Ledger incremental; mediana HTTP mundo 175 ms, pico 4,2 s em 24 leituras |
-| PERF-05 | Ledger incremental, backup, commit com recibo e reabertura íntegra | Implementado local | Testes de falha e igualdade integral do mundo |
-| PERF-06 | Recuperar operações após timeout/recarga sem cobrança duplicada | Implementado local | Trava imediata, mesma chave persistida e botão Consultar operação; testes unitários e navegador |
+| ID      | Requisito                                                                               | Estado             | Evidência                                                                                                                     |
+| ------- | --------------------------------------------------------------------------------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| PERF-01 | Comprovar alinhamento com main e spec 005                                               | Verificado         | Zero commits atrasados; merge da PR #6 ancestral do design                                                                    |
+| PERF-02 | Reduzir repetição de view, serialização, compressão e histórico preservando indicadores | Implementado local | Cache por revisão/empresa, gzip assíncrono, histórico agrupado; equivalência e testes HTTP                                    |
+| PERF-03 | Limitar conexão pendente e sobreposição, retomar ao voltar à aba                        | Implementado local | Deadline 15 s, retry real, uma tentativa por empresa; teste de reconexão                                                      |
+| PERF-04 | Manter API fluida durante tick e gravação com 550 bots                                  | Parcial            | Leitura sem tick; motor e save ainda na thread HTTP. Ledger incremental; mediana HTTP mundo 175 ms, pico 4,2 s em 24 leituras |
+| PERF-05 | Ledger incremental, backup, commit com recibo e reabertura íntegra                      | Implementado local | Testes de falha e igualdade integral do mundo                                                                                 |
+| PERF-06 | Recuperar operações após timeout/recarga sem cobrança duplicada                         | Implementado local | Trava imediata, mesma chave persistida e botão Consultar operação; testes unitários e navegador                               |
 
 Escopo e limites em [validação 012](../specs/012-carregamento-fluido/validation.md).
 

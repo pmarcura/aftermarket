@@ -24,18 +24,18 @@ somente leitura encontrou 157.946.019 bytes de estado e 503.968 lançamentos.
 A simulação continuou avançando durante as medições; a última amostra tinha
 172.700.028 bytes e 545.801 lançamentos. Nenhum banco foi apagado ou recriado.
 
-| Problema comprovado | Consequência | Ação |
-| --- | --- | --- |
-| GET `/api/world` chamava `store.tick()` | Ler a tela disputava a thread com o avanço econômico | Leitura usa `store.read()`; tick periódico continua autoritativo |
-| Indicadores repetiam filtragem do extrato para cada produto | Primeira projeção custou 1.448 ms | Indicadores globais uma vez; concentração por produto numa passagem, com igualdade numérica testada |
-| Gzip do caminho original usava U+0008 em vez de `\b` | O regex nunca reconhecia Accept-Encoding | Regex corrigido e compressão assíncrona, confirmada por headers e testes HTTP |
-| Projeção/JSON/gzip repetidos em consultas iguais | CPU desperdiçada sem mudança do mundo | Cache por mundo/revisão/empresa: até duas empresas, orçamento de 16 MiB; snapshot imutável |
-| Pregão fazia até oito consultas em paralelo | Oito varreduras e respostas repetidas | Consulta agrupada numa passagem, mesmos limites e ordem; endpoint individual mantido |
-| Histórico transmitia campos completos do ledger | Bytes sem uso nos cartões/perfis | Contrato agrupado leva apenas os seis campos consumidos das negociações; amostras conservadas |
-| Polling sobrepunha chamadas e não tinha deadline | Fila crescente e conexão sem fim | Uma tentativa por empresa, 15 s para fetch/corpo, retry explícito cancela pendente; chamadas antigas não trocam empresa/revisão |
-| Polling em aba oculta | CPU/rede sem jogador olhando | Pausado; ao voltar à aba consulta imediatamente |
-| Duas APIs locais estavam rodando | Mundos diferentes competiam por CPU/memória/disco | Encerrada a instância extra criada nesta conversa; apenas a API da prévia de design permaneceu |
-| Prévia de desenvolvimento | Mais módulos, transformação e verificações de React | Prévia compilada adicional na 5192, mesma API 3011 e mesmo mundo |
+| Problema comprovado                                         | Consequência                                         | Ação                                                                                                                            |
+| ----------------------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| GET `/api/world` chamava `store.tick()`                     | Ler a tela disputava a thread com o avanço econômico | Leitura usa `store.read()`; tick periódico continua autoritativo                                                                |
+| Indicadores repetiam filtragem do extrato para cada produto | Primeira projeção custou 1.448 ms                    | Indicadores globais uma vez; concentração por produto numa passagem, com igualdade numérica testada                             |
+| Gzip do caminho original usava U+0008 em vez de `\b`        | O regex nunca reconhecia Accept-Encoding             | Regex corrigido e compressão assíncrona, confirmada por headers e testes HTTP                                                   |
+| Projeção/JSON/gzip repetidos em consultas iguais            | CPU desperdiçada sem mudança do mundo                | Cache por mundo/revisão/empresa: até duas empresas, orçamento de 16 MiB; snapshot imutável                                      |
+| Pregão fazia até oito consultas em paralelo                 | Oito varreduras e respostas repetidas                | Consulta agrupada numa passagem, mesmos limites e ordem; endpoint individual mantido                                            |
+| Histórico transmitia campos completos do ledger             | Bytes sem uso nos cartões/perfis                     | Contrato agrupado leva apenas os seis campos consumidos das negociações; amostras conservadas                                   |
+| Polling sobrepunha chamadas e não tinha deadline            | Fila crescente e conexão sem fim                     | Uma tentativa por empresa, 15 s para fetch/corpo, retry explícito cancela pendente; chamadas antigas não trocam empresa/revisão |
+| Polling em aba oculta                                       | CPU/rede sem jogador olhando                         | Pausado; ao voltar à aba consulta imediatamente                                                                                 |
+| Duas APIs locais estavam rodando                            | Mundos diferentes competiam por CPU/memória/disco    | Encerrada a instância extra criada nesta conversa; apenas a API da prévia de design permaneceu                                  |
+| Prévia de desenvolvimento                                   | Mais módulos, transformação e verificações de React  | Prévia compilada adicional na 5192, mesma API 3011 e mesmo mundo                                                                |
 
 Backup consistente antes de reiniciar a prévia:
 `.runtime/backups/pre-performance-1793730113547.sqlite`. O catálogo, o motor, as
@@ -130,11 +130,11 @@ O rollback compartilha apenas entradas imutáveis do ledger, copiando o array e 
 
 Benchmark na mesma cópia do mundo, 588.022 lançamentos (test-results/performance/storage.json):
 
-| Medida | Antes | Depois |
-| --- | ---: | ---: |
+| Medida             |             Antes |                               Depois |
+| ------------------ | ----------------: | -----------------------------------: |
 | Snapshot regravado | 185.463.800 bytes | 36.604.248 bytes + lançamentos novos |
-| Clone de rollback | 1.457,7 ms | 285,3 ms |
-| Serialização JSON | 1.432,9 ms | 242,5 ms |
+| Clone de rollback  |        1.457,7 ms |                             285,3 ms |
+| Serialização JSON  |        1.432,9 ms |                             242,5 ms |
 
 Migração inicial: 31,35 s, uma vez. Três comandos de preço com tempo injetado congelado: 1.082 / 801 / 760 ms. Não são latências HTTP nem prova de carga concorrente. Hash integral conferido após migração e reabertura. O mundo real foi atualizado com backup pre-ledger-storage-1793731964182.sqlite; season e dados preservados.
 

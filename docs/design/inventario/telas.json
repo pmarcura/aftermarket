@@ -817,10 +817,7 @@
   "businesses": {
     "texto": "MEUS NEGÓCIOS\nUNIDADES\nFROTA\nMEUS NEGÓCIOS\n\nCada cartão é um negócio seu. O que precisa de você aparece primeiro.\n\n1\nnegócio\nR$ 1.398\nvendidos hoje\n0\ntudo em dia\nLOJA CAMPINAS\nATIVO\nOnde\nCampinas, SP\nVendeu hoje\nR$ 1.398\nEquipe\n3\n\nTudo certo por aqui\nNada esperando por você neste negócio.\n\nABRIR\nAbrir um negócio\nEscolha um imóvel no mapa",
     "gaveta": null,
-    "titulos": [
-      "Meus negócios",
-      "Loja Campinas"
-    ],
+    "titulos": ["Meus negócios", "Loja Campinas"],
     "controles": [
       "Unidades",
       "Frota",
@@ -832,12 +829,7 @@
   "retail": {
     "texto": "LOJA CAMPINAS\n\nCAMPINAS, SP · PORTAS ABERTAS · 3 FUNCIONÁRIOS\n\nCOMPRAR MERCADORIAS\nMARGEM DO DIA\nR$ 25.692\nPOR DIA\nsobra bem!\nPREJUÍZO\nEMPATE\nÓTIMO\n\nEstimativa com os preços de agora. Para empatar a loja precisa render R$ 495 por dia.\n\nPARA MANTER AS PORTAS\nR$ 495\ncusto fixo por dia\nSOBRA POR DIA\n+R$ 25.197\ndepois dos custos\nPRATELEIRA\nABASTECIMENTO\nEQUIPE\nFINANÇAS\n\nAjustando 2 preços, a prateleira lucra cerca de +R$ 246 a mais por dia (estimativa).\n\nUSAR OS MELHORES PREÇOS\nR$ 8,95\nLEITE 1 L\nDURA ~2,8 DIAS\nNo armazém\n16.129 caixas\nQualidade\n78\nMANDAR BUSCAR\n\nPreço no ponto de maior lucro. Nada a ajustar.\n\nR$ 8,95\nprejuízo\nlucra pouco\nlucra bem\nmaior lucro\nPreço justo\nR$ 6,17\nMenor do mapa\nR$ 5,86\nMenor em Campinas\nR$ 5,86\nSeu custo\nR$ 5,10\nVer a curva de lucro\nSeu preço\n−\n+\n~5.772\ncaixas por dia\nR$ 22.231\nde lucro por dia\nTestar R$ 8,39\nPREÇO SALVO\nR$ 12,62\nÓLEO DE SOJA 1 L\nEM DIA: 4 DIAS\nNo armazém\n2.434 garrafas\nQualidade\n70\n\nPreço no ponto de maior lucro. Nada a ajustar.\n\nR$ 12,62\nMenor em Campinas\nR$ 9,69\nPreço justo\nR$ 8,90\nMenor do mapa\nR$ 8,50\nSeu custo\nR$ 6,99\nVer a curva de lucro\nSeu preço\n−\n+\n~615\ngarrafas por dia\nR$ 3.461\nde lucro por dia\nTestar R$ 11,57\nPREÇO SALVO\n\nEstimativa com a procura da cidade, a qualidade do estoque e os preços das lojas concorrentes, pela mesma regra que decide as vendas. Equipe, área e estoque podem limitar a venda real.\n\nÚltimas vendas\n00h08\n135 caixas de Leite 1 L\n+R$ 1.208\n00h08\n15 garrafas de Óleo de soja 1 L\n+R$ 189\n22h08\n51 garrafas de Óleo de soja 1 L\n+R$ 644",
     "gaveta": null,
-    "titulos": [
-      "Loja Campinas",
-      "Leite 1 L",
-      "Óleo de soja 1 L",
-      "Últimas vendas"
-    ],
+    "titulos": ["Loja Campinas", "Leite 1 L", "Óleo de soja 1 L", "Últimas vendas"],
     "controles": [
       "Comprar mercadorias",
       "Prateleira",
@@ -1072,9 +1064,7 @@
   "carrier": {
     "texto": "MEUS NEGÓCIOS\nUNIDADES\nFROTA\nMINHA FROTA\n\nSeus caminhões levam as compras e vendas da empresa sem pagar transportadora de fora.\n\nCOMPRAR CAMINHÃO\n0 / 0\ncaminhões livres agora\n0 t\nlivres de 0 t na frota\n0\ncargas viajando\nR$ 0\nrecebidos em fretes\nCompre seu primeiro caminhão\nCompare montadoras e aumente a capacidade de transporte",
     "gaveta": null,
-    "titulos": [
-      "Minha frota"
-    ],
+    "titulos": ["Minha frota"],
     "controles": [
       "Unidades",
       "Frota",
@@ -1346,10 +1336,7 @@
   "orders--a-caminho0": {
     "texto": "COMÉRCIO\nCOMPRAR\nCOTAÇÕES\nPEDIDOS\nCONTRATOS\nPEDIDOS E ENTREGAS\n\nCompras e vendas combinadas com outras empresas: o que espera resposta, o que está a caminho e o que já foi entregue.\n\nResponder\n0\nA caminho\n0\nConcluídos\n2\nPEDIR MERCADORIA\nNenhuma carga na estrada\n\nCompras, vendas e contratos aparecem aqui assim que o caminhão sai.\n\nIR AO MERCADO\n\nConversar não reserva estoque nem cobra. Na hora de aceitar, preço, prazo, caixa, espaço e caminhões são conferidos de novo.",
     "gaveta": null,
-    "titulos": [
-      "Pedidos e entregas",
-      "Nenhuma carga na estrada"
-    ],
+    "titulos": ["Pedidos e entregas", "Nenhuma carga na estrada"],
     "controles": [
       "Comprar",
       "Cotações",
@@ -1366,12 +1353,7 @@
   "orders--concluidos2": {
     "texto": "COMÉRCIO\nCOMPRAR\nCOTAÇÕES\nPEDIDOS\nCONTRATOS\nPEDIDOS E ENTREGAS\n\nCompras e vendas combinadas com outras empresas: o que espera resposta, o que está a caminho e o que já foi entregue.\n\nResponder\n0\nA caminho\n0\nConcluídos\n2\nPEDIR MERCADORIA\nJá terminaram 2\nLEITE 1 L\nENTREGUE\n\nVocê recebe de Bandeirante Comercial Guarulhos em Loja Campinas\n\nChegou\n16.264 de 16.264 caixas\nFrete: R$ 945,69\nVer no mapa\nÓLEO DE SOJA 1 L\nENTREGUE\n\nVocê recebe de Distribuidora Aurora em Loja Campinas\n\nChegou\n2.500 de 2.500 garrafas\nFrete: R$ 695,82\nVer no mapa\n\nConversar não reserva estoque nem cobra. Na hora de aceitar, preço, prazo, caixa, espaço e caminhões são conferidos de novo.",
     "gaveta": null,
-    "titulos": [
-      "Pedidos e entregas",
-      "Já terminaram 2",
-      "Leite 1 L",
-      "Óleo de soja 1 L"
-    ],
+    "titulos": ["Pedidos e entregas", "Já terminaram 2", "Leite 1 L", "Óleo de soja 1 L"],
     "controles": [
       "Comprar",
       "Cotações",
@@ -1393,10 +1375,7 @@
   "logistics": {
     "texto": "COMÉRCIO\nCOMPRAR\nCOTAÇÕES\nPEDIDOS\nCONTRATOS\nPEDIDOS E ENTREGAS\n\nCompras e vendas combinadas com outras empresas: o que espera resposta, o que está a caminho e o que já foi entregue.\n\nResponder\n0\nA caminho\n0\nConcluídos\n2\nPEDIR MERCADORIA\nNenhuma carga na estrada\n\nCompras, vendas e contratos aparecem aqui assim que o caminhão sai.\n\nIR AO MERCADO\n\nConversar não reserva estoque nem cobra. Na hora de aceitar, preço, prazo, caixa, espaço e caminhões são conferidos de novo.",
     "gaveta": null,
-    "titulos": [
-      "Pedidos e entregas",
-      "Nenhuma carga na estrada"
-    ],
+    "titulos": ["Pedidos e entregas", "Nenhuma carga na estrada"],
     "controles": [
       "Comprar",
       "Cotações",
@@ -1413,10 +1392,7 @@
   "logistics--a-caminho0": {
     "texto": "COMÉRCIO\nCOMPRAR\nCOTAÇÕES\nPEDIDOS\nCONTRATOS\nPEDIDOS E ENTREGAS\n\nCompras e vendas combinadas com outras empresas: o que espera resposta, o que está a caminho e o que já foi entregue.\n\nResponder\n0\nA caminho\n0\nConcluídos\n2\nPEDIR MERCADORIA\nNenhuma carga na estrada\n\nCompras, vendas e contratos aparecem aqui assim que o caminhão sai.\n\nIR AO MERCADO\n\nConversar não reserva estoque nem cobra. Na hora de aceitar, preço, prazo, caixa, espaço e caminhões são conferidos de novo.",
     "gaveta": null,
-    "titulos": [
-      "Pedidos e entregas",
-      "Nenhuma carga na estrada"
-    ],
+    "titulos": ["Pedidos e entregas", "Nenhuma carga na estrada"],
     "controles": [
       "Comprar",
       "Cotações",
@@ -1433,12 +1409,7 @@
   "logistics--concluidos2": {
     "texto": "COMÉRCIO\nCOMPRAR\nCOTAÇÕES\nPEDIDOS\nCONTRATOS\nPEDIDOS E ENTREGAS\n\nCompras e vendas combinadas com outras empresas: o que espera resposta, o que está a caminho e o que já foi entregue.\n\nResponder\n0\nA caminho\n0\nConcluídos\n2\nPEDIR MERCADORIA\nJá terminaram 2\nLEITE 1 L\nENTREGUE\n\nVocê recebe de Bandeirante Comercial Guarulhos em Loja Campinas\n\nChegou\n16.264 de 16.264 caixas\nFrete: R$ 945,69\nVer no mapa\nÓLEO DE SOJA 1 L\nENTREGUE\n\nVocê recebe de Distribuidora Aurora em Loja Campinas\n\nChegou\n2.500 de 2.500 garrafas\nFrete: R$ 695,82\nVer no mapa\n\nConversar não reserva estoque nem cobra. Na hora de aceitar, preço, prazo, caixa, espaço e caminhões são conferidos de novo.",
     "gaveta": null,
-    "titulos": [
-      "Pedidos e entregas",
-      "Já terminaram 2",
-      "Leite 1 L",
-      "Óleo de soja 1 L"
-    ],
+    "titulos": ["Pedidos e entregas", "Já terminaram 2", "Leite 1 L", "Óleo de soja 1 L"],
     "controles": [
       "Comprar",
       "Cotações",

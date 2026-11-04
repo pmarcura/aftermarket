@@ -46,14 +46,14 @@ e limites em [VALIDAÇÃO DA INTERFACE](../docs/design/VALIDACAO-INTERFACE-2026-
 
 ## Furos conhecidos
 
-| Área        | Problema                                                                                                                                 | Onde está o detalhe                                             |
-| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| Economia    | Escala 20: arroz, feijão, utensílios e caminhão leve no vermelho; aço ao governo ~190 de 320 t/dia; procura atendida 51%                 | [PROVA](../docs/product/PROVA.md), D-036, D-038, D-039, HANDOFF |
-| Mundo       | Só 12 lotes livres e os dois jogadores de teste começam em Campinas                                                                      | etapa D (uma cidade e lotes por amigo)                          |
-| Mundo salvo | Mundos da economia antiga são recusados ao abrir, sem backup nem alteração; o dono arquiva `.runtime/world.sqlite` e começa um novo      | spec 001 (R6)                                                   |
-| Desempenho  | Ledger incremental; demais entidades ainda em snapshot síncrono (~36,6 MB); motor compartilha thread da API | etapa C do roteiro                                              |
-| Multiplayer | Servidor só escuta `127.0.0.1`; perfis sem senha                                                                                         | etapa D do roteiro                                              |
-| Interface   | Sem mural de notícias nem ranking; fábricas e fazendas ainda sem o padrão novo da loja                                                   | etapa E do roteiro                                              |
+| Área        | Problema                                                                                                                            | Onde está o detalhe                                             |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| Economia    | Escala 20: arroz, feijão, utensílios e caminhão leve no vermelho; aço ao governo ~190 de 320 t/dia; procura atendida 51%            | [PROVA](../docs/product/PROVA.md), D-036, D-038, D-039, HANDOFF |
+| Mundo       | Só 12 lotes livres e os dois jogadores de teste começam em Campinas                                                                 | etapa D (uma cidade e lotes por amigo)                          |
+| Mundo salvo | Mundos da economia antiga são recusados ao abrir, sem backup nem alteração; o dono arquiva `.runtime/world.sqlite` e começa um novo | spec 001 (R6)                                                   |
+| Desempenho  | Ledger incremental; demais entidades ainda em snapshot síncrono (~36,6 MB); motor compartilha thread da API                         | etapa C do roteiro                                              |
+| Multiplayer | Servidor só escuta `127.0.0.1`; perfis sem senha                                                                                    | etapa D do roteiro                                              |
+| Interface   | Sem mural de notícias nem ranking; fábricas e fazendas ainda sem o padrão novo da loja                                              | etapa E do roteiro                                              |
 
 ## Próximo passo
 

@@ -8,7 +8,7 @@ sys.argv = [sys.argv[0], '/tmp/claude-0/-home-claude/4658e4cc-7ea1-53cc-8e55-3b8
 import importlib.util
 spec = importlib.util.spec_from_file_location('paint', '/tmp/claude-0/-home-claude/4658e4cc-7ea1-53cc-8e55-3b8a0f60fa8f/scratchpad/pixel16/paint_lib.py')
 P = importlib.util.module_from_spec(spec); spec.loader.exec_module(P)
-spec2 = importlib.util.spec_from_file_location('sprites', '/tmp/claude-0/-home-claude/4658e4cc-7ea1-53cc-8e55-3b8a0f60fa8f/scratchpad/pixel16/sprites2.py')
+spec2 = importlib.util.spec_from_file_location('sprites', '/tmp/claude-0/-home-claude/4658e4cc-7ea1-53cc-8e55-3b8a0f60fa8f/scratchpad/pixel16/sprites3.py')
 SP = importlib.util.module_from_spec(spec2); spec2.loader.exec_module(SP)
 from PIL import Image, ImageDraw, ImageFont
 
@@ -119,7 +119,7 @@ for n, uf, lo, la, pop in cities:
 caixas = []
 for n, uf, lo, la, pop in sorted(cities, key=lambda c: -c[4]):
     x, y = proj(lo, la); x, y = int(x), int(y)
-    off = 27 if pop >= 2000 else 20 if pop >= 400 else 11
+    off = 38 if pop >= 2000 else 30 if pop >= 400 else 14
     w = int(len(n) * 6.5) + 4; h = 13
     opcoes = [(x - w // 2, y + off), (x - w // 2, y - off - h), (x + off + 4, y - 6), (x - off - 4 - w, y - 6)]
     for bx, by in opcoes:
@@ -129,7 +129,7 @@ for n, uf, lo, la, pop in sorted(cities, key=lambda c: -c[4]):
             caixas.append(box)
             break
     # sprite da cidade conta como caixa para rótulos vizinhos
-    r = 48 if pop >= 2000 else 32 if pop >= 400 else 15
+    r = 72 if pop >= 2000 else 50 if pop >= 400 else 24
     caixas.append((x - r, y - r // 2, x + r, y + r // 2))
 P.save(sys.argv[1] + '/mundo-real')
 print(W, H, len(cities))

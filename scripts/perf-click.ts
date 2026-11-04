@@ -1,6 +1,7 @@
 // Régua de desempenho do clique (spec 013, fase 0). Mede, num mundo de referência fixo, quanto
 // cada etapa de um comando de jogador custa: cópia para desfazer, avanço do tempo, regra do jogo,
-// gravação no disco e montagem da resposta. Também mede a gravação automática do servidor.
+// gravação no disco e montagem da resposta. Também mede a foto do mundo inteiro (spec 014: a
+// cada 5 min no servidor; aqui a cada 3 cliques, para ter amostras).
 //
 // Uso: npm run perf:click -- [--dir=.runtime/perf] [--scale=20] [--days=7] [--commands=60]
 //                            [--copy=<mundo.sqlite>] [--out=<relatorio.json>]
@@ -147,7 +148,7 @@ for (let i = 0; i < total; i++) {
     tipo: command.type,
     ok,
   });
-  // Gravação automática do servidor (a cada 5 s no servidor real): avanço + gravação.
+  // Passagem do tempo + foto do mundo inteiro (a cada 5 min no servidor real).
   if (i % 3 === 2) {
     const a = performance.now();
     store.tick(real + 5000);
@@ -207,7 +208,7 @@ for (const e of etapas) {
 }
 const g = report.gravacaoAutomatica;
 console.log(
-  `\ngravação automática: avanço p95 ${g.avanco.p95} ms · gravação p95 ${g.gravacao.p95} ms (máx ${g.gravacao.max} ms)`,
+  `\nfoto do mundo inteiro (a cada 5 min): avanço p95 ${g.avanco.p95} ms · gravação p95 ${g.gravacao.p95} ms (máx ${g.gravacao.max} ms)`,
 );
 const out = arg('out');
 if (out) {

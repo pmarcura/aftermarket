@@ -8,10 +8,22 @@ import type { Command, World } from '../../../packages/simulation/src/model';
 import { migrateWorld, needsMigration } from '../../../packages/simulation/src/migrate';
 import { archiveHistory } from '../../../packages/simulation/src/history';
 import { gameDay } from '../../../packages/simulation/src/clock';
+import { totalMoney } from '../../../packages/simulation/src/invariants';
 import type { RoadAccessUpdate } from './road-access';
-import { readWorldSnapshot, rollbackSnapshot, createSnapshotWriter } from './world-storage';
+import {
+  JOURNAL_TABLE,
+  readJournal,
+  readJournalSeq,
+  readWorldSnapshot,
+  rollbackSnapshot,
+  createSnapshotWriter,
+  type JournalEntry,
+} from './world-storage';
 
-const SAVE_INTERVAL_MS = 5000;
+// Foto do mundo inteiro (spec 014): a cada 5 min, a cada 2.000 linhas de diário, ao pausar e ao
+// desligar. Entre fotos, cada mudança vira uma linha pequena no diário.
+const FOTO_MS = 5 * 60_000;
+const FOTO_LINHAS = 2000;
 
 /** Tempo de cada etapa do último comando, em ms. */
 export interface Etapas {
@@ -31,12 +43,16 @@ export function createStore(
     timeScale?: number;
     /** Parar o relógio do mundo depois deste tempo real sem ninguém jogando (spec 013). */
     pauseWhenIdleMs?: number;
+    /** Intervalo entre fotos do mundo inteiro (spec 014; testes usam valores menores). */
+    snapshotEveryMs?: number;
+    /** Linhas de diário que forçam uma foto. */
+    snapshotEveryEntries?: number;
   } = {},
 ) {
   if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true });
   const db = new DatabaseSync(path);
   db.exec(
-    'PRAGMA journal_mode=WAL; PRAGMA journal_size_limit=67108864; PRAGMA busy_timeout=5000; CREATE TABLE IF NOT EXISTS worlds (id INTEGER PRIMARY KEY CHECK(id=1), state TEXT NOT NULL); CREATE TABLE IF NOT EXISTS receipts (id TEXT PRIMARY KEY, actor TEXT NOT NULL, command TEXT NOT NULL);',
+    `PRAGMA journal_mode=WAL; PRAGMA journal_size_limit=67108864; PRAGMA busy_timeout=5000; CREATE TABLE IF NOT EXISTS worlds (id INTEGER PRIMARY KEY CHECK(id=1), state TEXT NOT NULL); CREATE TABLE IF NOT EXISTS receipts (id TEXT PRIMARY KEY, actor TEXT NOT NULL, command TEXT NOT NULL); ${JOURNAL_TABLE};`,
   );
   const existed = Boolean(db.prepare('SELECT id FROM worlds WHERE id=1').get());
   let backedUp = false;
@@ -81,9 +97,8 @@ export function createStore(
   db.exec(
     'CREATE TABLE IF NOT EXISTS history_ledger (id TEXT PRIMARY KEY, at INTEGER NOT NULL, payload TEXT NOT NULL); CREATE TABLE IF NOT EXISTS history_jobs (id TEXT PRIMARY KEY, at INTEGER NOT NULL, payload TEXT NOT NULL); CREATE TABLE IF NOT EXISTS history_shipments (id TEXT PRIMARY KEY, at INTEGER NOT NULL, payload TEXT NOT NULL);',
   );
-  // O mundo vive na memória do servidor: ler e decodificar o JSON inteiro a cada pedido do
-  // navegador custava centenas de milissegundos por pedido aos 30 dias. Grava no disco a cada
-  // SAVE_INTERVAL_MS e sempre junto com o recibo de cada comando.
+  // O mundo vive na memória do servidor. No disco ficam a última foto do mundo inteiro e o diário
+  // do que mudou desde então (spec 014): cada comando grava só a sua linha, junto com o recibo.
   let world = needsMigration(existing) ? readWorldSnapshot(db) : existing;
   const format = db
     .prepare("SELECT json_extract(state, '$.storageFormat') AS format FROM worlds WHERE id=1")
@@ -106,17 +121,27 @@ export function createStore(
       `Este mundo roda a ${world.season.config.clock.timeScale}×; AFTERMARKET_TIME_SCALE=${options.timeScale} vale só para mundo novo (use outro AFTERMARKET_DB_FILE).`,
     );
   let ultimoClique: Etapas | null = null;
-  let dirty = false,
-    lastSave = Date.now(),
+  const fotoMs = options.snapshotEveryMs ?? FOTO_MS,
+    fotoLinhas = options.snapshotEveryEntries ?? FOTO_LINHAS;
+  // `sujo`: mudança fora do diário (migrações na abertura). `linhas`: diário desde a última foto.
+  let sujo = false,
+    linhas = 0,
+    ultimaFoto = Date.now(),
     lastArchive = 0;
   const archiveRows = {
     ledger: db.prepare('INSERT OR IGNORE INTO history_ledger VALUES(?,?,?)'),
     jobs: db.prepare('INSERT OR IGNORE INTO history_jobs VALUES(?,?,?)'),
     shipments: db.prepare('INSERT OR IGNORE INTO history_shipments VALUES(?,?,?)'),
   };
+  const journal = {
+    insert: db.prepare('INSERT INTO world_journal(entry) VALUES(?)'),
+    last: db.prepare('SELECT max(seq) AS seq FROM world_journal'),
+    trim: db.prepare('DELETE FROM world_journal WHERE seq <= ?'),
+  };
+  /** Foto do mundo inteiro: cobre todo o diário gravado até aqui, que então é apagado. */
   const writeWorld = () => {
     // O que passou do prazo do histórico vai para o arquivo, na mesma transação da gravação:
-    // nada é apagado.
+    // nada é apagado. Acontece só na foto, então repetir o diário depois dela não arquiva de novo.
     const keepDays = world.season.config.history.keepDays;
     if (world.updatedAt - lastArchive >= gameDay(world) / 4) {
       const previous = {
@@ -136,10 +161,14 @@ export function createStore(
         lastArchive = archivedAt;
       });
     }
-    committed.push(saveSnapshot(world));
+    // Toda linha gravada no diário já foi aplicada ao mundo da memória: a foto cobre todas.
+    const journalSeq = (journal.last.get() as { seq: number | null }).seq ?? readJournalSeq(db);
+    committed.push(saveSnapshot(world, journalSeq));
+    journal.trim.run(journalSeq);
     committed.push(() => {
-      dirty = false;
-      lastSave = Date.now();
+      sujo = false;
+      linhas = 0;
+      ultimaFoto = Date.now();
     });
   };
   const transaction = <T>(fn: () => T) => {
@@ -157,11 +186,117 @@ export function createStore(
       throw error;
     }
   };
-  // Storage migration must preserve the exact simulation state, including history windows.
-  if (!packed) transaction(() => committed.push(saveSnapshot(world)));
-  const flush = () => {
-    if (dirty) transaction(writeWorld);
+  const anotar = (entry: JournalEntry) => {
+    journal.insert.run(JSON.stringify(entry));
+    linhas++;
   };
+  /** Linha do diário fora de um comando: se o disco falhar, a foto inteira a substitui. */
+  const anotarFora = (entry: JournalEntry) => {
+    try {
+      anotar(entry);
+    } catch (error) {
+      console.error('Falha ao gravar o diário; gravando o mundo inteiro.', error);
+      transaction(writeWorld);
+    }
+  };
+
+  // Mudanças que vêm de fora do motor: aplicadas igual ao vivo e ao repetir o diário.
+  const aplicarRota = (key: string, route: World['routes'][string]) => {
+    world.routes[key] = route;
+    for (const s of world.shipments) {
+      const a = world.establishments.find((e) => e.id === s.originId),
+        b = world.establishments.find((e) => e.id === s.destinationId);
+      if (
+        route.source === 'osrm' &&
+        a &&
+        b &&
+        `${a.propertyId}:${b.propertyId}` === key &&
+        s.routeSource !== 'osrm'
+      ) {
+        s.mapRouteKey = key;
+        s.mapRouteSource = 'osrm';
+        // Carga entregue também recebe o desenho: o registro gravado precisa ser refeito.
+        saveSnapshot.reabrir('shipments', [s.id]);
+      }
+    }
+    world.revision++;
+  };
+  const aplicarAcesso = (updates: RoadAccessUpdate[]) => {
+    const applicable = updates.filter((u) => {
+      const p = world.properties.find((p) => p.id === u.id);
+      return p && p.coordinates.every((n, i) => n === u.expectedCoordinates[i]);
+    });
+    if (!applicable.length) return false;
+    const moved = new Set(
+      applicable
+        .filter((u) => u.coordinates.some((n, i) => n !== u.expectedCoordinates[i]))
+        .map((u) => u.id),
+    );
+    for (const [key, route] of Object.entries(world.routes)) {
+      if (!key.split(':').some((id) => moved.has(id))) continue;
+      // Remessas antigas podem apontar para o cache visual: congelar antes de invalidar.
+      for (const s of world.shipments)
+        if (s.mapRouteKey === key) {
+          s.mapRoute = structuredClone(route.coordinates);
+          delete s.mapRouteKey;
+          saveSnapshot.reabrir('shipments', [s.id]);
+        }
+      delete world.routes[key];
+    }
+    for (const update of applicable) {
+      const p = world.properties.find((p) => p.id === update.id)!;
+      p.roadAccess = structuredClone(update.access);
+      if (update.access.status === 'connected') {
+        p.coordinates = [...update.coordinates];
+        p.road = update.road;
+        p.roadDistance = 0;
+      }
+    }
+    world.revision++;
+    return true;
+  };
+  const aplicar = (entry: JournalEntry) => {
+    switch (entry.kind) {
+      case 'command':
+        advance(world, entry.now);
+        execute(world, entry.actor, entry.command, entry.now);
+        return;
+      case 'advance':
+        // Ao vivo, um erro no meio da rodada é registrado e o mundo segue com o que já andou;
+        // repetir faz o mesmo.
+        try {
+          advance(world, entry.now);
+        } catch (error) {
+          console.error('Falha ao repetir a passagem do tempo (igual ao vivo).', error);
+        }
+        return;
+      case 'route':
+        return aplicarRota(entry.key, entry.route);
+      case 'roadAccess':
+        aplicarAcesso(entry.updates);
+        return;
+      case 'pause':
+        world.pausedMs = entry.pausedMs;
+        world.revision++;
+        return;
+    }
+  };
+
+  // Queda ou desligamento sem foto: repete o diário sobre a última foto, na ordem gravada.
+  const pendente = readJournal(db, readJournalSeq(db));
+  if (pendente.length) {
+    for (const entry of pendente) aplicar(entry);
+    // Conferência sempre ligada aqui: o mundo repetido tem de fechar centavo por centavo.
+    if (world.invariants && totalMoney(world) !== world.invariants.totalMoney)
+      throw new Error('O diário repetido não fecha o dinheiro do mundo; nada foi gravado.');
+    sujo = true;
+  }
+  // Storage migration must preserve the exact simulation state, including history windows.
+  if (!packed) transaction(() => committed.push(saveSnapshot(world, readJournalSeq(db))));
+  const flush = () => {
+    if (sujo || linhas > 0) transaction(writeWorld);
+  };
+  if (sujo) flush();
   // Migração geográfica explícita e idempotente. O backup antecede inclusive a ativação
   // do bloqueio de fretes; a rede externa só preencherá os acessos depois de validá-los.
   // O acesso vale em todo mundo jogável; o bloqueio de fretes, só onde o servidor exige rotas.
@@ -196,10 +331,13 @@ export function createStore(
   };
   const retomar = (real: number) => {
     if (paradoDesde === null) return;
-    world.pausedMs = (world.pausedMs ?? 0) + Math.max(0, real - paradoDesde);
+    const entry: JournalEntry = {
+      kind: 'pause',
+      pausedMs: (world.pausedMs ?? 0) + Math.max(0, real - paradoDesde),
+    };
     paradoDesde = null;
-    world.revision++;
-    dirty = true;
+    aplicar(entry);
+    anotarFora(entry);
   };
   // Servidor desligado também é mundo parado: ao abrir, o mundo segue de onde ficou.
   if (pausa !== undefined) {
@@ -218,40 +356,9 @@ export function createStore(
     atividade,
     parado: () => paradoDesde !== null,
     roadAccess(updates: RoadAccessUpdate[]) {
-      const applicable = updates.filter((u) => {
-        const p = world.properties.find((p) => p.id === u.id);
-        return p && p.coordinates.every((n, i) => n === u.expectedCoordinates[i]);
-      });
-      if (!applicable.length) return;
       const before = rollbackSnapshot(world);
       try {
-        const moved = new Set(
-          applicable
-            .filter((u) => u.coordinates.some((n, i) => n !== u.expectedCoordinates[i]))
-            .map((u) => u.id),
-        );
-        for (const [key, route] of Object.entries(world.routes)) {
-          if (!key.split(':').some((id) => moved.has(id))) continue;
-          // Remessas antigas podem apontar para o cache visual: congelar antes de invalidar.
-          for (const s of world.shipments)
-            if (s.mapRouteKey === key) {
-              s.mapRoute = structuredClone(route.coordinates);
-              delete s.mapRouteKey;
-              saveSnapshot.reabrir('shipments', [s.id]);
-            }
-          delete world.routes[key];
-        }
-        for (const update of applicable) {
-          const p = world.properties.find((p) => p.id === update.id)!;
-          p.roadAccess = structuredClone(update.access);
-          if (update.access.status === 'connected') {
-            p.coordinates = [...update.coordinates];
-            p.road = update.road;
-            p.roadDistance = 0;
-          }
-        }
-        world.revision++;
-        dirty = true;
+        if (aplicarAcesso(updates)) anotarFora({ kind: 'roadAccess', updates });
       } catch (error) {
         world = before;
         throw error;
@@ -261,8 +368,17 @@ export function createStore(
       if (pausa !== undefined && paradoDesde === null && real - ultimaAtividade >= pausa)
         parar(real);
       if (paradoDesde !== null) return world;
-      if (advance(world, relogio(real))) dirty = true;
-      if (dirty && Date.now() - lastSave >= SAVE_INTERVAL_MS) transaction(writeWorld);
+      const now = relogio(real);
+      let mudou = false,
+        falhou = true;
+      try {
+        mudou = advance(world, now);
+        falhou = false;
+      } finally {
+        // Também anota a rodada que falhou no meio: o que já andou precisa andar igual ao repetir.
+        if (mudou || falhou) anotarFora({ kind: 'advance', now });
+      }
+      if (linhas >= fotoLinhas || (linhas > 0 && Date.now() - ultimaFoto >= fotoMs)) flush();
       return world;
     },
     command(actor: string, command: Command, key: string, real = Date.now()) {
@@ -294,8 +410,10 @@ export function createStore(
         marcar('avanco');
         execute(world, actor, command, now);
         marcar('comando');
+        // Só a linha do diário e o recibo, na mesma transação: a compra está gravada antes de a
+        // tela confirmar (spec 012), sem regravar o mundo inteiro.
         transaction(() => {
-          writeWorld();
+          anotar({ kind: 'command', actor, command, key, now });
           db.prepare('INSERT INTO receipts VALUES(?,?,?)').run(key, actor, serialized);
         });
         marcar('gravacao');
@@ -306,30 +424,15 @@ export function createStore(
       return world;
     },
     route(key: string, route: World['routes'][string]) {
-      world.routes[key] = route;
-      for (const s of world.shipments) {
-        const a = world.establishments.find((e) => e.id === s.originId),
-          b = world.establishments.find((e) => e.id === s.destinationId);
-        if (
-          route.source === 'osrm' &&
-          a &&
-          b &&
-          `${a.propertyId}:${b.propertyId}` === key &&
-          s.routeSource !== 'osrm'
-        ) {
-          s.mapRouteKey = key;
-          s.mapRouteSource = 'osrm';
-          // Carga entregue também recebe o desenho: o registro gravado precisa ser refeito.
-          saveSnapshot.reabrir('shipments', [s.id]);
-        }
-      }
-      world.revision++;
-      dirty = true;
+      aplicarRota(key, route);
+      anotarFora({ kind: 'route', key, route });
     },
     flush,
     close: () => {
       flush();
       db.close();
     },
+    /** Só para testes: fecha sem foto, como uma queda do servidor. */
+    abandonar: () => db.close(),
   };
 }

@@ -29,7 +29,10 @@ it('migra o histórico com backup, conserva o mundo e persiste recibos após rea
     name: 'Teste',
   };
   const key = crypto.randomUUID();
-  const bought = structuredClone(store.command('player', command, key, original.updatedAt));
+  store.command('player', command, key, original.updatedAt);
+  // A foto (spec 014) também arquiva o histórico vencido; o mundo reaberto é o da foto.
+  store.flush();
+  const bought = structuredClone(store.read());
   store.close();
   const reopened = createStore(path);
   expect(reopened.read()).toEqual(bought);

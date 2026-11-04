@@ -1,5 +1,6 @@
 import type { DatabaseSync } from 'node:sqlite';
-import type { World } from '../../../packages/simulation/src/model';
+import type { Command, World } from '../../../packages/simulation/src/model';
+import type { RoadAccessUpdate } from './road-access';
 import { gameDay } from '../../../packages/simulation/src/clock';
 
 /**
@@ -47,7 +48,37 @@ export function readWorldSnapshot(db: DatabaseSync): World {
       });
   }
   delete stored.storageFormat;
+  delete stored.journalSeq;
   return stored as World;
+}
+
+/** Uma linha do diário (spec 014): o que entrou no mundo vindo de fora, na ordem em que entrou. */
+export type JournalEntry =
+  | { kind: 'command'; actor: string; command: Command; key: string; now: number }
+  | { kind: 'advance'; now: number }
+  | { kind: 'route'; key: string; route: World['routes'][string] }
+  | { kind: 'roadAccess'; updates: RoadAccessUpdate[] }
+  | { kind: 'pause'; pausedMs: number };
+
+export const JOURNAL_TABLE =
+  'CREATE TABLE IF NOT EXISTS world_journal (seq INTEGER PRIMARY KEY AUTOINCREMENT, entry TEXT NOT NULL)';
+
+/** Até que linha do diário a foto gravada já cobre (0 = nenhuma). */
+export function readJournalSeq(db: DatabaseSync): number {
+  const row = db
+    .prepare("SELECT json_extract(state, '$.journalSeq') AS seq FROM worlds WHERE id=1")
+    .get() as { seq: number | null } | undefined;
+  return row?.seq ?? 0;
+}
+
+/** Linhas do diário que a foto ainda não cobre, em ordem. */
+export function readJournal(db: DatabaseSync, after: number): JournalEntry[] {
+  db.exec(JOURNAL_TABLE);
+  return (
+    db.prepare('SELECT entry FROM world_journal WHERE seq > ? ORDER BY seq').all(after) as {
+      entry: string;
+    }[]
+  ).map((r) => JSON.parse(r.entry) as JournalEntry);
 }
 
 /**
@@ -62,12 +93,26 @@ export function rollbackSnapshot(world: World): World {
     jobs: [],
     orders: [],
     infrastructure: [],
+    marketHistory: [],
+    consumptionHistory: [],
+    supplyHistory: [],
+    botActivity: [],
+    routes: {},
   }) as World;
   for (const lista of LISTAS)
     (base[lista] as unknown[]) = (world[lista] as unknown[]).map((item) =>
       encerrado(lista, item) ? item : structuredClone(item),
     );
   base.ledger = world.ledger.slice();
+  // Históricos que só crescem (spec 014): o motor acrescenta itens ou corta o começo, nunca altera
+  // um item antigo. A cópia do array basta; os itens são os mesmos. Rotas são trocadas inteiras.
+  base.marketHistory = world.marketHistory.slice();
+  base.consumptionHistory = world.consumptionHistory.slice();
+  if (world.supplyHistory) base.supplyHistory = world.supplyHistory.slice();
+  else delete base.supplyHistory;
+  if (world.botActivity) base.botActivity = world.botActivity.slice();
+  else delete base.botActivity;
+  base.routes = { ...world.routes };
   return base;
 }
 
@@ -90,7 +135,7 @@ export function createSnapshotWriter(db: DatabaseSync) {
   const gravados = new Set<string>();
   for (const r of db.prepare('SELECT kind, id FROM world_frozen').iterate())
     gravados.add(`${r.kind}:${r.id}`);
-  const salvar = (world: World) => {
+  const salvar = (world: World, journalSeq = 0) => {
     // Looking backwards normally finds the previous commit within the latest few entries.
     let first = saved ? world.ledger.findLastIndex((entry) => entry.id === saved) + 1 : 0;
     if (saved && first === 0) db.exec('DELETE FROM world_ledger');
@@ -133,7 +178,7 @@ export function createSnapshotWriter(db: DatabaseSync) {
       descongelar.run(lista, id);
     }
     db.prepare('UPDATE worlds SET state=? WHERE id=1').run(
-      JSON.stringify({ ...world, ...listas, ledger: [], storageFormat: 2 }),
+      JSON.stringify({ ...world, ...listas, ledger: [], storageFormat: 2, journalSeq }),
     );
     // Advance the cursors only AFTER the caller commits. A failed receipt must roll it back too.
     const last = world.ledger.at(-1)?.id;

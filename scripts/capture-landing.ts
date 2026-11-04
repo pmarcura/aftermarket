@@ -8,7 +8,7 @@ const url = process.argv.find((a) => a.startsWith('--url='))?.slice(6) ?? 'http:
 const destino = 'apps/web/public/arte/landing';
 const cenas = [
   { nome: 'mapa', pagina: 'map', espera: '.main-map [data-map-ready="true"]' },
-  { nome: 'comprar', pagina: 'market', espera: '.vitrine' },
+  { nome: 'comprar', pagina: 'market', espera: '.vitrine-lista' },
   { nome: 'loja', pagina: 'retail', espera: '.loja-pagina' },
 ] as const;
 // Fotos em densidade 2× para continuarem nítidas em telas de alta resolução; 1360 px de largura

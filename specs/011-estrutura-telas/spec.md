@@ -1,4 +1,4 @@
-# Spec 008 · Estrutura das telas: cada coisa numa casa só
+# Spec 011 · Estrutura das telas: cada coisa numa casa só
 
 Estado: **aprovada** (Pedro, 03/11/2026). Branch `design/estrutura-telas`. Decisão D-043. Corre em paralelo às specs 006 e 007; toca só `apps/web`, salvo onde um requisito diz o contrário.
 

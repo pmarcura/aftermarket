@@ -1,0 +1,870 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mundo Vivo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..800&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Mesma linguagem da economia-proposta.html: faixas, cartões e tabelas; dourado marca o que é novo */
+:root {
+  --bg: #f2f4f3; --surface: #ffffff; --ink: #13232c; --muted: #56676e; --line: #d6dddf;
+  --gold: #9a6a1c; --gold-soft: #f3e7d1;
+  --ok: #2d7a4d; --ok-soft: #dcefe3; --bad: #ad3a31; --bad-soft: #f6dedb;
+  --farm: #4f8f5c; --industry: #6c7c85; --retail: #c95c50; --gov: #3f7fae; --fam: #8a5fb0; --port: #2f8f8f; --bgx: #9aa7ab;
+  --display: "Archivo", "Arial Narrow", system-ui, sans-serif;
+  --body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f1d24; --surface: #142730; --ink: #e5ecec; --muted: #94a6ab; --line: #24404b;
+  --gold: #e0b066; --gold-soft: #3a3020; --ok: #6cc58f; --ok-soft: #173827; --bad: #ef7d72; --bad-soft: #42211e;
+  --farm: #78b884; --industry: #9eadb5; --retail: #e8857a; --gov: #7db6db; --fam: #b892d8; --port: #6cc5c5; --bgx: #5f7178;
+  color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0f1d24; --surface: #142730; --ink: #e5ecec; --muted: #94a6ab; --line: #24404b;
+  --gold: #e0b066; --gold-soft: #3a3020; --ok: #6cc58f; --ok-soft: #173827; --bad: #ef7d72; --bad-soft: #42211e;
+  --farm: #78b884; --industry: #9eadb5; --retail: #e8857a; --gov: #7db6db; --fam: #b892d8; --port: #6cc5c5; --bgx: #5f7178;
+  color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 16px/1.6 var(--body); }
+.wrap { max-width: 1040px; margin: 0 auto; padding-block: 48px 80px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 64px; }
+.read { max-width: 70ch; }
+h1, h2, h3 { font-family: var(--display); font-stretch: 85%; line-height: 1.1; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2.3rem, 6vw, 3.4rem); font-weight: 800; }
+h2 { font-size: 1.7rem; font-weight: 700; }
+h3 { font-size: 1.1rem; font-weight: 700; font-stretch: 90%; }
+p { margin: 0; }
+.eyebrow { font: 500 0.75rem/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); }
+.lead { font-size: 1.18rem; line-height: 1.5; }
+.muted { color: var(--muted); }
+.small { font-size: 0.88rem; }
+.num { font-variant-numeric: tabular-nums; }
+section, header { display: grid; gap: 18px; }
+.head { display: grid; gap: 8px; }
+.tag { font: 600 0.66rem/1 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 6px; border-radius: 4px;
+  background: var(--gold-soft); color: var(--gold); white-space: nowrap; }
+.tag.sim { background: var(--bg); color: var(--muted); border: 1px solid var(--line); }
+
+.grid4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.grid4 div { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 4px; align-content: start; }
+.grid4 div.new { background: var(--gold-soft); border-color: transparent; }
+.grid4 b { font: 700 1rem/1.2 var(--display); font-stretch: 90%; }
+.grid4 span { font-size: 0.86rem; color: var(--muted); line-height: 1.4; }
+
+.cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.cols3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; display: grid; gap: 10px; align-content: start; }
+.card ul, .card ol { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+.card.hl { background: var(--gold-soft); border-color: transparent; }
+.card.out { border-left: 4px solid var(--bad); }
+.card.in { border-left: 4px solid var(--ok); }
+.card .k { font: 500 0.7rem/1 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+
+.tablebox { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 680px; font-size: 0.93rem; }
+table.compact { min-width: 440px; }
+th, td { text-align: left; padding: 11px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+th { font: 500 0.72rem/1 var(--mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); background: var(--bg); }
+td:first-child { font-weight: 600; }
+td.dots { font-family: var(--mono); letter-spacing: 2px; color: var(--fam); white-space: nowrap; }
+td.r { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.now { color: var(--ok); font-weight: 600; }
+.yes { color: var(--ok); font-weight: 700; white-space: nowrap; }
+.no { color: var(--bad); font-weight: 700; white-space: nowrap; }
+.later { color: var(--gold); font-weight: 700; white-space: nowrap; }
+
+.diagram { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px; }
+.diagram svg { width: 100%; height: auto; display: block; }
+.diagram text { font-family: var(--body); fill: var(--ink); }
+.diagram .lbl { font-size: 13px; fill: var(--muted); }
+.diagram .ttl { font: 700 17px var(--display); }
+.diagram .sub { font-size: 12.5px; fill: var(--muted); }
+
+.rule { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: start; background: var(--surface);
+  border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+.rule i { font-style: normal; font: 700 0.72rem/1 var(--mono); padding: 5px 7px; border-radius: 4px; background: var(--ink); color: var(--bg); margin-top: 2px; }
+.rules { display: grid; gap: 10px; }
+
+.calc { font-family: var(--mono); font-size: 0.86rem; background: var(--bg); border-radius: 8px; padding: 12px 14px; line-height: 1.7; }
+.bar { display: flex; height: 26px; border-radius: 6px; overflow: hidden; font: 600 0.72rem/26px var(--mono); color: #fff; }
+.bar span { padding: 0 8px; white-space: nowrap; overflow: hidden; }
+
+/* painel da cidade: maquete do que o jogador vê */
+.city { background: var(--surface); border: 2px solid var(--ink); border-radius: 14px; overflow: hidden; display: grid; grid-template-columns: 1.1fr 1fr; }
+.city > div { padding: 20px; display: grid; gap: 14px; align-content: start; }
+.city > div + div { border-left: 1px solid var(--line); }
+.city h3 { font-size: 1.6rem; font-stretch: 80%; }
+.city .big { font: 800 2.2rem/1 var(--display); font-stretch: 78%; font-variant-numeric: tabular-nums; }
+.kv { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; font-size: 0.9rem; }
+.kv span:nth-of-type(even) { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.kv .sep { grid-column: 1 / -1; border-top: 1px dashed var(--line); margin: 4px 0; }
+.ages { display: flex; height: 18px; border-radius: 4px; overflow: hidden; }
+.share { display: grid; gap: 6px; }
+.share .row { display: grid; grid-template-columns: 70px 1fr; gap: 10px; align-items: center; font-size: 0.86rem; }
+.share .track { height: 14px; border-radius: 3px; background: var(--bgx); display: flex; overflow: hidden; }
+
+.timeline { display: grid; gap: 0; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--surface); }
+.tl { display: grid; grid-template-columns: 92px 1fr; border-bottom: 1px solid var(--line); }
+.tl:last-child { border-bottom: 0; }
+.tl .m { padding: 12px 14px; font: 700 0.95rem/1.2 var(--display); font-stretch: 85%; background: var(--bg); display: grid; gap: 2px; align-content: start; }
+.tl .m small { font: 400 0.7rem/1.2 var(--mono); color: var(--muted); font-stretch: 100%; }
+.tl .ev { padding: 10px 14px; display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start; }
+.chip { border: 1px solid var(--line); border-left: 4px solid var(--c, var(--line)); border-radius: 6px; padding: 6px 10px; font-size: 0.86rem; line-height: 1.35; background: var(--bg); }
+.chip b { display: block; font-weight: 600; }
+.chip span { color: var(--muted); }
+.c-fam { --c: var(--fam); } .c-gov { --c: var(--gov); } .c-farm { --c: var(--farm); } .c-ret { --c: var(--retail); } .c-gold { --c: var(--gold); }
+
+.zoom { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.zoom div { background: var(--surface); padding: 16px; display: grid; gap: 8px; align-content: start; }
+.zoom b { font: 700 1.05rem/1.2 var(--display); font-stretch: 90%; }
+.zoom svg { width: 100%; height: 90px; display: block; }
+
+.pace { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.pace div { background: var(--surface); padding: 14px 16px; display: grid; gap: 4px; }
+.pace b { font: 700 1.6rem/1 var(--display); font-stretch: 80%; font-variant-numeric: tabular-nums; }
+.pace span { font-size: 0.85rem; color: var(--muted); line-height: 1.35; }
+
+.phases { display: grid; gap: 10px; counter-reset: f; list-style: none; padding: 0; margin: 0; }
+.phases li { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px 14px 56px; position: relative; display: grid; gap: 4px; }
+.phases li::before { counter-increment: f; content: counter(f); position: absolute; left: 16px; top: 14px;
+  width: 26px; height: 26px; border-radius: 50%; background: var(--ink); color: var(--bg); display: grid; place-items: center; font: 700 0.8rem/1 var(--mono); }
+.phases li.jan { border-color: var(--gold); background: var(--gold-soft); }
+.phases b { font-weight: 600; }
+.phases span { color: var(--muted); font-size: 0.93rem; }
+.qs { display: grid; gap: 12px; }
+footer { font-size: 0.85rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 18px; }
+
+@media (max-width: 760px) {
+  .grid4, .pace { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cols, .cols3, .zoom, .city { grid-template-columns: 1fr; }
+  .city > div + div { border-left: 0; border-top: 1px solid var(--line); }
+  .tl { grid-template-columns: 1fr; }
+  .wrap { gap: 48px; padding-block: 32px 56px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">Proposta 2 · revisão 3 · para você aprovar</p>
+  <h1>Um Brasil de verdade, e o jogo dentro dele</h1>
+  <p class="lead read">A cidade passa a ter o tamanho real: Campinas tem 1,14 milhão de pessoas, que nascem, envelhecem e se mudam. Uma loja com 15 funcionários não muda Campinas, e o jogo não finge que muda. O jogador disputa <b>fatias do mercado real</b> com a economia que não controlamos (supermercados, hospitais, escolas, indústrias), que também aparece no mapa, nos lugares de verdade.</p>
+  <div class="grid4">
+    <div class="new"><b>População real</b><span>Censo 2022, três idades, nascimentos, mortes e migração com taxas do IBGE.</span></div>
+    <div class="new"><b>Economia de fundo</b><span>Tudo o que não controlamos: emprega a maioria e atende a maior parte do mercado.</span></div>
+    <div class="new"><b>Fatia do jogo</b><span>Começa em 15% do mercado dos nossos produtos. O jogador cresce tomando espaço do fundo.</span></div>
+    <div class="new"><b>Marca e porte</b><span>Popular, custo-benefício ou premium; reputação que se constrói; nível pelo tamanho real.</span></div>
+    <div class="new"><b>Só o que importa no mapa</b><span>Escolas, hospitais, supermercados e portos entram só se tiverem função no jogo.</span></div>
+    <div><b>Governo com orçamento</b><span>Aposentadoria pelos idosos, merenda pelos alunos. Nunca produz nem vende.</span></div>
+    <div><b>Bens que duram</b><span>Panela e caminhão envelhecem e quebram. Substitui a "qualidade".</span></div>
+    <div><b>Season de fev. a dez.</b><span>Começa segunda, 1º/02/2027, e termina no Réveillon. Cerca de 8 semanas reais.</span></div>
+  </div>
+</header>
+
+<section>
+  <div class="head">
+    <p class="eyebrow">O problema que você apontou</p>
+    <h2>Hoje o jogo esconde o tamanho das cidades</h2>
+    <p class="read muted">O motor guarda a população real, mas usa só uma fatia invisível dela. Essa fatia depende do tamanho do mundo, não de nada que o jogador veja. Por isso a população não parece influenciar nada.</p>
+  </div>
+  <div class="pace">
+    <div><b>46,6 mi</b><span>pessoas nos 59 municípios do jogo (Censo 2022)</span></div>
+    <div><b>0,8%</b><span>simuladas no mundo pequeno (escala 1)</span></div>
+    <div><b>16%</b><span>simuladas no mundo grande (escala 20, ~550 bots)</span></div>
+    <div><b>≈ 3.400</b><span>empresas seriam precisas para atender 100% só com o jogo</span></div>
+  </div>
+  <div class="cols">
+    <div class="card out">
+      <span class="k">Hoje</span>
+      <p class="small">Campinas "tem" 1,14 milhão de pessoas, mas as lojas atendem 16% delas e os outros 84% simplesmente não existem. Se faltar arroz, essa fatia passa fome em silêncio. Os salários pagos pelas empresas do jogo são toda a renda que circula.</p>
+    </div>
+    <div class="card in">
+      <span class="k">Proposta</span>
+      <p class="small">Os 1,14 milhão existem e compram. Quem não compra do jogo compra da <b>economia de fundo</b>, que tem preço, capacidade e emprego. A fatia do jogo vira um número visível, disputado e que pode crescer. A loja de 15 funcionários vende o que 15 pessoas conseguem vender, e é isso que ela é.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="head">
+    <p class="eyebrow">1 · População</p>
+    <h2>Gente de verdade, com contas que dá para ler</h2>
+    <p class="read muted">Cada cidade começa com o Censo 2022 e se move todo mês por três motivos. Nascer e morrer seguem o IBGE e mudam pouco numa season, como na vida real. O que mexe de verdade é a <b>migração</b>: gente vai para onde tem emprego e renda.</p>
+  </div>
+
+  <div class="city" role="img" aria-label="Maquete do painel de cidade com população, trabalho e fatia do mercado">
+    <div>
+      <div>
+        <p class="eyebrow">Painel da cidade · exemplo</p>
+        <h3>Campinas · SP</h3>
+      </div>
+      <div><span class="big">1.139.047</span> <span class="muted small">pessoas (Censo 2022)</span></div>
+      <div class="ages" aria-hidden="true">
+        <span style="flex:20;background:var(--farm)"></span><span style="flex:69;background:var(--gov)"></span><span style="flex:11;background:var(--fam)"></span>
+      </div>
+      <div class="kv small">
+        <span>Crianças (0–14)</span><span>225 mil</span>
+        <span>Adultos (15–64)</span><span>789 mil</span>
+        <span>Idosos (65+)</span><span>124 mil</span>
+        <b class="sep"></b>
+        <span>Famílias (2,79 pessoas por casa)</span><span>408 mil</span>
+        <span>Trabalhando</span><span>556 mil</span>
+        <span>Procurando emprego</span><span>42 mil</span>
+        <b class="sep"></b>
+        <span>Nesta season: nasceram</span><span>+13.000</span>
+        <span>morreram</span><span>−7.900</span>
+        <span>chegaram ou saíram</span><span>+2.100</span>
+      </div>
+    </div>
+    <div>
+      <p class="eyebrow">Mercado de arroz em Campinas</p>
+      <div><span class="big">57 t</span> <span class="muted small">por dia (1,5 kg por pessoa por mês)</span></div>
+      <div class="share">
+        <div class="row"><span>Início</span><div class="track"><span style="width:15%;background:var(--retail)"></span></div></div>
+        <div class="row"><span>Agora</span><div class="track"><span style="width:4%;background:var(--gold)"></span><span style="width:19%;background:var(--retail)"></span></div></div>
+      </div>
+      <div class="kv small">
+        <span><b style="color:var(--gold)">■</b> Você (3 lojas)</span><span>4%</span>
+        <span><b style="color:var(--retail)">■</b> Outros do jogo</span><span>19%</span>
+        <span><b style="color:var(--bgx)">■</b> Economia de fundo</span><span>77%</span>
+        <b class="sep"></b>
+        <span>Preço médio do fundo</span><span>R$ 26,90</span>
+        <span>Seu preço</span><span>R$ 24,50</span>
+        <span>Sua loja emprega</span><span>0,003% da cidade</span>
+      </div>
+    </div>
+  </div>
+  <p class="small muted">Idades, trabalho e desemprego deste exemplo usam médias nacionais (Censo 2022 e PNAD Contínua); no jogo cada cidade usa os próprios números. A procura de arroz usa o consumo que o jogo já tem hoje.</p>
+
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>O que muda a população</th><th>Base real</th><th>Ritmo</th><th>Efeito numa season</th></tr></thead>
+      <tbody>
+        <tr><td>Nascimentos</td><td>Registro Civil do IBGE, por estado</td><td class="r">≈ 12,5 por mil por ano</td><td>+1,1%, entram como crianças</td></tr>
+        <tr><td>Mortes</td><td>Registro Civil do IBGE, por estado</td><td class="r">≈ 7,6 por mil por ano</td><td>−0,7%, quase todas entre idosos</td></tr>
+        <tr><td>Envelhecer</td><td>Pirâmide do Censo 2022</td><td class="r">1/15 das crianças por ano viram adultos</td><td>Mais idosos = mais aposentadoria a pagar</td></tr>
+        <tr><td>Migração</td><td>Regra do jogo, limitada pelo que se vê no Brasil</td><td class="r">até ±3% (cidade grande) e ±6% (pequena) por season</td><td><b>É o que o jogador sente</b>: Sorriso cresce numa boa safra</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="rules">
+    <div class="rule"><i>Migração</i><p class="small">Todo mês cada cidade recebe uma nota de atração: vagas abertas, renda média e cesta atendida, comparadas com a média do estado. Cidade acima da média recebe gente das que estão abaixo, sem passar do teto. Ninguém some: quem sai de uma cidade entra em outra.</p></div>
+    <div class="rule"><i>Idades com função</i><p class="small"><b>Crianças</b> viram alunos (merenda escolar) e compram no Dia das Crianças. <b>Adultos</b> são a força de trabalho. <b>Idosos</b> recebem aposentadoria do governo. Assim cada número do painel aparece em algum lugar do jogo.</p></div>
+    <div class="rule"><i>Tendência real</i><p class="small">Cada cidade começa com o ritmo de crescimento dos últimos anos (PIB municipal e empregos formais do IBGE e do Ministério do Trabalho). Sorriso e Rio Verde crescem; outras ficam paradas. O jogo soma a isso o que os jogadores e os bots fazem.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="head">
+    <p class="eyebrow">2 · O jogo dentro do Brasil</p>
+    <h2>Quanto uma empresa muda uma cidade</h2>
+    <p class="read muted">A resposta honesta: depende do tamanho da cidade. Na capital, quase nada. Numa cidade pequena, muito. É isso que dá sentido a abrir uma mina em Candiota ou uma esmagadora em Sorriso.</p>
+  </div>
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>Cidade</th><th>Pessoas</th><th>Trabalhando (≈)</th><th>Empresa do jogo</th><th>Parte dos empregos</th><th>O que se sente</th></tr></thead>
+      <tbody>
+        <tr><td>Campinas</td><td class="r">1.139 mil</td><td class="r">556 mil</td><td>Loja com 15</td><td class="r">0,003%</td><td>Só a fatia do mercado</td></tr>
+        <tr><td>Campinas</td><td class="r">1.139 mil</td><td class="r">556 mil</td><td>Grupo grande com 2.000</td><td class="r">0,36%</td><td>Preço da cidade passa a seguir o seu</td></tr>
+        <tr><td>Sorriso</td><td class="r">111 mil</td><td class="r">54 mil</td><td>Esmagadora com 300</td><td class="r">0,6%</td><td>Salário sobe, gente chega</td></tr>
+        <tr><td>Candiota</td><td class="r">9 mil</td><td class="r">4,4 mil</td><td>Mina com 120</td><td class="r">2,7%</td><td>Falta gente para contratar; a cidade depende de você</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="rules">
+    <div class="rule"><i>Contratar</i><p class="small">Quem contrata pega primeiro quem procura emprego na cidade e depois tira gente da economia de fundo, pagando mais. Em Campinas há 42 mil procurando: nunca falta. Em Candiota há cerca de 300: a terceira mina paga salário mais alto ou traz gente de fora, que leva tempo (migração).</p></div>
+    <div class="rule"><i>Salário</i><p class="small">O salário de cada empresa do jogo vai para as famílias da cidade onde ela fica. É dinheiro de verdade, só que proporcional: a renda de Campinas vem quase toda do fundo; a de Candiota, em boa parte das minas.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="head">
+    <p class="eyebrow">3 · A economia de fundo</p>
+    <h2>O concorrente que nunca quebra e nunca cresce de propósito</h2>
+    <p class="read muted">Tudo o que não é jogador nem bot: supermercados, padarias, indústrias de outros produtos, hospitais, escolas, serviços. Não toma decisões nem tem estratégia, mas tem preço, capacidade e empregados. Ela faz três papéis.</p>
+  </div>
+  <div class="cols3">
+    <div class="card">
+      <span class="k">Concorrente</span>
+      <h3>Atende quem o jogo não atende</h3>
+      <p class="small">Em cada cidade e produto, o fundo vende pelo preço de referência mais 10%. Quem é do jogo e vende mais barato, com estoque, ganha clientes do fundo, mas <b>devagar</b>: no máximo 4% do mercado da cidade muda de lado por semana. O fundo nunca cai abaixo de 30%.</p>
+    </div>
+    <div class="card">
+      <span class="k">Rede de segurança</span>
+      <h3>Ninguém passa fome</h3>
+      <p class="small">Se a cadeia do jogo quebra (falta arroz em todas as lojas), o fundo atende na hora, mas mais caro: até a referência mais 25% enquanto cobre o que o jogo deixou de vender. As famílias não deixam de comer, o dinheiro não trava e a crise vira <b>oportunidade</b>: "Campinas paga 18% a mais pelo arroz do fundo."</p>
+    </div>
+    <div class="card">
+      <span class="k">Comprador</span>
+      <h3>O supermercado também compra</h3>
+      <p class="small">Toda semana o varejo de fundo de cada região publica pedidos de compra, como os editais do governo: arroz, óleo, leite, utensílios, pelo preço de atacado menos 5%. O volume é limitado (10% do que o fundo vende). É o "vender para a grande rede" da vida real.</p>
+    </div>
+  </div>
+  <div class="diagram">
+    <svg viewBox="0 0 900 140" role="img" aria-label="Fatia do mercado ao longo da season: jogo começa em 15% e pode chegar a 70%, fundo nunca abaixo de 30%">
+      <rect x="40" y="30" width="820" height="44" rx="6" fill="var(--bgx)"/>
+      <rect x="40" y="30" width="123" height="44" rx="6" fill="var(--retail)"/>
+      <rect x="163" y="30" width="451" height="44" fill="var(--retail)" opacity=".28"/>
+      <line x1="614" y1="20" x2="614" y2="84" stroke="var(--ink)" stroke-width="2" stroke-dasharray="4 3"/>
+      <text class="lbl" x="48" y="58" fill="#fff" style="fill:#fff">jogo 15%</text>
+      <text class="lbl" x="300" y="58">espaço para crescer</text>
+      <text class="lbl" x="700" y="58" style="fill:#fff">fundo ≥ 30%</text>
+      <text class="lbl" x="40" y="110">Início da season: os bots ocupam a fatia que hoje já está calibrada.</text>
+      <text class="lbl" x="614" y="110" text-anchor="middle">teto do jogo 70%</text>
+    </svg>
+  </div>
+  <div class="rules">
+    <div class="rule"><i>Equilíbrio</i><p class="small">A fatia inicial de <b>15%</b> é praticamente a que o mundo grande já simula hoje (16%, com ~550 bots), então a economia calibrada continua valendo no dia 1. Os bots não passam muito disso. O que vier acima é espaço dos jogadores, tomado do fundo, e não um do outro. Seus amigos não começam brigando pelos mesmos clientes.</p></div>
+    <div class="rule"><i>Desempenho</i><p class="small">A fatia inicial também é o botão de desempenho: cada ponto percentual a mais exige cerca de 35 empresas a mais. O fundo não custa nada a mais para simular: são 59 cidades × produtos, não empresas.</p></div>
+    <div class="rule"><i>Dinheiro</i><p class="small">O fundo é uma caixa fechada por cidade: recebe o que as famílias gastam nele (aluguel, serviços, produtos do fundo) e devolve como salário de quem trabalha nele. Substitui os "serviços da cidade" da revisão anterior.</p></div>
+  </div>
+
+  <h3>Por que o fundo não vira todo bots</h3>
+  <div class="cols3">
+    <div class="card">
+      <span class="k">Tamanho</span>
+      <p class="small">Atender os outros 85% só com os 6 produtos de hoje exigiria cerca de <b>2.900 bots a mais</b>. Com 200 produtos, hospitais, escolas e serviços, seriam dezenas de milhares. Hoje 550 bots já levam 8 a 10 s por dia de jogo, e o mundo salvo pesa 36 MB.</p>
+    </div>
+    <div class="card">
+      <span class="k">Equilíbrio</span>
+      <p class="small">Cada bot erra de um jeito. Acertar 550 levou semanas (D-036 a D-041). Com 3.500 seguindo as mesmas regras, qualquer defeito vira efeito dominó, e a economia fica impossível de ler.</p>
+    </div>
+    <div class="card">
+      <span class="k">Jogo</span>
+      <p class="small">O fundo é a parede estável que deixa o jogador crescer. Se fosse feito de bots, cada cliente seria tomado de alguém que reage na hora, e você e seus amigos seriam espremidos por uma multidão.</p>
+    </div>
+  </div>
+  <div class="card hl">
+    <span class="k">O meio-termo que recomendo</span>
+    <ul class="small">
+      <li><b>Redes de fundo com cara.</b> Em cada cidade, 2 ou 3 redes com nome genérico ("Rede Popular", "Empório Central"), posicionamento (popular ou premium), marca e lojas no mapa, nos endereços reais de supermercados. Parecem empresas e o jogador compete com elas pelo nome. Por dentro continuam sendo uma conta só por cidade, sem custo de desempenho.</li>
+      <li><b>Botão da fatia.</b> Se o servidor aguentar, a fatia dos bots sobe (15% → 25%) e parte do fundo vira bots de verdade, aos poucos e medido no laboratório.</li>
+      <li><b>Depois: comprar uma rede de fundo</b> (D-035). Ela vira uma empresa sua, com as lojas e os clientes dela, pelo preço de uma empresa daquele tamanho. É o jeito grande e caro de crescer.</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <div class="head">
+    <p class="eyebrow">4 · Marca, posicionamento e porte</p>
+    <h2>Crescer como empresa de verdade, sem poder mágico</h2>
+    <p class="read muted">Quatro coisas que se constroem com tempo e dinheiro e valem igual para jogadores e bots. Nenhuma dá bônus grande: cada vantagem tem custo, prazo e manutenção, como numa empresa real. Elas também substituem a "qualidade" antiga com algo que o jogador escolhe e entende.</p>
+  </div>
+
+  <h3>Posicionamento: para quem você vende</h3>
+  <div class="tablebox">
+    <table class="compact">
+      <thead><tr><th></th><th>Popular</th><th>Custo-benefício</th><th>Premium</th></tr></thead>
+      <tbody>
+        <tr><td>Quem compra mais</td><td>Faixa baixa</td><td>Faixa média</td><td>Faixa alta</td></tr>
+        <tr><td>Custo de fazer</td><td class="r">−15%</td><td class="r">base</td><td class="r">+35%</td></tr>
+        <tr><td>Preço de referência</td><td class="r">−20%</td><td class="r">base</td><td class="r">+60%</td></tr>
+        <tr><td>O que exige</td><td>Volume: margem apertada</td><td>Nada especial</td><td>Marca acima de 50 e certificação</td></tr>
+        <tr><td>Na crise</td><td>Ganha clientes</td><td>Estável</td><td>Perde primeiro</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="tablebox">
+    <table class="compact">
+      <thead><tr><th>Faixa da família</th><th>Popular</th><th>Custo-benefício</th><th>Premium</th></tr></thead>
+      <tbody>
+        <tr><td>Baixa</td><td class="r">60%</td><td class="r">35%</td><td class="r">5%</td></tr>
+        <tr><td>Média</td><td class="r">25%</td><td class="r">60%</td><td class="r">15%</td></tr>
+        <tr><td>Alta</td><td class="r">5%</td><td class="r">45%</td><td class="r">50%</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="rules">
+    <div class="rule"><i>Mesmo produto</i><p class="small">É o mesmo arroz em três versões, não três produtos. O catálogo não triplica. O posicionamento é escolhido por linha de produção e por loja, e trocar leva 7 dias de jogo.</p></div>
+    <div class="rule"><i>Liga com a cidade</i><p class="small">Campinas, com mais faixa alta, compra mais premium; Candiota, mais popular. Na crise, as famílias descem de versão (premium → custo-benefício → popular), como no Brasil real. Cidade que enriquece abre espaço para premium.</p></div>
+  </div>
+  <p class="small muted">Percentuais são pontos de partida para calibrar no laboratório.</p>
+
+  <div class="cols">
+    <div class="card">
+      <span class="k">Marca · 0 a 100, por estado</span>
+      <h3>Reputação que se ganha devagar e se perde rápido</h3>
+      <ul class="small">
+        <li><b>Começa em 30</b>: ninguém te conhece. O fundo fica em 50.</li>
+        <li><b>Sobe até 3 pontos por mês</b> com prateleira cheia, entrega no prazo, preço estável e tempo de mercado. Propaganda ajuda, com retorno cada vez menor (até +2 por mês).</li>
+        <li><b>Cai rápido</b>: falta frequente na prateleira −5, contrato quebrado −10.</li>
+        <li><b>Efeito com teto</b>: com marca alta, os clientes saem até 50% mais devagar e aceitam até 8% a mais no preço. Premium só vende de verdade acima de 50.</li>
+        <li><b>Outro estado</b>: você chega com metade da marca que tem no estado vizinho. Expandir custa.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="k">Relacionamento · com cada parceiro</span>
+      <h3>Histórico de negócios entre duas empresas</h3>
+      <ul class="small">
+        <li>Cresce com entregas e pagamentos em dia, de 0 a 100.</li>
+        <li><b>Alto</b>: prioridade quando falta mercadoria, prazo de 30 dias para pagar (alivia o caixa) e desconto de até 3%.</li>
+        <li><b>Com o governo</b>: cada edital cumprido vira um atestado, e atestados liberam editais maiores, como na licitação real.</li>
+        <li>Bots também lembram: quem atrasa com um bot perde prioridade com ele.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Porte: o nível da empresa vem do tamanho, não de pontos</h3>
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>Porte</th><th>Faturamento por ano</th><th>O que muda</th></tr></thead>
+      <tbody>
+        <tr><td>Micro</td><td class="r">até R$ 360 mil</td><td>Imposto simplificado e menor; crédito pequeno</td></tr>
+        <tr><td>Pequena</td><td class="r">até R$ 4,8 mi</td><td>Ainda simplificado; editais pequenos</td></tr>
+        <tr><td>Média</td><td class="r">até R$ 300 mi</td><td><b>Imposto normal, mais caro</b>; crédito maior; editais grandes; libera centro de distribuição</td></tr>
+        <tr><td>Grande</td><td class="r">acima de R$ 300 mi</td><td>Tudo liberado; o limite de 40% por produto (D-035) passa a vigiar</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small muted">Limites da classificação brasileira (Simples Nacional e BNDES), medidos pelo faturamento dos últimos 12 meses. Se a escala do jogo for outra, ajustamos na mesma proporção. Subir de porte não é só ganho: ao passar de R$ 4,8 mi o imposto aumenta, como no Brasil, e crescer vira uma decisão.</p>
+
+  <h3>Árvore de capacidades</h3>
+  <div class="cols3">
+    <div class="card">
+      <span class="k">Comercial</span>
+      <ol class="small">
+        <li><b>Identidade de marca</b>: libera propaganda.</li>
+        <li><b>Programa de fidelidade</b>: clientes saem 25% mais devagar; custo mensal por loja.</li>
+        <li><b>Linha premium</b>: libera o premium; exige a certificação.</li>
+      </ol>
+    </div>
+    <div class="card">
+      <span class="k">Operação</span>
+      <ol class="small">
+        <li><b>Controle de estoque</b>: estoque de segurança automático, menos falta na prateleira.</li>
+        <li><b>Certificação de qualidade</b>: exigida no premium e nos editais de hospital; auditoria anual.</li>
+        <li><b>Centro de distribuição</b>: frete 10% menor entre unidades próprias; exige porte Média.</li>
+      </ol>
+    </div>
+    <div class="card">
+      <span class="k">Gestão</span>
+      <ol class="small">
+        <li><b>Contabilidade organizada</b>: juros do crédito 2 pontos menores.</li>
+        <li><b>Compras em escala</b>: insumos 3% mais baratos com volume mínimo garantido, e multa se não comprar.</li>
+        <li><b>Treinamento</b> (já existe): +3% de produtividade por nível, com salário subindo junto.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="rules">
+    <div class="rule"><i>Não roubada</i><p class="small">Toda capacidade tem custo de entrada, prazo para ficar pronta e manutenção mensal; parar de pagar tira o efeito. Os efeitos ficam entre 2% e 10% e nunca multiplicam a produção. Cada uma existe numa empresa real.</p></div>
+    <div class="rule"><i>Escolher</i><p class="small">A árvore inteira custa mais do que uma empresa média consegue pagar numa season. Cada jogador vira um tipo de empresa: a rede popular de volume, a marca premium, o distribuidor eficiente.</p></div>
+    <div class="rule"><i>Mesmas regras</i><p class="small">Bots usam a mesma árvore, a mesma marca e o mesmo porte. As redes de fundo têm marca e posicionamento fixos.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="head">
+    <p class="eyebrow">5 · O que aparece no mapa</p>
+    <h2>Entra só o que compra, vende, emprega ou ocupa lugar</h2>
+    <p class="read muted">Regra de corte: um ponto no mapa precisa mudar uma decisão do jogador. Se só enfeita, vira número no painel da cidade. Tudo com dados públicos, preparado antes da season e guardado no mundo com a fonte anotada. Nunca usamos nome de marca real: o supermercado é "Supermercado de bairro", a siderúrgica é do bot.</p>
+  </div>
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>O quê</th><th>Fonte pública</th><th>Função no jogo</th><th>Como aparece</th><th>Veredito</th></tr></thead>
+      <tbody>
+        <tr><td>Onde mora gente</td><td>Grade estatística do Censo 2022 (IBGE)</td><td>Loja perto de onde mora gente vende mais; mostra onde abrir</td><td>Mancha de calor ao aproximar da cidade</td><td class="yes">Entra</td></tr>
+        <tr><td>Supermercados e atacarejos</td><td>OpenStreetMap e cadastro de endereços do IBGE</td><td>São o comércio de fundo: concorrente e comprador</td><td>Ícone discreto no zoom de cidade</td><td class="yes">Entra</td></tr>
+        <tr><td>Escolas</td><td>Censo Escolar (INEP)</td><td>Matrículas viram merenda; volta às aulas e recesso</td><td>Uma central de merenda por cidade como destino; escolas como pontos no zoom alto</td><td class="yes">Entra</td></tr>
+        <tr><td>Hospitais</td><td>Cadastro de estabelecimentos de saúde (CNES)</td><td>Cozinha hospitalar compra alimentos por edital; depois limpeza</td><td>Pontos no zoom de cidade; o maior é o destino</td><td class="yes">Entra</td></tr>
+        <tr><td>Portos</td><td>ANTAQ</td><td>Piso e teto de preço, exportar e importar</td><td>Sempre visíveis</td><td class="later">Depois do playtest</td></tr>
+        <tr><td>Silos e cooperativas</td><td>Cadastro de armazéns da CONAB</td><td>Compram grão na safra, guardam, viram rota até o porto</td><td>Ícone no zoom de região</td><td class="later">Com a safra</td></tr>
+        <tr><td>Indústrias de outros produtos</td><td>Uso do solo do OpenStreetMap; empregos do IBGE</td><td>Empregam gente (concorrem por trabalhador)</td><td>Mancha cinza, sem ícone; número no painel</td><td class="yes">Entra</td></tr>
+        <tr><td>Obras públicas</td><td>Geradas pelos editais</td><td>Destino do aço</td><td>Canteiro enquanto o edital está aberto</td><td class="yes">Já existe</td></tr>
+        <tr><td>Universidades</td><td>INEP</td><td>Poderia pesquisar genética</td><td>—</td><td class="later">Só com a genética</td></tr>
+        <tr><td>Presídios e quartéis</td><td>—</td><td>Comprariam comida, mas o tema é sensível e não traz decisão nova</td><td>—</td><td class="no">Fica fora</td></tr>
+        <tr><td>Bancos, shoppings, igrejas, aeroportos, delegacias</td><td>—</td><td>Nenhuma decisão do jogador muda por eles</td><td>—</td><td class="no">Fica fora</td></tr>
+        <tr><td>Casas e bairros um a um</td><td>—</td><td>A mancha de calor já diz o que importa</td><td>—</td><td class="no">Fica fora</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cols">
+    <div class="card out">
+      <span class="k">Fora da linha do jogo</span>
+      <ul class="small">
+        <li><b>Saúde e doença</b> (epidemias, filas): hospital é comprador, não sistema de saúde.</li>
+        <li><b>Escolaridade da população</b>: escola é merenda, não educação.</li>
+        <li><b>Política e eleições</b>: o governo segue regras fixas.</li>
+        <li><b>Trânsito urbano, crime, poluição.</b></li>
+        <li><b>Clima do dia a dia</b>: só choques anunciados (seca, geada).</li>
+        <li><b>Imposto de renda e IPTU</b> de cada família.</li>
+        <li><b>Marcas reais</b> de empresas.</li>
+      </ul>
+    </div>
+    <div class="card hl">
+      <span class="k">Por que esse corte</span>
+      <p class="small">Cada coisa que entra precisa de dado, regra, tela e teste. Hospital como sistema de saúde seria um jogo inteiro e não muda nenhuma decisão de quem vende arroz. Hospital como cozinha que compra arroz por edital custa pouco e dá um comprador novo. O mundo parece completo pelo mapa e pelos números; a profundidade fica onde o jogador decide.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="head">
+    <p class="eyebrow">6 · O ciclo do dinheiro</p>
+    <h2>Cinco caixas, e o dinheiro só entra ou sai por uma porta</h2>
+    <p class="read muted">Dinheiro não aparece nem some: passa de uma caixa para outra. A única porta para fora é o porto, com limite. O teste automático de conservação que já existe passa a vigiar as cinco caixas.</p>
+  </div>
+  <div class="diagram">
+    <svg viewBox="0 0 900 470" role="img" aria-label="Ciclo do dinheiro entre famílias, empresas do jogo, governo, economia de fundo e porto">
+      <defs>
+        <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"/>
+        </marker>
+      </defs>
+      <rect x="330" y="14" width="240" height="78" rx="10" fill="var(--surface)" stroke="var(--gov)" stroke-width="2"/>
+      <text class="ttl" x="450" y="46" text-anchor="middle">Governo</text>
+      <text class="sub" x="450" y="70" text-anchor="middle">um tesouro por estado</text>
+
+      <rect x="40" y="190" width="250" height="92" rx="10" fill="var(--surface)" stroke="var(--fam)" stroke-width="2"/>
+      <text class="ttl" x="165" y="226" text-anchor="middle">Famílias</text>
+      <text class="sub" x="165" y="250" text-anchor="middle">um bolso por cidade</text>
+      <text class="sub" x="165" y="268" text-anchor="middle">população real, 3 faixas</text>
+
+      <rect x="610" y="190" width="250" height="92" rx="10" fill="var(--surface)" stroke="var(--retail)" stroke-width="2"/>
+      <text class="ttl" x="735" y="226" text-anchor="middle">Empresas do jogo</text>
+      <text class="sub" x="735" y="250" text-anchor="middle">jogadores e bots,</text>
+      <text class="sub" x="735" y="268" text-anchor="middle">mesmas regras</text>
+
+      <rect x="40" y="380" width="250" height="78" rx="10" fill="var(--surface)" stroke="var(--bgx)" stroke-width="2" stroke-dasharray="6 4"/>
+      <text class="ttl" x="165" y="412" text-anchor="middle">Economia de fundo</text>
+      <text class="sub" x="165" y="436" text-anchor="middle">uma caixa fechada por cidade</text>
+
+      <rect x="610" y="380" width="250" height="78" rx="10" fill="var(--surface)" stroke="var(--port)" stroke-width="2"/>
+      <text class="ttl" x="735" y="412" text-anchor="middle">Porto</text>
+      <text class="sub" x="735" y="436" text-anchor="middle">resto do mundo · com cota</text>
+
+      <line x1="292" y1="214" x2="606" y2="214" stroke="var(--muted)" stroke-width="2" marker-end="url(#a)"/>
+      <text class="lbl" x="450" y="205" text-anchor="middle">compras nas lojas</text>
+      <line x1="606" y1="258" x2="292" y2="258" stroke="var(--muted)" stroke-width="2" marker-end="url(#a)"/>
+      <text class="lbl" x="450" y="279" text-anchor="middle">salários (na cidade da unidade)</text>
+
+      <line x1="660" y1="188" x2="560" y2="96" stroke="var(--muted)" stroke-width="2" marker-end="url(#a)"/>
+      <text class="lbl" x="598" y="140" text-anchor="end">imposto na venda,</text>
+      <text class="lbl" x="598" y="157" text-anchor="end">encargos, energia e água</text>
+      <line x1="600" y1="74" x2="760" y2="186" stroke="var(--gov)" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#a)"/>
+      <text class="lbl" x="612" y="58">editais: obras, merenda</text>
+      <line x1="336" y1="80" x2="200" y2="186" stroke="var(--gov)" stroke-width="2" marker-end="url(#a)"/>
+      <text class="lbl" x="40" y="118">aposentadorias (idosos),</text>
+      <text class="lbl" x="40" y="135">benefícios, servidores</text>
+
+      <line x1="130" y1="284" x2="130" y2="376" stroke="var(--muted)" stroke-width="2" marker-end="url(#a)"/>
+      <text class="lbl" x="20" y="322" text-anchor="start">compras</text>
+      <text class="lbl" x="20" y="338" text-anchor="start">e serviços</text>
+      <line x1="200" y1="376" x2="200" y2="286" stroke="var(--muted)" stroke-width="2" marker-end="url(#a)"/>
+      <text class="lbl" x="212" y="322">salário de quem</text>
+      <text class="lbl" x="212" y="338">trabalha no fundo</text>
+      <line x1="294" y1="420" x2="606" y2="300" stroke="var(--bgx)" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#a)"/>
+      <text class="lbl" x="400" y="388">pedidos do supermercado</text>
+
+      <line x1="700" y1="284" x2="700" y2="376" stroke="var(--port)" stroke-width="2" marker-end="url(#a)"/>
+      <text class="lbl" x="606" y="330">importa</text>
+      <text class="lbl" x="606" y="346">(sai)</text>
+      <line x1="770" y1="376" x2="770" y2="286" stroke="var(--port)" stroke-width="2" marker-end="url(#a)"/>
+      <text class="lbl" x="782" y="330">exporta</text>
+      <text class="lbl" x="782" y="346">(entra)</text>
+    </svg>
+  </div>
+  <div class="bar" role="img" aria-label="Composição da renda das famílias: cerca de 70% trabalho, 22% governo, 8% outras">
+    <span style="flex:70;background:var(--bgx)">Trabalho ≈ 70% (fundo + jogo)</span>
+    <span style="flex:22;background:var(--gov)">Governo ≈ 22%</span>
+    <span style="flex:8;background:var(--port)">Outras</span>
+  </div>
+  <p class="small muted">Composição aproximada da renda das famílias brasileiras (PNAD Contínua), ponto de partida para calibrar. A parte "jogo" do trabalho é pequena em Campinas e grande em Candiota.</p>
+</section>
+
+<section>
+  <div class="head">
+    <p class="eyebrow">7 · As famílias</p>
+    <h2>Compram necessidades, não produtos</h2>
+    <p class="read muted">Necessidades de <b>consumo</b> (o que acaba) e de <b>posse</b> (ter um bem em uso em casa). A família escolhe o produto dentro da necessidade e depois a loja: do jogo ou do fundo.</p>
+  </div>
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>Necessidade</th><th>Tipo</th><th>Já no jogo hoje</th><th>Entra depois</th><th>Baixa</th><th>Média</th><th>Alta</th></tr></thead>
+      <tbody>
+        <tr><td>Comer o básico</td><td>consumo</td><td class="now">arroz, feijão, açúcar</td><td>macarrão, farinha, pão</td><td class="dots">●●●</td><td class="dots">●●●</td><td class="dots">●●●</td></tr>
+        <tr><td>Proteína</td><td>consumo</td><td class="now">leite</td><td>carne, frango, ovos, queijo</td><td class="dots">●●○</td><td class="dots">●●●</td><td class="dots">●●●</td></tr>
+        <tr><td>Cozinhar</td><td>consumo</td><td class="now">óleo</td><td>gás de cozinha</td><td class="dots">●●●</td><td class="dots">●●●</td><td class="dots">●●●</td></tr>
+        <tr><td>Higiene e limpeza</td><td>consumo</td><td>—</td><td>sabão, papel, detergente</td><td class="dots">●●○</td><td class="dots">●●●</td><td class="dots">●●●</td></tr>
+        <tr><td>Vestir</td><td>consumo lento</td><td>—</td><td>roupas, calçados</td><td class="dots">●○○</td><td class="dots">●●○</td><td class="dots">●●●</td></tr>
+        <tr><td>Equipar a casa</td><td>posse</td><td class="now">utensílios</td><td>fogão, geladeira, móveis</td><td class="dots">●●○</td><td class="dots">●●●</td><td class="dots">●●●</td></tr>
+        <tr><td>Se locomover</td><td>posse + consumo</td><td>—</td><td>bicicleta, moto, carro, combustível</td><td class="dots">●○○</td><td class="dots">●●○</td><td class="dots">●●●</td></tr>
+        <tr><td>Conforto e lazer</td><td>consumo + posse</td><td>—</td><td>café, refrigerante, TV, celular</td><td class="dots">○○○</td><td class="dots">●○○</td><td class="dots">●●●</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small muted">Necessidade sem produto no jogo é atendida inteira pelo fundo. Quando o produto entra no catálogo, o jogo começa a disputar essa fatia.</p>
+  <div class="cols">
+    <div class="card">
+      <h3>Escolher o produto</h3>
+      <p class="small">Cada produto tem um peso de preferência (cultura da região) e um preço por porção (média das prateleiras da cidade, do jogo e do fundo). Quem fica caro perde parte da fatia para os outros.</p>
+      <div class="calc">Proteína · carne sobe 30%<br>antes:  carne 40% · frango 35% · ovos 25%<br>depois: carne 31% · frango 40% · ovos 29%</div>
+    </div>
+    <div class="card">
+      <h3>Quando falta dinheiro</h3>
+      <p class="small">O gasto enche as necessidades em ordem: comer, cozinhar, proteína, higiene, vestir, casa, locomoção, conforto. O básico quase não cai com o preço; o supérfluo cai rápido. A crise aparece primeiro na loja de TV e só depois no arroz.</p>
+    </div>
+    <div class="card">
+      <h3>Cultura regional</h3>
+      <p class="small">Muda a preferência, não o tamanho do prato: o gaúcho escolhe mais carne dentro de "Proteína", o mineiro mais queijo e feijão. Pesos por estado a partir da POF do IBGE.</p>
+    </div>
+    <div class="card">
+      <h3>Subir e descer de faixa</h3>
+      <p class="small">Todo mês, se o poder de compra da cidade (renda média ÷ custo da cesta) subiu e a cesta foi atendida em 90%, 1% das famílias sobe de faixa. Se caiu, 1% desce. As faixas iniciais vêm da renda por município do Censo.</p>
+    </div>
+  </div>
+  <div class="rules">
+    <div class="rule"><i>Onde compram</i><p class="small">Na própria cidade, de preferência perto de casa (mancha de calor). Cidade pequena sem loja do jogo compra na cidade-polo do mapa de influência do IBGE (REGIC): Sertãozinho compra em Ribeirão Preto.</p></div>
+    <div class="rule"><i>Escala</i><p class="small">59 cidades × 3 idades × 3 faixas, não uma família por vez. A conta roda em milissegundos, mesmo com 46 milhões de pessoas e 200 produtos.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="head">
+    <p class="eyebrow">8 · Bens que duram</p>
+    <h2>O coração do nome Aftermarket</h2>
+    <p class="read muted">Cada cidade guarda quantos bens estão em uso nas casas, por idade: "Campinas tem 400 mil geladeiras, 9% com mais de 12 anos". Com a população real, a reposição sai do tamanho de verdade da cidade. Substitui a qualidade do estoque.</p>
+  </div>
+  <div class="diagram">
+    <svg viewBox="0 -40 900 290" role="img" aria-label="Vida de um bem: compra, uso, quebra, conserto ou troca, usado ou sucata">
+      <defs>
+        <marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"/>
+        </marker>
+      </defs>
+      <rect x="10" y="90" width="140" height="64" rx="8" fill="var(--surface)" stroke="var(--retail)" stroke-width="2"/>
+      <text class="ttl" x="80" y="120" text-anchor="middle">Compra</text>
+      <text class="sub" x="80" y="140" text-anchor="middle">nova ou usada</text>
+      <line x1="152" y1="122" x2="208" y2="122" stroke="var(--muted)" stroke-width="2" marker-end="url(#b)"/>
+      <rect x="210" y="90" width="150" height="64" rx="8" fill="var(--surface)" stroke="var(--fam)" stroke-width="2"/>
+      <text class="ttl" x="285" y="120" text-anchor="middle">Em uso</text>
+      <text class="sub" x="285" y="140" text-anchor="middle">envelhece todo mês</text>
+      <line x1="362" y1="122" x2="418" y2="122" stroke="var(--muted)" stroke-width="2" marker-end="url(#b)"/>
+      <rect x="420" y="90" width="130" height="64" rx="8" fill="var(--surface)" stroke="var(--bad)" stroke-width="2"/>
+      <text class="ttl" x="485" y="120" text-anchor="middle">Quebra</text>
+      <text class="sub" x="485" y="140" text-anchor="middle">chance pela idade</text>
+      <line x1="552" y1="110" x2="618" y2="52" stroke="var(--muted)" stroke-width="2" marker-end="url(#b)"/>
+      <line x1="552" y1="134" x2="618" y2="192" stroke="var(--muted)" stroke-width="2" marker-end="url(#b)"/>
+      <rect x="620" y="20" width="130" height="60" rx="8" fill="var(--surface)" stroke="var(--industry)" stroke-width="2"/>
+      <text class="ttl" x="685" y="48" text-anchor="middle">Conserta</text>
+      <text class="sub" x="685" y="67" text-anchor="middle">peças + oficina</text>
+      <rect x="620" y="164" width="130" height="60" rx="8" fill="var(--surface)" stroke="var(--retail)" stroke-width="2"/>
+      <text class="ttl" x="685" y="192" text-anchor="middle">Troca</text>
+      <text class="sub" x="685" y="211" text-anchor="middle">compra outro</text>
+      <line x1="752" y1="194" x2="790" y2="194" stroke="var(--muted)" stroke-width="2" marker-end="url(#b)"/>
+      <text class="ttl" x="800" y="186">Usado</text>
+      <text class="sub" x="800" y="204">ou sucata</text>
+      <text class="sub" x="800" y="222">→ siderúrgica</text>
+      <path d="M685 18 C 685 -30, 285 -30, 285 86" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#b)"/>
+      <text class="lbl" x="485" y="-22" text-anchor="middle">volta a ser usado, com vida mais curta</text>
+    </svg>
+  </div>
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>Clima da cidade</th><th>Quando quebra</th><th>Antes de quebrar</th><th>O que acontece no mercado</th></tr></thead>
+      <tbody>
+        <tr><td>Crise (poder de compra caindo)</td><td>Conserta 60%, troca 40%</td><td>Ninguém troca antes</td><td>Peças e oficinas vendem mais; usado sobe de preço</td></tr>
+        <tr><td>Normal</td><td>Conserta 35%, troca 65%</td><td>5% trocam antes</td><td>Reposição pela vida útil</td></tr>
+        <tr><td>Bonança (poder de compra subindo)</td><td>Conserta 15%, troca 85%</td><td>15% trocam antes</td><td>Lojas de eletro vendem mais; usado sobra e barateia</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="rules">
+    <div class="rule"><i>Vida útil real</i><p class="small">Geladeira cerca de 12 anos, panela cerca de 5. A season começa com as casas já equipadas, em idades variadas, pela posse de bens da PNAD. Família nova (migração, casamento) também compra: cidade que cresce vende mais bens. <span class="tag sim">números a conferir</span></p></div>
+    <div class="rule"><i>Usado e sucata</i><p class="small">Quem troca antes gera um usado, que a faixa baixa prefere. O que não tem conserto vira sucata na coleta municipal, que já vende para as siderúrgicas.</p></div>
+    <div class="rule"><i>Conserto</i><p class="small">Primeira versão: serviço do fundo. Quando entrar a cadeia de peças e oficinas, o conserto passa a pedir peças de verdade: o mercado aftermarket do nome.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="head">
+    <p class="eyebrow">9 · O governo</p>
+    <h2>Arrecada de 3 fontes, gasta pelo tamanho da população</h2>
+    <p class="read muted">Um tesouro por estado. Não produz, não vende, não especula. Agora cada gasto tem um motivo na população: aposentadoria pelos idosos, merenda pelos alunos, servidores pelo total de pessoas.</p>
+  </div>
+  <div class="cols">
+    <div class="card">
+      <span class="k">Arrecada (do jogo e do fundo)</span>
+      <ul>
+        <li><b>Imposto na venda ao consumidor</b>, embutido na prateleira. <span class="tag sim">começa em 12%</span></li>
+        <li><b>Encargos sobre salários.</b> <span class="tag sim">70% família, 30% previdência</span></li>
+        <li><b>Energia e água</b> das unidades, como hoje.</li>
+      </ul>
+      <p class="small muted">Como o fundo também paga, a arrecadação é do tamanho real do estado, e a empresa do jogo paga só a parte dela.</p>
+    </div>
+    <div class="card">
+      <span class="k">Gasta, pela média dos últimos 90 dias</span>
+      <div class="bar" role="img" aria-label="Orçamento: 50% benefícios, 30% servidores, 15% editais, 5% reserva">
+        <span style="flex:50;background:var(--fam)">Benefícios 50%</span>
+        <span style="flex:30;background:var(--gov)">Servidores 30%</span>
+        <span style="flex:15;background:var(--retail)">Editais</span>
+        <span style="flex:5;background:var(--muted)"></span>
+      </div>
+      <ul>
+        <li><b>Aposentadoria</b> por idoso de cada cidade; <b>benefícios</b> mais para a faixa baixa.</li>
+        <li><b>Servidores</b> pela população.</li>
+        <li><b>Editais</b>: aço para obras, merenda por aluno, comida para hospitais.</li>
+        <li><b>Reserva</b> de até 60 dias, só para a crise.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="rules">
+    <div class="rule"><i>Merenda</i><p class="small">Cada aluno matriculado (Censo Escolar) consome uma porção por dia letivo de arroz, feijão, leite e óleo. O estado publica um edital por semana e por cidade, com entrega na central de merenda; para em julho. Dá às fazendas e aos laticínios um comprador estável e de tamanho real.</p></div>
+    <div class="rule"><i>Média de 90 dias</i><p class="small">Se a economia esfria, os benefícios continuam quase iguais por semanas e a reserva cobre a diferença. Impede a espiral "menos venda, menos imposto, menos benefício".</p></div>
+    <div class="rule"><i>Sai</i><p class="small">Os "30% ao dia do que sobra" deixam de existir.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="head">
+    <p class="eyebrow">10 · A season e o calendário</p>
+    <h2>Começa segunda-feira, 1º de fevereiro de 2027, e termina no Réveillon</h2>
+    <p class="read muted">Fevereiro a dezembro é o ano comercial brasileiro: começa calmo, passa por todas as datas do varejo e termina no Natal e no 13º, com o ranking fechando na virada do ano. Janeiro fica de fora, como intervalo entre seasons.</p>
+  </div>
+  <div class="pace">
+    <div><b>334</b><span>dias de jogo na season</span></div>
+    <div><b>6</b><span>dias de jogo por dia real (relógio do playtest)</span></div>
+    <div><b>≈ 8 sem.</b><span>de tempo real do começo ao fim</span></div>
+    <div><b>≈ 5 dias</b><span>reais entre um dia de pagamento e outro</span></div>
+  </div>
+  <div class="timeline">
+    <div class="tl"><div class="m">Todo mês<small>5º dia útil</small></div><div class="ev">
+      <div class="chip c-fam"><b>Dia do pagamento</b><span>Gasto 25% acima da média nos 5 dias seguintes, 15% abaixo na última semana.</span></div>
+      <div class="chip c-fam"><b>Censo do mês</b><span>Nascimentos, mortes, migração e troca de faixa aparecem no painel da cidade.</span></div>
+    </div></div>
+    <div class="tl"><div class="m">Fev<small>1º seg · 9 ter</small></div><div class="ev">
+      <div class="chip c-gold"><b>Abertura · 01/02</b><span>Segunda-feira, 6h. Primeiras semanas sem evento grande.</span></div>
+      <div class="chip c-gov"><b>Volta às aulas</b><span>Começam os editais de merenda.</span></div>
+      <div class="chip c-fam"><b>Carnaval · 6 a 10/02</b><span>Conforto e lazer em alta, açúcar e bebidas.</span></div>
+    </div></div>
+    <div class="tl"><div class="m">Mar–Abr<small>Páscoa 28/03</small></div><div class="ev">
+      <div class="chip c-farm"><b>Colheita do arroz e da soja</b><span>Safra cheia: preço de grão cai, armazém vale ouro.</span></div>
+      <div class="chip c-fam"><b>Quaresma e Páscoa</b><span>Menos carne, mais ovo e peixe; açúcar e chocolate sobem.</span></div>
+    </div></div>
+    <div class="tl"><div class="m">Mai<small>9 dom</small></div><div class="ev">
+      <div class="chip c-ret"><b>Dia das Mães</b><span>"Equipar a casa" +40% na semana anterior.</span></div>
+    </div></div>
+    <div class="tl"><div class="m">Jun–Ago<small>inverno 21/06</small></div><div class="ev">
+      <div class="chip c-fam"><b>Inverno</b><span>Cozinhar e vestir sobem, mais forte no Sul.</span></div>
+      <div class="chip c-gov"><b>Recesso de julho</b><span>Merenda para por 3 semanas.</span></div>
+      <div class="chip c-ret"><b>Dia dos Pais · 08/08</b><span>Pico menor de posse e conforto.</span></div>
+    </div></div>
+    <div class="tl"><div class="m">Out<small>12 ter</small></div><div class="ev">
+      <div class="chip c-ret"><b>Dia das Crianças</b><span>Proporcional às crianças de cada cidade.</span></div>
+      <div class="chip c-farm"><b>Plantio</b><span>Fazendas compram semente.</span></div>
+    </div></div>
+    <div class="tl"><div class="m">Nov<small>26 sex · 30 ter</small></div><div class="ev">
+      <div class="chip c-ret"><b>Black Friday</b><span>Posse +60% no fim de semana.</span></div>
+      <div class="chip c-gold"><b>13º · 1ª parcela</b><span>Empresas pagam metade de um mês de salário. Aviso 7 dias de jogo antes.</span></div>
+    </div></div>
+    <div class="tl"><div class="m">Dez<small>20 seg · 25 sáb</small></div><div class="ev">
+      <div class="chip c-gold"><b>13º · 2ª parcela</b><span>As famílias recebem; empresa sem caixa sofre.</span></div>
+      <div class="chip c-ret"><b>Natal</b><span>Pico do ano, mais forte em posse.</span></div>
+      <div class="chip c-gold"><b>Réveillon · 31/12</b><span>Fim da season, ranking final.</span></div>
+    </div></div>
+  </div>
+  <div class="rules">
+    <div class="rule"><i>Abertura real</i><p class="small">Abrir numa sexta à noite: os amigos aprendem no fim de semana, com o jogo ainda em fevereiro. Os eventos do fim do ano são testados no laboratório antes de chegar a eles.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="head">
+    <p class="eyebrow">11 · Notícias, ondas e choques</p>
+    <h2>Motivo para olhar o mural todo dia</h2>
+  </div>
+  <div class="cols3">
+    <div class="card"><span class="k">Fato</span><h3>"Sorriso ganha 3 mil moradores com a safra"</h3><p class="small">Gerado do que aconteceu na simulação: preço, falta, migração, troca de faixa, empresa quebrada, edital grande. Sempre verdadeiro.</p></div>
+    <div class="card"><span class="k">Onda de moda</span><h3>"Air fryer virou febre"</h3><p class="small">Um produto ganha preferência numa região por algumas semanas e assenta um pouco acima do que era. Anunciada como rumor 2 a 3 dias de jogo antes do pico.</p></div>
+    <div class="card"><span class="k">Choque</span><h3>"Seca no RS: arroz 30% menor"</h3><p class="small">Mexe na oferta, não na procura. Anunciado antes de começar, com duração conhecida. O fundo segura o abastecimento, mais caro.</p></div>
+  </div>
+  <div class="rules">
+    <div class="rule"><i>Limites</i><p class="small">Moda muda a preferência, nunca o bolso. No máximo uma onda por necessidade e um choque por mês. Cada notícia diz se é fato, rumor ou previsão.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="head">
+    <p class="eyebrow">12 · Mapa sem travar</p>
+    <h2>Milhares de pontos, desenhados conforme o zoom</h2>
+    <p class="read muted">Lotes e lugares do fundo são preparados uma vez, antes da season, a partir dos dados públicos. O navegador recebe esse tabuleiro uma vez e depois só as mudanças.</p>
+  </div>
+  <div class="zoom">
+    <div>
+      <b>Brasil e estados</b>
+      <svg viewBox="0 0 200 90" aria-hidden="true"><circle cx="50" cy="40" r="22" fill="var(--gold-soft)" stroke="var(--gold)"/><text x="50" y="45" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink)">1,1 mi</text><circle cx="130" cy="55" r="12" fill="var(--gold-soft)" stroke="var(--gold)"/><text x="130" y="59" text-anchor="middle" font-size="9" font-weight="700" fill="var(--ink)">111 mil</text><circle cx="168" cy="22" r="7" fill="var(--gold-soft)" stroke="var(--gold)"/></svg>
+      <span class="small muted">Cidades do tamanho da população, com a fatia do jogo e a procura atendida pelo fundo.</span>
+    </div>
+    <div>
+      <b>Região</b>
+      <svg viewBox="0 0 200 90" aria-hidden="true"><rect x="20" y="20" width="44" height="26" rx="5" fill="var(--surface)" stroke="var(--farm)" stroke-width="2"/><text x="42" y="38" text-anchor="middle" font-size="11" fill="var(--ink)">12 faz.</text><rect x="80" y="44" width="44" height="26" rx="5" fill="var(--surface)" stroke="var(--industry)" stroke-width="2"/><text x="102" y="62" text-anchor="middle" font-size="11" fill="var(--ink)">5 ind.</text><rect x="140" y="16" width="44" height="26" rx="5" fill="var(--surface)" stroke="var(--retail)" stroke-width="2"/><text x="162" y="34" text-anchor="middle" font-size="11" fill="var(--ink)">8 lojas</text><path d="M10 80 C 70 60, 120 85, 195 50" stroke="var(--gold)" stroke-width="5" fill="none" opacity=".6"/></svg>
+      <span class="small muted">Negócios do jogo agrupados por tipo e rios de carga nas estradas.</span>
+    </div>
+    <div>
+      <b>Cidade</b>
+      <svg viewBox="0 0 200 90" aria-hidden="true"><ellipse cx="80" cy="45" rx="60" ry="32" fill="var(--fam)" opacity=".18"/><ellipse cx="80" cy="45" rx="30" ry="16" fill="var(--fam)" opacity=".22"/><g fill="var(--retail)"><rect x="60" y="34" width="10" height="10"/><rect x="92" y="48" width="10" height="10"/></g><g fill="var(--bgx)"><circle cx="40" cy="30" r="4"/><circle cx="120" cy="30" r="4"/><circle cx="110" cy="64" r="4"/></g><path d="M150 20 h14 v8 h-14z M156 14 v20" stroke="var(--gov)" stroke-width="2" fill="none"/><rect x="160" y="54" width="26" height="20" fill="var(--bgx)" opacity=".5"/></svg>
+      <span class="small muted">Mancha de onde mora gente, prédios do jogo, supermercados, escolas e hospitais do fundo, zona industrial cinza.</span>
+    </div>
+  </div>
+  <div class="rules">
+    <div class="rule"><i>Tabuleiro</i><p class="small">Cerca de 6.000 lotes nos 59 municípios, no uso real do solo: lavoura para fazenda, distrito industrial para fábrica, rua comercial e perto de gente para loja. Bots e jogadores usam os mesmos lotes; o governo vende os livres.</p></div>
+    <div class="rule"><i>Por cidade</i><p class="small">Escolas, hospitais e supermercados de uma cidade só são baixados quando você aproxima dela. São Paulo sozinha tem milhares; ninguém precisa delas vendo o estado inteiro.</p></div>
+    <div class="rule"><i>Caminhões</i><p class="small">Os seus e os da tela andam um a um; o resto vira rios de carga com espessura pela tonelagem do dia.</p></div>
+  </div>
+  <div class="pace">
+    <div><b>6.000</b><span>lotes no tabuleiro</span></div>
+    <div><b>&lt; 400 KB</b><span>primeira carga do mapa, comprimida</span></div>
+    <div><b>0</b><span>empresas a mais para simular o fundo</span></div>
+    <div><b>&lt; 60 s</b><span>para simular um dia de jogo (o relógio lento dá 4 h)</span></div>
+  </div>
+  <p class="small muted">Metas a medir no laboratório. Dados do OpenStreetMap com a atribuição que já aparece no jogo; dados do IBGE, INEP, DATASUS e CONAB são públicos e ficam com a fonte anotada no mundo.</p>
+</section>
+
+<section>
+  <div class="head">
+    <p class="eyebrow">13 · Ordem de construção</p>
+    <h2>Do alicerce para o enfeite</h2>
+    <p class="read muted">Cada passo termina em algo jogável e passa pela régua da prova econômica. Os destacados são o mínimo que recomendo levar ao John para janeiro.</p>
+  </div>
+  <ol class="phases">
+    <li class="jan"><b>Calendário com data própria</b><span>Season de 01/02 a 31/12/2027 e dia do pagamento.</span></li>
+    <li class="jan"><b>População real e economia de fundo</b><span>Censo por cidade, um bolso por cidade, fundo como concorrente e rede de segurança, fatia inicial de 15%. Sai a fatia escondida e o "30% ao dia".</span></li>
+    <li class="jan"><b>Painel da cidade e tabuleiro de lotes</b><span>Números da cidade visíveis, lotes no uso real do solo, mapa em três níveis.</span></li>
+    <li><b>Demografia mensal e trabalho</b><span>Nascimentos, mortes, envelhecimento, migração, contratação limitada pela cidade.</span></li>
+    <li><b>Necessidades, faixas e cultura</b><span>Com os 6 produtos de hoje; cidade-polo; mancha de onde mora gente.</span></li>
+    <li><b>Posicionamento, marca e redes de fundo com cara</b><span>Três versões de cada produto, reputação por estado, relacionamento entre empresas.</span></li>
+    <li><b>Governo completo e compradores do fundo</b><span>Imposto, encargos, orçamento de 90 dias, merenda por aluno, hospitais, pedidos do supermercado.</span></li>
+    <li><b>Bens que duram</b><span>Utensílios e caminhões; usado e sucata. Sai a qualidade.</span></li>
+    <li><b>Porte e árvore de capacidades</b><span>Imposto por porte, nove capacidades com custo e manutenção.</span></li>
+    <li><b>Eventos do calendário e mural</b><span>Datas do varejo, 13º, fatos, ondas e choques.</span></li>
+    <li><b>Porto, silos, safra e novas cadeias</b><span>Cada produto novo diz qual necessidade atende.</span></li>
+  </ol>
+</section>
+
+<section>
+  <div class="head">
+    <p class="eyebrow">Para você decidir</p>
+    <h2>Quatro escolhas de design</h2>
+    <p class="read muted">Números, contas e regras de cálculo ficam comigo e são provados no laboratório.</p>
+  </div>
+  <div class="qs">
+    <div class="rule"><i>1</i><p class="small"><b>Loja perto de onde mora gente vende mais?</b> Isso faz o lugar dentro da cidade importar (centro caro e cheio contra bairro barato). Recomendo <b>sim</b>, a partir do passo 5: é o que dá sentido a escolher o lote.</p></div>
+    <div class="rule"><i>2</i><p class="small"><b>No fim da season, o mundo recomeça ou o patrimônio continua?</b> Recomendo <b>recomeçar</b> no playtest e guardar o ranking num quadro de campeões. A população volta ao Censo.</p></div>
+    <div class="rule"><i>3</i><p class="small"><b>Três faixas de renda ou cinco?</b> Recomendo <b>três</b>: cabem no painel da cidade e já dão a progressão "Campinas enriqueceu".</p></div>
+    <div class="rule"><i>4</i><p class="small"><b>A marca é da empresa ou do grupo?</b> Recomendo <b>da empresa</b>: um grupo pode ter uma marca popular e outra premium, como acontece de verdade, e comprar uma empresa traz a marca dela junto.</p></div>
+  </div>
+</section>
+
+<footer>
+  Proposta de 03/11/2026, revisão 3, sobre o motor do ramo <span class="mono">design/estrutura-telas</span>. Nenhuma regra do motor mudou. Ao aprovar, as decisões viram D-044 em <span class="mono">docs/product/DECISIONS.md</span> e uma spec para o John por passo. Taxas e proporções marcadas "≈" vêm de médias públicas do IBGE (Censo 2022, Registro Civil, PNAD, POF) e precisam ser conferidas cidade a cidade na implementação.
+</footer>
+
+</div>
+</body>
+</html>

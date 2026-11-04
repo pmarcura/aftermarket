@@ -85,8 +85,10 @@ export function v2PortfolioFor(w: World): RivalTemplate[] {
   }
   return out;
 }
-// Lojas-bot atendem 60% da procura das famílias da sua cidade (produção dos bots cobre algo parecido).
-const RETAIL_COVERAGE = 0.6;
+// Lojas-bot atendem 70% da procura das famílias da sua cidade, a mesma parcela para a qual a
+// cadeia produtiva é dimensionada (designWorld.servedShare). Com 60%, a loja era o gargalo: 51%
+// atendidos na escala 20 em todos os produtos (spec 006).
+const RETAIL_COVERAGE = 0.7;
 const RETAIL_STOCK_DAYS = 3;
 const DISTRIBUTOR_POPULATION = 600000;
 const DISTRIBUTOR_STOCK_DAYS = 7;

@@ -77,32 +77,47 @@ def mata(cx, cy, raio, n):
         copa(x, y, rng.choice([5, 6, 6, 7]))
 
 # ---------- serra: cristas em camadas, pedra cinza com sombra à direita ----------
-def pico(cx, cy, w, h, luz=True):
+def morro(cx, cy, w, h):
+    """Maciço arredondado como na referência: massa cinza-esverdeada, face de rocha à direita
+    com sombra, cristas claras no alto-esquerda, base tramada que funde com a mata."""
     for j in range(h):
         y = cy - j
-        meia = int(w * (1 - j / h) / 2)
+        t = j / h
+        meia = int(w / 2 * math.sqrt(max(0.0, 1 - t * t)) * (0.92 + 0.08 * math.sin(j * 1.7)))
         for x in range(-meia, meia + 1):
-            t = x / max(1, meia)
-            if t < -0.15: c = 'serra_c' if luz else 'serra'
-            elif t < 0.3: c = 'serra'
+            u = x / max(1, meia)
+            if u < -0.25: c = 'serra_c'
+            elif u < 0.25: c = 'serra'
+            elif u < 0.7: c = 'pedra' if (x - j) % 4 == 0 else 'serra_s'
             else: c = 'serra_s'
-            if j > h - 3: c = 'branco' if j == h - 1 else 'serra_c'
-            if abs(x) == meia and j < h - 2: c = 'contorno' if t > 0 else 'serra'
+            if j >= h - 2 and -0.3 < u < 0.3: c = 'branco'
+            if j < 2 and (x + j) % 2: c = 'mata_e'
             put(cx + x, y, c)
-    for x in range(-w // 2, w // 2 + 1): put(cx + x, cy + 1, 'mata_e')
+        if meia: put(cx + meia + 1, y, 'contorno')
+    # cristas e rachaduras
+    for k in range(4):
+        y0 = cy - int(h * (0.3 + 0.15 * k)); x0 = -int(w * 0.3) + k * 3
+        for i in range(0, int(w * 0.35)):
+            put(cx + x0 + i, y0 - i // 3, 'serra_c' if i % 2 else 'pedra')
+    for k in range(3):
+        y0 = cy - int(h * (0.2 + 0.2 * k)); x0 = int(w * 0.15) + k * 2
+        for i in range(0, 7):
+            put(cx + x0 + i, y0 + i // 2, 'contorno')
 
 def serra(cx, cy, w, h):
-    """Cordilheira: picos em 3 fileiras, de trás para frente, com sopé de mata escura."""
-    fil = [(0.55, -8), (0.8, -3), (1.0, 2)]
+    """Cordilheira: morros de trás para a frente, menores ao fundo; sopé de mata escura."""
+    fil = [(0.6, -int(h * 0.45)), (0.85, -int(h * 0.2)), (1.0, 0)]
     for esc, dy in fil:
-        x = cx
+        x = cx + rng.randrange(0, 10)
         while x < cx + w:
-            pw = int(rng.choice([18, 22, 26]) * esc); ph = int(h * esc * rng.uniform(0.75, 1.0))
-            pico(x + pw // 2, cy + dy, pw, ph)
-            x += pw - rng.choice([4, 6, 8])
-    for x in range(cx - 4, cx + w + 4):
-        for k in range(3):
-            if (x + k) % 2 == 0: put(x, cy + 2 + k, 'mata')
+            mw = int(rng.choice([30, 36, 44]) * esc); mh = int(h * esc * rng.uniform(0.8, 1.0))
+            morro(x + mw // 2, cy + dy, mw, mh)
+            x += mw - rng.choice([8, 10, 14])
+    for x in range(cx - 6, cx + w + 6):
+        for k in range(4):
+            if (x + k) % 2 == 0: put(x, cy + 1 + k, 'mata_e' if k < 2 else 'mata')
+    for _ in range(int(w / 6)):
+        copa(cx + rng.randrange(-4, w + 4), cy + 6 + rng.randrange(0, 5), rng.choice([4, 5]))
 
 # ---------- rio: faixa de água com margem clara e brilho ----------
 def suave(path, passo=1.0):
@@ -120,8 +135,11 @@ def suave(path, passo=1.0):
     out.append(path[-1])
     return out
 
+RIOS = []
+
 def rio(path, larg=5):
     pts = suave(path)
+    RIOS.append((pts, larg))
     for x, y in pts:
         for dx in range(-larg - 1, larg + 2):
             for dy in range(-larg - 1, larg + 2):
@@ -137,30 +155,54 @@ def rio(path, larg=5):
             put(int(x) - 1, int(y) - 1, 'agua_c')
 
 # ---------- estrada de terra com borda escura ----------
+def na_agua(x, y):
+    for pts, larg in RIOS:
+        for rx, ry in pts[::3]:
+            if (rx - x) ** 2 + (ry - y) ** 2 <= (larg + 1) ** 2: return True
+    return False
+
+def ponte(pts):
+    """Tabuleiro de madeira com guarda-corpo onde a estrada cruza água."""
+    for i, (x, y) in enumerate(pts):
+        if not na_agua(x, y): continue
+        # direção local
+        x2, y2 = pts[min(i + 2, len(pts) - 1)]; x1, y1 = pts[max(i - 2, 0)]
+        dx, dy = x2 - x1, y2 - y1
+        n = max(1, math.hypot(dx, dy)); nx, ny = -dy / n, dx / n
+        for k in range(-3, 4):
+            c = 'madeira' if abs(k) < 3 else 'contorno'
+            if abs(k) < 3 and i % 3 == 0: c = 'estrada_e'
+            put(int(x + nx * k), int(y + ny * k), c)
+        if i % 4 == 0:
+            put(int(x + nx * 3), int(y + ny * 3) - 1, 'luz'); put(int(x - nx * 3), int(y - ny * 3) - 1, 'luz')
+
 def estrada(path, larg=3, cor='areia', borda='estrada_e'):
     pts = [(int(x), int(y)) for x, y in suave(path)]
     for x, y in pts:
+        if na_agua(x, y): continue
         for dx in range(-larg, larg + 1):
             for dy in range(-larg, larg + 1):
                 if dx * dx + dy * dy <= (larg) ** 2:
                     put(x + dx, y + dy, borda)
     for x, y in pts:
+        if na_agua(x, y): continue
         for dx in range(-larg + 1, larg):
             for dy in range(-larg + 1, larg):
                 if dx * dx + dy * dy <= (larg - 1) ** 2:
                     put(x + dx, y + dy, cor)
+    ponte(pts)
     return pts
 
 def rodovia(path):
     pts = estrada(path, larg=3, cor='ouro', borda='contorno')
     for i, (x, y) in enumerate(pts):
-        if i % 8 < 3: put(x, y, 'branco')
+        if i % 8 < 3 and not na_agua(x, y): put(x, y, 'branco')
 
 # ---------- casas e cidades ----------
 def casa(x, y, w=7, h=5, telhado='terracota'):
     for i in range(w):
         for j in range(h):
-            put(x + i, y + j, 'muro')
+            put(x + i, y + j, 'branco' if (i + j) % 7 else 'muro')
     for i in range(-1, w + 1):
         for j in range(3):
             if 0 <= i + j - 1 and i - j + 1 < w + 1:
@@ -186,18 +228,32 @@ def vila(cx, cy, n=5):
         casa(cx + dx, cy + dy, rng.choice([6, 7]), rng.choice([4, 5]))
 
 def cidade(cx, cy):
-    for dx in range(-26, 27):
-        for dy in range(-16, 17):
-            if dx * dx * 0.4 + dy * dy <= 256:
-                put(cx + dx, cy + dy, 'areia' if (dx + dy) % 2 else 'muro')
-    for dx, dy in [(-22, -10), (-12, -12), (-2, -11), (10, -12), (18, -8), (-20, 0), (-8, -1), (4, -2), (16, 0), (-14, 7), (-2, 8), (10, 7)]:
-        casa(cx + dx, cy + dy, rng.choice([6, 7, 8]), rng.choice([4, 5, 6]), rng.choice(['terracota', 'terracota', 'telhado']))
-    igreja(cx - 2, cy - 4)
-    # muralha/borda
-    for dx in range(-26, 27):
-        for dy in range(-16, 17):
-            r = dx * dx * 0.4 + dy * dy
-            if 230 <= r <= 256: put(cx + dx, cy + dy, 'estrada_e')
+    R = 30
+    for dx in range(-R, R + 1):
+        for dy in range(-18, 19):
+            if dx * dx * 0.38 + dy * dy <= 324:
+                put(cx + dx, cy + dy, 'areia' if (dx * 3 + dy) % 5 else 'estrada_e')
+    # ruas em cruz e anel
+    for dx in range(-R, R + 1):
+        if dx * dx * 0.38 <= 320: put(cx + dx, cy, 'estrada_e'); put(cx + dx, cy + 1, 'estrada_e')
+    for dy in range(-18, 19): put(cx, cy + dy, 'estrada_e'); put(cx + 1, cy + dy, 'estrada_e')
+    quadras = [(-26, -12), (-16, -14), (-6, -15), (5, -15), (15, -13), (23, -9),
+               (-26, 4), (-16, 6), (-6, 7), (6, 7), (16, 6), (24, 3),
+               (-21, -5), (10, -6), (-12, 12), (12, 12)]
+    seed = cx * 7 + cy
+    for k, (dx, dy) in enumerate(quadras):
+        w = 8 + (k * 3 + seed) % 3; h = 5 + (k * 5 + seed) % 3
+        telhado = ['terracota', 'terracota', 'telhado', 'serra_s'][(k + seed) % 4]
+        casa(cx + dx, cy + dy, w, h, telhado)
+    igreja(cx - 5, cy - 8)
+    # praça com árvores
+    for dx, dy in [(8, 2), (14, 1)]:
+        copa(cx + dx, cy + dy, 3)
+    # muro/borda da cidade
+    for dx in range(-R - 1, R + 2):
+        for dy in range(-19, 20):
+            r = dx * dx * 0.38 + dy * dy
+            if 300 <= r <= 324: put(cx + dx, cy + dy, 'estrada_e' if (dx + dy) % 2 else 'contorno')
 
 def metropole(cx, cy):
     for dx in range(-36, 37):

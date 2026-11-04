@@ -97,7 +97,9 @@ test('cidade clicável abre painel com procura, lojas e lotes à venda', async (
 
   // Pelo teclado: cada cidade é um botão do grupo de acesso.
   const campinas = world.season.config.regions.find((r) => r.name === 'Campinas')!;
-  const botaoCidade = page.locator(`.main-map .map-access button[data-city="${campinas.id}"]`);
+  const botaoCidade = page.locator(
+    `.main-map .map-access-cidades button[data-city="${campinas.id}"]`,
+  );
   await botaoCidade.focus();
   await page.keyboard.press('Enter');
   const painel = page.getByRole('complementary', { name: 'Cidade de Campinas' });

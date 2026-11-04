@@ -1092,19 +1092,17 @@ export function WorldMap({
       <div ref={container} className="map-canvas" />
       {/* Acesso por teclado e leitor de tela: os ícones são desenhados pelo mapa, então cada
           negócio também é um botão que só aparece quando recebe foco. */}
+      {!mini && !economic && onCitySelect && (
+        <div className="map-access-cidades" role="group" aria-label="Cidades no mapa">
+          {regionsOf(world).map((r) => (
+            <button key={r.id} type="button" data-city={r.id} onClick={() => onCitySelect(r.id)}>
+              Cidade de {r.name}
+            </button>
+          ))}
+        </div>
+      )}
       {!mini && !economic && (
         <div className="map-access" role="group" aria-label="Negócios no mapa">
-          {onCitySelect &&
-            regionsOf(world).map((r) => (
-              <button
-                key={`city-${r.id}`}
-                type="button"
-                data-city={r.id}
-                onClick={() => onCitySelect(r.id)}
-              >
-                Cidade de {r.name}
-              </button>
-            ))}
           {visible.map((p) => (
             <button
               key={p.id}

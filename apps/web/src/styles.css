@@ -3921,12 +3921,15 @@ td .primary {
 }
 
 /* Botões de acesso aos negócios do mapa: invisíveis até receberem foco do teclado. */
+/* Cidades no mapa (spec 008 R2): mesmo comportamento invisível-até-o-foco. */
+.map-access-cidades,
 .map-access {
   position: absolute;
   top: 12px;
   left: 12px;
   z-index: 6;
 }
+.map-access-cidades button,
 .map-access button {
   position: absolute;
   width: 1px;
@@ -3936,6 +3939,7 @@ td .primary {
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+.map-access-cidades button:focus-visible,
 .map-access button:focus-visible {
   width: auto;
   height: auto;

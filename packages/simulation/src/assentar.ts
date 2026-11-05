@@ -49,8 +49,12 @@ export function assentarNoMapa(w: World) {
     }
     if (escolhido < 0) continue;
     ocupados.add(escolhido);
-    const [lng, lat, giro, ladoMaximo] = lugares[escolhido];
+    const [lng, lat, giro, ladoMaximo, , acessoLng, acessoLat] = lugares[escolhido];
     p.coordinates = [lng, lat];
-    p.site = { facing: giro, side: ladoMaximo };
+    p.site = {
+      facing: giro,
+      side: ladoMaximo,
+      ...(acessoLng !== undefined ? { access: [acessoLng, acessoLat] } : {}),
+    };
   }
 }

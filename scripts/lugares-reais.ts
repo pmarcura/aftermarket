@@ -37,9 +37,21 @@ export type Zona = 'comercio' | 'industria' | 'lavoura' | 'mineracao';
 /** Como cada zona é lida do mapa e quanto espaço procurar. */
 const ESCALAS = {
   // cidade: tiles de rua (zoom 14), grade de 8 m, até ~6 km do centro
-  urbana: { zoom: 14, raioTiles: 2, celula: 8, zonas: ['comercio', 'industria'] as Zona[] },
+  urbana: {
+    zoom: 14,
+    raioTiles: 2,
+    celula: 8,
+    frente: 20,
+    zonas: ['comercio', 'industria'] as Zona[],
+  },
   // campo: tiles de zoom 12, grade de 40 m, até ~30 km do centro
-  rural: { zoom: 12, raioTiles: 3, celula: 40, zonas: ['lavoura', 'mineracao'] as Zona[] },
+  rural: {
+    zoom: 12,
+    raioTiles: 3,
+    celula: 40,
+    frente: 80,
+    zonas: ['lavoura', 'mineracao'] as Zona[],
+  },
 };
 
 /** Lado mínimo e máximo (m) do terreno guardado em cada zona, e quantos lugares guardar. */
@@ -133,7 +145,8 @@ async function emLotes<T>(tarefas: (() => Promise<T>)[], n = 8) {
 class Grade {
   readonly n: number;
   readonly zona: Uint8Array; // bits das zonas
-  readonly bloqueio: Uint8Array; // 1 = rua, água ou terreno já escolhido
+  readonly bloqueio: Uint8Array; // 1 = rua, água, prédio do mapa ou terreno já escolhido
+  readonly rua: Uint8Array; // 1 = rua (com a largura da via)
   constructor(
     readonly meio: number, // metade do lado da área coberta (m)
     readonly cel: number,
@@ -141,6 +154,7 @@ class Grade {
     this.n = Math.ceil((2 * meio) / cel);
     this.zona = new Uint8Array(this.n * this.n);
     this.bloqueio = new Uint8Array(this.n * this.n);
+    this.rua = new Uint8Array(this.n * this.n);
   }
   celula([x, y]: P) {
     return [Math.floor((x + this.meio) / this.cel), Math.floor((y + this.meio) / this.cel)];
@@ -188,8 +202,10 @@ class Grade {
           const ii = i + di,
             jj = j + dj;
           if (ii < 0 || jj < 0 || ii >= this.n || jj >= this.n) continue;
-          if ((di * di + dj * dj) * this.cel * this.cel <= raio * raio)
+          if ((di * di + dj * dj) * this.cel * this.cel <= raio * raio) {
             this.bloqueio[jj * this.n + ii] = 1;
+            this.rua[jj * this.n + ii] = 1;
+          }
         }
     }
   }
@@ -200,8 +216,20 @@ class Grade {
   folga(vale: (bits: number) => boolean) {
     const { n } = this;
     const d = new Float32Array(n * n);
-    const INF = 1e9;
-    for (let k = 0; k < n * n; k++) d[k] = vale(this.zona[k]) && !this.bloqueio[k] ? INF : 0;
+    for (let k = 0; k < n * n; k++) d[k] = vale(this.zona[k]) && !this.bloqueio[k] ? 1e9 : 0;
+    return this.chanfro(d, true);
+  }
+
+  /** Distância (m) de cada célula até a rua mais próxima. */
+  distanciaDaRua() {
+    const d = new Float32Array(this.n * this.n);
+    for (let k = 0; k < d.length; k++) d[k] = this.rua[k] ? 0 : 1e9;
+    return this.chanfro(d, false);
+  }
+
+  /** Duas passadas do chanfro; com `bordaZero`, a borda da grade conta como limite. */
+  private chanfro(d: Float32Array, bordaZero: boolean) {
+    const { n } = this;
     const a = 1,
       b = Math.SQRT2;
     for (let j = 0; j < n; j++)
@@ -210,12 +238,12 @@ class Grade {
         if (!d[k]) continue;
         let v = d[k];
         if (i > 0) v = Math.min(v, d[k - 1] + a);
-        else v = 0;
+        else if (bordaZero) v = 0;
         if (j > 0) {
           v = Math.min(v, d[k - n] + a);
           if (i > 0) v = Math.min(v, d[k - n - 1] + b);
           if (i < n - 1) v = Math.min(v, d[k - n + 1] + b);
-        } else v = 0;
+        } else if (bordaZero) v = 0;
         d[k] = v;
       }
     for (let j = n - 1; j >= 0; j--)
@@ -224,12 +252,12 @@ class Grade {
         if (!d[k]) continue;
         let v = d[k];
         if (i < n - 1) v = Math.min(v, d[k + 1] + a);
-        else v = 0;
+        else if (bordaZero) v = 0;
         if (j < n - 1) {
           v = Math.min(v, d[k + n] + a);
           if (i < n - 1) v = Math.min(v, d[k + n + 1] + b);
           if (i > 0) v = Math.min(v, d[k + n - 1] + b);
-        } else v = 0;
+        } else if (bordaZero) v = 0;
         d[k] = v;
       }
     for (let k = 0; k < n * n; k++) d[k] *= this.cel;
@@ -318,6 +346,10 @@ async function lerEscala(cidade: City, escala: (typeof ESCALAS)[keyof typeof ESC
         cada('water', (g) => {
           for (const p of poligonos(g.geometry)) grade.pintar(p, grade.bloqueio, 1);
         });
+        // prédios que já existem no mapa: o negócio não é construído em cima deles
+        cada('building', (g) => {
+          for (const p of poligonos(g.geometry)) grade.pintar(p, grade.bloqueio, 1);
+        });
         cada('transportation', (g) => {
           const classe = String(g.properties?.class);
           if (!(classe in MEIA_LARGURA) && classe !== 'track') return;
@@ -363,6 +395,7 @@ async function lerEscala(cidade: City, escala: (typeof ESCALAS)[keyof typeof ESC
     return melhor;
   };
 
+  const distanciaRua = grade.distanciaDaRua();
   const resultado: Partial<Record<Zona, number[][]>> = {};
   for (const zona of escala.zonas) {
     const { minimo, maximo, quantos } = TERRENO[zona];
@@ -373,8 +406,19 @@ async function lerEscala(cidade: City, escala: (typeof ESCALAS)[keyof typeof ESC
     // Escolhe de novo a cada lugar, porque o terreno escolhido bloqueia a vizinhança.
     while (lugares.length < quantos && fase < testes.length) {
       const folga = grade.folga(testes[fase]);
-      let melhor = -1;
-      for (let c = 0; c < folga.length; c++) if (melhor < 0 || folga[c] > folga[melhor]) melhor = c;
+      // Só vale ponto cuja borda do terreno chega até a rua (frente encostada); entre eles, o
+      // de mais espaço (até o tamanho máximo) e, no empate, o mais perto da rua.
+      const teto = maximo / Math.SQRT2;
+      let melhor = -1,
+        melhorNota = -Infinity;
+      for (let c = 0; c < folga.length; c++) {
+        if (!folga[c] || distanciaRua[c] - folga[c] > escala.frente) continue;
+        const nota = Math.min(folga[c], teto) - 0.01 * distanciaRua[c];
+        if (nota > melhorNota) {
+          melhorNota = nota;
+          melhor = c;
+        }
+      }
       // quadrado inscrito no círculo livre: lado = raio × √2
       const lado = Math.min(maximo, (folga[melhor] ?? 0) * Math.SQRT2);
       if (melhor < 0 || lado < minimo) {
@@ -393,6 +437,8 @@ async function lerEscala(cidade: City, escala: (typeof ESCALAS)[keyof typeof ESC
         Math.round(giro * 100) / 100,
         Math.round(lado),
         fase === 0 ? 1 : 0, // 1 = zona real do mapa; 0 = zona substituta
+        // acesso: ponto da rua onde o caminho asfaltado do terreno encontra a via
+        ...(rua ? paraGraus(rua.q).map((v) => Math.round(v * 1e5) / 1e5) : [lng, lat]),
       ]);
       // reserva a área do terreno escolhido (com um recuo) para o próximo não sobrepor
       const raio = (lado / Math.SQRT2) * 1.05 + grade.cel;
@@ -443,7 +489,7 @@ async function main() {
       JSON.stringify({
         fonte: 'OpenFreeMap (OpenMapTiles, dados © colaboradores do OpenStreetMap)',
         formato:
-          '[lng, lat, giro (rad, 0 = frente para o sul), lado máximo do terreno (m), 1 = zona real / 0 = substituta]',
+          '[lng, lat, giro (rad, 0 = frente para o sul), lado máximo do terreno (m), 1 = zona real / 0 = substituta, lng e lat do acesso na rua]',
         geradoEm: new Date().toISOString().slice(0, 10),
         cidades: saida,
       }) + '\n',

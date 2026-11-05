@@ -17,7 +17,12 @@ import {
 import { createMapStyle } from '../lib/map-style';
 import { criarCamada3D, TAMANHO_PIXEL, ZOOM_3D } from '../features/mapa/camada3d';
 import { estagioDoNegocio } from '../features/mapa/nivel';
-import { centroDoTerreno, contornoDoTerreno, ladoDoTerreno } from '../features/mapa/terreno';
+import {
+  acessoDoTerreno,
+  centroDoTerreno,
+  contornoDoTerreno,
+  ladoDoTerreno,
+} from '../features/mapa/terreno';
 import { positionAlongRoute, routeLengths } from '../../../../packages/simulation/src/geometry';
 import { shipmentRoadPath, shipmentRoute } from '../../../../packages/simulation/src/road-path';
 import { shipmentStatus } from '../../../../packages/simulation/src/shipment';
@@ -476,6 +481,33 @@ export function WorldMap({
         type: 'geojson',
         data: { type: 'FeatureCollection', features: [] },
       });
+      // Acesso asfaltado de cada terreno até a rua (fica por baixo do terreno e do modelo).
+      instance.addSource('acessos', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] },
+      });
+      instance.addLayer({
+        id: 'acessos-borda',
+        type: 'line',
+        source: 'acessos',
+        minzoom: mini ? 0 : 14,
+        layout: { 'line-cap': 'butt', 'line-join': 'round' },
+        paint: {
+          'line-color': '#6e6553',
+          'line-width': ['interpolate', ['exponential', 2], ['zoom'], 14, 2.2, 18, 26],
+        },
+      });
+      instance.addLayer({
+        id: 'acessos',
+        type: 'line',
+        source: 'acessos',
+        minzoom: mini ? 0 : 14,
+        layout: { 'line-cap': 'butt', 'line-join': 'round' },
+        paint: {
+          'line-color': '#f3e7cc',
+          'line-width': ['interpolate', ['exponential', 2], ['zoom'], 14, 1.4, 18, 20],
+        },
+      });
       // Terrenos só aparecem de perto; de longe são milhares de polígonos sem leitura.
       instance.addLayer({
         id: 'territories-fill',
@@ -799,6 +831,21 @@ export function WorldMap({
           // dentro da quadra e girado para a rua (o servidor guarda a entrada na via à parte)
           geometry: { type: 'Polygon', coordinates: [contornoDoTerreno(p)] },
         };
+      }),
+    });
+    (m.getSource('acessos') as GeoJSONSource).setData({
+      type: 'FeatureCollection',
+      features: visible.flatMap((p) => {
+        const linha = acessoDoTerreno(p);
+        return linha
+          ? [
+              {
+                type: 'Feature' as const,
+                properties: {},
+                geometry: { type: 'LineString' as const, coordinates: linha },
+              },
+            ]
+          : [];
       }),
     });
     (m.getSource('properties') as GeoJSONSource).setData({

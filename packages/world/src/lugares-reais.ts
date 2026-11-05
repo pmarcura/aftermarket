@@ -9,9 +9,10 @@ export type ZonaReal = 'comercio' | 'industria' | 'lavoura' | 'mineracao';
 
 /**
  * [lng, lat, giro em radianos (0 = frente para o sul), lado máximo do terreno em metros,
- *  1 = zona real do mapa / 0 = zona substituta (a cidade não tem a zona marcada no mapa)]
+ *  1 = zona real do mapa / 0 = zona substituta (a cidade não tem a zona marcada no mapa),
+ *  lng e lat do acesso: ponto da rua onde o caminho do terreno encontra a via]
  */
-export type LugarReal = [number, number, number, number, number];
+export type LugarReal = [number, number, number, number, number, number, number];
 
 type Cidade = { nome: string; uf: string } & Partial<Record<ZonaReal, LugarReal[]>>;
 const cidades = (dados as unknown as { cidades: Record<string, Cidade> }).cidades;

@@ -14,6 +14,22 @@ export function ladoDoTerreno(p: Property) {
   return p.site ? Math.min(lado, p.site.side) : lado;
 }
 
+/** Caminho asfaltado do meio da frente do terreno até o ponto da rua (sem acesso: nada). */
+export function acessoDoTerreno(p: Property): Position[] | null {
+  const destino = p.site?.access;
+  if (!destino) return null;
+  const [lng, lat] = centroDoTerreno(p);
+  const meio = ladoDoTerreno(p) / 2;
+  const giro = p.site?.facing ?? 0;
+  const cos = Math.cos((lat * Math.PI) / 180);
+  // frente do modelo = +Z (sul) girado: leste = sen(giro), sul = cos(giro)
+  const frente: Position = [
+    lng + (Math.sin(giro) * meio) / (111_320 * cos),
+    lat - (Math.cos(giro) * meio) / 111_320,
+  ];
+  return [frente, destino];
+}
+
 /** Quadrado do terreno em graus, girado para a rua (frente = sul quando o giro é 0). */
 export function contornoDoTerreno(p: Property): Position[] {
   const [lng, lat] = centroDoTerreno(p);

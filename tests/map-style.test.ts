@@ -15,6 +15,7 @@ const roadLayers = style.layers.filter(
   (layer): layer is LineLayerSpecification =>
     layer.type === 'line' && layer.id.startsWith('roads-') && !layer.id.endsWith('-casing'),
 );
+const APARECE: Record<string, number> = { minor: 12.05, service: 13.05, track: 13.05 };
 const classes = [
   'motorway',
   'trunk',
@@ -73,7 +74,8 @@ describe('continuidade da malha viária', () => {
         const widths = expressions.map((expression) => expression.evaluate({ zoom }, feature));
         expect(new Set(widths).size).toBe(1);
         expect(widths[0]).toBeGreaterThanOrEqual(previous);
-        if (zoom >= 12) expect(widths[0]).toBeGreaterThan(0);
+        // ruas aparecem depois do zoom 12; serviço e terra depois do 13 (mapa limpo no zoom médio)
+        if (zoom >= (APARECE[roadClass] ?? 12)) expect(widths[0]).toBeGreaterThan(0);
         previous = widths[0];
       }
       for (const zoom of [7, 10, 12, 14, 17]) {

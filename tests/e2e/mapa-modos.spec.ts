@@ -53,6 +53,22 @@ test('modos do mapa: fluxos de recursos e preços por cidade', async ({ page }) 
   );
   await expect(page.locator('.map-legend-bar')).toContainText('Precisa de você');
 
+  // Seus negócios ganham etiqueta com o nome (imagem própria no mapa)
+  const etiqueta = await page.evaluate(async () => {
+    const m = (window as unknown as { aftermarketMap?: maplibregl.Map }).aftermarketMap!;
+    const dados = (await (
+      m.getSource('properties') as maplibregl.GeoJSONSource
+    ).getData()) as unknown as {
+      features: { properties: { own: boolean; built: boolean; etiqueta: string } }[];
+    };
+    const minha = dados.features.find((f) => f.properties.own && f.properties.built);
+    return {
+      camada: Boolean(m.getLayer('nomes-meus')),
+      imagem: minha ? m.hasImage(minha.properties.etiqueta) : false,
+    };
+  });
+  expect(etiqueta).toEqual({ camada: true, imagem: true });
+
   // Fluxos: painel com o leite a caminho da loja, legenda das cadeias e o trajeto no mapa
   await modos.getByRole('button', { name: 'Fluxos' }).click();
   const painel = page.getByRole('complementary', { name: 'Fluxos de recursos' });

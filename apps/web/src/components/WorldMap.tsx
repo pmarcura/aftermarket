@@ -79,6 +79,44 @@ function loadCategoryIcon(category: (typeof categories)[number]): Promise<HTMLIm
   });
 }
 
+/**
+ * Etiqueta com o nome do negócio, no estilo das placas de cidade: chapa escura, texto creme e
+ * uma faixa com a cor do tipo de negócio; os do jogador ganham borda de ouro.
+ */
+function etiquetaDoNegocio(nome: string, cor: string, proprio: boolean) {
+  const canvas = document.createElement('canvas');
+  const fonte = '700 20px Archivo, "Segoe UI", sans-serif';
+  const medida = canvas.getContext('2d')!;
+  medida.font = fonte;
+  const texto = nome.length > 28 ? nome.slice(0, 27) + '…' : nome;
+  const w = Math.ceil(medida.measureText(texto).width) + 40;
+  const h = 36;
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d')!;
+  ctx.fillStyle = 'rgba(12, 14, 10, 0.88)';
+  drawChamferedRect(ctx, 2, 2, w - 4, h - 4, 4);
+  ctx.fill();
+  ctx.lineWidth = proprio ? 2.5 : 1.25;
+  ctx.strokeStyle = proprio ? '#f2bd3c' : 'rgba(243, 231, 204, 0.35)';
+  drawChamferedRect(ctx, 3, 3, w - 6, h - 6, 3);
+  ctx.stroke();
+  ctx.fillStyle = cor;
+  ctx.fillRect(9, 9, 7, h - 18);
+  ctx.fillStyle = '#f3e7cc';
+  ctx.font = fonte;
+  ctx.textBaseline = 'middle';
+  ctx.fillText(texto, 24, h / 2 + 1);
+  return ctx.getImageData(0, 0, w, h);
+}
+
+/** Chave estável da imagem da etiqueta (muda quando o nome ou o dono mudam). */
+function chaveDaEtiqueta(id: string, nome: string, proprio: boolean) {
+  let h = 0;
+  for (const c of nome) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return `nome-${id}-${h.toString(36)}-${proprio ? 1 : 0}`;
+}
+
 function drawChamferedRect(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -762,6 +800,32 @@ export function WorldMap({
           'circle-translate': mini ? [8, -14] : [13, -24],
         },
       });
+      // Nome dos negócios embaixo do pino: os seus a partir do zoom médio (sempre visíveis), os
+      // das outras empresas só de perto, sem se sobrepor.
+      if (!mini) {
+        const etiqueta: maplibregl.SymbolLayerSpecification['layout'] = {
+          'icon-image': ['get', 'etiqueta'],
+          'icon-anchor': 'top',
+          'icon-offset': [0, 16],
+          'icon-size': ['interpolate', ['linear'], ['zoom'], 8, 0.95, 13, 1.15],
+        };
+        instance.addLayer({
+          id: 'nomes-outros',
+          type: 'symbol',
+          source: 'properties',
+          minzoom: 12.5,
+          filter: ['all', ['!', ['has', 'point_count']], ['get', 'built'], ['!', ['get', 'own']]],
+          layout: { ...etiqueta, 'icon-allow-overlap': false, 'icon-padding': 4 },
+        });
+        instance.addLayer({
+          id: 'nomes-meus',
+          type: 'symbol',
+          source: 'properties',
+          minzoom: 7,
+          filter: ['all', ['!', ['has', 'point_count']], ['get', 'built'], ['get', 'own']],
+          layout: { ...etiqueta, 'icon-allow-overlap': true },
+        });
+      }
       if (!mini) {
         // Negócios construídos em 3D, por baixo dos halos e ícones de seleção.
         tres.current = criarCamada3D();
@@ -894,6 +958,20 @@ export function WorldMap({
           : [];
       }),
     });
+    // imagens das etiquetas com o nome (só dos negócios construídos)
+    const etiquetas = new Map<string, string>();
+    if (!mini)
+      for (const p of visible) {
+        const u = unidades.get(p.id);
+        if (!u) continue;
+        const proprio = p.ownerId === actor;
+        const chave = chaveDaEtiqueta(p.id, u.name, proprio);
+        etiquetas.set(p.id, chave);
+        if (!m.hasImage(chave))
+          m.addImage(chave, etiquetaDoNegocio(u.name, categoryInfo[p.category].color, proprio), {
+            pixelRatio: 2,
+          });
+      }
     (m.getSource('properties') as GeoJSONSource).setData({
       type: 'FeatureCollection',
       features: visible.map((p) => ({
@@ -905,6 +983,7 @@ export function WorldMap({
           color: categoryInfo[p.category].color,
           available: !p.ownerId,
           built: unidades.has(p.id),
+          etiqueta: etiquetas.get(p.id) ?? '',
           own: p.ownerId === actor,
           selected: p.id === selectedProperty,
           alert: alerts?.[p.id] ?? '',

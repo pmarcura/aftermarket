@@ -242,3 +242,13 @@ O projeto passa a ser desenvolvido pelo John e equipe, com lançamento de um pla
 ### D-043 · Estrutura das telas e design em paralelo (Pedro, 03/11/2026)
 
 O John cuida da engenharia (specs 006 e 007); o Pedro e o Claude cuidam da interface, uma tela por vez, em paralelo e no ramo `design/estrutura-telas`, que chega ao John como PR. O inventário de 03/11 ([`docs/design/inventario.html`](../design/inventario.html)) mostrou alertas falsos de "tudo em dia", dados repetidos em até seis lugares e sete caminhos para comprar. Estrutura aprovada: Início, Mapa (com Onde abrir), Negócios (Loja com Prateleira, Equipe e Resultado), Mercado (Comprar e Vender) e Empresa; cada dado numa casa só. Detalhes e requisitos na [spec 011](../../specs/011-estrutura-telas/spec.md). O mapa 3D do Pedro fica no ramo `pedro/mapa-3d` até a integração.
+
+### D-044 · Mapa em pixel art 3D, negócios em lugares reais e modos (Pedro, 05/11/2026)
+
+- **Estilo:** mapa e construções na mesma pixel art da identidade (pixel de 2×, contorno escuro, luz em três tons, paleta de terracota, creme, azul e ouro). O MODERN TOWN SET é referência de estilo; suas figurinhas saem do mapa.
+- **Prédios da cidade em 3D:** cada prédio do OpenStreetMap ganha planta e altura reais; a forma e o tamanho decidem se é casa, prédio ou galpão. Aparecem de perto (zoom 15,5).
+- **Lugares reais:** um único algoritmo para todos os tipos. Comércio em zona comercial, indústria, armazém e transportadora em zona industrial, fazenda em lavoura, mina em área de mineração; sem cruzar rua, sem ficar em cima de prédio do mapa, com a frente na rua e acesso asfaltado. Quando a cidade não tem a zona marcada, entra uma substituta identificada no dado (`packages/world/data/lugares-reais.json`).
+- **Tamanho real:** construção não cresce com o terreno. Terreno maior vira pátio; o negócio ganha mais construções ao subir de nível, que sai do tamanho do negócio (equipe, linhas, capacidade), sem regra nova de economia.
+- **Uma barra de modos:** Negócios, Fluxos, Demanda, Preços, Terrenos à venda e Zonas, com "Meus negócios" por cima de qualquer modo. Substitui as abas de filtro e o menu Camadas. A legenda muda com o modo.
+- **Fluxo de recursos:** o modo Fluxos mostra as cargas na estrada por trajeto, com a cor da cadeia e a espessura pelo peso. Só o que está andando agora, porque cargas entregues saem do mundo.
+- **Pendência antes do `main`:** mudar os lugares muda as distâncias. Na prova de 60 dias com 10 sementes, a mediana de vendas fica igual (66,1% → 65,8%) e as quebras também, mas o pior caso cai de 59% para 50% numa semente só (leite na semente 2). A régua pede investigar antes de aceitar.

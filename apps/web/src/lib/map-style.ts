@@ -19,14 +19,14 @@ const roadClasses = [
 
 // Every class uses the same continuous zoom curve in all three strata. A bridge
 // or an unnumbered connection must not vanish because its label is unavailable.
-// Spec 009 (calibração de 03/11 com prints reais): vias menores só aparecem de perto e finas,
-// senão a cidade vira um emaranhado de areia no zoom médio.
+// Vias menores só aparecem de perto (ruas depois do zoom 12; serviço e terra depois do 13), senão
+// a cidade vira um emaranhado no zoom médio e esconde rodovias, fluxos e negócios.
 const widthStops = [
   { zoom: 4, widths: [1.2, 0.95, 0.65, 0.25, 0, 0, 0, 0] },
   { zoom: 7, widths: [2.1, 1.7, 1.2, 0.65, 0.3, 0, 0, 0] },
-  { zoom: 10, widths: [3.6, 3.0, 2.3, 1.4, 0.8, 0, 0, 0] },
-  { zoom: 12, widths: [5.0, 4.2, 3.2, 2.2, 1.3, 0.35, 0.25, 0.25] },
-  { zoom: 13, widths: [6.0, 5.0, 3.8, 2.8, 1.8, 0.8, 0.5, 0.5] },
+  { zoom: 10, widths: [3.6, 3.0, 2.0, 1.1, 0.5, 0, 0, 0] },
+  { zoom: 12, widths: [5.0, 4.2, 3.0, 2.0, 1.1, 0, 0, 0] },
+  { zoom: 13, widths: [6.0, 5.0, 3.6, 2.6, 1.6, 0.6, 0, 0] },
   { zoom: 14, widths: [7.4, 6.2, 4.8, 3.8, 2.6, 1.6, 1.0, 0.9] },
   { zoom: 17, widths: [14, 11.8, 9.4, 7.8, 6.4, 4.8, 3.4, 3.1] },
 ];
@@ -101,6 +101,8 @@ function roads(kind: 'tunnel' | 'surface' | 'bridge'): LayerSpecification[] {
           ['get', 'class'],
           ['motorway', 'trunk'],
           PALETA.meioFioRodovia,
+          ['minor', 'service', 'track'],
+          PALETA.meioFioRua,
           PALETA.meioFio,
         ],
         'line-width': roadWidth(true),
@@ -186,6 +188,7 @@ export const PALETA = {
   rua: '#f3e7cc',
   meioFio: '#6e6553',
   meioFioRodovia: '#8a5a12',
+  meioFioRua: '#a39678',
   rodovia: '#f2bd3c',
   faixa: '#f8f1e0',
   terra: '#c8a066',

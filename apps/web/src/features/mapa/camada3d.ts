@@ -11,6 +11,7 @@ import * as maplibregl from 'maplibre-gl';
 import type { Category, Position } from '../../../../../packages/simulation/src/model';
 import { bandeira, construirModelo, luzes, type Estagio } from './modelos3d';
 import { DesenhoPixel } from './pixel3d';
+import { criarCidade3D, ZOOM_CIDADE } from './cidade3d';
 
 export interface Negocio3D {
   id: string;
@@ -49,6 +50,14 @@ export function criarCamada3D() {
   cena.add(ceu, sol, sol.target);
   const raiz = new THREE.Group();
   cena.add(raiz);
+  // Prédios reais do mapa em 3D, no mesmo estilo dos negócios (só de perto).
+  const cidade = criarCidade3D(
+    (mx, my) => [(mx - ORIGEM.x) / METRO, (my - ORIGEM.y) / METRO],
+    METRO,
+  );
+  cena.add(cidade.grupo);
+  if (import.meta.env.DEV)
+    (window as unknown as { aftermarketCidade3d?: unknown }).aftermarketCidade3d = cidade;
   const camera = new THREE.Camera();
   const moldes = new Map<string, THREE.Group>();
   const instancias = new Map<string, { chave: string; obj: THREE.Group }>();
@@ -88,6 +97,7 @@ export function criarCamada3D() {
       map.triggerRepaint();
     },
     onRemove() {
+      cidade.encerrar();
       desenho?.dispose();
       desenho = null;
       renderer?.dispose();
@@ -98,7 +108,9 @@ export function criarCamada3D() {
       if (!renderer || !mapa) return;
       const zoom = mapa.getZoom();
       raiz.visible = zoom >= ZOOM_3D;
-      if (!raiz.visible || instancias.size === 0) return;
+      cidade.grupo.visible = zoom >= ZOOM_CIDADE;
+      if (cidade.grupo.visible) cidade.atualizar(mapa);
+      if (!cidade.grupo.visible && (!raiz.visible || instancias.size === 0)) return;
       // Sombra acompanha o que está na tela: o sol mira o centro da vista.
       const centro = paraCena(mapa.getCenter().toArray() as Position);
       const metrosNaTela =

@@ -8,6 +8,12 @@ import * as THREE from 'three';
 import { categoryInfo, type Category } from '../../../../../packages/simulation/src/model';
 import { bandeira, construirModelo, luzes, type Estagio } from './modelos3d';
 import { DesenhoPixel } from './pixel3d';
+import {
+  construirExemplo,
+  EXEMPLOS_DE_CIDADE,
+  NOME_DO_EXEMPLO,
+  type ExemploDeCidade,
+} from './quadras-exemplo';
 import './modelos.css';
 
 const categorias: Category[] = ['retail', 'industry', 'farm', 'mine', 'warehouse', 'logistics'];
@@ -55,7 +61,11 @@ export function ModelosPage() {
       const estagio = (estagioTxt === 'obra' ? 'obra' : Number(estagioTxt)) as Estagio;
       const cena = new THREE.Scene();
       for (const luz of luzes()) cena.add(luz);
-      const modelo = construirModelo(categoria as Category, estagio);
+      // linha "Cidade": prédios do mapa (quarteirões de exemplo); as outras, negócios
+      const modelo =
+        categoria === 'cidade'
+          ? construirExemplo(estagioTxt as ExemploDeCidade)
+          : construirModelo(categoria as Category, estagio);
       if (proprio) {
         const b = bandeira('#a6e05a');
         const caixa = new THREE.Box3().setFromObject(modelo);
@@ -180,6 +190,14 @@ export function ModelosPage() {
         {categorias.map((c) => (
           <Linha key={c} categoria={c} />
         ))}
+        <div className="modelos-linha" style={{ borderColor: '#d0682f' }}>
+          Cidade (prédios do mapa)
+        </div>
+        {EXEMPLOS_DE_CIDADE.map((e) => (
+          <div key={e} className="modelos-celula" data-celula={`cidade:${e}`}>
+            <span className="modelos-rotulo">{NOME_DO_EXEMPLO[e]}</span>
+          </div>
+        ))}
       </div>
       {foco && (
         <div className="modelos-foco" data-celula={foco} onDoubleClick={() => setFoco(null)}>
@@ -187,10 +205,11 @@ export function ModelosPage() {
             Fechar
           </button>
           <span>
-            {categoryInfo[foco.split(':')[0] as Category].label} ·{' '}
-            {nomeDoEstagio(
-              (foco.split(':')[1] === 'obra' ? 'obra' : Number(foco.split(':')[1])) as Estagio,
-            )}
+            {foco.startsWith('cidade:')
+              ? `Cidade · ${NOME_DO_EXEMPLO[foco.split(':')[1] as ExemploDeCidade]}`
+              : `${categoryInfo[foco.split(':')[0] as Category].label} · ${nomeDoEstagio(
+                  (foco.split(':')[1] === 'obra' ? 'obra' : Number(foco.split(':')[1])) as Estagio,
+                )}`}
           </span>
         </div>
       )}

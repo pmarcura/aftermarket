@@ -1,3 +1,4 @@
+import { ZOOM_CIDADE } from '../features/mapa/cidade3d';
 import type {
   ExpressionSpecification,
   FilterSpecification,
@@ -328,7 +329,20 @@ export function createMapStyle(): StyleSpecification {
         paint: {
           'fill-color': PALETA.predioCidade,
           'fill-outline-color': PALETA.contornoCidade,
-          'fill-opacity': ['interpolate', ['linear'], ['zoom'], 14, 0, 15, 0.9],
+          // some quando a cidade 3D entra (ZOOM_CIDADE), para os prédios não aparecerem duas vezes
+          'fill-opacity': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            14,
+            0,
+            15,
+            0.9,
+            ZOOM_CIDADE,
+            0.9,
+            ZOOM_CIDADE + 0.3,
+            0,
+          ],
         },
       },
     ],

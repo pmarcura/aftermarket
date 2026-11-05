@@ -129,9 +129,9 @@ test('cidade clicável abre painel com procura, lojas e lotes à venda', async (
   expect(errors).toEqual([]);
 });
 
-// De perto, a cidade fica plana (contorno dos prédios reais) e só os negócios do jogo aparecem em
-// 3D; a câmera inclina sozinha. O tile de teste (tests/fixtures/mvt.ts) traz quadras com casas.
-test('cidade de perto: prédios planos, negócios em 3D e câmera inclinada', async ({ page }) => {
+// De perto, os prédios reais do tile viram 3D no estilo dos negócios (casas, prédios, galpões) e a
+// câmera inclina sozinha. O tile de teste (tests/fixtures/mvt.ts) traz quadras com casas.
+test('cidade de perto: prédios do mapa em 3D e câmera inclinada', async ({ page }) => {
   test.setTimeout(90000);
   const { buildingsTile } = await import('../fixtures/mvt');
   const tile = Buffer.from(buildingsTile(1));
@@ -161,12 +161,24 @@ test('cidade de perto: prédios planos, negócios em 3D e câmera inclinada', as
     m.setCenter(coords as [number, number]);
     m.zoomTo(16.2, { duration: 0 });
   }, industria.coordinates);
-  await page.waitForTimeout(2500);
+  // a cidade 3D é montada num worker: espera os prédios chegarem
+  await page.waitForFunction(
+    () =>
+      ((
+        window as unknown as { aftermarketCidade3d?: { resumo(): { predios: number } } }
+      ).aftermarketCidade3d?.resumo().predios ?? 0) > 20,
+    undefined,
+    { timeout: 20000 },
+  );
+  await page.waitForTimeout(800);
   const estado = await page.evaluate(() => {
     const m = (window as unknown as { aftermarketMap?: maplibregl.Map }).aftermarketMap!;
     return {
       predios: m.querySourceFeatures('openmaptiles', { sourceLayer: 'building' }).length,
-      contornos: m.queryRenderedFeatures(undefined, { layers: ['buildings'] }).length,
+      // de perto, os prédios do mapa viram 3D no mesmo estilo dos negócios
+      cidade3d: (
+        window as unknown as { aftermarketCidade3d: { resumo(): { predios: number } } }
+      ).aftermarketCidade3d.resumo().predios,
       camada3d: m.getLayer('negocios-3d')?.type,
       inclinacao: m.getPitch(),
       // Pixel art: o mapa é desenhado em meia resolução, o mesmo pixel dos modelos 3D.
@@ -175,7 +187,7 @@ test('cidade de perto: prédios planos, negócios em 3D e câmera inclinada', as
   });
   await page.screenshot({ path: 'test-results/mapa-vivo-cidade-perto.png' });
   expect(estado.predios).toBeGreaterThan(100);
-  expect(estado.contornos).toBeGreaterThan(20);
+  expect(estado.cidade3d).toBeGreaterThan(20);
   expect(estado.camada3d).toBe('custom');
   expect(estado.inclinacao).toBeGreaterThan(30);
   expect(estado.pixelArt).toBe(true);

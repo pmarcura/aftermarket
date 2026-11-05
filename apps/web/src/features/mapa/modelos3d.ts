@@ -66,7 +66,12 @@ export const CHAO: Record<Category, string> = {
 // Materiais e peças básicas
 
 // Luz em três tons (sombra, meia-luz, luz), como numa paleta de pixel art.
-const degraus = new THREE.DataTexture(new Uint8Array([120, 195, 255]), 3, 1, THREE.RedFormat);
+export const degraus = new THREE.DataTexture(
+  new Uint8Array([120, 195, 255]),
+  3,
+  1,
+  THREE.RedFormat,
+);
 degraus.minFilter = THREE.NearestFilter;
 degraus.magFilter = THREE.NearestFilter;
 degraus.needsUpdate = true;

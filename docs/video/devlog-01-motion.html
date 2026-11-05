@@ -1,813 +1,261 @@
 <!doctype html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Devlog 01 · Motion</title>
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Archivo:wght@500;700;800&display=swap"
-    />
-    <style>
-      :root {
-        --bg: #121417;
-        --panel: #1b1e23;
-        --line: #2c3138;
-        --tx: #eef0ea;
-        --mut: #98a097;
-        --lime: #a6e22e;
-        --gold: #e5b94a;
-        --brasa: #e5654a;
-        --sky: #6fb3e0;
-      }
-      * {
-        box-sizing: border-box;
-      }
-      html,
-      body {
-        margin: 0;
-        height: 100%;
-        background: #0b0c0e;
-        color: var(--tx);
-        font-family: Archivo, system-ui, sans-serif;
-      }
-      body {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
-      #bar {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: center;
-        padding: 10px 12px;
-        font-size: 13px;
-        width: 100%;
-        background: #16181c;
-        border-bottom: 1px solid var(--line);
-      }
-      #bar button,
-      #bar label.btn {
-        background: var(--lime);
-        color: #111;
-        border: 0;
-        padding: 8px 14px;
-        font:
-          700 13px Archivo,
-          sans-serif;
-        cursor: pointer;
-      }
-      #bar input[type='range'] {
-        width: 160px;
-      }
-      #wrap {
-        flex: 1;
-        min-height: 0;
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-      }
-      #stage {
-        position: relative;
-        width: 1080px;
-        height: 1920px;
-        flex: none;
-        transform-origin: center center;
-        background: var(--bg);
-        overflow: hidden;
-      }
-      #stage::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background-image:
-          linear-gradient(var(--line) 1px, transparent 1px),
-          linear-gradient(90deg, var(--line) 1px, transparent 1px);
-        background-size: 60px 60px;
-        opacity: 0.35;
-      }
-      .scene {
-        position: absolute;
-        inset: 0 0 520px 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 34px;
-        padding: 80px 70px 0;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.35s;
-      }
-      .scene.on {
-        opacity: 1;
-      }
-      .px {
-        font-family: 'Press Start 2P', monospace;
-        line-height: 1.5;
-        text-align: center;
-      }
-      .big {
-        font-size: 54px;
-      }
-      .mid {
-        font-size: 38px;
-      }
-      .sm {
-        font-size: 26px;
-      }
-      .lime {
-        color: var(--lime);
-      }
-      .gold {
-        color: var(--gold);
-      }
-      .brasa {
-        color: var(--brasa);
-      }
-      .sky {
-        color: var(--sky);
-      }
-      .mut {
-        color: var(--mut);
-      }
-      img {
-        image-rendering: pixelated;
-      }
-      .shot {
-        image-rendering: auto;
-        border: 4px solid var(--line);
-        box-shadow: 0 30px 80px #000a;
-      }
-      /* entrada genérica */
-      .on .in {
-        animation: in 0.6s both;
-      }
-      .on .in2 {
-        animation: in 0.6s 0.5s both;
-      }
-      .on .in3 {
-        animation: in 0.6s 1.1s both;
-      }
-      .on .in4 {
-        animation: in 0.6s 1.7s both;
-      }
-      @keyframes in {
-        from {
-          opacity: 0;
-          transform: translateY(40px) scale(0.96);
-        }
-        to {
-          opacity: 1;
-          transform: none;
-        }
-      }
-      @keyframes pop {
-        0% {
-          transform: scale(2.4) rotate(-14deg);
-          opacity: 0;
-        }
-        60% {
-          transform: scale(0.94) rotate(-7deg);
-          opacity: 1;
-        }
-        100% {
-          transform: scale(1) rotate(-7deg);
-          opacity: 1;
-        }
-      }
-      @keyframes drift {
-        from {
-          transform: scale(1.02) translateX(0);
-        }
-        to {
-          transform: scale(1.12) translateX(-30px);
-        }
-      }
-      @keyframes spin {
-        from {
-          transform: rotate(0);
-        }
-        to {
-          transform: rotate(360deg);
-        }
-      }
-      @keyframes truck {
-        from {
-          left: 6%;
-        }
-        to {
-          left: 78%;
-        }
-      }
-      @keyframes pulse {
-        0%,
-        100% {
-          box-shadow: 0 0 0 0 #a6e22e66;
-        }
-        50% {
-          box-shadow: 0 0 0 22px #a6e22e00;
-        }
-      }
-      @keyframes grow {
-        from {
-          width: 0;
-        }
-        to {
-          width: 100%;
-        }
-      }
-      /* intro */
-      #s-intro img {
-        width: 300px;
-      }
-      .tag {
-        display: inline-block;
-        border: 3px solid var(--lime);
-        color: var(--lime);
-        padding: 14px 22px;
-        font-family: 'Press Start 2P';
-        font-size: 26px;
-      }
-      /* mundo */
-      #s-mundo .shot {
-        width: 880px;
-        height: 560px;
-        object-fit: cover;
-        object-position: center;
-      }
-      .on .drift {
-        animation: drift 9s linear both;
-      }
-      .clip {
-        width: 880px;
-        height: 560px;
-        overflow: hidden;
-        position: relative;
-      }
-      .clip img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-      /* passos */
-      .step {
-        display: flex;
-        align-items: center;
-        gap: 26px;
-        width: 900px;
-        background: var(--panel);
-        border: 3px solid var(--line);
-        padding: 22px 28px;
-      }
-      .step img {
-        width: 104px;
-        height: 104px;
-        object-fit: contain;
-      }
-      .step .n {
-        font-family: 'Press Start 2P';
-        color: var(--gold);
-        font-size: 30px;
-      }
-      .step .t {
-        font: 800 44px Archivo;
-        text-transform: uppercase;
-      }
-      /* cadeia */
-      #chain {
-        position: relative;
-        width: 940px;
-        height: 420px;
-      }
-      #chain .nodo {
-        position: absolute;
-        top: 60px;
-        width: 240px;
-        text-align: center;
-      }
-      #chain .nodo img {
-        width: 200px;
-        height: 200px;
-        object-fit: contain;
-      }
-      #chain .nodo b {
-        display: block;
-        margin-top: 10px;
-        font: 400 22px 'Press Start 2P';
-        color: var(--tx);
-      }
-      #chain .road {
-        position: absolute;
-        left: 100px;
-        right: 100px;
-        top: 300px;
-        height: 12px;
-        background: repeating-linear-gradient(90deg, var(--gold) 0 30px, transparent 30px 55px);
-      }
-      #chain .truck {
-        position: absolute;
-        top: 240px;
-        width: 150px;
-      }
-      .on #chain .truck {
-        animation: truck 4.5s linear infinite;
-      }
-      /* genérica */
-      .vs {
-        display: flex;
-        gap: 28px;
-        width: 960px;
-        align-items: flex-start;
-      }
-      .vs > div {
-        flex: 1;
-        text-align: center;
-      }
-      .ghost {
-        height: 600px;
-        background: var(--panel);
-        border: 3px dashed var(--mut);
-        display: flex;
-        flex-direction: column;
-        gap: 18px;
-        padding: 30px;
-        opacity: 0.7;
-      }
-      .ghost i {
-        display: block;
-        height: 50px;
-        background: #2c3138;
-      }
-      .vs .shot {
-        width: 100%;
-        height: 600px;
-        object-fit: cover;
-        object-position: top;
-      }
-      .stamp {
-        position: absolute;
-        font: 400 34px 'Press Start 2P';
-        border: 6px solid;
-        padding: 12px 18px;
-        transform: rotate(-7deg);
-        background: #121417d9;
-      }
-      .on .stamp {
-        animation: pop 0.5s 0.6s both;
-      }
-      /* refs */
-      .flow {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 20px;
-        width: 880px;
-      }
-      .card {
-        width: 100%;
-        background: var(--panel);
-        border: 3px solid var(--line);
-        padding: 26px;
-        text-align: center;
-      }
-      .card b {
-        display: block;
-        font: 400 30px 'Press Start 2P';
-        margin-bottom: 10px;
-      }
-      .card span {
-        font: 600 34px Archivo;
-        color: var(--mut);
-      }
-      .arrow {
-        font: 400 40px 'Press Start 2P';
-        color: var(--lime);
-      }
-      /* ux */
-      #s-ux .shot {
-        width: 900px;
-        height: 600px;
-        object-fit: cover;
-        object-position: top left;
-      }
-      /* fim */
-      .seal {
-        border: 6px solid var(--gold);
-        color: var(--gold);
-        padding: 22px 28px;
-        font: 400 34px/1.5 'Press Start 2P';
-        text-align: center;
-        transform: rotate(-3deg);
-      }
-      .on .seal {
-        animation:
-          in 0.6s both,
-          pulse 2s 1s infinite;
-      }
-      /* legendas */
-      #cap {
-        position: absolute;
-        left: 50px;
-        right: 50px;
-        bottom: 200px;
-        height: 300px;
-        display: flex;
-        align-items: flex-end;
-        justify-content: center;
-        text-align: center;
-      }
-      #cap p {
-        margin: 0;
-        font: 800 66px/1.18 Archivo;
-        text-transform: uppercase;
-        letter-spacing: -0.5px;
-        text-shadow:
-          0 4px 0 #000,
-          0 0 30px #000b;
-      }
-      #cap span {
-        color: #cfd3cb;
-        transition: color 0.08s;
-      }
-      #cap span.done {
-        color: #fff;
-      }
-      #cap span.now {
-        color: var(--lime);
-      }
-      #prog {
-        position: absolute;
-        left: 0;
-        bottom: 0;
-        height: 12px;
-        background: var(--lime);
-        width: 0;
-      }
-      #sig {
-        position: absolute;
-        top: 70px;
-        left: 0;
-        right: 0;
-        text-align: center;
-        font: 400 22px 'Press Start 2P';
-        color: var(--mut);
-        z-index: 3;
-      }
-      @media (prefers-reduced-motion: reduce) {
-        .on * {
-          animation-duration: 0.01s !important;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <div id="bar">
-      <button id="play">▶ Tocar</button>
-      <button id="rst">⟲ Do início</button>
-      <label class="btn"
-        >Carregar áudio <input id="aud" type="file" accept="audio/*" hidden
-      /></label>
-      <span
-        >ritmo <input id="rate" type="range" min="2" max="4" step=".05" value="3" />
-        <b id="rv">3.0</b> palavras/s</span
-      >
-      <span id="tt">0:00 / 0:00</span>
-      <span style="color: #98a097"
-        >Sem áudio: tempo estimado. Com áudio: a animação se ajusta à duração da sua voz.</span
-      >
-    </div>
-    <div id="wrap">
-      <div id="stage">
-        <div id="sig">DEVLOG 01 · AFTERMARKET</div>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Devlog 01 · Motion</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Archivo:wght@500;700;800&display=swap">
+<style>
+:root{--bg:#121417;--panel:#1b1e23;--line:#2c3138;--tx:#eef0ea;--mut:#98a097;--lime:#a6e22e;--gold:#e5b94a;--brasa:#e5654a;--sky:#6fb3e0}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#0b0c0e;color:var(--tx);font-family:Archivo,system-ui,sans-serif}
+body{display:flex;flex-direction:column;align-items:center}
+#bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center;padding:10px 12px;font-size:13px;width:100%;background:#16181c;border-bottom:1px solid var(--line)}
+#bar button,#bar label.btn{background:var(--lime);color:#111;border:0;padding:8px 14px;font:700 13px Archivo,sans-serif;cursor:pointer}
+#bar input[type=range]{width:160px}
+#wrap{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#stage{position:relative;width:1080px;height:1920px;flex:none;transform-origin:center center;background:var(--bg);overflow:hidden}
+#stage::before{content:"";position:absolute;inset:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:60px 60px;opacity:.35}
+.scene{position:absolute;inset:0 0 520px 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:34px;padding:80px 70px 0;opacity:0;pointer-events:none;transition:opacity .35s}
+.scene.on{opacity:1}
+.px{font-family:"Press Start 2P",monospace;line-height:1.5;text-align:center}
+.big{font-size:54px}.mid{font-size:38px}.sm{font-size:26px}
+.lime{color:var(--lime)}.gold{color:var(--gold)}.brasa{color:var(--brasa)}.sky{color:var(--sky)}.mut{color:var(--mut)}
+img{image-rendering:pixelated}
+.shot{image-rendering:auto;border:4px solid var(--line);box-shadow:0 30px 80px #000a}
+/* entrada genérica */
+.on .in{animation:in .6s both}
+.on .in2{animation:in .6s .5s both}
+.on .in3{animation:in .6s 1.1s both}
+.on .in4{animation:in .6s 1.7s both}
+@keyframes in{from{opacity:0;transform:translateY(40px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes pop{0%{transform:scale(2.4) rotate(-14deg);opacity:0}60%{transform:scale(.94) rotate(-7deg);opacity:1}100%{transform:scale(1) rotate(-7deg);opacity:1}}
+@keyframes drift{from{transform:scale(1.02) translateX(0)}to{transform:scale(1.12) translateX(-30px)}}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes truck{from{left:6%}to{left:78%}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 #a6e22e66}50%{box-shadow:0 0 0 22px #a6e22e00}}
+@keyframes grow{from{width:0}to{width:100%}}
+/* intro */
+#s-intro img{width:300px}
+.tag{display:inline-block;border:3px solid var(--lime);color:var(--lime);padding:14px 22px;font-family:"Press Start 2P";font-size:26px}
+/* mundo */
+#s-mundo .shot{width:880px;height:560px;object-fit:cover;object-position:center}
+.on .drift{animation:drift 9s linear both}
+.clip{width:880px;height:560px;overflow:hidden;position:relative}
+.clip img{width:100%;height:100%;object-fit:cover}
+/* passos */
+.step{display:flex;align-items:center;gap:26px;width:900px;background:var(--panel);border:3px solid var(--line);padding:22px 28px}
+.step img{width:104px;height:104px;object-fit:contain}
+.step .n{font-family:"Press Start 2P";color:var(--gold);font-size:30px}
+.step .t{font:800 44px Archivo;text-transform:uppercase}
+/* cadeia */
+#chain{position:relative;width:940px;height:420px}
+#chain .nodo{position:absolute;top:60px;width:240px;text-align:center}
+#chain .nodo img{width:200px;height:200px;object-fit:contain}
+#chain .nodo b{display:block;margin-top:10px;font:400 22px "Press Start 2P";color:var(--tx)}
+#chain .road{position:absolute;left:100px;right:100px;top:300px;height:12px;background:repeating-linear-gradient(90deg,var(--gold) 0 30px,transparent 30px 55px)}
+#chain .truck{position:absolute;top:240px;width:150px}
+.on #chain .truck{animation:truck 4.5s linear infinite}
+/* genérica */
+.vs{display:flex;gap:28px;width:960px;align-items:flex-start}
+.vs>div{flex:1;text-align:center}
+.ghost{height:600px;background:var(--panel);border:3px dashed var(--mut);display:flex;flex-direction:column;gap:18px;padding:30px;opacity:.7}
+.ghost i{display:block;height:50px;background:#2c3138}
+.vs .shot{width:100%;height:600px;object-fit:cover;object-position:top}
+.stamp{position:absolute;font:400 34px "Press Start 2P";border:6px solid;padding:12px 18px;transform:rotate(-7deg);background:#121417d9}
+.on .stamp{animation:pop .5s .6s both}
+/* refs */
+.flow{display:flex;flex-direction:column;align-items:center;gap:20px;width:880px}
+.card{width:100%;background:var(--panel);border:3px solid var(--line);padding:26px;text-align:center}
+.card b{display:block;font:400 30px "Press Start 2P";margin-bottom:10px}
+.card span{font:600 34px Archivo;color:var(--mut)}
+.arrow{font:400 40px "Press Start 2P";color:var(--lime)}
+/* ux */
+#s-ux .shot{width:900px;height:600px;object-fit:cover;object-position:top left}
+/* fim */
+.seal{border:6px solid var(--gold);color:var(--gold);padding:22px 28px;font:400 34px/1.5 "Press Start 2P";text-align:center;transform:rotate(-3deg)}
+.on .seal{animation:in .6s both,pulse 2s 1s infinite}
+/* legendas */
+#cap{position:absolute;left:50px;right:50px;bottom:200px;height:300px;display:flex;align-items:flex-end;justify-content:center;text-align:center}
+#cap p{margin:0;font:800 66px/1.18 Archivo;text-transform:uppercase;letter-spacing:-.5px;text-shadow:0 4px 0 #000,0 0 30px #000b}
+#cap span{color:#cfd3cb;transition:color .08s}
+#cap span.done{color:#fff}
+#cap span.now{color:var(--lime)}
+#prog{position:absolute;left:0;bottom:0;height:12px;background:var(--lime);width:0}
+#sig{position:absolute;top:70px;left:0;right:0;text-align:center;font:400 22px "Press Start 2P";color:var(--mut);z-index:3}
+@media (prefers-reduced-motion:reduce){.on *{animation-duration:.01s!important}}
+</style>
+</head>
+<body>
+<div id="bar">
+<button id="play">▶ Tocar</button>
+<button id="rst">⟲ Do início</button>
+<label class="btn">Carregar áudio <input id="aud" type="file" accept="audio/*" hidden></label>
+<span>ritmo <input id="rate" type="range" min="2" max="4" step=".05" value="3"> <b id="rv">3.0</b> palavras/s</span>
+<span id="tt">0:00 / 0:00</span>
+<span style="color:#98a097">Sem áudio: tempo estimado. Com áudio: a animação se ajusta à duração da sua voz.</span>
+</div>
+<div id="wrap"><div id="stage">
+<div id="sig">DEVLOG 01 · AFTERMARKET</div>
 
-        <div class="scene" id="s-intro">
-          <img class="in" src="../../apps/web/public/arte/marca-logo.png" alt="" />
-          <div class="px big in2">PEDRO<br />MARÇURA</div>
-          <div class="tag in3">DESIGNER</div>
-        </div>
+<div class="scene" id="s-intro">
+<img class="in" src="../../apps/web/public/arte/marca-logo.png" alt="">
+<div class="px big in2">AFTER<br>MARKET</div>
+<div class="tag in3">DESIGNER</div>
+</div>
 
-        <div class="scene" id="s-mundo">
-          <div class="px mid in">
-            UM MUNDO REAL.<br /><span class="lime">TODO MUNDO JOGA JUNTO.</span>
-          </div>
-          <div class="clip in2 shot">
-            <img
-              class="drift"
-              style="image-rendering: auto"
-              src="../../apps/web/public/arte/landing/tela-mapa-pc.jpg"
-              alt=""
-            />
-          </div>
-          <div class="px sm mut in3">ECONOMIA ESTRATÉGICA · DADOS GEOGRÁFICOS</div>
-        </div>
+<div class="scene" id="s-mundo">
+<div class="px mid in">UM MUNDO REAL.<br><span class="lime">TODO MUNDO JOGA JUNTO.</span></div>
+<div class="clip in2 shot"><img class="drift" style="image-rendering:auto" src="../../apps/web/public/arte/landing/tela-mapa-pc.jpg" alt=""></div>
+<div class="px sm mut in3">ECONOMIA ESTRATÉGICA · DADOS GEOGRÁFICOS</div>
+</div>
 
-        <div class="scene" id="s-passos">
-          <div class="step in">
-            <span class="n">01</span
-            ><img src="../../apps/web/public/arte/emblema-roda.png" alt="" /><span class="t"
-              >Escolha uma cidade</span
-            >
-          </div>
-          <div class="step in2">
-            <span class="n">02</span><img src="../../apps/web/public/arte/silos.png" alt="" /><span
-              class="t"
-              >Compre um imóvel</span
-            >
-          </div>
-          <div class="step in3">
-            <span class="n">03</span
-            ><img src="../../apps/web/public/arte/siderurgica.png" alt="" /><span class="t"
-              >Monte a produção</span
-            >
-          </div>
-          <div class="step in4">
-            <span class="n">04</span><img src="../../apps/web/public/arte/loja.png" alt="" /><span
-              class="t"
-              >Venda</span
-            >
-          </div>
-        </div>
+<div class="scene" id="s-passos">
+<div class="step in"><span class="n">01</span><img src="../../apps/web/public/arte/emblema-roda.png" alt=""><span class="t">Escolha uma cidade</span></div>
+<div class="step in2"><span class="n">02</span><img src="../../apps/web/public/arte/silos.png" alt=""><span class="t">Compre um imóvel</span></div>
+<div class="step in3"><span class="n">03</span><img src="../../apps/web/public/arte/siderurgica.png" alt=""><span class="t">Monte a produção</span></div>
+<div class="step in4"><span class="n">04</span><img src="../../apps/web/public/arte/loja.png" alt=""><span class="t">Venda</span></div>
+</div>
 
-        <div class="scene" id="s-cadeia">
-          <div class="px mid in">DA FAZENDA<br /><span class="gold">À LOJA</span></div>
-          <div id="chain" class="in2">
-            <div class="road"></div>
-            <div class="nodo" style="left: 0">
-              <img src="../../apps/web/public/arte/lavoura.png" alt="" /><b>FAZENDA</b>
-            </div>
-            <div class="nodo" style="left: 350px">
-              <img src="../../apps/web/public/arte/soja-oleo.png" alt="" /><b>FÁBRICA</b>
-            </div>
-            <div class="nodo" style="left: 700px">
-              <img src="../../apps/web/public/arte/loja.png" alt="" /><b>LOJA</b>
-            </div>
-            <img class="truck" src="../../apps/web/public/arte/caminhao.png" alt="" />
-          </div>
-          <div class="px sm lime in3">CADEIA VERTICALIZADA · EM VÁRIAS CIDADES</div>
-        </div>
+<div class="scene" id="s-cadeia">
+<div class="px mid in">DA FAZENDA<br><span class="gold">À LOJA</span></div>
+<div id="chain" class="in2">
+<div class="road"></div>
+<div class="nodo" style="left:0"><img src="../../apps/web/public/arte/lavoura.png" alt=""><b>FAZENDA</b></div>
+<div class="nodo" style="left:350px"><img src="../../apps/web/public/arte/soja-oleo.png" alt=""><b>FÁBRICA</b></div>
+<div class="nodo" style="left:700px"><img src="../../apps/web/public/arte/loja.png" alt=""><b>LOJA</b></div>
+<img class="truck" src="../../apps/web/public/arte/caminhao.png" alt="">
+</div>
+<div class="px sm lime in3">CADEIA VERTICALIZADA · EM VÁRIAS CIDADES</div>
+</div>
 
-        <div class="scene" id="s-regras">
-          <div class="px sm lime in">DEVLOGS</div>
-          <div class="px big in2">
-            MINHAS<br />REGRAS PARA<br />FAZER JOGO<br /><span class="gold">COM IA</span>
-          </div>
-        </div>
+<div class="scene" id="s-regras">
+<div class="px sm lime in">DEVLOGS</div>
+<div class="px big in2">MINHAS<br>REGRAS PARA<br>FAZER JOGO<br><span class="gold">COM IA</span></div>
+</div>
 
-        <div class="scene" id="s-generica">
-          <div class="vs in">
-            <div>
-              <div class="px sm brasa" style="margin-bottom: 18px">IA GENÉRICA</div>
-              <div class="ghost">
-                <i style="width: 60%"></i><i></i><i style="width: 80%"></i><i></i
-                ><i style="width: 45%"></i><i></i>
-              </div>
-            </div>
-            <div>
-              <div class="px sm lime" style="margin-bottom: 18px">IA ORQUESTRADA</div>
-              <img class="shot" src="../../apps/web/public/arte/landing/tela-loja-cel.jpg" alt="" />
-            </div>
-          </div>
-          <div class="stamp brasa" style="left: 90px; top: 560px; border-color: var(--brasa)">
-            GENÉRICO
-          </div>
-          <div class="px sm mut in2">PRINCÍPIOS DE DESIGN FAZEM A DIFERENÇA</div>
-        </div>
+<div class="scene" id="s-generica">
+<div class="vs in">
+<div><div class="px sm brasa" style="margin-bottom:18px">IA GENÉRICA</div><div class="ghost"><i style="width:60%"></i><i></i><i style="width:80%"></i><i></i><i style="width:45%"></i><i></i></div></div>
+<div><div class="px sm lime" style="margin-bottom:18px">IA ORQUESTRADA</div><img class="shot" src="../../apps/web/public/arte/landing/tela-loja-cel.jpg" alt=""></div>
+</div>
+<div class="stamp brasa" style="left:90px;top:560px;border-color:var(--brasa)">GENÉRICO</div>
+<div class="px sm mut in2">PRINCÍPIOS DE DESIGN FAZEM A DIFERENÇA</div>
+</div>
 
-        <div class="scene" id="s-refs">
-          <div class="flow">
-            <div class="card in">
-              <b class="gold">REFERÊNCIAS</b><span>o que eu admiro e quero</span>
-            </div>
-            <div class="arrow in2">▼</div>
-            <div class="card in2">
-              <b class="lime">DECISÕES</b><span>o que eu estou pensando</span>
-            </div>
-            <div class="arrow in3">▼</div>
-            <div class="card in3"><b class="sky">TELA REAL</b><span>sem cara genérica</span></div>
-          </div>
-        </div>
+<div class="scene" id="s-refs">
+<div class="flow">
+<div class="card in"><b class="gold">REFERÊNCIAS</b><span>o que eu admiro e quero</span></div>
+<div class="arrow in2">▼</div>
+<div class="card in2"><b class="lime">DECISÕES</b><span>o que eu estou pensando</span></div>
+<div class="arrow in3">▼</div>
+<div class="card in3"><b class="sky">TELA REAL</b><span>sem cara genérica</span></div>
+</div>
+</div>
 
-        <div class="scene" id="s-ux">
-          <div class="px mid in">UX É O MAIOR<br /><span class="brasa">GAP DA IA</span></div>
-          <img class="shot in2" src="../../apps/web/public/arte/landing/tela-loja-pc.jpg" alt="" />
-          <div class="px sm lime in3">ORQUESTRANDO BEM, SAI ALGO MELHOR</div>
-        </div>
+<div class="scene" id="s-ux">
+<div class="px mid in">UX É O MAIOR<br><span class="brasa">GAP DA IA</span></div>
+<img class="shot in2" src="../../apps/web/public/arte/landing/tela-loja-pc.jpg" alt="">
+<div class="px sm lime in3">ORQUESTRANDO BEM, SAI ALGO MELHOR</div>
+</div>
 
-        <div class="scene" id="s-dois">
-          <div class="step in" style="border-color: var(--lime)">
-            <span class="n">A</span><span class="t">Como eu faço com IA</span>
-          </div>
-          <div class="step in2" style="border-color: var(--gold)">
-            <span class="n">B</span><span class="t">O jogo, mais de perto</span>
-          </div>
-          <div class="px sm mut in3">DESIGNER + IA</div>
-        </div>
+<div class="scene" id="s-dois">
+<div class="step in" style="border-color:var(--lime)"><span class="n">A</span><span class="t">Como eu faço com IA</span></div>
+<div class="step in2" style="border-color:var(--gold)"><span class="n">B</span><span class="t">O jogo, mais de perto</span></div>
+<div class="px sm mut in3">DESIGNER + IA</div>
+</div>
 
-        <div class="scene" id="s-fim">
-          <img
-            class="in"
-            style="width: 260px"
-            src="../../apps/web/public/arte/marca-logo.png"
-            alt=""
-          />
-          <div class="seal in2">EM DESENVOLVIMENTO<br />TESTE FECHADO<br />EM BREVE</div>
-          <div class="px sm lime in3">UM JOGO DE PEDRO MARÇURA</div>
-        </div>
+<div class="scene" id="s-fim">
+<img class="in" style="width:260px" src="../../apps/web/public/arte/marca-logo.png" alt="">
+<div class="seal in2">EM DESENVOLVIMENTO<br>TESTE FECHADO<br>EM BREVE</div>
+<div class="px sm lime in3">EM DESENVOLVIMENTO</div>
+</div>
 
-        <div id="cap"><p id="capp"></p></div>
-        <div id="prog"></div>
-      </div>
-    </div>
-    <audio id="au"></audio>
+<div id="cap"><p id="capp"></p></div>
+<div id="prog"></div>
+</div></div>
+<audio id="au"></audio>
 
-    <script>
-      // Fala do Pedro dividida em frases. Cada frase aponta para uma cena.
-      const P = [
-        ['intro', 'Olá, tudo bem? Eu sou Pedro e sou designer,'],
-        [
-          'mundo',
-          'e estou construindo um jogo de economia estratégica num mundo real, usando dados geográficos,',
-        ],
-        ['mundo', 'onde todo mundo consegue jogar junto, como um multiplayer online massivo.'],
-        [
-          'passos',
-          'A ideia é você escolher uma cidade, comprar um imóvel, montar sua produção e vender.',
-        ],
-        ['cadeia', 'Ao mesmo tempo, você monta toda a sua logística em diferentes cidades,'],
-        [
-          'cadeia',
-          'com desde uma fazenda, uma fábrica e até a loja, tendo todo o processo verticalizado.',
-        ],
-        [
-          'regras',
-          'Eu quero trazer aqui alguns devlogs, mostrando como uso hoje as minhas regras para desenvolver jogos com IA,',
-        ],
-        [
-          'generica',
-          'com princípios de design que fazem o resultado ser bom, e não aquela coisa genérica que a IA costuma entregar.',
-        ],
-        ['refs', 'Como eu coloco as minhas referências, o que eu estou pensando,'],
-        [
-          'ux',
-          'e como faço a parte de UX da melhor forma, que é um dos maiores gaps da inteligência artificial hoje.',
-        ],
-        [
-          'ux',
-          'Ela não consegue montar tudo com qualidade, mas, orquestrando bem, a gente desenvolve algo melhor.',
-        ],
-        [
-          'dois',
-          'Neste devlog eu explico como desenvolvo com IA como designer, e ao mesmo tempo falo mais do jogo.',
-        ],
-        [
-          'fim',
-          'Ainda é algo simples. Em breve eu começo um teste fechado, e espero que vocês gostem.',
-        ],
-        ['fim', 'Vou explicar melhor o jogo agora. Fique com o vídeo.'],
-      ];
-      const W = P.map((p) => p[1].split(/\s+/));
-      const total = W.reduce((a, w) => a + w.length, 0);
-      const $ = (id) => document.getElementById(id);
-      const au = $('au'),
-        stage = $('stage'),
-        capp = $('capp');
-      let rate = 3,
-        hasAudio = false,
-        t = 0,
-        playing = false,
-        last = 0,
-        cues = [],
-        dur = 0;
-      function build() {
-        const gap = 0.25;
-        dur = hasAudio && au.duration ? au.duration : total / rate + gap * P.length;
-        const speech = dur - gap * P.length;
-        let c = 0;
-        cues = [];
-        P.forEach((p, i) => {
-          const w = W[i];
-          const wt = w.map((x) => x.length + 2);
-          const sum = wt.reduce((a, b) => a + b, 0);
-          const pd = (speech * w.length) / total;
-          let s = c,
-            words = w.map((x, j) => {
-              const a = s;
-              s += (pd * wt[j]) / sum;
-              return { w: x, a, b: s };
-            });
-          cues.push({ scene: p[0], a: c, b: c + pd + gap, words });
-          c += pd + gap;
-        });
-      }
-      const scenes = [...document.querySelectorAll('.scene')];
-      let curScene = null,
-        curCue = -1;
-      function render() {
-        let i = cues.findIndex((c) => t >= c.a && t < c.b);
-        if (i < 0) i = t <= 0 ? 0 : cues.length - 1;
-        const c = cues[i];
-        if (c.scene !== curScene) {
-          curScene = c.scene;
-          scenes.forEach((s) => {
-            const on = s.id === 's-' + c.scene;
-            if (on) {
-              s.classList.remove('on');
-              void s.offsetWidth;
-            }
-            s.classList.toggle('on', on);
-          });
-        }
-        if (i !== curCue) {
-          curCue = i;
-          capp.innerHTML = c.words.map((x, k) => `<span data-k="${k}">${x.w} </span>`).join('');
-        }
-        [...capp.children].forEach((sp, k) => {
-          const x = c.words[k];
-          sp.className = t >= x.b ? 'done' : t >= x.a ? 'now' : '';
-        });
-        $('prog').style.width = (100 * t) / dur + '%';
-        $('tt').textContent = f(t) + ' / ' + f(dur);
-      }
-      const f = (s) => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
-      function tick(now) {
-        if (playing) {
-          if (hasAudio) {
-            t = au.currentTime;
-          } else {
-            t += (now - last) / 1000;
-            last = now;
-          }
-          if (t >= dur) {
-            playing = false;
-            t = dur - 0.01;
-            au.pause();
-            $('play').textContent = '▶ Tocar';
-          }
-          render();
-        }
-        requestAnimationFrame(tick);
-      }
-      function seek(v) {
-        t = v;
-        if (hasAudio) au.currentTime = v;
-        curScene = null;
-        curCue = -1;
-        render();
-      }
-      $('play').onclick = () => {
-        if (playing) {
-          playing = false;
-          au.pause();
-          $('play').textContent = '▶ Tocar';
-          return;
-        }
-        if (t >= dur - 0.1) seek(0);
-        playing = true;
-        last = performance.now();
-        if (hasAudio) au.play();
-        $('play').textContent = '❚❚ Pausar';
-      };
-      $('rst').onclick = () => seek(0);
-      $('rate').oninput = (e) => {
-        rate = +e.target.value;
-        $('rv').textContent = rate.toFixed(1);
-        if (!hasAudio) {
-          build();
-          render();
-        }
-      };
-      $('aud').onchange = (e) => {
-        const fl = e.target.files[0];
-        if (!fl) return;
-        au.src = URL.createObjectURL(fl);
-        au.onloadedmetadata = () => {
-          hasAudio = true;
-          build();
-          seek(0);
-        };
-      };
-      document.addEventListener('keydown', (e) => {
-        if (e.code === 'Space') {
-          e.preventDefault();
-          $('play').click();
-        }
-      });
-      function fit() {
-        const wr = $('wrap').getBoundingClientRect();
-        const k = Math.min(wr.width / 1080, wr.height / 1920);
-        stage.style.transform = 'scale(' + k + ')';
-        stage.style.margin = -(1920 * (1 - k)) / 2 + 'px ' + -(1080 * (1 - k)) / 2 + 'px';
-      }
-      addEventListener('resize', fit);
-      build();
-      fit();
-      render();
-      requestAnimationFrame(tick);
-    </script>
-  </body>
+<script>
+// Fala dividida em frases. Cada frase aponta para uma cena.
+const P=[
+["intro","Olá, tudo bem? Sou designer,"],
+["mundo","e estou construindo um jogo de economia estratégica num mundo real, usando dados geográficos,"],
+["mundo","onde todo mundo consegue jogar junto, como um multiplayer online massivo."],
+["passos","A ideia é você escolher uma cidade, comprar um imóvel, montar sua produção e vender."],
+["cadeia","Ao mesmo tempo, você monta toda a sua logística em diferentes cidades,"],
+["cadeia","com desde uma fazenda, uma fábrica e até a loja, tendo todo o processo verticalizado."],
+["regras","Eu quero trazer aqui alguns devlogs, mostrando como uso hoje as minhas regras para desenvolver jogos com IA,"],
+["generica","com princípios de design que fazem o resultado ser bom, e não aquela coisa genérica que a IA costuma entregar."],
+["refs","Como eu coloco as minhas referências, o que eu estou pensando,"],
+["ux","e como faço a parte de UX da melhor forma, que é um dos maiores gaps da inteligência artificial hoje."],
+["ux","Ela não consegue montar tudo com qualidade, mas, orquestrando bem, a gente desenvolve algo melhor."],
+["dois","Neste devlog eu explico como desenvolvo com IA como designer, e ao mesmo tempo falo mais do jogo."],
+["fim","Ainda é algo simples. Em breve eu começo um teste fechado, e espero que vocês gostem."],
+["fim","Vou explicar melhor o jogo agora. Fique com o vídeo."]
+];
+const W=P.map(p=>p[1].split(/\s+/));
+const total=W.reduce((a,w)=>a+w.length,0);
+const $=id=>document.getElementById(id);
+const au=$('au'),stage=$('stage'),capp=$('capp');
+let rate=3,hasAudio=false,t=0,playing=false,last=0,cues=[],dur=0;
+function build(){
+  const gap=.25;
+  dur=hasAudio&&au.duration?au.duration:total/rate+gap*P.length;
+  const speech=dur-gap*P.length;
+  let c=0;cues=[];
+  P.forEach((p,i)=>{
+    const w=W[i];const wt=w.map(x=>x.length+2);const sum=wt.reduce((a,b)=>a+b,0);
+    const pd=speech*w.length/total;
+    let s=c,words=w.map((x,j)=>{const a=s;s+=pd*wt[j]/sum;return{w:x,a,b:s}});
+    cues.push({scene:p[0],a:c,b:c+pd+gap,words});c+=pd+gap;
+  });
+}
+const scenes=[...document.querySelectorAll('.scene')];
+let curScene=null,curCue=-1;
+function render(){
+  let i=cues.findIndex(c=>t>=c.a&&t<c.b);if(i<0)i=t<=0?0:cues.length-1;
+  const c=cues[i];
+  if(c.scene!==curScene){
+    curScene=c.scene;
+    scenes.forEach(s=>{const on=s.id==='s-'+c.scene;if(on){s.classList.remove('on');void s.offsetWidth;}s.classList.toggle('on',on)});
+  }
+  if(i!==curCue){curCue=i;capp.innerHTML=c.words.map((x,k)=>`<span data-k="${k}">${x.w} </span>`).join('')}
+  [...capp.children].forEach((sp,k)=>{const x=c.words[k];sp.className=t>=x.b?'done':(t>=x.a?'now':'')});
+  $('prog').style.width=(100*t/dur)+'%';
+  $('tt').textContent=f(t)+' / '+f(dur);
+}
+const f=s=>Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
+function tick(now){
+  if(playing){
+    if(hasAudio){t=au.currentTime}else{t+=(now-last)/1000;last=now}
+    if(t>=dur){playing=false;t=dur-.01;au.pause();$('play').textContent='▶ Tocar'}
+    render();
+  }
+  requestAnimationFrame(tick);
+}
+function seek(v){t=v;if(hasAudio)au.currentTime=v;curScene=null;curCue=-1;render()}
+$('play').onclick=()=>{
+  if(playing){playing=false;au.pause();$('play').textContent='▶ Tocar';return}
+  if(t>=dur-.1)seek(0);
+  playing=true;last=performance.now();if(hasAudio)au.play();$('play').textContent='❚❚ Pausar';
+};
+$('rst').onclick=()=>seek(0);
+$('rate').oninput=e=>{rate=+e.target.value;$('rv').textContent=rate.toFixed(1);if(!hasAudio){build();render()}};
+$('aud').onchange=e=>{
+  const fl=e.target.files[0];if(!fl)return;
+  au.src=URL.createObjectURL(fl);
+  au.onloadedmetadata=()=>{hasAudio=true;build();seek(0)};
+};
+document.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();$('play').click()}});
+function fit(){
+  const wr=$('wrap').getBoundingClientRect();
+  const k=Math.min(wr.width/1080,wr.height/1920);
+  stage.style.transform='scale('+k+')';
+  stage.style.margin=(-(1920*(1-k))/2)+'px '+(-(1080*(1-k))/2)+'px';
+}
+addEventListener('resize',fit);
+build();fit();render();requestAnimationFrame(tick);
+</script>
+</body>
 </html>

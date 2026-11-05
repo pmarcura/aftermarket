@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Devlog 01 v2 · Motion</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Archivo:wght@500;700;800&display=swap">
+<style>
+:root{--bg:#121417;--panel:#1b1e23;--line:#2c3138;--tx:#eef0ea;--mut:#98a097;--lime:#a6e22e;--gold:#e5b94a;--brasa:#e5654a;--sky:#6fb3e0;--aparelho:#2b2f36}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#0b0c0e;color:var(--tx);font-family:Archivo,system-ui,sans-serif}
+body{display:flex;flex-direction:column;align-items:center}
+#bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center;padding:10px 12px;font-size:13px;width:100%;background:#16181c;border-bottom:1px solid var(--line)}
+#bar button,#bar label.btn{background:var(--lime);color:#111;border:0;padding:8px 14px;font:700 13px Archivo,sans-serif;cursor:pointer}
+#bar input[type=range]{width:160px}
+#wrap{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#stage{position:relative;width:1080px;height:1920px;flex:none;background:var(--bg);overflow:hidden}
+#stage::before{content:"";position:absolute;inset:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:60px 60px;opacity:.35}
+.scene{position:absolute;inset:0 0 520px 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:40px;padding:110px 70px 0;opacity:0;pointer-events:none;transition:opacity .35s}
+.scene.on{opacity:1}
+.px{font-family:"Press Start 2P",monospace;line-height:1.5;text-align:center}
+.big{font-size:52px}.mid{font-size:38px}.sm{font-size:24px}
+.lime{color:var(--lime)}.gold{color:var(--gold)}.brasa{color:var(--brasa)}.sky{color:var(--sky)}.mut{color:var(--mut)}
+.on .in{animation:in .6s both}
+.on .in2{animation:in .6s .6s both}
+.on .in3{animation:in .6s 1.4s both}
+.on .in4{animation:in .6s 2.2s both}
+@keyframes in{from{opacity:0;transform:translateY(40px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes pop{0%{transform:scale(2.4) rotate(-14deg);opacity:0}60%{transform:scale(.94) rotate(-7deg);opacity:1}100%{transform:scale(1) rotate(-7deg);opacity:1}}
+@keyframes drift{from{transform:scale(1.02)}to{transform:scale(1.1) translate(-2%,-1%)}}
+@keyframes truck{from{left:6%}to{left:76%}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 #a6e22e66}50%{box-shadow:0 0 0 22px #a6e22e00}}
+/* aparelhos: a moldura tem a mesma proporção da captura, para não cortar a tela */
+.pc-frame{position:relative;width:900px;background:#0a0b0d;border:12px solid var(--aparelho);border-radius:22px 22px 10px 10px;padding:0 0 24px;box-shadow:0 40px 90px #000a}
+.pc-frame::after{content:"";position:absolute;left:50%;bottom:-40px;width:260px;height:14px;transform:translateX(-50%);background:var(--aparelho);border-radius:0 0 10px 10px}
+.pc-frame .tela{position:relative;width:100%;aspect-ratio:1360/933;overflow:hidden;background:#111;border-radius:4px}
+.cel-frame{position:relative;width:340px;background:#050505;border:12px solid var(--aparelho);border-radius:56px;padding:0;box-shadow:0 40px 90px #000a}
+.cel-frame::before{content:"";position:absolute;top:18px;left:50%;transform:translateX(-50%);width:110px;height:30px;background:#050505;border-radius:18px;z-index:3}
+.cel-frame .tela{position:relative;width:100%;aspect-ratio:390/844;overflow:hidden;border-radius:44px;background:#111}
+.tela img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center}
+.on .drift{animation:drift 10s linear both}
+/* passos */
+.step{display:flex;align-items:center;gap:26px;width:900px;background:var(--panel);border:3px solid var(--line);padding:22px 28px}
+.step img{width:104px;height:104px;object-fit:contain;image-rendering:pixelated}
+.step .n{font-family:"Press Start 2P";color:var(--gold);font-size:30px}
+.step .t{font:800 44px Archivo;text-transform:uppercase}
+/* cadeia */
+#chain{position:relative;width:940px;height:420px}
+#chain .nodo{position:absolute;top:60px;width:240px;text-align:center}
+#chain .nodo img{width:200px;height:200px;object-fit:contain;image-rendering:pixelated}
+#chain .nodo b{display:block;margin-top:10px;font:400 22px "Press Start 2P";color:var(--tx)}
+#chain .road{position:absolute;left:100px;right:100px;top:300px;height:12px;background:repeating-linear-gradient(90deg,var(--gold) 0 30px,transparent 30px 55px)}
+#chain .truck{position:absolute;top:240px;width:150px;image-rendering:pixelated}
+.on #chain .truck{animation:truck 4.5s linear infinite}
+/* regras */
+.card{width:900px;background:var(--panel);border:3px solid var(--line);padding:26px 30px;display:flex;gap:26px;align-items:center}
+.card .k{font:400 44px "Press Start 2P";color:var(--gold);min-width:90px}
+.card .txt{font:800 40px/1.2 Archivo}
+.card .txt small{display:block;font:600 28px/1.3 Archivo;color:var(--mut);margin-top:8px}
+/* ux */
+.stamp{position:absolute;font:400 34px "Press Start 2P";border:6px solid;padding:12px 18px;transform:rotate(-7deg);background:#121417d9}
+.on .stamp{animation:pop .5s .6s both}
+/* fim */
+.seal{border:6px solid var(--gold);color:var(--gold);padding:22px 28px;font:400 34px/1.5 "Press Start 2P";text-align:center;transform:rotate(-3deg)}
+.on .seal{animation:in .6s both,pulse 2s 1s infinite}
+/* legendas */
+#cap{position:absolute;left:50px;right:50px;bottom:200px;height:300px;display:flex;align-items:flex-end;justify-content:center;text-align:center}
+#cap p{margin:0;font:800 62px/1.18 Archivo;text-transform:uppercase;letter-spacing:-.5px;text-shadow:0 4px 0 #000,0 0 30px #000b}
+#cap span{color:#cfd3cb}
+#cap span.done{color:#fff}
+#cap span.now{color:var(--lime)}
+#prog{position:absolute;left:0;bottom:0;height:12px;background:var(--lime);width:0}
+#sig{position:absolute;top:60px;left:0;right:0;text-align:center;font:400 20px "Press Start 2P";color:var(--mut);z-index:3}
+@media (prefers-reduced-motion:reduce){.on *{animation-duration:.01s!important}}
+</style>
+</head>
+<body>
+<div id="bar">
+<button id="play">▶ Tocar</button>
+<button id="rst">⟲ Do início</button>
+<label class="btn">Carregar áudio <input id="aud" type="file" accept="audio/*" hidden></label>
+<span>ritmo <input id="rate" type="range" min="2" max="4" step=".05" value="2.6"> <b id="rv">2.6</b> palavras/s</span>
+<span id="tt">0:00 / 0:00</span>
+<span class="mut">Sem áudio: tempo estimado. Com o áudio da ElevenLabs carregado, a animação segue a voz.</span>
+</div>
+<div id="wrap"><div id="stage">
+<div id="sig">DEVLOG 01 · AFTERMARKET</div>
+
+<!-- 1. gancho -->
+<div class="scene" id="s-hook">
+<div class="px big in">QUASE TODO O<br>CÓDIGO DESTE JOGO<br>FOI <span class="lime">IA</span></div>
+<div class="px mid in2 brasa">EU DECIDI O QUE IMPORTA.</div>
+<div class="stamp brasa" style="left:120px;top:1000px;border-color:var(--brasa);display:none"></div>
+</div>
+
+<!-- 2. quem sou eu -->
+<div class="scene" id="s-sobre">
+<img class="in" src="../../apps/web/public/arte/marca-logo.png" alt="" style="width:240px;image-rendering:pixelated">
+<div class="px big in2">AFTER<br>MARKET</div>
+<div class="px sm in3 gold">DESIGNER · NÃO PROGRAMADOR</div>
+</div>
+
+<!-- 3. mundo real -->
+<div class="scene" id="s-mundo">
+<div class="pc-frame in"><div class="tela"><img class="drift" src="../../apps/web/public/arte/landing/tela-mapa-pc.jpg" alt=""></div></div>
+<div class="px sm lime in2">UM MUNDO REAL · DADOS GEOGRÁFICOS</div>
+</div>
+
+<!-- 4. passos -->
+<div class="scene" id="s-passos">
+<div class="step in"><span class="n">01</span><img src="../../apps/web/public/arte/emblema-roda.png" alt=""><span class="t">Escolha uma cidade</span></div>
+<div class="step in2"><span class="n">02</span><img src="../../apps/web/public/arte/silos.png" alt=""><span class="t">Compre um imóvel</span></div>
+<div class="step in3"><span class="n">03</span><img src="../../apps/web/public/arte/siderurgica.png" alt=""><span class="t">Monte a produção</span></div>
+<div class="step in4"><span class="n">04</span><img src="../../apps/web/public/arte/loja.png" alt=""><span class="t">Venda</span></div>
+</div>
+
+<!-- 5. cadeia -->
+<div class="scene" id="s-cadeia">
+<div class="px mid in">A CADEIA INTEIRA,<br><span class="gold">EM CIDADES DIFERENTES</span></div>
+<div id="chain" class="in2">
+<div class="road"></div>
+<div class="nodo" style="left:0"><img src="../../apps/web/public/arte/lavoura.png" alt=""><b>FAZENDA</b></div>
+<div class="nodo" style="left:350px"><img src="../../apps/web/public/arte/siderurgica.png" alt=""><b>FÁBRICA</b></div>
+<div class="nodo" style="left:700px"><img src="../../apps/web/public/arte/loja.png" alt=""><b>LOJA</b></div>
+<img class="truck" src="../../apps/web/public/arte/caminhao.png" alt="">
+</div>
+</div>
+
+<!-- 6. celular -->
+<div class="scene" id="s-celular">
+<div class="cel-frame in"><div class="tela"><img class="drift" src="../../apps/web/public/arte/landing/tela-comprar-cel.jpg" alt=""></div></div>
+<div class="px sm lime in2">NO CELULAR, A MESMA ECONOMIA</div>
+</div>
+
+<!-- 7. regras -->
+<div class="scene" id="s-regras">
+<div class="px sm gold in">COMO EU TRABALHO COM IA</div>
+<div class="card in2"><span class="k">01</span><span class="txt">A decisão é minha<small>Eu escrevo o que o jogador precisa ver, e por quê.</small></span></div>
+<div class="card in3"><span class="k">02</span><span class="txt">A IA executa, eu confiro<small>No navegador, no celular e só com o teclado.</small></span></div>
+<div class="card in4"><span class="k">03</span><span class="txt">Uma tela de cada vez<small>Se parecer planilha, eu refaço.</small></span></div>
+</div>
+
+<!-- 8. UX -->
+<div class="scene" id="s-ux">
+<div class="px mid in">UX É O MAIOR<br><span class="brasa">GAP DA IA</span></div>
+<div class="pc-frame in2"><div class="tela"><img class="drift" src="../../apps/web/public/arte/landing/tela-loja-pc.jpg" alt=""></div></div>
+<div class="px sm lime in3">ORIENTADA BEM, SAI MUITO MELHOR</div>
+</div>
+
+<!-- 9. honestidade -->
+<div class="scene" id="s-honesto">
+<div class="seal in">EM DESENVOLVIMENTO<br>TESTE FECHADO<br>EM BREVE</div>
+<div class="px sm mut in2">AINDA TEM ERRO. ESTÁ DE PÉ.</div>
+</div>
+
+<!-- 10. fim -->
+<div class="scene" id="s-fim">
+<img class="in" src="../../apps/web/public/arte/marca-logo.png" alt="" style="width:260px;image-rendering:pixelated">
+<div class="px sm lime in2">EM DESENVOLVIMENTO</div>
+<div class="px sm mut in3">PRÓXIMO DEVLOG: COMO TESTO A ECONOMIA<br>COM EMPRESAS-ROBÔ</div>
+</div>
+
+<div id="cap"><p id="capp"></p></div>
+<div id="prog"></div>
+</div></div>
+
+<script>
+// Narração em frases, cada uma ligada a uma cena. O texto também está em devlog-01-v2-roteiro.md
+const P=[
+["hook","Quase todo o código deste jogo foi escrito por inteligência artificial."],
+["hook","Quase tudo que importa, eu decidi."],
+["sobre","Sou designer, não programador."],
+["sobre","Esse é o Aftermarket."],
+["mundo","É uma economia num mundo real, com dados geográficos de verdade."],
+["mundo","Todo mundo joga no mesmo mapa do Brasil."],
+["passos","Você escolhe uma cidade, compra um imóvel, monta a produção e vende."],
+["cadeia","E pode montar a cadeia inteira em cidades diferentes."],
+["cadeia","Uma fazenda, uma fábrica, uma loja. Tudo ligado por caminhão."],
+["celular","No celular, a mesma economia."],
+["regras","Agora, como eu evito que a IA entregue uma coisa genérica."],
+["regras","Primeira regra: a decisão é minha. Eu escrevo o que o jogador precisa ver, e por quê."],
+["regras","Segunda: a IA executa, e eu confiro cada tela no navegador, no celular e com o teclado."],
+["regras","Terceira: uma tela de cada vez."],
+["ux","O maior problema da IA ainda é UX."],
+["ux","Ela monta a tela, mas não sabe o que o jogador precisa ver primeiro."],
+["ux","Quando eu oriento bem, o resultado sai muito melhor."],
+["honesto","O jogo ainda está em desenvolvimento. Em breve, um teste fechado."],
+["fim","Me segue. No próximo devlog, eu mostro como testo a economia com empresas-robô jogando sozinhas."]
+];
+const W=P.map(p=>p[1].split(/\s+/));
+const total=W.reduce((a,w)=>a+w.length,0);
+const $=id=>document.getElementById(id);
+const au=$('au'),stage=$('stage'),capp=$('capp');
+let rate=2.6,hasAudio=false,t=0,playing=false,last=0,cues=[],dur=0;
+const GAP=.3;
+function build(){
+  dur=hasAudio&&au.duration?au.duration:total/rate+GAP*P.length;
+  const speech=dur-GAP*P.length;
+  let c=0;cues=[];
+  P.forEach((p,i)=>{
+    const w=W[i];const wt=w.map(x=>x.length+2);const sum=wt.reduce((a,b)=>a+b,0);
+    const pd=speech*w.length/total;
+    let s=c;const words=w.map((x,j)=>{const a=s;s+=pd*wt[j]/sum;return{w:x,a,b:s}});
+    cues.push({scene:p[0],a:c,b:c+pd+GAP,words});c+=pd+GAP;
+  });
+}
+const scenes=[...document.querySelectorAll('.scene')];
+let curScene=null,curCue=-1;
+function render(){
+  let i=cues.findIndex(c=>t>=c.a&&t<c.b);if(i<0)i=t<=0?0:cues.length-1;
+  const c=cues[i];
+  if(c.scene!==curScene){
+    curScene=c.scene;
+    scenes.forEach(s=>{const on=s.id==='s-'+c.scene;if(on){s.classList.remove('on');void s.offsetWidth;}s.classList.toggle('on',on)});
+  }
+  if(i!==curCue){curCue=i;capp.innerHTML=c.words.map((x,k)=>`<span data-k="${k}">${x.w} </span>`).join('')}
+  [...capp.children].forEach((sp,k)=>{const x=c.words[k];sp.className=t>=x.b?'done':(t>=x.a?'now':'')});
+  $('prog').style.width=(100*t/dur)+'%';
+  $('tt').textContent=f(t)+' / '+f(dur);
+}
+const f=s=>Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
+function tick(now){
+  if(playing){
+    if(hasAudio){t=au.currentTime}else{t+=(now-last)/1000;last=now}
+    if(t>=dur){playing=false;t=dur-.01;au.pause();$('play').textContent='▶ Tocar'}
+    render();
+  }
+  requestAnimationFrame(tick);
+}
+function seek(v){t=v;if(hasAudio)au.currentTime=v;curScene=null;curCue=-1;render()}
+$('play').onclick=()=>{
+  if(playing){playing=false;au.pause();$('play').textContent='▶ Tocar';return}
+  if(t>=dur-.1)seek(0);
+  playing=true;last=performance.now();if(hasAudio)au.play();$('play').textContent='❚❚ Pausar';
+};
+$('rst').onclick=()=>seek(0);
+$('rate').oninput=e=>{rate=+e.target.value;$('rv').textContent=rate.toFixed(1);if(!hasAudio){build();render()}};
+$('aud').onchange=e=>{
+  const fl=e.target.files[0];if(!fl)return;
+  au.src=URL.createObjectURL(fl);
+  au.onloadedmetadata=()=>{hasAudio=true;build();seek(0)};
+};
+document.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();$('play').click()}});
+function fit(){
+  const wr=$('wrap').getBoundingClientRect();
+  const k=Math.min(wr.width/1080,wr.height/1920);
+  stage.style.transform='scale('+k+')';
+  stage.style.transformOrigin='center center';
+  stage.style.margin=(-(1920*(1-k))/2)+'px '+(-(1080*(1-k))/2)+'px';
+}
+addEventListener('resize',fit);
+build();fit();render();requestAnimationFrame(tick);
+</script>
+</body>
+</html>

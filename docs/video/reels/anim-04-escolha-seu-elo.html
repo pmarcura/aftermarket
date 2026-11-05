@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aftermarket · Animação 4 · Qual elo você seria?</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Archivo:wght@500;700;800;900&display=block">
+<link rel="stylesheet" href="limpo.css">
+<style>/* Gatilho: identidade e grupo. Cada pessoa escolhe um papel e marca o amigo. */
+.elo.m{height:150px}
+.elo.m img{width:90px;height:90px}
+.moeda{width:46px;height:46px;border-radius:50%;background:var(--lime);border:5px solid #0f1114;color:#0d0f0b;font:900 18px/36px Archivo;text-align:center;z-index:7}
+</style>
+</head>
+<body>
+<div id="bar"><button id="play">▶ Tocar</button><button id="rst">⟲ Do início</button><span id="tt">0.0 / 0.0 s</span></div>
+<div id="wrap"><div id="stage">
+  <div id="grade"></div>
+  <div class="a tag" id="marca">AFTERMARKET · EM DESENVOLVIMENTO</div>
+
+  <!-- 1. GANCHO: qual elo você seria? O cursor passa pelos três -->
+  <section class="cena" id="c-gancho">
+    <div class="a h" id="g-t" style="top:250px;font-size:128px">Qual elo<br><span class="lime">você seria?</span></div>
+    <div class="a elo" id="g1" style="top:620px;--c:#5c9e5a"><img class="pix" src="../../../apps/web/public/arte/lavoura.png" alt=""><div><b>Fazenda</b><small>PLANTA E VENDE A SOJA</small></div></div>
+    <div class="a elo" id="g2" style="top:840px;--c:#8a96a0"><img class="pix" src="../../../apps/web/public/arte/soja-oleo.png" alt=""><div><b>Fábrica</b><small>TRANSFORMA EM ÓLEO</small></div></div>
+    <div class="a elo" id="g3" style="top:1060px;--c:#d9615a"><img class="pix" src="../../../apps/web/public/arte/loja.png" alt=""><div><b>Loja</b><small>VENDE ÀS FAMÍLIAS</small></div></div>
+  </section>
+
+  <!-- 2. PAPÉIS: o destaque passa por cada elo e mostra o que ele faz -->
+  <section class="cena" id="c-papeis">
+    <div class="a h" id="t0" style="top:240px;font-size:62px;letter-spacing:-2px"><span class="lime">Fazenda:</span><br>planta e vende a soja</div>
+    <div class="a h" id="t1" style="top:240px;font-size:62px;letter-spacing:-2px"><span class="lime">Fábrica:</span><br>compra soja, vende óleo</div>
+    <div class="a h" id="t2" style="top:240px;font-size:62px;letter-spacing:-2px"><span class="lime">Loja:</span><br>compra óleo, vende às famílias</div>
+
+    <div class="a elo m" id="q1" style="top:420px;--c:#5c9e5a"><img class="pix" src="../../../apps/web/public/arte/lavoura.png" alt=""><div><b>Fazenda</b></div></div>
+    <div class="a elo m" id="q2" style="top:650px;--c:#8a96a0"><img class="pix" src="../../../apps/web/public/arte/soja-oleo.png" alt=""><div><b>Fábrica</b></div></div>
+    <div class="a elo m" id="q3" style="top:880px;--c:#d9615a"><img class="pix" src="../../../apps/web/public/arte/loja.png" alt=""><div><b>Loja</b></div></div>
+    <div class="a elo m" id="q4" style="top:1110px;--c:#e8bd4f"><img class="pix" src="../../../apps/web/public/arte/produto-arroz.png" alt=""><div><b>Famílias</b></div></div>
+
+    <div class="a chip" id="voce" style="left:130px;top:394px;width:130px;font-size:16px;z-index:8">VOCÊ</div>
+
+    <div class="a chip" id="i1" style="left:450px;top:585px;width:130px;font-size:15px;z-index:7;background:var(--gold)">SOJA</div>
+    <div class="a chip" id="i2" style="left:450px;top:815px;width:130px;font-size:15px;z-index:7;background:var(--gold)">ÓLEO</div>
+    <div class="a chip" id="i3" style="left:450px;top:1045px;width:130px;font-size:15px;z-index:7;background:var(--gold)">PRODUTO</div>
+    <div class="a moeda" id="m1" style="left:700px;top:585px">R$</div>
+    <div class="a moeda" id="m2" style="left:700px;top:815px">R$</div>
+    <div class="a moeda" id="m3" style="left:700px;top:1045px">R$</div>
+  </section>
+
+  <!-- 3. CHAMADA -->
+  <section class="cena" id="c-cta">
+    <div class="a h" id="z-h" style="top:380px;font-size:112px">Marque o amigo<br>que seria a<br><span class="lime">fábrica</span></div>
+    <div class="a botao" id="z-bot" style="top:1010px">Entre no Discord</div>
+    <div class="a tag" id="z-l" style="top:1200px;left:0;right:0;color:#f2f4ee">Link na bio</div>
+    <div class="a tag mut" id="z-s" style="top:1260px;left:0;right:0">novidades e primeiros testes</div>
+  </section>
+
+  <div id="flash"></div>
+  <div id="fundo-cap"></div>
+  <div id="cap"><p id="cap-p"></p></div>
+</div></div>
+
+<script src="motor.js"></script>
+<script>
+const COR = ['#5c9e5a', '#8a96a0', '#d9615a', '#e8bd4f'];
+const FASE = 4.2;                      // duração de cada papel
+const TOPO = [420, 650, 880, 1110];    // topo de cada cartão
+// Fluxo: item que anda entre dois cartões em ciclo (sobe ou desce), só quando a fase está ativa.
+function fluxo(el, u, ini, fim, y0, y1, periodo = 1.3) {
+  const f = ((u - ini) / periodo) % 1;
+  const on = u >= ini && u < fim;
+  const k = E.io(clamp(f));
+  T(el, { y: (y1 - y0) * k, o: on ? Math.min(1, f * 6, (1 - f) * 6) : 0 });
+}
+montar([
+  ['gancho', 3.2, 'Qual elo você seria?', (u) => {
+    palavras($('g-t'), u, -0.4, 0.06, 0.3);
+    ['g1', 'g2', 'g3'].forEach((id, i) => {
+      const k = E.out(q(u, -0.6 + i * 0.05, 0.4));
+      // cursor: o destaque passa de um elo para o outro
+      const ativo = Math.floor(u / 0.45) % 3 === i;
+      T($(id), { x: (1 - k) * 60, s: ativo ? 1.04 : 1, o: k * (ativo ? 1 : 0.7) });
+      $(id).style.setProperty('--c', ativo ? '#a6e22e' : COR[i]);
+    });
+  }],
+  ['papeis', FASE * 3, [[0, 'Cada elo faz uma coisa diferente.'], [FASE, 'Um compra, outro transforma.'], [FASE * 2, 'E o dinheiro volta pelo caminho.']], (u) => {
+    // cartões entram
+    ['q1', 'q2', 'q3', 'q4'].forEach((id, i) => {
+      const k = E.out(q(u, 0.1 + i * 0.12, 0.35));
+      const fase = Math.min(2, Math.floor(u / FASE));
+      const ativo = i === fase;
+      const apagado = i !== fase && u > 0.6;
+      T($(id), { x: (1 - k) * 80, s: ativo && u > 0.6 ? 1.04 : 1, o: k * (apagado ? 0.4 : 1) });
+      $(id).style.setProperty('--c', ativo && u > 0.6 ? '#a6e22e' : COR[i]);
+    });
+    // "VOCÊ" acompanha o cartão ativo
+    const fase = Math.min(2, Math.floor(u / FASE));
+    const y = trecho(u, [[FASE - 0.2, TOPO[0]], [FASE + 0.2, TOPO[1]], [FASE * 2 - 0.2, TOPO[1]], [FASE * 2 + 0.2, TOPO[2]]]);
+    estala($('voce'), u, 0.5, 0.35);
+    $('voce').style.top = (y - 26) + 'px';
+    // títulos
+    ['t0', 't1', 't2'].forEach((id, i) => {
+      const ini = i * FASE, fim = (i + 1) * FASE;
+      const k = E.out(q(u, ini, 0.35)) * (1 - E.io(q(u, fim - 0.3, 0.3)) * (i < 2 ? 1 : 0));
+      T($(id), { y: (1 - E.out(q(u, ini, 0.35))) * 40, o: k });
+    });
+    // itens: soja (fases 0-1), óleo (1-2), produto (2); moedas voltam
+    fluxo($('i1'), u, 1.0, FASE * 2, -12, 12);
+    fluxo($('i2'), u, FASE + 1.0, FASE * 3, -12, 12);
+    fluxo($('i3'), u, FASE * 2 + 1.0, FASE * 3, -12, 12);
+    fluxo($('m3'), u, FASE * 2 + 1.5, FASE * 3, 12, -12);
+    fluxo($('m2'), u, FASE + 1.5, FASE * 3, 12, -12);
+    fluxo($('m1'), u, 1.5, FASE * 3, 12, -12);
+  }],
+  ['cta', 4.0, 'Marque o amigo que seria a fábrica. Link na bio.', (u) => {
+    palavras($('z-h'), u, 0, 0.1, 0.4);
+    estala($('z-bot'), u, 1.2, 0.45);
+    entra($('z-l'), u, 1.7, 0.35, 30);
+    entra($('z-s'), u, 2.0, 0.35, 30);
+  }],
+]);
+</script>
+</body>
+</html>

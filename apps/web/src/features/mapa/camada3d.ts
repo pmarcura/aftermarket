@@ -84,6 +84,8 @@ export function criarCamada3D() {
       renderer.autoClear = false;
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      // os negócios podem ter chegado antes da camada: desenha assim que ela existe
+      map.triggerRepaint();
     },
     onRemove() {
       desenho?.dispose();

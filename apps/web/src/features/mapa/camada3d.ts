@@ -10,6 +10,7 @@ import * as THREE from 'three';
 import * as maplibregl from 'maplibre-gl';
 import type { Category, Position } from '../../../../../packages/simulation/src/model';
 import { bandeira, construirModelo, luzes, type Estagio } from './modelos3d';
+import { DesenhoPixel } from './pixel3d';
 
 export interface Negocio3D {
   id: string;
@@ -22,6 +23,8 @@ export interface Negocio3D {
 export const CAMADA_3D = 'negocios-3d';
 // A partir deste zoom os modelos aparecem (de longe, os ícones resumem melhor).
 export const ZOOM_3D = 12.5;
+// Tamanho do pixel da arte no mapa (px de tela), o mesmo dos sprites da identidade.
+export const TAMANHO_PIXEL = 2;
 // Exagero de tamanho: de perto quase o tamanho real; de longe maior, para continuar visível.
 function exagero(zoom: number) {
   return 3.6 * 2 ** (Math.max(0, 16.5 - zoom) * 0.55);
@@ -35,13 +38,6 @@ function paraCena([lng, lat]: Position) {
   return new THREE.Vector3((m.x - ORIGEM.x) / METRO, 0, (m.y - ORIGEM.y) / METRO);
 }
 
-/** Giro estável por negócio (quartos de volta), para a cidade não parecer carimbada. */
-function giro(id: string) {
-  let h = 0;
-  for (const c of id) h = (h * 31 + c.charCodeAt(0)) >>> 0;
-  return (h % 4) * (Math.PI / 2);
-}
-
 export function criarCamada3D() {
   const cena = new THREE.Scene();
   const [ceu, sol] = luzes(200) as [THREE.HemisphereLight, THREE.DirectionalLight];
@@ -52,6 +48,7 @@ export function criarCamada3D() {
   const moldes = new Map<string, THREE.Group>();
   const instancias = new Map<string, { chave: string; obj: THREE.Group }>();
   let renderer: THREE.WebGLRenderer | null = null;
+  let desenho: DesenhoPixel | null = null;
   let mapa: maplibregl.Map | null = null;
   let escalaAtual = 0;
 
@@ -78,12 +75,19 @@ export function criarCamada3D() {
     renderingMode: '3d',
     onAdd(map, gl) {
       mapa = map;
-      renderer = new THREE.WebGLRenderer({ canvas: map.getCanvas(), context: gl, antialias: true });
+      renderer = new THREE.WebGLRenderer({
+        canvas: map.getCanvas(),
+        context: gl,
+        antialias: false,
+      });
+      desenho = new DesenhoPixel(renderer);
       renderer.autoClear = false;
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     },
     onRemove() {
+      desenho?.dispose();
+      desenho = null;
       renderer?.dispose();
       renderer = null;
       mapa = null;
@@ -120,7 +124,14 @@ export function criarCamada3D() {
       camera.projectionMatrix = matriz.multiply(local);
       camera.projectionMatrixInverse.copy(camera.projectionMatrix).invert();
       renderer.resetState();
-      renderer.render(cena, camera);
+      // Pixel art da identidade: cada pixel da arte vale TAMANHO_PIXEL pixels de tela.
+      const gl = renderer.getContext();
+      desenho!.desenhar(
+        cena,
+        camera,
+        { x: 0, y: 0, largura: gl.drawingBufferWidth, altura: gl.drawingBufferHeight },
+        TAMANHO_PIXEL * window.devicePixelRatio,
+      );
     },
   };
 
@@ -141,7 +152,8 @@ export function criarCamada3D() {
         obj.add(b);
       }
       obj.position.copy(paraCena(n.coordenadas));
-      obj.rotation.y = giro(n.id);
+      // Frente para o sul (para a câmera na vista padrão) até a etapa dos bairros alinhar à rua.
+      obj.rotation.y = 0;
       obj.scale.setScalar(escalaAtual || 1);
       obj.userData.id = n.id;
       raiz.add(obj);

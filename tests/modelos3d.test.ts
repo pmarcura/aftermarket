@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
-import { construirModelo, type Nivel } from '../apps/web/src/features/mapa/modelos3d';
+import {
+  construirModelo,
+  ESPESSURA_DO_CHAO,
+  type Nivel,
+} from '../apps/web/src/features/mapa/modelos3d';
 import { estagioDoNegocio, LIMITES_DE_NIVEL } from '../apps/web/src/features/mapa/nivel';
 import type { Category, Establishment } from '../packages/simulation/src/model';
 
@@ -13,13 +17,13 @@ const volume = (g: THREE.Object3D) => {
 };
 
 describe('kit de modelos 3D dos negócios', () => {
-  it('monta todos os tipos em todos os estágios, apoiados no chão', () => {
+  it('monta todos os tipos em todos os estágios, sobre o azulejo de chão', () => {
     for (const c of categorias)
       for (const e of [...niveis, 'obra' as const]) {
         const g = construirModelo(c, e);
         const caixa = new THREE.Box3().setFromObject(g);
         expect(caixa.isEmpty(), `${c}:${e}`).toBe(false);
-        expect(caixa.min.y, `${c}:${e}`).toBeGreaterThanOrEqual(-0.01);
+        expect(caixa.min.y, `${c}:${e}`).toBeCloseTo(-ESPESSURA_DO_CHAO, 2);
         expect(g.userData).toEqual({ categoria: c, estagio: e });
       }
   });

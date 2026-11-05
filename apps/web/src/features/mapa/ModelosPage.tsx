@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { categoryInfo, type Category } from '../../../../../packages/simulation/src/model';
 import { bandeira, construirModelo, luzes, type Estagio } from './modelos3d';
+import { DesenhoPixel } from './pixel3d';
 import './modelos.css';
 
 const categorias: Category[] = ['retail', 'industry', 'farm', 'mine', 'warehouse', 'logistics'];
@@ -43,6 +44,9 @@ export function ModelosPage() {
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    const desenho = new DesenhoPixel(renderer);
+    // Tamanho do pixel da arte (px de tela): na grade os modelos ficam do tamanho dos sprites.
+    const tamanhoPixel = foco ? 4 : 2;
     renderer.setScissorTest(true);
     const celulas: Celula[] = [];
     const seletor = foco ? '.modelos-foco[data-celula]' : '.modelos-celula[data-celula]';
@@ -109,9 +113,12 @@ export function ModelosPage() {
         c.camera.bottom = -c.raio * 0.85;
         c.camera.updateProjectionMatrix();
         const y = h - (r.bottom - topo);
-        renderer.setViewport(r.left, y, r.width, r.height);
-        renderer.setScissor(r.left, y, r.width, r.height);
-        renderer.render(c.cena, c.camera);
+        desenho.desenhar(
+          c.cena,
+          c.camera,
+          { x: r.left, y, largura: r.width, altura: r.height },
+          tamanhoPixel,
+        );
       }
     };
     desenhar();
@@ -119,6 +126,7 @@ export function ModelosPage() {
       cancelAnimationFrame(quadro);
       window.removeEventListener('pointermove', mover);
       window.removeEventListener('pointerup', subir);
+      desenho.dispose();
       renderer.dispose();
     };
   }, [proprio, foco]);

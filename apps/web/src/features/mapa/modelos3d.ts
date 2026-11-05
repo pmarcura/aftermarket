@@ -9,59 +9,82 @@
  */
 import * as THREE from 'three';
 import type { Category } from '../../../../../packages/simulation/src/model';
+import { CAMADA_TRACOS } from './pixel3d';
 
 export type Nivel = 1 | 2 | 3 | 4;
 export type Estagio = Nivel | 'obra';
 
+// Paleta da identidade visual (apps/web/src/design/identidade.css e sprites de /arte):
+// telhado de terracota, parede creme, azul de céu e de aço, ouro, brasa e verdes de lavoura.
 export const COR = {
-  contorno: '#2f3437',
-  concreto: '#c9c4ba',
-  concretoClaro: '#dedad2',
-  cinza: '#a9b0b8',
-  cinzaEscuro: '#7d858d',
-  tijolo: '#b9876f',
-  tijoloEscuro: '#9c6b57',
-  creme: '#f1e6cf',
-  turquesa: '#3fc1b0',
-  turquesaClaro: '#5ad1c3',
-  turquesaEscuro: '#2fa59a',
-  vidro: '#9fd3ec',
-  vidroEscuro: '#4a6b8a',
-  porta: '#4b3a33',
-  vermelho: '#d9573f',
-  branco: '#f6f3ec',
+  contorno: '#1d1a12',
+  concreto: '#d9cfb8',
+  concretoClaro: '#eadfc6',
+  cinza: '#9aa3a8',
+  cinzaEscuro: '#5e6466',
+  tijolo: '#c0603a',
+  tijoloEscuro: '#8a3b12',
+  creme: '#f3e7cc',
+  turquesa: '#d0682f',
+  turquesaClaro: '#e8894a',
+  turquesaEscuro: '#a84f1f',
+  vidro: '#6cb8e8',
+  vidroEscuro: '#3f7fc0',
+  porta: '#4b3a2a',
+  vermelho: '#f47a5e',
+  branco: '#f8f1e0',
   amarelo: '#f2bd3c',
-  piso: '#d7d2c6',
-  asfalto: '#8f8b84',
-  faixa: '#f6f3ec',
-  terra: '#c8a66a',
-  terraEscura: '#a8854f',
-  minerio: '#a0524a',
-  carvao: '#45464a',
-  lavoura: '#9cc56a',
-  lavouraMadura: '#d6bf55',
-  celeiro: '#b5483a',
-  copa: '#5fae5a',
-  copaClara: '#7cc46b',
-  tronco: '#7a5636',
-  pneu: '#2a2b2e',
-  laranja: '#e98a3a',
-  azul: '#4f8fc9',
+  piso: '#e6d8b8',
+  asfalto: '#6f6b63',
+  faixa: '#f8f1e0',
+  terra: '#a7714a',
+  terraEscura: '#7a4f30',
+  minerio: '#b0563a',
+  carvao: '#3a3b3e',
+  lavoura: '#8fd14f',
+  lavouraMadura: '#e6c45a',
+  celeiro: '#c0603a',
+  copa: '#4f9a3a',
+  copaClara: '#7cc14f',
+  tronco: '#7a4f30',
+  pneu: '#232220',
+  laranja: '#e8894a',
+  azul: '#3f7fc0',
 } as const;
+
+/** Chão de cada tipo de negócio, o "azulejo" grosso por baixo dos sprites da identidade. */
+export const CHAO: Record<Category, string> = {
+  retail: '#e07a3a',
+  industry: '#d0682f',
+  farm: '#c4622d',
+  mine: '#a7714a',
+  warehouse: '#9c7fa6',
+  logistics: '#3f7fc0',
+};
 
 // ---------------------------------------------------------------------------------------------
 // Materiais e peças básicas
 
-const materiais = new Map<string, THREE.MeshLambertMaterial>();
+// Luz em três tons (sombra, meia-luz, luz), como numa paleta de pixel art.
+const degraus = new THREE.DataTexture(new Uint8Array([120, 195, 255]), 3, 1, THREE.RedFormat);
+degraus.minFilter = THREE.NearestFilter;
+degraus.magFilter = THREE.NearestFilter;
+degraus.needsUpdate = true;
+
+const materiais = new Map<string, THREE.MeshToonMaterial>();
 function material(cor: string) {
   let m = materiais.get(cor);
   if (!m) {
-    m = new THREE.MeshLambertMaterial({ color: cor, flatShading: true });
+    m = new THREE.MeshToonMaterial({ color: cor, gradientMap: degraus });
     materiais.set(cor, m);
   }
   return m;
 }
-const materialContorno = new THREE.LineBasicMaterial({ color: COR.contorno });
+const materialContorno = new THREE.LineBasicMaterial({
+  color: COR.contorno,
+  transparent: true,
+  opacity: 0.55,
+});
 
 /** Uma peça com contorno escuro nas arestas (o "traço" dos desenhos do pacote). */
 function peca(geometria: THREE.BufferGeometry, cor: string, x = 0, y = 0, z = 0, contorno = true) {
@@ -69,8 +92,11 @@ function peca(geometria: THREE.BufferGeometry, cor: string, x = 0, y = 0, z = 0,
   malha.position.set(x, y, z);
   malha.castShadow = true;
   malha.receiveShadow = true;
-  if (contorno)
-    malha.add(new THREE.LineSegments(new THREE.EdgesGeometry(geometria, 30), materialContorno));
+  if (contorno) {
+    const traco = new THREE.LineSegments(new THREE.EdgesGeometry(geometria, 30), materialContorno);
+    traco.layers.set(CAMADA_TRACOS);
+    malha.add(traco);
+  }
   return malha;
 }
 
@@ -213,7 +239,7 @@ function janelas(
 function arvore(g: THREE.Group, x: number, z: number, escala = 1) {
   cilindro(g, 0.25 * escala, 1.6 * escala, COR.tronco, x, 0, z, 6);
   const copa = peca(
-    new THREE.IcosahedronGeometry(1.5 * escala, 0),
+    new THREE.IcosahedronGeometry(1.6 * escala, 1),
     escala > 1 ? COR.copa : COR.copaClara,
     x,
     2.6 * escala,
@@ -419,8 +445,9 @@ function loja(g: THREE.Group, n: Nivel) {
 function fabrica(g: THREE.Group, n: Nivel) {
   const galpao = (w: number, d: number, h: number, x: number, z: number) => {
     const s = new THREE.Group();
-    caixa(s, w, h, d, COR.cinza);
-    denteDeSerra(s, w, d, Math.max(2, Math.round(d / 4)), 2.2, COR.turquesa, h);
+    // galpão azul com telhado de aço, como a siderúrgica da identidade
+    caixa(s, w, h, d, COR.azul);
+    denteDeSerra(s, w, d, Math.max(2, Math.round(d / 4)), 2.2, COR.cinza, h);
     caixa(s, 4, 3.6, 0.15, COR.cinzaEscuro, 0, 0, d / 2 + 0.05, false);
     for (let i = 0; i < 3; i++)
       caixa(s, 0.5, 3.6, 0.17, COR.amarelo, -1.6 + i * 1.6, 0, d / 2 + 0.07, false);
@@ -758,10 +785,27 @@ const construtores: Record<Category, (g: THREE.Group, n: Nivel) => void> = {
 };
 
 /** Monta o modelo de um negócio no estágio pedido. O grupo retornado é novo a cada chamada. */
+// Espessura do azulejo de chão (metros), abaixo do nível da rua.
+export const ESPESSURA_DO_CHAO = 1.8;
+
 export function construirModelo(categoria: Category, estagio: Estagio): THREE.Group {
   const g = new THREE.Group();
   if (estagio === 'obra') obra(g);
   else construtores[categoria](g, estagio);
+  // Azulejo grosso por baixo, com a cor do tipo de negócio (o "tile" dos sprites).
+  const caixaModelo = new THREE.Box3().setFromObject(g);
+  const largura = caixaModelo.max.x - caixaModelo.min.x + 3;
+  const fundo = caixaModelo.max.z - caixaModelo.min.z + 3;
+  caixa(
+    g,
+    largura,
+    ESPESSURA_DO_CHAO,
+    fundo,
+    estagio === 'obra' ? COR.terra : CHAO[categoria],
+    (caixaModelo.max.x + caixaModelo.min.x) / 2,
+    -ESPESSURA_DO_CHAO,
+    (caixaModelo.max.z + caixaModelo.min.z) / 2,
+  );
   g.userData = { categoria, estagio };
   return g;
 }
@@ -777,9 +821,9 @@ export function bandeira(cor: string, altura = 14): THREE.Group {
 
 /** Luz do kit: céu claro e sol do alto à esquerda, como nos desenhos do pacote. */
 export function luzes(alcance = 70): THREE.Object3D[] {
-  const ceu = new THREE.HemisphereLight('#fff8e6', '#7f9a68', 1.25);
+  const ceu = new THREE.HemisphereLight('#ffffff', '#b8a780', 1.15);
   // Sol baixo à esquerda: a lateral esquerda fica clara e a frente meia-sombra, como no pacote.
-  const sol = new THREE.DirectionalLight('#fff4dc', 2.4);
+  const sol = new THREE.DirectionalLight('#fff6e4', 2.3);
   sol.position.set(-90, 120, 35);
   sol.castShadow = true;
   sol.shadow.mapSize.set(2048, 2048);

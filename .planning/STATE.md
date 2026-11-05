@@ -1,8 +1,10 @@
 # Estado do projeto
 
-Atualizado em **03/11/2026**. Versão **0.4.0**. Uma página: o que é verdade agora e o que vem a seguir. Detalhes e evidências ficam nos documentos de cada fase e no histórico do Git.
+Atualizado em **05/11/2026**. Versão **0.4.0**. Uma página: o que é verdade agora e o que vem a seguir. Detalhes e evidências ficam nos documentos de cada fase e no histórico do Git.
 
 ## Onde estamos
+
+**05/11/2026 · mudança de equipe.** O João (John) parou de atualizar o projeto; o Pedro passa a liderar tudo. Todo o trabalho dele foi juntado ao nosso: specs 001–007 já estavam no `main`; o mapa vivo (spec 008, parado em R2) e o mundo 16-bit (spec 009, parado na fase C) entraram neste fechamento. A cidade de perto usa o pacote MODERN TOWN SET, que fica fora do Git (licença) em `apps/web/public/arte/town`; sem ele o mapa funciona, só sem os prédios desenhados. Build, 307 testes e 34 cenários de navegador passam. Próximo passo: recomeçar o plano a partir daqui.
 
 Etapas **A · Arrumar a casa** e **B · Redesenhar a economia** concluídas; parte da **E** (primeira hora) adiantada a pedido do Pedro. Próximas: **C · Motor que aguenta** e **D · Jogar junto** do [roteiro](ROADMAP.md), que faltam para o playtest com amigos. O panorama visual completo está em [`docs/raio-x.html`](../docs/raio-x.html).
 

@@ -16,6 +16,14 @@ import {
 } from '../../../../packages/simulation/src/model';
 import { createMapStyle } from '../lib/map-style';
 import { criarCamada3D, TAMANHO_PIXEL, ZOOM_3D } from '../features/mapa/camada3d';
+import {
+  cadeiaDo as cadeiaDaCarga,
+  cargasDoFluxo,
+  COR_DA_CADEIA,
+  espessura,
+  trajetosDoFluxo,
+  type OpcoesDeFluxo,
+} from '../features/mapa/fluxos';
 import { estagioDoNegocio } from '../features/mapa/nivel';
 import {
   acessoDoTerreno,
@@ -255,6 +263,7 @@ export function WorldMap({
   alerts,
   hoverCard,
   onCitySelect,
+  fluxos,
 }: {
   mini?: boolean;
   propertyId?: string;
@@ -279,6 +288,8 @@ export function WorldMap({
   hoverCard?: (propertyId: string) => { titulo: string; linhas: string[] } | null;
   /** Spec 008 R2: toque na placa da cidade abre o painel dela. */
   onCitySelect?: (regionId: string) => void;
+  /** Modo Fluxos: cargas na estrada por trajeto, cor da cadeia e espessura pelo peso. */
+  fluxos?: OpcoesDeFluxo | null;
 }) {
   const { world, actor, selectedId, select, focus, consumeFocus } = useGame();
   const container = useRef<HTMLDivElement>(null),
@@ -575,6 +586,41 @@ export function WorldMap({
         type: 'line',
         source: 'traveled',
         paint: { 'line-color': '#a6e05a', 'line-width': 5 },
+      });
+      // Fluxo de recursos: trajetos com contorno escuro (pixel art), cor da cadeia e espessura
+      // pelo peso; pontos claros andam com cada caminhão.
+      instance.addSource('fluxos', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] },
+      });
+      instance.addSource('fluxos-cargas', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] },
+      });
+      instance.addLayer({
+        id: 'fluxos-borda',
+        type: 'line',
+        source: 'fluxos',
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: { 'line-color': '#1d1a12', 'line-width': ['+', ['get', 'largura'], 3] },
+      });
+      instance.addLayer({
+        id: 'fluxos-linha',
+        type: 'line',
+        source: 'fluxos',
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: { 'line-color': ['get', 'cor'], 'line-width': ['get', 'largura'] },
+      });
+      instance.addLayer({
+        id: 'fluxos-cargas',
+        type: 'circle',
+        source: 'fluxos-cargas',
+        paint: {
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 5, 3.5, 10, 5, 14, 6.5],
+          'circle-color': '#f8f1e0',
+          'circle-stroke-color': ['get', 'cor'],
+          'circle-stroke-width': 2.5,
+        },
       });
       // Negócios: miniaturas pixel-art nítidas sobre o mapa, agrupadas em placas quando o zoom é baixo.
       instance.addSource('properties', {
@@ -1048,6 +1094,112 @@ export function WorldMap({
     actor,
     Boolean(economic),
     mini,
+  ]);
+  useEffect(() => {
+    const m = map.current;
+    if (!m || !ready || mini) return;
+    const fonte = m.getSource('fluxos') as GeoJSONSource | undefined;
+    const pontos = m.getSource('fluxos-cargas') as GeoJSONSource | undefined;
+    if (!fonte || !pontos) return;
+    const vazio = { type: 'FeatureCollection' as const, features: [] };
+    if (!fluxos) {
+      fonte.setData(vazio);
+      pontos.setData(vazio);
+      return;
+    }
+    const cargas = cargasDoFluxo(world, actor, fluxos);
+    const trajetos = trajetosDoFluxo(world, cargas);
+    const maximo = Math.max(0, ...trajetos.map((t) => t.toneladas));
+    fonte.setData({
+      type: 'FeatureCollection',
+      features: trajetos.map((t) => ({
+        type: 'Feature',
+        geometry: { type: 'LineString', coordinates: t.caminho },
+        properties: {
+          chave: t.chave,
+          cor: COR_DA_CADEIA[t.cadeia],
+          largura: espessura(t.toneladas, maximo),
+          toneladas: t.toneladas,
+          cargas: t.cargas,
+          produtos: t.produtos.map((id) => products[id].name).join(', '),
+          origem: t.origem,
+          destino: t.destino,
+        },
+      })),
+    });
+    // caminhões andando: um ponto por carga, na posição de agora
+    const andando = cargas.map((s) => {
+      const caminho = shipmentRoute(world, s);
+      return { s, caminho, comprimentos: routeLengths(caminho) };
+    });
+    const reduzido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let quadro = 0,
+      ultimo = 0;
+    const posicionar = () =>
+      pontos.setData({
+        type: 'FeatureCollection',
+        features: andando.map((a) => ({
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            coordinates: positionAlongRoute(
+              a.caminho,
+              shipmentStatus(a.s, agora()).progress,
+              a.comprimentos,
+            ).position,
+          },
+          properties: { cor: COR_DA_CADEIA[cadeiaDaCarga(a.s.product)] },
+        })),
+      });
+    // já desenha na hora (sem esperar o primeiro quadro) e depois anda 5 vezes por segundo
+    posicionar();
+    const desenhar = (t: number) => {
+      if (t - ultimo >= (reduzido ? 1000 : 200) && !document.hidden) {
+        posicionar();
+        ultimo = t;
+      }
+      quadro = requestAnimationFrame(desenhar);
+    };
+    if (andando.length) quadro = requestAnimationFrame(desenhar);
+    // cartão ao passar o mouse sobre um trajeto
+    const cartao = new maplibregl.Popup({
+      closeButton: false,
+      closeOnClick: false,
+      className: 'fluxo-cartao',
+      offset: 8,
+    });
+    const mover = (ev: maplibregl.MapLayerMouseEvent) => {
+      const f = ev.features?.[0]?.properties as Record<string, string | number> | undefined;
+      if (!f) return;
+      m.getCanvas().style.cursor = 'default';
+      cartao
+        .setLngLat(ev.lngLat)
+        .setHTML(
+          `<strong>${f.produtos}</strong><span>${f.origem} → ${f.destino}</span><span>${Number(f.cargas)} carga${Number(f.cargas) > 1 ? 's' : ''} · ${Number(f.toneladas).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} t na estrada</span>`,
+        )
+        .addTo(m);
+    };
+    const sair = () => {
+      m.getCanvas().style.cursor = '';
+      cartao.remove();
+    };
+    m.on('mousemove', 'fluxos-linha', mover);
+    m.on('mouseleave', 'fluxos-linha', sair);
+    return () => {
+      cancelAnimationFrame(quadro);
+      m.off('mousemove', 'fluxos-linha', mover);
+      m.off('mouseleave', 'fluxos-linha', sair);
+      cartao.remove();
+    };
+  }, [
+    ready,
+    mini,
+    fluxos?.produto,
+    fluxos?.sentido,
+    fluxos?.soMeus,
+    Boolean(fluxos),
+    world.shipments,
+    actor,
   ]);
   useEffect(() => {
     const m = map.current;

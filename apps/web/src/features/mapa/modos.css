@@ -1,0 +1,221 @@
+/* Barra de modos e painel do modo, na mesma chapa escura com sombra dura da identidade. */
+.map-modos {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  background: var(--noite-funda);
+  border: 2px solid var(--borda-forte);
+  box-shadow: 4px 4px 0 var(--sombra);
+}
+.map-modos button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 0 13px;
+  border: 0;
+  border-right: 1px solid var(--borda);
+  border-radius: 0;
+  background: transparent;
+  color: var(--creme);
+  font: 600 13px/1 var(--fonte);
+  cursor: pointer;
+}
+.map-modos button:not(.on):hover:not(:disabled) {
+  background: var(--chapa-2);
+}
+.map-modos button.on {
+  background: var(--lavoura);
+  color: var(--noite);
+}
+.map-modos button:focus-visible {
+  outline: 2px solid var(--ouro);
+  outline-offset: -2px;
+}
+.map-modos-sep {
+  width: 6px;
+  background: var(--borda-forte);
+}
+.map-modos .map-modos-meus {
+  border-right: 0;
+}
+.map-modos .map-modos-meus.on {
+  background: var(--ouro);
+  color: var(--noite);
+}
+.map-modos .map-modos-meus:disabled {
+  color: var(--apagado);
+  cursor: default;
+}
+
+/* Painel do modo: à direita, sobre o mapa, sem esconder os controles de zoom */
+.map-painel {
+  position: absolute;
+  top: 14px;
+  right: 64px;
+  z-index: 5;
+  width: 276px;
+  max-height: calc(100% - 92px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  background: var(--noite-funda);
+  border: 2px solid var(--borda-forte);
+  box-shadow: 4px 4px 0 var(--sombra);
+  color: var(--creme);
+}
+.map-painel header h2 {
+  margin: 0;
+  font: 800 18px/1.1 var(--fonte-titulo, var(--fonte));
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.map-painel header p {
+  margin: 4px 0 0;
+  font: 500 12.5px/1.35 var(--fonte);
+  color: var(--apagado);
+}
+.map-painel-sentido {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 1px solid var(--borda);
+}
+.map-painel-sentido button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 32px;
+  padding: 0 4px;
+  border: 0;
+  border-right: 1px solid var(--borda);
+  background: transparent;
+  color: var(--creme);
+  font: 600 12px/1 var(--fonte);
+  cursor: pointer;
+}
+.map-painel-sentido button:last-child {
+  border-right: 0;
+}
+.map-painel-sentido button.on {
+  background: var(--chapa-2);
+  color: var(--lavoura);
+}
+.map-painel-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+.map-painel-lista button {
+  position: relative;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 8px 12px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--creme);
+  text-align: left;
+  cursor: pointer;
+}
+.map-painel-lista button:hover {
+  background: var(--chapa-2);
+}
+.map-painel-lista button.on {
+  border-color: var(--lavoura);
+  background: var(--chapa-2);
+  box-shadow: inset 4px 0 0 var(--lavoura);
+}
+.map-painel-lista button.on .map-painel-nome {
+  color: var(--lavoura);
+}
+.map-painel-nome {
+  font: 600 13px/1.2 var(--fonte);
+}
+.map-painel-num {
+  font: 500 12px/1.2 var(--fonte-mono, 'IBM Plex Mono', monospace);
+  color: var(--apagado);
+}
+.map-painel-barra {
+  position: absolute;
+  left: 8px;
+  bottom: 4px;
+  height: 4px;
+  max-width: calc(100% - 16px);
+}
+.map-painel-vazio,
+.map-painel-nota {
+  margin: 0;
+  font: 500 12.5px/1.45 var(--fonte);
+  color: var(--apagado);
+}
+.map-painel-limpar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 6px 10px;
+  border: 1px solid var(--borda-forte);
+  background: transparent;
+  color: var(--creme);
+  font: 600 12px/1 var(--fonte);
+  cursor: pointer;
+}
+
+/* Legenda: linha grossa e ponto de carga do modo Fluxos */
+.map-legend-bar i.linha-grossa {
+  width: 18px;
+  height: 7px;
+  background: var(--creme);
+}
+.map-legend-bar i.ponto-carga {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #f8f1e0;
+  border: 2px solid #d0682f;
+}
+
+/* Cartão ao passar o mouse sobre um trajeto */
+.fluxo-cartao .maplibregl-popup-content {
+  display: grid;
+  gap: 3px;
+  padding: 8px 10px;
+  border-radius: 0;
+  background: var(--noite-funda);
+  border: 2px solid var(--borda-forte);
+  box-shadow: 4px 4px 0 var(--sombra);
+  color: var(--creme);
+  font: 500 12.5px/1.35 var(--fonte);
+}
+.fluxo-cartao .maplibregl-popup-content strong {
+  font-weight: 700;
+}
+.fluxo-cartao .maplibregl-popup-tip {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .map-modos button span {
+    display: none;
+  }
+  /* com painel aberto, a legenda sai no celular para não cobrir a lista */
+  .map-painel ~ .map-legend-bar {
+    display: none;
+  }
+  .map-painel {
+    top: auto;
+    right: 8px;
+    left: 8px;
+    bottom: 64px;
+    width: auto;
+    max-height: 38%;
+  }
+}

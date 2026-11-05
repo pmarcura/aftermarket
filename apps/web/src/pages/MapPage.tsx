@@ -1,9 +1,6 @@
 import { useMemo, useState } from 'react';
 import {
-  ChevronDown,
-  ChevronUp,
   X,
-  MapPin,
   Zap,
   Droplets,
   Users,
@@ -11,9 +8,7 @@ import {
   ShoppingCart,
   BarChart3,
   Route,
-  Layers3,
   Building2,
-  Mountain,
   Check,
   ArrowLeft,
   ArrowUpRight,
@@ -30,6 +25,7 @@ import { matizDaCategoria } from '../features/business/producao/pecas';
 import {
   categoryInfo,
   products,
+  seasonProducts,
   type Category,
   type Property,
 } from '../../../../packages/simulation/src/model';
@@ -45,6 +41,15 @@ import '../design/mapa.css';
 import { usePendencias } from '../features/inicio/pendencias';
 import { estadoDoNegocio } from '../features/business/BusinessCards';
 import { CidadePainel } from '../features/mapa/CidadePainel';
+import {
+  BarraDeModos,
+  LegendaDoModo,
+  PainelDeFluxos,
+  PainelDeProduto,
+  type Modo,
+} from '../features/mapa/ModosDoMapa';
+import type { OpcoesDeFluxo } from '../features/mapa/fluxos';
+import type { ProductId } from '../../../../packages/simulation/src/model';
 
 const spritePorCategoria: Record<Category, Sprite> = {
   retail: 'loja',
@@ -78,11 +83,34 @@ function AccessNotice({ property, strict }: { property: Property; strict?: boole
 export function MapPage() {
   const { world, actor, selectedId, select, navigate, openBusiness, openMarket, focusMap } =
     useGame();
-  const [layers, setLayers] = useState<Layers>(defaultLayers),
-    [expanded, setExpanded] = useState(false);
-  const [ownership, setOwnership] = useState<'' | 'mine' | 'others' | 'available'>(''),
-    [details, setDetails] = useState(false),
+  // Um modo por vez decide o que o mapa destaca; "Meus negócios" filtra por cima de qualquer modo.
+  const [modo, setModo] = useState<Modo>('negocios'),
+    [soMeus, setSoMeus] = useState(false),
+    [fluxo, setFluxo] = useState<OpcoesDeFluxo>({ sentido: 'todos', produto: null }),
+    [produtoDaCidade, setProdutoDaCidade] = useState<ProductId | null>(null);
+  const [details, setDetails] = useState(false),
     [cidade, setCidade] = useState<string | null>(null);
+  const ownership: '' | 'mine' | 'available' =
+    modo === 'terrenos' ? 'available' : soMeus ? 'mine' : '';
+  const layers: Layers = {
+    ...defaultLayers,
+    available: modo !== 'fluxos',
+    zoning: modo === 'zonas',
+  };
+  // Demanda e Preços mostram placas por cidade (o preço precisa de um produto)
+  const produtoDoPreco =
+    produtoDaCidade ?? (seasonProducts(world).includes('rice') ? 'rice' : seasonProducts(world)[0]);
+  const economico =
+    modo === 'precos'
+      ? { metric: 'price' as const, product: produtoDoPreco }
+      : modo === 'demanda'
+        ? { metric: 'demand' as const, product: produtoDaCidade ?? undefined }
+        : undefined;
+  const mudarModo = (m: Modo) => {
+    setModo(m);
+    if (m === 'terrenos' && p?.ownerId) select(null);
+    if ((m === 'demanda' || m === 'precos') && p) select(null);
+  };
   const p = world.properties.find((x) => x.id === selectedId),
     e = world.establishments.find((x) => x.propertyId === selectedId);
   const owner = world.companies.find((c) => c.id === p?.ownerId);
@@ -129,20 +157,6 @@ export function MapPage() {
     }
     return { titulo: unidade.name, linhas };
   };
-  const layerList: { key: keyof Layers; label: string; icon: typeof Building2 }[] = [
-    { key: 'companies', label: 'Empresas construídas', icon: Building2 },
-    { key: 'available', label: 'Terrenos à venda', icon: MapPin },
-    { key: 'resources', label: 'Fazendas e minas', icon: Mountain },
-    { key: 'routes', label: 'Cargas na estrada', icon: Route },
-    { key: 'demand', label: 'Calor de consumo', icon: Users },
-    { key: 'zoning', label: 'Lotes e cercas', icon: Layers3 },
-  ];
-  const filtros: [typeof ownership, string][] = [
-    ['', 'Tudo no mapa'],
-    ['mine', 'Meus negócios'],
-    ['available', 'Terrenos à venda'],
-    ['others', 'Outras empresas'],
-  ];
   const sprite: Sprite | undefined = p
     ? e
       ? spriteDoNegocio(e, world)
@@ -156,6 +170,8 @@ export function MapPage() {
           layers={layers}
           onSelect={select}
           ownership={ownership}
+          economic={economico}
+          fluxos={modo === 'fluxos' ? { ...fluxo, soMeus } : null}
           alerts={alerts}
           hoverCard={hoverCard}
           onCitySelect={(id) => {
@@ -164,72 +180,25 @@ export function MapPage() {
           }}
         />
         <div className="map-hud-top">
-          <div className="map-filter-bar" role="group" aria-label="Filtrar mapa">
-            {filtros.map(([id, rotulo]) => (
-              <button
-                key={id || 'all'}
-                type="button"
-                className={ownership === id ? 'on' : ''}
-                aria-pressed={ownership === id}
-                onClick={() => {
-                  setOwnership(id);
-                  if (id === 'mine' && p?.ownerId !== actor) select(null);
-                  if (id === 'available' && p?.ownerId) select(null);
-                  if (id === 'others' && (!p?.ownerId || p.ownerId === actor)) select(null);
-                }}
-              >
-                {rotulo}
-              </button>
-            ))}
-          </div>
-          <div className="map-layers-box">
-            <button
-              type="button"
-              className="map-layers-btn"
-              onClick={() => setExpanded(!expanded)}
-              aria-expanded={expanded}
-            >
-              <Layers3 size={15} /> Camadas{' '}
-              {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-            </button>
-            {expanded && (
-              <div className="map-layers-menu">
-                {layerList.map((l) => (
-                  <label key={l.key}>
-                    <l.icon size={15} />
-                    <span>{l.label}</span>
-                    <input
-                      type="checkbox"
-                      role="switch"
-                      checked={layers[l.key]}
-                      onChange={(event) => setLayers({ ...layers, [l.key]: event.target.checked })}
-                    />
-                  </label>
-                ))}
-              </div>
-            )}
-          </div>
+          <BarraDeModos
+            modo={modo}
+            aoMudar={mudarModo}
+            soMeus={soMeus}
+            aoSoMeus={(v) => {
+              setSoMeus(v);
+              if (v && p && p.ownerId !== actor) select(null);
+            }}
+          />
         </div>
-        <div className="map-legend-bar" aria-label="Legenda do mapa">
-          {(['farm', 'mine', 'industry', 'retail', 'logistics'] as const).map((c) => (
-            <span key={c}>
-              <i style={{ background: categoryInfo[c].color }} />
-              {categoryInfo[c].label}
-            </span>
-          ))}
-          <span>
-            <i className="livre" />
-            Terreno livre
-          </span>
-          <span>
-            <i className="alerta-brasa" />
-            Precisa de você
-          </span>
-          <span>
-            <i className="alerta-ouro" />
-            Atenção
-          </span>
-        </div>
+        {!p && !cidade && modo === 'fluxos' && <PainelDeFluxos opcoes={fluxo} aoMudar={setFluxo} />}
+        {!p && !cidade && (modo === 'demanda' || modo === 'precos') && (
+          <PainelDeProduto
+            modo={modo}
+            produto={modo === 'precos' ? produtoDoPreco : produtoDaCidade}
+            aoMudar={setProdutoDaCidade}
+          />
+        )}
+        <LegendaDoModo modo={modo} />
       </div>
 
       {cidade && !p && <CidadePainel regionId={cidade} onClose={() => setCidade(null)} />}

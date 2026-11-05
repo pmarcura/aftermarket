@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createWorld } from '../packages/simulation/src/seed';
-import type { Shipment, World } from '../packages/simulation/src/model';
+import type { Property, Shipment, World } from '../packages/simulation/src/model';
+import { precoCurto, zoomDoTerreno } from '../apps/web/src/features/mapa/terreno';
 import {
   cadeiaDo,
   cargasDoFluxo,
@@ -96,5 +97,21 @@ describe('fluxo de recursos no mapa', () => {
     expect(cadeiaDo('milk')).toBe('alimentos');
     expect(espessura(10, 10)).toBeGreaterThan(espessura(1, 10));
     expect(espessura(0, 10)).toBe(2);
+  });
+});
+
+describe('terreno no mapa', () => {
+  it('preço curto na etiqueta (recebe centavos)', () => {
+    expect(precoCurto(18_500_000)).toBe('R$ 185 mil');
+    expect(precoCurto(120_000_000)).toBe('R$ 1,2 mi');
+    expect(precoCurto(90_000)).toBe('R$ 900');
+  });
+
+  it('zoom do atalho: loja de bem perto, fazenda de mais longe, dentro dos limites', () => {
+    const lote = (area: number) => ({ area }) as Property;
+    expect(zoomDoTerreno(lote(600))).toBeCloseTo(17.6, 5);
+    expect(zoomDoTerreno(lote(14_400))).toBeCloseTo(15.6, 1);
+    expect(zoomDoTerreno(lote(4_800_000))).toBe(14.5);
+    expect(zoomDoTerreno(lote(100))).toBe(17.6);
   });
 });

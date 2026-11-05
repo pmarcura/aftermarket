@@ -12,7 +12,7 @@ A pasta foi limpa: sem cópias antigas do mundo, sem processo antigo de specs e 
 
 - Mapa real do Centro-Sul do Brasil em pixel art, com cidades clicáveis e etiquetas com o nome dos negócios (D-044).
 - Prédios reais da cidade em 3D e negócios em 3D que crescem por nível, em lugares reais do mapa (`npm run lugares:sync`); vitrine dos modelos em `/modelos`.
-- Barra de modos no mapa: Negócios, Fluxos (cargas na estrada), Demanda, Preços, Terrenos à venda e Zonas.
+- Barra de modos no mapa: Negócios, Fluxos (cargas na estrada), Demanda, Preços, Terrenos à venda e Zonas. Atalho para os negócios do jogador, preço nos terrenos à venda e zonas reais do mapa.
 - Compra de imóveis, produção, estoque físico, mercado com negociação, frota e finanças com crédito.
 - Empresas-bot usando os mesmos comandos dos jogadores; uma única economia (D-042) com começo enxuto (loja vazia e R$ 1 milhão).
 - Telas Início, Loja e Negócios na direção Livro-caixa; diário que grava só o que mudou a cada clique.

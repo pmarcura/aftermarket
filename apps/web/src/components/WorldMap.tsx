@@ -30,6 +30,7 @@ import {
   centroDoTerreno,
   contornoDoTerreno,
   ladoDoTerreno,
+  precoCurto,
 } from '../features/mapa/terreno';
 import { positionAlongRoute, routeLengths } from '../../../../packages/simulation/src/geometry';
 import { shipmentRoadPath, shipmentRoute } from '../../../../packages/simulation/src/road-path';
@@ -302,6 +303,7 @@ export function WorldMap({
   hoverCard,
   onCitySelect,
   fluxos,
+  alvo,
 }: {
   mini?: boolean;
   propertyId?: string;
@@ -328,6 +330,8 @@ export function WorldMap({
   onCitySelect?: (regionId: string) => void;
   /** Modo Fluxos: cargas na estrada por trajeto, cor da cadeia e espessura pelo peso. */
   fluxos?: OpcoesDeFluxo | null;
+  /** Leva a câmera até um ponto; um novo `pedido` repete o voo para o mesmo lugar. */
+  alvo?: { coordenadas: Position; zoom: number; pedido: number } | null;
 }) {
   const { world, actor, selectedId, select, focus, consumeFocus } = useGame();
   const container = useRef<HTMLDivElement>(null),
@@ -721,7 +725,7 @@ export function WorldMap({
             [
               'case',
               ['get', 'selected'],
-              0.45,
+              ['case', ['get', 'built'], 0, 0.45],
               ['all', ['get', 'own'], ['!', ['get', 'built']]],
               0.25,
               0,
@@ -825,6 +829,21 @@ export function WorldMap({
           filter: ['all', ['!', ['has', 'point_count']], ['get', 'built'], ['get', 'own']],
           layout: { ...etiqueta, 'icon-allow-overlap': true },
         });
+        // Preço embaixo de cada terreno à venda (só no modo Terrenos), sem se sobrepor.
+        instance.addLayer({
+          id: 'nomes-terrenos',
+          type: 'symbol',
+          source: 'properties',
+          minzoom: 8,
+          filter: ['all', ['!', ['has', 'point_count']], ['get', 'available']],
+          layout: {
+            ...etiqueta,
+            'icon-offset': [0, 12],
+            'icon-allow-overlap': false,
+            'icon-padding': 2,
+            visibility: 'none',
+          },
+        });
       }
       if (!mini) {
         // Negócios construídos em 3D, por baixo dos halos e ícones de seleção.
@@ -918,7 +937,14 @@ export function WorldMap({
     const key = JSON.stringify([
       visible.map((p) => {
         const e = unidades.get(p.id);
-        return [p.id, p.ownerId, p.area, alerts?.[p.id] ?? '', e ? estagioDoNegocio(e) : ''];
+        return [
+          p.id,
+          p.ownerId,
+          p.area,
+          p.ownerId ? 0 : p.price,
+          alerts?.[p.id] ?? '',
+          e ? estagioDoNegocio(e) : '',
+        ];
       }),
       selectedProperty,
       layers.zoning,
@@ -958,17 +984,18 @@ export function WorldMap({
           : [];
       }),
     });
-    // imagens das etiquetas com o nome (só dos negócios construídos)
+    // imagens das etiquetas: nome dos negócios construídos e preço dos terrenos à venda
     const etiquetas = new Map<string, string>();
     if (!mini)
       for (const p of visible) {
         const u = unidades.get(p.id);
-        if (!u) continue;
+        const texto = u ? u.name : !p.ownerId ? precoCurto(p.price) : null;
+        if (!texto) continue;
         const proprio = p.ownerId === actor;
-        const chave = chaveDaEtiqueta(p.id, u.name, proprio);
+        const chave = chaveDaEtiqueta(p.id, texto, proprio);
         etiquetas.set(p.id, chave);
         if (!m.hasImage(chave))
-          m.addImage(chave, etiquetaDoNegocio(u.name, categoryInfo[p.category].color, proprio), {
+          m.addImage(chave, etiquetaDoNegocio(texto, categoryInfo[p.category].color, proprio), {
             pixelRatio: 2,
           });
       }
@@ -1390,6 +1417,21 @@ export function WorldMap({
     economic?.state,
     world.revision,
   ]);
+  // Modo Zonas liga as zonas reais; modo Terrenos liga o preço embaixo dos terrenos.
+  useEffect(() => {
+    const m = map.current;
+    if (!m || !ready || mini) return;
+    const mostrar = (id: string, sim: boolean) => {
+      if (m.getLayer(id)) m.setLayoutProperty(id, 'visibility', sim ? 'visible' : 'none');
+    };
+    for (const id of ['zonas-lavoura', 'zonas-uso', 'zonas-contorno']) mostrar(id, layers.zoning);
+    mostrar('nomes-terrenos', ownership === 'available');
+  }, [ready, mini, layers.zoning, ownership]);
+  useEffect(() => {
+    if (ready && alvo && !mini)
+      map.current?.flyTo({ center: alvo.coordenadas, zoom: alvo.zoom, duration: 1100 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, mini, alvo?.pedido]);
   useEffect(() => {
     if (ready && focus && !mini) {
       map.current?.flyTo({ center: focus, zoom: 11, duration: 900 });

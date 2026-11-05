@@ -1,6 +1,6 @@
 /**
  * Controles do mapa num lugar só: a barra de modos (o que o mapa destaca), o "só os meus",
- * o painel do modo (fluxos, demanda e preços) e a legenda que muda com o modo.
+ * o painel do modo (fluxos, demanda, preços e os seus negócios) e a legenda que muda com o modo.
  */
 import {
   Building2,
@@ -22,6 +22,8 @@ import {
   type ProductId,
 } from '../../../../../packages/simulation/src/model';
 import { useGame } from '../../lib/game';
+import { CORES_DAS_ZONAS } from '../../lib/map-style';
+import { estadoDoNegocio } from '../business/BusinessCards';
 import {
   cargasDoFluxo,
   COR_DA_CADEIA,
@@ -40,7 +42,7 @@ export const MODOS: { id: Modo; nome: string; icone: typeof Building2; dica: str
   { id: 'demanda', nome: 'Demanda', icone: Users, dica: 'Quanto cada cidade consome' },
   { id: 'precos', nome: 'Preços', icone: CircleDollarSign, dica: 'Preço de um produto por cidade' },
   { id: 'terrenos', nome: 'Terrenos à venda', icone: MapPin, dica: 'Onde dá para comprar' },
-  { id: 'zonas', nome: 'Zonas', icone: Layers3, dica: 'Lotes e zonas da cidade' },
+  { id: 'zonas', nome: 'Zonas', icone: Layers3, dica: 'Onde é comércio, indústria e lavoura' },
 ];
 
 export function BarraDeModos({
@@ -84,6 +86,73 @@ export function BarraDeModos({
         <span>Meus negócios</span>
       </button>
     </div>
+  );
+}
+
+/**
+ * Atalho para os seus negócios (com "Meus negócios" ligado): os que precisam de você primeiro.
+ * Um toque leva a câmera até o negócio e abre os detalhes dele.
+ */
+export function PainelDosMeus({
+  alertas,
+  aoIr,
+  aoVerTerrenos,
+}: {
+  alertas: Record<string, 'brasa' | 'ouro'>;
+  aoIr: (propertyId: string) => void;
+  aoVerTerrenos: () => void;
+}) {
+  const { world, actor } = useGame();
+  const peso = (id: string) => (alertas[id] === 'brasa' ? 0 : alertas[id] === 'ouro' ? 1 : 2);
+  const meus = world.establishments
+    .filter((e) => e.companyId === actor)
+    .sort(
+      (a, b) => peso(a.propertyId) - peso(b.propertyId) || a.name.localeCompare(b.name, 'pt-BR'),
+    );
+  const pedem = meus.filter((e) => alertas[e.propertyId]).length;
+  return (
+    <aside className="map-painel" aria-label="Seus negócios">
+      <header>
+        <h2>Seus negócios</h2>
+        <p>
+          {meus.length} {meus.length === 1 ? 'negócio' : 'negócios'}
+          {pedem > 0 ? ` · ${pedem} ${pedem === 1 ? 'pede' : 'pedem'} atenção` : ''}
+        </p>
+      </header>
+      {meus.length === 0 ? (
+        <>
+          <p className="map-painel-vazio">Você ainda não tem negócios no mapa.</p>
+          <button type="button" className="map-painel-limpar" onClick={aoVerTerrenos}>
+            <MapPin size={14} aria-hidden="true" /> Ver terrenos à venda
+          </button>
+        </>
+      ) : (
+        <ul className="map-painel-lista">
+          {meus.map((e) => {
+            const lote = world.properties.find((p) => p.id === e.propertyId);
+            const alerta = alertas[e.propertyId];
+            return (
+              <li key={e.id}>
+                <button type="button" className="map-meu" onClick={() => aoIr(e.propertyId)}>
+                  <i style={{ background: categoryInfo[e.category].color }} aria-hidden="true" />
+                  <span className="map-painel-nome">{e.name}</span>
+                  <span className="map-meu-sub">
+                    {lote?.city ?? categoryInfo[e.category].label} ·{' '}
+                    {estadoDoNegocio(world, e).texto}
+                  </span>
+                  {alerta && (
+                    <b
+                      className={`map-meu-alerta ${alerta}`}
+                      title={alerta === 'brasa' ? 'Precisa de você' : 'Atenção'}
+                    />
+                  )}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </aside>
   );
 }
 
@@ -277,10 +346,36 @@ export function LegendaDoModo({ modo }: { modo: Modo }) {
             : 'Cada placa mostra o consumo da cidade · maior = mais procura'}
         </span>
       ) : modo === 'terrenos' ? (
-        <span>
-          <i className="livre" />
-          Terreno livre: toque para ver preço e o que dá para construir
-        </span>
+        <>
+          <span>A etiqueta mostra o preço; toque para ver o que dá para construir</span>
+          {(['farm', 'mine', 'industry', 'retail', 'warehouse', 'logistics'] as const).map((c) => (
+            <span key={c} className="map-legenda-tipo">
+              <i style={{ background: categoryInfo[c].color }} />
+              {categoryInfo[c].label}
+            </span>
+          ))}
+        </>
+      ) : modo === 'zonas' ? (
+        <>
+          {(
+            [
+              ['comercio', 'Comércio'],
+              ['industria', 'Indústria, armazéns e pátios'],
+              ['lavoura', 'Lavoura'],
+              ['mineracao', 'Mineração'],
+              ['bairro', 'Bairro'],
+            ] as const
+          ).map(([z, nome]) => (
+            <span key={z}>
+              <i style={{ background: CORES_DAS_ZONAS[z] }} />
+              {nome}
+            </span>
+          ))}
+          <span className="map-legenda-nota">
+            Só o que o mapa marca: onde a cidade não tem a zona, o negócio fica na área mais
+            parecida
+          </span>
+        </>
       ) : (
         <>
           {(['farm', 'mine', 'industry', 'retail', 'warehouse', 'logistics'] as const).map((c) => (

@@ -196,6 +196,38 @@ export const PALETA = {
   contornoCidade: '#8a7d62',
 } as const;
 
+/** Cores do modo Zonas (legenda e mapa usam as mesmas). */
+export const CORES_DAS_ZONAS = {
+  comercio: '#e8894a',
+  industria: '#9c7fa6',
+  lavoura: '#e6c45a',
+  mineracao: '#8a5a3a',
+  bairro: '#f3e7cc',
+} as const;
+
+const CLASSES_DE_LAVOURA = ['farmland', 'farmyard'];
+const CLASSES_DE_BAIRRO = ['residential', 'suburb', 'neighbourhood'];
+const FILTRO_DE_ZONAS: FilterSpecification = [
+  'match',
+  ['get', 'class'],
+  ['commercial', 'retail', 'industrial', 'quarry', ...CLASSES_DE_LAVOURA, ...CLASSES_DE_BAIRRO],
+  true,
+  false,
+];
+const COR_POR_ZONA: ExpressionSpecification = [
+  'match',
+  ['get', 'class'],
+  ['commercial', 'retail'],
+  CORES_DAS_ZONAS.comercio,
+  'industrial',
+  CORES_DAS_ZONAS.industria,
+  'quarry',
+  CORES_DAS_ZONAS.mineracao,
+  CLASSES_DE_LAVOURA,
+  CORES_DAS_ZONAS.lavoura,
+  CORES_DAS_ZONAS.bairro,
+];
+
 /** Mapa do jogo: cidade de brinquedo sobre a geografia real (OpenStreetMap).
  * De longe, campo, mata, água e estradas; de perto, o contorno dos prédios reais.
  * Estilo local e enxuto: sem estilo remoto, rótulos, sprites ou fontes. */
@@ -259,6 +291,41 @@ export function createMapStyle(): StyleSpecification {
             PALETA.bairro,
           ],
           'fill-opacity': ['interpolate', ['linear'], ['zoom'], 9, 0.5, 12, 0.85, 14, 1],
+        },
+      },
+      // Modo Zonas: as mesmas zonas reais que o algoritmo de lugares usa, em cores fortes.
+      // Ficam escondidas fora desse modo (WorldMap liga e desliga).
+      {
+        id: 'zonas-lavoura',
+        type: 'fill',
+        source: 'openmaptiles',
+        'source-layer': 'landcover',
+        minzoom: 7,
+        layout: { visibility: 'none' },
+        filter: ['==', ['get', 'class'], 'farmland'],
+        paint: { 'fill-color': CORES_DAS_ZONAS.lavoura, 'fill-opacity': 0.85 },
+      },
+      {
+        id: 'zonas-uso',
+        type: 'fill',
+        source: 'openmaptiles',
+        'source-layer': 'landuse',
+        minzoom: 7,
+        layout: { visibility: 'none' },
+        filter: FILTRO_DE_ZONAS,
+        paint: { 'fill-color': COR_POR_ZONA, 'fill-opacity': 0.85 },
+      },
+      {
+        id: 'zonas-contorno',
+        type: 'line',
+        source: 'openmaptiles',
+        'source-layer': 'landuse',
+        minzoom: 9,
+        layout: { visibility: 'none' },
+        filter: FILTRO_DE_ZONAS,
+        paint: {
+          'line-color': '#3a3226',
+          'line-width': ['interpolate', ['linear'], ['zoom'], 9, 0.6, 14, 1.6],
         },
       },
       {

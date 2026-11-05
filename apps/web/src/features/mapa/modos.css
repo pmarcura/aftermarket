@@ -1,4 +1,7 @@
 /* Barra de modos e painel do modo, na mesma chapa escura com sombra dura da identidade. */
+.main-map {
+  container: mapa / inline-size;
+}
 .map-modos {
   display: inline-flex;
   flex-wrap: wrap;
@@ -51,11 +54,12 @@
 /* Painel do modo: à direita, sobre o mapa, sem esconder os controles de zoom */
 .map-painel {
   position: absolute;
-  top: 14px;
+  /* abaixo da barra de modos: em janelas estreitas os dois disputariam o mesmo espaço */
+  top: 66px;
   right: 64px;
   z-index: 5;
   width: 276px;
-  max-height: calc(100% - 92px);
+  max-height: calc(100% - 144px);
   overflow-y: auto;
   overflow-x: hidden;
   display: flex;
@@ -223,6 +227,60 @@
     right: 8px;
     left: 8px;
     bottom: 64px;
+    width: auto;
+    max-height: 38%;
+  }
+}
+
+/* Linha de um negócio seu: faixa na cor do tipo, nome, cidade e estado, alerta à direita */
+.map-painel-lista button.map-meu {
+  grid-template-columns: 7px 1fr 12px;
+  grid-template-rows: auto auto;
+  column-gap: 9px;
+  row-gap: 2px;
+  padding: 8px;
+}
+.map-meu > i {
+  grid-row: 1 / span 2;
+  align-self: stretch;
+}
+.map-meu .map-painel-nome {
+  grid-column: 2;
+}
+.map-meu-sub {
+  grid-column: 2;
+  grid-row: 2;
+  font: 500 12px/1.3 var(--fonte);
+  color: var(--apagado);
+}
+.map-meu-alerta {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  align-self: center;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--noite-funda);
+}
+.map-meu-alerta.brasa {
+  background: #e4572e;
+}
+.map-meu-alerta.ouro {
+  background: var(--ouro);
+}
+.map-legend-bar .map-legenda-nota {
+  flex-basis: 100%;
+  font-weight: 500;
+  color: var(--apagado);
+}
+
+/* Mapa estreito (a barra de modos quebra em duas linhas): painel no pé, sem cobrir a barra */
+@container mapa (max-width: 870px) {
+  .map-painel {
+    top: auto;
+    right: 8px;
+    left: 8px;
+    bottom: 84px; /* acima da legenda, que aqui ocupa até duas linhas */
     width: auto;
     max-height: 38%;
   }

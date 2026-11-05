@@ -98,12 +98,60 @@ test('modos do mapa: fluxos de recursos e preços por cidade', async ({ page }) 
   await expect(precos.getByRole('button', { pressed: true })).toHaveCount(1);
   await expect(page.locator('.main-map .maplibregl-marker').first()).toBeVisible();
 
-  // Meus negócios filtra por cima do modo e volta
+  // Terrenos à venda: o preço aparece numa etiqueta, com camada própria ligada só neste modo
+  await modos.getByRole('button', { name: 'Terrenos à venda', exact: true }).click();
+  await expect(page.locator('.map-legend-bar')).toContainText('A etiqueta mostra o preço');
+  const terrenos = await page.evaluate(async () => {
+    const m = (window as unknown as { aftermarketMap?: maplibregl.Map }).aftermarketMap!;
+    const dados = (await (
+      m.getSource('properties') as maplibregl.GeoJSONSource
+    ).getData()) as unknown as {
+      features: { properties: { available: boolean; etiqueta: string } }[];
+    };
+    return {
+      visivel: m.getLayoutProperty('nomes-terrenos', 'visibility'),
+      todosComEtiqueta: dados.features.every(
+        (f) => f.properties.available && m.hasImage(f.properties.etiqueta),
+      ),
+    };
+  });
+  expect(terrenos).toEqual({ visivel: 'visible', todosComEtiqueta: true });
+
+  // Zonas: as zonas reais ligam neste modo e desligam ao sair
+  const zonas = () =>
+    page.evaluate(() => {
+      const m = (window as unknown as { aftermarketMap?: maplibregl.Map }).aftermarketMap!;
+      return ['zonas-uso', 'zonas-lavoura', 'zonas-contorno'].map((id) =>
+        m.getLayoutProperty(id, 'visibility'),
+      );
+    });
+  await modos.getByRole('button', { name: 'Zonas', exact: true }).click();
+  await expect(page.locator('.map-legend-bar')).toContainText('Indústria, armazéns e pátios');
+  await expect.poll(zonas).toEqual(['visible', 'visible', 'visible']);
+
+  // Meus negócios: lista com atalho que leva a câmera até o negócio e abre os detalhes
   await modos.getByRole('button', { name: 'Negócios', exact: true }).click();
+  await expect.poll(zonas).toEqual(['none', 'none', 'none']);
   await modos.getByRole('button', { name: 'Meus negócios' }).click();
   await expect(modos.getByRole('button', { name: 'Meus negócios' })).toHaveAttribute(
     'aria-pressed',
     'true',
   );
+  const meus = page.getByRole('complementary', { name: 'Seus negócios' });
+  await expect(meus).toBeVisible();
+  // o painel não cobre a barra de modos: o botão continua clicável
+  await expect(modos.getByRole('button', { name: 'Meus negócios' })).toBeVisible();
+  await meus.getByRole('button', { name: new RegExp(loja.name) }).click();
+  await expect(page.getByRole('complementary', { name: 'Detalhes do imóvel' })).toContainText(
+    loja.name,
+  );
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const m = (window as unknown as { aftermarketMap?: maplibregl.Map }).aftermarketMap!;
+        return m.getZoom();
+      }),
+    )
+    .toBeGreaterThan(15);
   expect(errors).toEqual([]);
 });

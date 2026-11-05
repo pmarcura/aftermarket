@@ -27,6 +27,7 @@ import {
   products,
   seasonProducts,
   type Category,
+  type Position,
   type Property,
 } from '../../../../packages/simulation/src/model';
 import { hasRoadAccess } from '../../../../packages/simulation/src/road-access';
@@ -46,9 +47,11 @@ import {
   LegendaDoModo,
   PainelDeFluxos,
   PainelDeProduto,
+  PainelDosMeus,
   type Modo,
 } from '../features/mapa/ModosDoMapa';
 import type { OpcoesDeFluxo } from '../features/mapa/fluxos';
+import { centroDoTerreno, zoomDoTerreno } from '../features/mapa/terreno';
 import type { ProductId } from '../../../../packages/simulation/src/model';
 
 const spritePorCategoria: Record<Category, Sprite> = {
@@ -87,7 +90,10 @@ export function MapPage() {
   const [modo, setModo] = useState<Modo>('negocios'),
     [soMeus, setSoMeus] = useState(false),
     [fluxo, setFluxo] = useState<OpcoesDeFluxo>({ sentido: 'todos', produto: null }),
-    [produtoDaCidade, setProdutoDaCidade] = useState<ProductId | null>(null);
+    [produtoDaCidade, setProdutoDaCidade] = useState<ProductId | null>(null),
+    [alvo, setAlvo] = useState<{ coordenadas: Position; zoom: number; pedido: number } | null>(
+      null,
+    );
   const [details, setDetails] = useState(false),
     [cidade, setCidade] = useState<string | null>(null);
   const ownership: '' | 'mine' | 'available' =
@@ -172,6 +178,7 @@ export function MapPage() {
           ownership={ownership}
           economic={economico}
           fluxos={modo === 'fluxos' ? { ...fluxo, soMeus } : null}
+          alvo={alvo}
           alerts={alerts}
           hoverCard={hoverCard}
           onCitySelect={(id) => {
@@ -190,6 +197,22 @@ export function MapPage() {
             }}
           />
         </div>
+        {!p && !cidade && modo === 'negocios' && soMeus && (
+          <PainelDosMeus
+            alertas={alerts}
+            aoVerTerrenos={() => mudarModo('terrenos')}
+            aoIr={(id) => {
+              const lote = world.properties.find((x) => x.id === id);
+              if (!lote) return;
+              setAlvo({
+                coordenadas: centroDoTerreno(lote),
+                zoom: zoomDoTerreno(lote),
+                pedido: (alvo?.pedido ?? 0) + 1,
+              });
+              select(id);
+            }}
+          />
+        )}
         {!p && !cidade && modo === 'fluxos' && <PainelDeFluxos opcoes={fluxo} aoMudar={setFluxo} />}
         {!p && !cidade && (modo === 'demanda' || modo === 'precos') && (
           <PainelDeProduto

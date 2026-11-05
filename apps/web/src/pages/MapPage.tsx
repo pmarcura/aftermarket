@@ -43,7 +43,7 @@ import {
 import { InfrastructureDetails } from '../components/InfrastructureDetails';
 import '../design/mapa.css';
 import { usePendencias } from '../features/inicio/pendencias';
-import { estadoDe } from '../features/business/BusinessCards';
+import { estadoDoNegocio } from '../features/business/BusinessCards';
 import { CidadePainel } from '../features/mapa/CidadePainel';
 
 const spritePorCategoria: Record<Category, Sprite> = {
@@ -118,7 +118,7 @@ export function MapPage() {
       `${dono.id === actor ? 'Seu negócio' : dono.name} · ${receita?.name ?? categoryInfo[unidade.category].label}`,
     ];
     if (dono.id === actor) {
-      linhas.push(estadoDe(unidade).label);
+      linhas.push(estadoDoNegocio(world, unidade).texto);
       for (const m of motivos[id] ?? []) linhas.push(m);
     } else {
       const vende = world.offers

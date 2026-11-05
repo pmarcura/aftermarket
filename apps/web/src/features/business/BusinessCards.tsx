@@ -48,7 +48,7 @@ export function urgenciaDe(e: Establishment, alerta?: Pendencia) {
 }
 
 /** Uma palavra de estado: o que o negócio está fazendo agora. */
-function estadoDoNegocio(world: World, e: Establishment): { tom: Tom; texto: string } {
+export function estadoDoNegocio(world: World, e: Establishment): { tom: Tom; texto: string } {
   if (e.installed === false) return { tom: 'ouro', texto: 'Falta instalar' };
   if (e.mothballed) return { tom: 'ouro', texto: 'Suspenso' };
   if (!e.enabled) return { tom: 'ouro', texto: 'Pausado' };

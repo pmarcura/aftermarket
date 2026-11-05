@@ -174,7 +174,10 @@ test('cidade de perto: prédios viram peças do pacote numa camada de símbolos'
       camada: Boolean(m.getLayer('town-buildings')),
       pontos: m.getSource('town-buildings') ? m.querySourceFeatures('town-buildings').length : 0,
       predios: m.querySourceFeatures('openmaptiles', { sourceLayer: 'building' }).length,
-      rendered: m.queryRenderedFeatures(undefined, { layers: ['town-buildings'] }).length,
+      // Sem as peças do pacote (fora do Git), a camada não existe; não consultar o que não existe.
+      rendered: m.getLayer('town-buildings')
+        ? m.queryRenderedFeatures(undefined, { layers: ['town-buildings'] }).length
+        : 0,
     };
   });
   await page.screenshot({ path: 'test-results/mapa-vivo-cidade-perto.png' });

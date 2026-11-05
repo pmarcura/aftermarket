@@ -283,13 +283,13 @@ export function LegendaDoModo({ modo }: { modo: Modo }) {
         </span>
       ) : (
         <>
-          {(['farm', 'mine', 'industry', 'retail', 'logistics'] as const).map((c) => (
-            <span key={c}>
+          {(['farm', 'mine', 'industry', 'retail', 'warehouse', 'logistics'] as const).map((c) => (
+            <span key={c} className="map-legenda-tipo">
               <i style={{ background: categoryInfo[c].color }} />
               {categoryInfo[c].label}
             </span>
           ))}
-          <span>
+          <span className="map-legenda-tipo">
             <i className="livre" />
             Terreno livre
           </span>

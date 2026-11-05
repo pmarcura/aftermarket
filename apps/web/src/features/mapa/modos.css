@@ -206,6 +206,14 @@
   .map-modos button span {
     display: none;
   }
+  /* sete ícones cabem numa linha, ao lado do zoom */
+  .map-modos button {
+    padding: 0 10px;
+  }
+  /* no celular a legenda fica só com os alertas: os tipos já têm desenho e etiqueta */
+  .map-legenda-tipo {
+    display: none !important;
+  }
   /* com painel aberto, a legenda sai no celular para não cobrir a lista */
   .map-painel ~ .map-legend-bar {
     display: none;

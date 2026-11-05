@@ -15,7 +15,7 @@ const cenas = [
 // deixa a interface legível no tamanho do aparelho da landing.
 const aparelhos = [
   { sufixo: 'pc', largura: 1360, altura: 933, recorteTopo: 73 },
-  { sufixo: 'cel', largura: 390, altura: 844, recorteTopo: 0 },
+  { sufixo: 'cel', largura: 390, altura: 844, recorteTopo: 66 },
 ] as const;
 
 async function abrir(page: Page, pagina: string, espera: string) {
@@ -44,8 +44,14 @@ for (const a of aparelhos)
       viewport: { width: a.largura, height: a.altura },
       deviceScaleFactor: 2,
     });
-    await abrir(page, c.pagina, c.espera);
     const arquivo = `${destino}/tela-${c.nome}-${a.sufixo}.jpg`;
+    try {
+      await abrir(page, c.pagina, c.espera);
+    } catch {
+      console.log(`ignorada (tela não apareceu): ${arquivo}`);
+      await page.close();
+      continue;
+    }
     await page.screenshot({
       path: arquivo,
       type: 'jpeg',

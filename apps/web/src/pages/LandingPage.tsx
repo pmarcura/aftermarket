@@ -397,9 +397,9 @@ export function LandingPage() {
           <figure className="landing-assinatura">
             <img src="/arte/marca-logo.png" alt="" width="104" height="60" />
             <figcaption>
-              <span>Um jogo de</span>
-              <b>Pedro Marçura</b>
-              <span>Criação e design</span>
+              <span>Um projeto</span>
+              <b>Aftermarket</b>
+              <span>Em desenvolvimento</span>
             </figcaption>
             <svg viewBox="0 0 120 12" aria-hidden="true" shapeRendering="crispEdges">
               <path d="M0 8h10V6h12v2h14V4h10v4h18V6h16v2h12V5h10v3h18v2H0z" />
@@ -463,7 +463,7 @@ export function LandingPage() {
         <a href="#" aria-label="AFTERMARKET, voltar ao início">
           AFTERMARKET//
         </a>
-        <span>© 2026 Pedro Marçura · Projeto em desenvolvimento</span>
+        <span>© 2026 AFTERMARKET · Projeto em desenvolvimento</span>
         <a href="/jogar">
           Vamos jogar <span aria-hidden="true">↗</span>
         </a>

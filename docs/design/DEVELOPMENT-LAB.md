@@ -57,5 +57,3 @@ O cache usa a impressão digital das fontes de `packages/simulation` e `packages
 ## Verificação
 
 `npm run check` cobre build, testes unitários (incluindo `tests/lab*.test.ts`) e `resources:check`. O teste de navegador da bancada está em `tests/e2e/lab.spec.ts` e roda com `npm run test:e2e` em Chromium, sem rede externa. Nenhuma dependência nova foi adicionada.
-
-As referências de Wube, Riot e EA, e os limites da adaptação, estão em [SIMULATION-LAB.md](../research/SIMULATION-LAB.md).

@@ -17,7 +17,7 @@ Para consultar os números por mecânica e os fluxos ainda incompletos, usar o [
 | Cobranças e custo fixo                                                           | `metrics.ts`; execução/arredondamento em `engine.ts`                               |
 | Limites agregados de massa                                                       | `resource-policy.ts`; explicação para auditoria, sem gerar bens no motor           |
 | Estoques e fornecedores da abertura                                              | `seed.ts` e `competition.ts`; não são reposição recorrente                         |
-| Regras gerais, histórico e limitações                                            | [ECONOMY.md](ECONOMY.md), [auditoria de design](GAME-DESIGN-AUDIT.md) e decisões   |
+| Regras gerais, histórico e limitações                                            | [ECONOMY.md](ECONOMY.md) e [decisões](DECISIONS.md)                                |
 
 O relatório informa hashes da configuração e do catálogo/canais, revisão e instante observado. A leitura do SQLite usa `readOnly`, sem importar `createStore`, migrar ou avançar o mundo. Receita do template e receita de uma season antiga podem divergir; comparar os relatórios antes de concluir que um parâmetro está ativo.
 

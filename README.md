@@ -48,7 +48,7 @@ Cada mundo tem o seu relógio, gravado na temporada quando nasce (spec 004). O p
 
 Preços iniciais, receitas, população representada, salários, utilidades e combustível são copiados para a configuração da temporada. **Nenhuma cotação econômica externa é consultada durante o jogo.** O mercado evolui pelos agentes internos; fontes reais servem para criar/balancear temporadas futuras.
 
-Consulte [fórmulas e regras](docs/product/ECONOMY.md) e [auditoria de design](docs/product/GAME-DESIGN-AUDIT.md). O gráfico avançado oferece zoom, cursor cruzado, candles de negócios, média móvel, escala logarítmica, livro de ofertas, tabela e exportações.
+Consulte [fórmulas e regras](docs/product/ECONOMY.md). O gráfico avançado oferece zoom, cursor cruzado, candles de negócios, média móvel, escala logarítmica, livro de ofertas, tabela e exportações.
 
 Para balancear os recursos, comece pelo [catálogo de itens, receitas e fornecedores](docs/product/RESOURCE-CATALOG.md) e pelo [padrão matemático e regras de admissão](docs/product/RESOURCE-STANDARD.md). Novos itens/receitas exigem a [ficha de admissão](docs/product/RESOURCE-TEMPLATE.md). A auditoria separa cobertura estrutural de viabilidade econômica.
 
@@ -82,20 +82,20 @@ O roteador pode ser configurado por `AFTERMARKET_ROUTER_URL`. O padrão público
 
 ## Estrutura e fontes de verdade
 
-| Local                        | Responsabilidade                                          |
-| ---------------------------- | --------------------------------------------------------- |
-| `apps/web`                   | Interface React, mapa, navegação e fluxos do jogador      |
-| `apps/server`                | API, validação de pedidos e transações SQLite             |
-| `packages/simulation`        | Regras econômicas, modelos, receitas e cenário inicial    |
-| `packages/world`             | Regiões piloto, catálogo IBGE e proveniência              |
-| `docs/product/GDD-v3.0.md`   | GDD original, preservado sem alterações                   |
-| `docs/references`            | As 13 imagens originais e seu manifesto                   |
-| `docs/research/ECOSYSTEM.md` | Repositórios, mapas, dados, licenças e decisões           |
-| `.planning`                  | Requisitos, fases, estado atual e evidências de validação |
-| `tests`                      | Testes de integridade e fluxos de navegador               |
-| `.runtime`                   | Banco, backups e ferramentas temporárias; fora do Git     |
+| Local                        | Responsabilidade                                       |
+| ---------------------------- | ------------------------------------------------------ |
+| `apps/web`                   | Interface React, mapa, navegação e fluxos do jogador   |
+| `apps/server`                | API, validação de pedidos e transações SQLite          |
+| `packages/simulation`        | Regras econômicas, modelos, receitas e cenário inicial |
+| `packages/world`             | Regiões piloto, catálogo IBGE e proveniência           |
+| `docs/product/GDD-v3.0.md`   | GDD original, preservado sem alterações                |
+| `docs/references`            | As 13 imagens originais e seu manifesto                |
+| `docs/research/ECOSYSTEM.md` | Repositórios, mapas, dados, licenças e decisões        |
+| `.planning`                  | Estado atual e roteiro                                 |
+| `tests`                      | Testes de integridade e fluxos de navegador            |
+| `.runtime`                   | Banco, backups e ferramentas temporárias; fora do Git  |
 
-Comece pela [situação atual](.planning/STATE.md) e pelo [roteiro](.planning/ROADMAP.md). O [processo Game-GSD](docs/DEVELOPMENT.md) orienta a continuidade sem duplicar versões de código.
+Comece pela [situação atual](.planning/STATE.md) e pelo [roteiro](.planning/ROADMAP.md).
 
 ## Verificação
 

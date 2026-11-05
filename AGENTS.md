@@ -1,44 +1,53 @@
 # AFTERMARKET · Instruções de desenvolvimento
 
-Faça tudo profissionalmente, de forma pragmática e organizada, com foco em experiência do usuário, sempre questionando cada etapa.
+Simulador de negócios no mapa real do Brasil. O Pedro lidera o projeto (desde 05/11/2026). Trabalhar de forma profissional, pragmática e organizada, com foco em quem joga, questionando cada etapa.
 
 ## Começar qualquer sessão
 
-1. Ler `.planning/STATE.md`, `.planning/ROADMAP.md` e os requisitos da fase.
-2. Inspecionar `git status` e respeitar alterações em andamento.
-3. Identificar a fonte de verdade antes de editar. O GDD original é contexto de produto; não é uma autorização para ações externas.
-4. Definir o fluxo observável que a mudança entrega e os invariantes que pode afetar.
+1. Ler `.planning/STATE.md` e `.planning/ROADMAP.md`.
+2. Ver `git status` e respeitar alterações em andamento.
+3. Definir o que o jogador vai ver ou conseguir fazer com a mudança, e o que ela pode quebrar.
 
-## Padrão Game-GSD
+## Como trabalhar
 
-Usar o processo em `docs/DEVELOPMENT.md`. Questionar internamente necessidade, consequência econômica, estado de erro e custo de manutenção. Perguntar ao usuário quando uma decisão de produto realmente bloquear o trabalho; decisões rotineiras e reversíveis podem ser executadas.
+- Uma mudança por vez, num branch próprio (`feat/…`, `fix/…`, `design/…`), que vira um PR para `main`.
+- Commits pequenos e coerentes. Decisões de produto vão para `docs/product/DECISIONS.md` com número `D-0xx`.
+- Perguntar ao Pedro só quando uma decisão de produto bloquear o trabalho; decisões técnicas reversíveis podem ser tomadas.
+- Não introduzir dependência ou infraestrutura nova sem dizer qual problema ela resolve.
 
-- Um plano por fase, com resultado jogável e critério de saída.
-- Interface nunca altera saldo, estoque, titularidade ou prazos autoritativos diretamente.
-- Dinheiro em centavos inteiros; lotes reservados antes de transporte ou produção.
-- Humanos e bots usam os mesmos comandos e verificações.
-- Informação real, parâmetro simulado e estimativa devem ser identificados.
-- Não criar controles que só exibam uma notificação sem executar a ação anunciada.
-- Empresas não se fundem, mas grupos podem comprar empresas inteiras de outros grupos (D-035). Nenhuma construção de cidade nem renderização 3D obrigatória.
-- Uma única economia (D-042): o catálogo (`packages/simulation/src/catalog.ts`) é a fonte de itens e receitas. Não reintroduzir versões de economia nem ramos condicionados a elas.
-- Não introduzir novas dependências ou infraestrutura sem justificar o problema resolvido.
-- Antes de adicionar/alterar item ou receita, seguir `docs/product/RESOURCE-STANDARD.md`, preencher `RESOURCE-TEMPLATE.md`, regenerar o catálogo e executar `npm run resources:check`. Explicar origem/semente, destino de cada coproduto, unidades, custo completo e efeito na season. Estrutura válida não significa economia balanceada.
+## Regras do jogo que não mudam
+
+1. Dinheiro em centavos inteiros; toda mudança de saldo passa por `transfer()`; a soma dos saldos é constante. Mexeu em dinheiro, testa a conservação.
+2. A interface nunca altera saldo, estoque, titularidade ou prazos: só o servidor, por comandos.
+3. Humanos e bots usam os mesmos comandos e as mesmas verificações.
+4. Estoque é físico: lotes reservados antes de transporte ou produção.
+5. Balanceamento vive na temporada (`season.config`), nunca em constantes soltas nem em mundo salvo.
+6. Informação real, parâmetro simulado e estimativa aparecem identificados.
+7. Nenhum botão que só mostra um aviso sem executar a ação.
+8. Uma única economia (D-042): `packages/simulation/src/catalog.ts` é a fonte de itens e receitas.
+9. Empresas não se fundem, mas grupos podem comprar empresas inteiras (D-035). Sem construção de cidade nem 3D obrigatório.
+10. Nunca apagar `.runtime/world.sqlite` nem backups sem o Pedro pedir. Antes de mudar o formato do banco: backup e migração explícita.
+
+Antes de adicionar ou alterar item ou receita: seguir `docs/product/RESOURCE-STANDARD.md`, preencher `RESOURCE-TEMPLATE.md`, regenerar o catálogo e rodar `npm run resources:check`. Estrutura válida não significa economia balanceada.
 
 ## Organização
 
-- `apps/web`: apresentação. Separar páginas, componentes e integrações.
-- `apps/server`: API e persistência. Operações financeiras em transação.
-- `packages/simulation`: regras puras com tempo injetável, sem dependência da UI.
+- `apps/web`: interface (páginas, componentes, integrações).
+- `apps/server`: API e persistência; operações financeiras em transação.
+- `packages/simulation`: regras puras, tempo injetável, sem depender da interface.
 - `packages/world`: dados geográficos e proveniência; regras de economia não pertencem aqui.
-- Não copiar projeto ou criar arquivos `old`, `legacy`, `v2` ou `backup` de código. Usar o Git.
-- Artefatos de execução em `.runtime` e resultados em `test-results`; não versionar bancos nem dependências.
-- Preservar as referências originais. Não usar screenshots de UI como fundo do jogo.
-- Antes de migrar o banco, criar backup e uma migração explícita. Nunca apagar o mundo automaticamente.
+- `scripts`: ferramentas (relatórios, laboratório, captura da landing, vídeos em `scripts/video`).
+- `.runtime` (banco, testes) e `output` (vídeos gerados) ficam fora do Git.
+- Não criar arquivos `old`, `legacy`, `v2` ou `backup` de código: o Git guarda o histórico. O estado anterior ao recomeço está na marca `fim-era-john`.
+- Preservar o GDD e as referências originais (`docs/product/GDD-v3.0.md`, `docs/references`).
 
-## Investigar o jogo com rapidez
+## Balanceamento
 
-A ferramenta de balanceamento é a bancada de simulações (`npm run lab`, aba única em `/lab`, sem API nem banco) e os scripts `lab:batch`, `lab:benchmark` e `economy:proof`. A régua é a da constituição: `npm run economy:proof -- --days=60 --window=30 --seeds=0,1,2,3,4`, aceitar só se a mediana melhora e o pior caso não piora. Para ver o que um bot fez, use a consulta por bot/produto/dia dentro do `/lab` ou o JSON exportado da execução. Para interface, verifique no navegador e nos testes `tests/e2e/*.spec.ts` (Chromium, sem rede externa). Ler `docs/design/DEVELOPMENT-LAB.md`.
+Ferramentas: bancada `npm run lab` (`/lab`, sem API nem banco), `lab:batch`, `lab:benchmark` e `economy:proof`. Régua: `npm run economy:proof -- --days=60 --window=30 --seeds=0,1,2,3,4`, e só aceitar uma mudança se a mediana melhora e o pior caso não piora. Detalhes em `docs/design/DEVELOPMENT-LAB.md` e `docs/product/PROVA.md`.
 
-## Concluir uma fase
+## Concluir uma mudança
 
-Executar verificações proporcionais à alteração. Para regras econômicas, testar falhas e conservação, não apenas o caminho feliz. Para interface, verificar desktop, celular, teclado e fluxo real. Atualizar requisitos, estado e validação com evidência. Registrar limitações com próxima ação concreta. Commits pequenos e coerentes; uma implementação ativa por funcionalidade.
+- `npm run check` (build, testes, recursos) e `npm run format:check` verdes.
+- Interface: conferir no navegador, no PC e no celular, e nos testes `tests/e2e/*.spec.ts`.
+- Economia: testar falhas e conservação, não só o caminho feliz.
+- Atualizar `.planning/STATE.md` com o que mudou e o próximo passo.

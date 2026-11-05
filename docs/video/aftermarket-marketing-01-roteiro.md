@@ -15,22 +15,23 @@ de efeitos sonoros.**
 ## Narração (ElevenLabs)
 
 **Voz:** tom de trailer, curioso no começo e firme no fim.
+
 - Pausa curta antes de "ou até em Xique-Xique".
 - Peso em "Faltou soja", "O frete subiu" e "O rival baixou o preço".
 - Calor em "feito por vontade e paixão".
 
-| Tempo       | Cena      | Fala                                                                                                    |
-| ----------- | --------- | ------------------------------------------------------------------------------------------------------- |
-| 0:00 – 0:04 | Planeta   | Imagine um jogo de estratégia e economia…                                                              |
-| 0:04 – 0:11 | Brasil    | …onde você faz negócios em Santa Bárbara d'Oeste, no Acre… ou até em Xique-Xique, na Bahia!            |
-| 0:11 – 0:18 | História  | Construa sua história de empresário: com seus amigos… ou contra os concorrentes.                       |
-| 0:18 – 0:27 | Cadeia    | Cada elo é um jogador. A soja de um vira o óleo do outro e chega à loja de um terceiro. E o dinheiro volta pelo mesmo caminho. |
-| 0:27 – 0:31 | No jogo   | No jogo, você monta tudo isso encaixando blocos.                                                       |
-| 0:31 – 0:39 | Problemas | Faltou soja. O frete subiu. O rival baixou o preço. Afinal… como você lidaria com os problemas da economia? |
+| Tempo       | Cena      | Fala                                                                                                                                         |
+| ----------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0:00 – 0:04 | Planeta   | Imagine um jogo de estratégia e economia…                                                                                                    |
+| 0:04 – 0:11 | Brasil    | …onde você faz negócios em Santa Bárbara d'Oeste, no Acre… ou até em Xique-Xique, na Bahia!                                                  |
+| 0:11 – 0:18 | História  | Construa sua história de empresário: com seus amigos… ou contra os concorrentes.                                                             |
+| 0:18 – 0:27 | Cadeia    | Cada elo é um jogador. A soja de um vira o óleo do outro e chega à loja de um terceiro. E o dinheiro volta pelo mesmo caminho.               |
+| 0:27 – 0:31 | No jogo   | No jogo, você monta tudo isso encaixando blocos.                                                                                             |
+| 0:31 – 0:39 | Problemas | Faltou soja. O frete subiu. O rival baixou o preço. Afinal… como você lidaria com os problemas da economia?                                  |
 | 0:39 – 0:48 | Robôs     | No nosso mundo de teste, empresas-robô montaram sozinhas uma cadeia: do campo no Mato Grosso às lojas de São Paulo. Imagine com seus amigos. |
-| 0:48 – 0:54 | Paixão    | E o melhor: o jogo não quer arrancar o seu dinheiro. É feito por vontade e paixão.                     |
-| 0:54 – 0:59 | Mundo     | Começamos pelo Brasil. E queremos levar para o mundo inteiro.                                          |
-| 0:59 – 1:07 | Chamada   | Entre no nosso Discord: novidades e acesso aos primeiros testes. Link no comentário fixado.             |
+| 0:48 – 0:54 | Paixão    | E o melhor: o jogo não quer arrancar o seu dinheiro. É feito por vontade e paixão.                                                           |
+| 0:54 – 0:59 | Mundo     | Começamos pelo Brasil. E queremos levar para o mundo inteiro.                                                                                |
+| 0:59 – 1:07 | Chamada   | Entre no nosso Discord: novidades e acesso aos primeiros testes. Link no comentário fixado.                                                  |
 
 Se a voz ficar mais longa que a cena, ajuste a duração no começo do `<script>` da página (lista
 `ROTEIRO`). Imagem, legenda e efeitos acompanham sozinhos, porque tudo é calculado a partir dos

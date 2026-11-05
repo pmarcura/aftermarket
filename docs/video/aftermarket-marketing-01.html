@@ -1,592 +1,2439 @@
 <!doctype html>
 <html lang="pt-BR">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Aftermarket · Vídeo de marketing 01</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Archivo:wght@500;700;800;900&display=block">
-<style>
-/* Vídeo vertical 9:16 (1080×1920) para Reels, TikTok e Shorts, com trilha de efeitos sonoros.
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Aftermarket · Vídeo de marketing 01</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Archivo:wght@500;700;800;900&display=block"
+    />
+    <style>
+      /* Vídeo vertical 9:16 (1080×1920) para Reels, TikTok e Shorts, com trilha de efeitos sonoros.
    Imagem e som são calculados a partir do tempo: a gravação quadro a quadro (?render=1,
    .runtime/video/render.mts) sai no tempo exato, e cada som cai no quadro do seu evento.
    Área segura: nada importante acima de 200 px nem abaixo de 1560 px; botões da rede à direita. */
-:root{--bg:#0f1114;--panel:#171b20;--line:#2a3038;--tx:#f2f4ee;--mut:#9aa39b;--lime:#a6e22e;--lime-esc:#6f9c16;--gold:#e8bd4f;--brasa:#ef6a4c;--ceu:#5aaee6;--papel:#f1e6cc;--tinta:#2a2620;--aparelho:#2b2f36}
-*{box-sizing:border-box}
-html,body{margin:0;height:100%;background:#07080a;color:var(--tx);font-family:Archivo,system-ui,sans-serif}
-body{display:flex;flex-direction:column;align-items:center}
-#bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center;padding:10px 12px;font-size:13px;width:100%;background:#14161a;border-bottom:1px solid var(--line)}
-#bar button,#bar label.btn{background:var(--lime);color:#111;border:0;padding:8px 14px;font:700 13px Archivo,sans-serif;cursor:pointer}
-#bar input[type=range]{width:220px}
-#bar .mut{color:var(--mut)}
-#wrap{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden}
-body.render{display:block;overflow:hidden}
-body.render #bar{display:none}
-body.render #wrap{display:block}
-#stage{position:relative;width:1080px;height:1920px;flex:none;overflow:hidden;background:radial-gradient(ellipse at 50% 40%,#1b2229 0%,var(--bg) 58%,#06070a 100%)}
-#grade{position:absolute;inset:-60px;background-image:linear-gradient(#ffffff08 2px,transparent 2px),linear-gradient(90deg,#ffffff08 2px,transparent 2px);background-size:60px 60px}
-#pontos i{position:absolute;width:10px;height:10px;background:var(--lime)}
-#mapa{position:absolute;left:0;top:0;width:1080px;height:1920px;z-index:3}
-#linhas{position:absolute;inset:0;background:repeating-linear-gradient(0deg,#0000 0 4px,#0000001c 4px 6px);pointer-events:none;z-index:40}
-#vinheta{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,#0000 58%,#000a 100%);pointer-events:none;z-index:39}
-.cena{position:absolute;inset:0;visibility:hidden;z-index:5}
-.cena.on{visibility:visible}
-.a{position:absolute;will-change:transform,opacity;transform-origin:center}
-.pix{image-rendering:pixelated}
-.titulo{left:60px;right:60px;top:240px;text-align:center;font:900 104px/.95 Archivo;text-transform:uppercase;letter-spacing:-3px;text-shadow:0 8px 0 #000a}
-.titulo .w{display:inline-block;white-space:pre}
-.titulo.m{font-size:88px}
-.lime{color:var(--lime)}.gold{color:var(--gold)}.brasa{color:var(--brasa)}.ceu{color:var(--ceu)}.mut{color:var(--mut)}
-.tag{left:0;right:0;text-align:center;font:400 24px/1.6 "Press Start 2P";letter-spacing:1px}
-/* pinos de cidade sobre o mapa de pontos */
-.cidade{transform-origin:50% 100%;display:flex;flex-direction:column;align-items:center;z-index:6}
-.cidade b{display:block;background:var(--c);color:#0d0f0b;font:900 34px/1 Archivo;text-transform:uppercase;padding:12px 16px 10px;white-space:nowrap;box-shadow:0 14px 30px #000b}
-.cidade small{display:block;font:800 18px Archivo;letter-spacing:3px;margin-top:6px;opacity:.8}
-.cidade::after{content:"";border:14px solid transparent;border-top-color:var(--c)}
-.cidade i{width:22px;height:22px;background:var(--c);border:5px solid #0f1114;margin-top:-4px}
-/* negócios no mapa (sua história, robôs) */
-.no{display:flex;flex-direction:column;align-items:center;transform-origin:50% 100%;z-index:6}
-.no .caixa{background:#0f1114f2;border:6px solid var(--c);padding:8px;box-shadow:0 18px 40px #000c}
-.no img{display:block;width:118px;height:118px}
-.no .dono{margin-top:8px;background:var(--c);color:#0d0f0b;font:900 24px/1 Archivo;letter-spacing:1px;padding:8px 12px;white-space:nowrap}
-.no .nome{margin-top:6px;font:900 30px Archivo;text-transform:uppercase;white-space:nowrap;text-shadow:0 3px 0 #000,0 0 14px #000}
-.no .nome small{display:block;text-align:center;font:800 19px Archivo;letter-spacing:3px;color:#d6dbd2;margin-top:4px}
-svg.camada{position:absolute;left:0;top:0;width:1080px;height:1920px;z-index:4;overflow:visible}
-.camada path{fill:none;stroke-linecap:round}
-.ficha{width:84px;height:84px;margin:-42px;background:#0f1114;border:5px solid var(--c);padding:6px;z-index:7}
-.ficha img{width:100%;height:100%}
-.cami{width:100px;margin:-32px -50px;z-index:7}
-.vs{font:400 70px "Press Start 2P";color:var(--brasa);text-shadow:0 6px 0 #000;z-index:8}
-/* diagrama da cadeia */
-.elo{left:150px;width:600px;height:168px;display:flex;align-items:center;gap:26px;background:var(--panel);border:6px solid var(--c);padding:0 26px;box-shadow:0 22px 44px #000b;z-index:5}
-.elo img{width:118px;height:118px;flex:none}
-.elo b{display:block;font:900 46px/1 Archivo;text-transform:uppercase}
-.elo span{display:inline-block;margin-top:12px;background:var(--c);color:#0d0f0b;font:400 18px "Press Start 2P";padding:8px 10px}
-.trilho{position:absolute;width:12px;background:#2a3038;z-index:4}
-.trilho i{position:absolute;left:0;top:0;width:100%;background:var(--gold)}
-.trilho.dinheiro i{background:var(--lime)}
-.moeda{width:66px;height:66px;margin:-33px;border-radius:50%;background:var(--lime);border:6px solid #0f1114;color:#0d0f0b;font:900 26px/54px Archivo;text-align:center;z-index:7;box-shadow:0 0 24px #a6e22e88}
-.rot-lado{font:400 20px/1.5 "Press Start 2P";text-align:center;z-index:6}
-/* tela real */
-.moldura{left:40px;width:1000px;background:#0a0b0d;border:12px solid var(--aparelho);border-radius:18px;box-shadow:0 40px 90px #000d;overflow:hidden}
-.moldura img{display:block;width:100%}
-/* problemas */
-.problema{left:90px;width:900px;display:flex;align-items:center;gap:30px;background:var(--panel);border:8px solid var(--c);padding:30px 36px;box-shadow:0 30px 70px #000c}
-.problema .ic{width:150px;height:150px;flex:none;display:grid;place-items:center;font:400 84px "Press Start 2P";color:var(--c)}
-.problema .ic img{width:150px;height:150px}
-.problema b{font:900 64px/.98 Archivo;text-transform:uppercase}
-.pergunta{left:50px;right:50px;text-align:center;font:900 96px/.98 Archivo;text-transform:uppercase;letter-spacing:-2px;text-shadow:0 8px 0 #000a}
-.pergunta .w{display:inline-block;white-space:pre}
-.interroga{font:400 210px "Press Start 2P";color:var(--gold);text-shadow:0 12px 0 #000;left:0;right:0;text-align:center}
-/* robôs */
-.robo{display:inline-block;margin-left:10px;background:var(--ceu);color:#0d0f0b;font:900 16px/1 Archivo;letter-spacing:1px;padding:5px 7px;vertical-align:middle}
-/* paixão */
-.coracao{display:grid;grid-template-columns:repeat(13,40px);grid-auto-rows:40px;gap:0;filter:drop-shadow(0 0 50px #ef6a4c77)}
-.coracao i{display:block}
-/* chamada */
-.logo{left:0;right:0;text-align:center;font:400 82px "Press Start 2P";letter-spacing:-6px;color:var(--lime);text-shadow:0 8px 0 #000,0 0 50px #a6e22e55}
-.icone{left:436px;width:208px;height:120px}
-.balao-chat{left:390px;width:300px;height:230px}
-.botao{left:110px;width:860px;background:var(--lime);color:#0d0f0b;font:900 76px/1 Archivo;text-transform:uppercase;text-align:center;padding:42px 0;box-shadow:0 12px 0 var(--lime-esc)}
-.beneficios{left:0;right:0;text-align:center;font:400 24px/2 "Press Start 2P";color:var(--tx)}
-.selo{border:7px solid var(--gold);color:var(--gold);padding:16px 22px;font:400 24px/1.6 "Press Start 2P";text-align:center;background:#0f1114}
-/* camadas globais */
-#wipe{position:absolute;inset:0;z-index:30;pointer-events:none}
-#wipe i{position:absolute;width:90px;height:90px}
-#flash{position:absolute;inset:0;z-index:31;background:#fff;opacity:0;pointer-events:none}
-#marca{position:absolute;top:150px;left:0;right:0;text-align:center;font:400 22px "Press Start 2P";color:var(--mut);z-index:32;letter-spacing:2px}
-#cap{position:absolute;left:80px;right:80px;bottom:360px;z-index:33;text-align:center;transform-origin:50% 100%}
-#cap p{margin:0;font:900 72px/1.06 Archivo;text-transform:uppercase;letter-spacing:-1px;
-  text-shadow:-5px -5px 0 #000,5px -5px 0 #000,-5px 5px 0 #000,5px 5px 0 #000,0 -6px 0 #000,0 6px 0 #000,-6px 0 0 #000,6px 0 0 #000,0 14px 0 #000a}
-#cap span{color:#ffffff8c}
-#cap span.dita{color:#fff}
-#cap span.agora{color:var(--lime)}
-</style>
-</head>
-<body>
-<div id="bar">
-<button id="play">▶ Tocar</button>
-<button id="rst">⟲ Do início</button>
-<input id="pos" type="range" min="0" max="1000" value="0">
-<label><input id="som" type="checkbox" checked> efeitos</label>
-<label class="btn">Carregar narração <input id="aud" type="file" accept="audio/*" hidden></label>
-<span id="tt">0:00 / 0:00</span>
-<span class="mut" id="estado">preparando os efeitos…</span>
-</div>
-<div id="wrap"><div id="stage">
-<div id="grade"></div>
-<div id="pontos"></div>
-<canvas id="mapa" width="1080" height="1920"></canvas>
+      :root {
+        --bg: #0f1114;
+        --panel: #171b20;
+        --line: #2a3038;
+        --tx: #f2f4ee;
+        --mut: #9aa39b;
+        --lime: #a6e22e;
+        --lime-esc: #6f9c16;
+        --gold: #e8bd4f;
+        --brasa: #ef6a4c;
+        --ceu: #5aaee6;
+        --papel: #f1e6cc;
+        --tinta: #2a2620;
+        --aparelho: #2b2f36;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #07080a;
+        color: var(--tx);
+        font-family: Archivo, system-ui, sans-serif;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      #bar {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 12px;
+        font-size: 13px;
+        width: 100%;
+        background: #14161a;
+        border-bottom: 1px solid var(--line);
+      }
+      #bar button,
+      #bar label.btn {
+        background: var(--lime);
+        color: #111;
+        border: 0;
+        padding: 8px 14px;
+        font:
+          700 13px Archivo,
+          sans-serif;
+        cursor: pointer;
+      }
+      #bar input[type='range'] {
+        width: 220px;
+      }
+      #bar .mut {
+        color: var(--mut);
+      }
+      #wrap {
+        flex: 1;
+        min-height: 0;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+      body.render {
+        display: block;
+        overflow: hidden;
+      }
+      body.render #bar {
+        display: none;
+      }
+      body.render #wrap {
+        display: block;
+      }
+      #stage {
+        position: relative;
+        width: 1080px;
+        height: 1920px;
+        flex: none;
+        overflow: hidden;
+        background: radial-gradient(ellipse at 50% 40%, #1b2229 0%, var(--bg) 58%, #06070a 100%);
+      }
+      #grade {
+        position: absolute;
+        inset: -60px;
+        background-image:
+          linear-gradient(#ffffff08 2px, transparent 2px),
+          linear-gradient(90deg, #ffffff08 2px, transparent 2px);
+        background-size: 60px 60px;
+      }
+      #pontos i {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background: var(--lime);
+      }
+      #mapa {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1080px;
+        height: 1920px;
+        z-index: 3;
+      }
+      #linhas {
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(0deg, #0000 0 4px, #0000001c 4px 6px);
+        pointer-events: none;
+        z-index: 40;
+      }
+      #vinheta {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse at 50% 45%, #0000 58%, #000a 100%);
+        pointer-events: none;
+        z-index: 39;
+      }
+      .cena {
+        position: absolute;
+        inset: 0;
+        visibility: hidden;
+        z-index: 5;
+      }
+      .cena.on {
+        visibility: visible;
+      }
+      .a {
+        position: absolute;
+        will-change: transform, opacity;
+        transform-origin: center;
+      }
+      .pix {
+        image-rendering: pixelated;
+      }
+      .titulo {
+        left: 60px;
+        right: 60px;
+        top: 240px;
+        text-align: center;
+        font: 900 104px/0.95 Archivo;
+        text-transform: uppercase;
+        letter-spacing: -3px;
+        text-shadow: 0 8px 0 #000a;
+      }
+      .titulo .w {
+        display: inline-block;
+        white-space: pre;
+      }
+      .titulo.m {
+        font-size: 88px;
+      }
+      .lime {
+        color: var(--lime);
+      }
+      .gold {
+        color: var(--gold);
+      }
+      .brasa {
+        color: var(--brasa);
+      }
+      .ceu {
+        color: var(--ceu);
+      }
+      .mut {
+        color: var(--mut);
+      }
+      .tag {
+        left: 0;
+        right: 0;
+        text-align: center;
+        font: 400 24px/1.6 'Press Start 2P';
+        letter-spacing: 1px;
+      }
+      /* pinos de cidade sobre o mapa de pontos */
+      .cidade {
+        transform-origin: 50% 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        z-index: 6;
+      }
+      .cidade b {
+        display: block;
+        background: var(--c);
+        color: #0d0f0b;
+        font: 900 34px/1 Archivo;
+        text-transform: uppercase;
+        padding: 12px 16px 10px;
+        white-space: nowrap;
+        box-shadow: 0 14px 30px #000b;
+      }
+      .cidade small {
+        display: block;
+        font: 800 18px Archivo;
+        letter-spacing: 3px;
+        margin-top: 6px;
+        opacity: 0.8;
+      }
+      .cidade::after {
+        content: '';
+        border: 14px solid transparent;
+        border-top-color: var(--c);
+      }
+      .cidade i {
+        width: 22px;
+        height: 22px;
+        background: var(--c);
+        border: 5px solid #0f1114;
+        margin-top: -4px;
+      }
+      /* negócios no mapa (sua história, robôs) */
+      .no {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        transform-origin: 50% 100%;
+        z-index: 6;
+      }
+      .no .caixa {
+        background: #0f1114f2;
+        border: 6px solid var(--c);
+        padding: 8px;
+        box-shadow: 0 18px 40px #000c;
+      }
+      .no img {
+        display: block;
+        width: 118px;
+        height: 118px;
+      }
+      .no .dono {
+        margin-top: 8px;
+        background: var(--c);
+        color: #0d0f0b;
+        font: 900 24px/1 Archivo;
+        letter-spacing: 1px;
+        padding: 8px 12px;
+        white-space: nowrap;
+      }
+      .no .nome {
+        margin-top: 6px;
+        font: 900 30px Archivo;
+        text-transform: uppercase;
+        white-space: nowrap;
+        text-shadow:
+          0 3px 0 #000,
+          0 0 14px #000;
+      }
+      .no .nome small {
+        display: block;
+        text-align: center;
+        font: 800 19px Archivo;
+        letter-spacing: 3px;
+        color: #d6dbd2;
+        margin-top: 4px;
+      }
+      svg.camada {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1080px;
+        height: 1920px;
+        z-index: 4;
+        overflow: visible;
+      }
+      .camada path {
+        fill: none;
+        stroke-linecap: round;
+      }
+      .ficha {
+        width: 84px;
+        height: 84px;
+        margin: -42px;
+        background: #0f1114;
+        border: 5px solid var(--c);
+        padding: 6px;
+        z-index: 7;
+      }
+      .ficha img {
+        width: 100%;
+        height: 100%;
+      }
+      .cami {
+        width: 100px;
+        margin: -32px -50px;
+        z-index: 7;
+      }
+      .vs {
+        font: 400 70px 'Press Start 2P';
+        color: var(--brasa);
+        text-shadow: 0 6px 0 #000;
+        z-index: 8;
+      }
+      /* diagrama da cadeia */
+      .elo {
+        left: 150px;
+        width: 600px;
+        height: 168px;
+        display: flex;
+        align-items: center;
+        gap: 26px;
+        background: var(--panel);
+        border: 6px solid var(--c);
+        padding: 0 26px;
+        box-shadow: 0 22px 44px #000b;
+        z-index: 5;
+      }
+      .elo img {
+        width: 118px;
+        height: 118px;
+        flex: none;
+      }
+      .elo b {
+        display: block;
+        font: 900 46px/1 Archivo;
+        text-transform: uppercase;
+      }
+      .elo span {
+        display: inline-block;
+        margin-top: 12px;
+        background: var(--c);
+        color: #0d0f0b;
+        font: 400 18px 'Press Start 2P';
+        padding: 8px 10px;
+      }
+      .trilho {
+        position: absolute;
+        width: 12px;
+        background: #2a3038;
+        z-index: 4;
+      }
+      .trilho i {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        background: var(--gold);
+      }
+      .trilho.dinheiro i {
+        background: var(--lime);
+      }
+      .moeda {
+        width: 66px;
+        height: 66px;
+        margin: -33px;
+        border-radius: 50%;
+        background: var(--lime);
+        border: 6px solid #0f1114;
+        color: #0d0f0b;
+        font: 900 26px/54px Archivo;
+        text-align: center;
+        z-index: 7;
+        box-shadow: 0 0 24px #a6e22e88;
+      }
+      .rot-lado {
+        font: 400 20px/1.5 'Press Start 2P';
+        text-align: center;
+        z-index: 6;
+      }
+      /* tela real */
+      .moldura {
+        left: 40px;
+        width: 1000px;
+        background: #0a0b0d;
+        border: 12px solid var(--aparelho);
+        border-radius: 18px;
+        box-shadow: 0 40px 90px #000d;
+        overflow: hidden;
+      }
+      .moldura img {
+        display: block;
+        width: 100%;
+      }
+      /* problemas */
+      .problema {
+        left: 90px;
+        width: 900px;
+        display: flex;
+        align-items: center;
+        gap: 30px;
+        background: var(--panel);
+        border: 8px solid var(--c);
+        padding: 30px 36px;
+        box-shadow: 0 30px 70px #000c;
+      }
+      .problema .ic {
+        width: 150px;
+        height: 150px;
+        flex: none;
+        display: grid;
+        place-items: center;
+        font: 400 84px 'Press Start 2P';
+        color: var(--c);
+      }
+      .problema .ic img {
+        width: 150px;
+        height: 150px;
+      }
+      .problema b {
+        font: 900 64px/0.98 Archivo;
+        text-transform: uppercase;
+      }
+      .pergunta {
+        left: 50px;
+        right: 50px;
+        text-align: center;
+        font: 900 96px/0.98 Archivo;
+        text-transform: uppercase;
+        letter-spacing: -2px;
+        text-shadow: 0 8px 0 #000a;
+      }
+      .pergunta .w {
+        display: inline-block;
+        white-space: pre;
+      }
+      .interroga {
+        font: 400 210px 'Press Start 2P';
+        color: var(--gold);
+        text-shadow: 0 12px 0 #000;
+        left: 0;
+        right: 0;
+        text-align: center;
+      }
+      /* robôs */
+      .robo {
+        display: inline-block;
+        margin-left: 10px;
+        background: var(--ceu);
+        color: #0d0f0b;
+        font: 900 16px/1 Archivo;
+        letter-spacing: 1px;
+        padding: 5px 7px;
+        vertical-align: middle;
+      }
+      /* paixão */
+      .coracao {
+        display: grid;
+        grid-template-columns: repeat(13, 40px);
+        grid-auto-rows: 40px;
+        gap: 0;
+        filter: drop-shadow(0 0 50px #ef6a4c77);
+      }
+      .coracao i {
+        display: block;
+      }
+      /* chamada */
+      .logo {
+        left: 0;
+        right: 0;
+        text-align: center;
+        font: 400 82px 'Press Start 2P';
+        letter-spacing: -6px;
+        color: var(--lime);
+        text-shadow:
+          0 8px 0 #000,
+          0 0 50px #a6e22e55;
+      }
+      .icone {
+        left: 436px;
+        width: 208px;
+        height: 120px;
+      }
+      .balao-chat {
+        left: 390px;
+        width: 300px;
+        height: 230px;
+      }
+      .botao {
+        left: 110px;
+        width: 860px;
+        background: var(--lime);
+        color: #0d0f0b;
+        font: 900 76px/1 Archivo;
+        text-transform: uppercase;
+        text-align: center;
+        padding: 42px 0;
+        box-shadow: 0 12px 0 var(--lime-esc);
+      }
+      .beneficios {
+        left: 0;
+        right: 0;
+        text-align: center;
+        font: 400 24px/2 'Press Start 2P';
+        color: var(--tx);
+      }
+      .selo {
+        border: 7px solid var(--gold);
+        color: var(--gold);
+        padding: 16px 22px;
+        font: 400 24px/1.6 'Press Start 2P';
+        text-align: center;
+        background: #0f1114;
+      }
+      /* camadas globais */
+      #wipe {
+        position: absolute;
+        inset: 0;
+        z-index: 30;
+        pointer-events: none;
+      }
+      #wipe i {
+        position: absolute;
+        width: 90px;
+        height: 90px;
+      }
+      #flash {
+        position: absolute;
+        inset: 0;
+        z-index: 31;
+        background: #fff;
+        opacity: 0;
+        pointer-events: none;
+      }
+      #marca {
+        position: absolute;
+        top: 150px;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font: 400 22px 'Press Start 2P';
+        color: var(--mut);
+        z-index: 32;
+        letter-spacing: 2px;
+      }
+      #cap {
+        position: absolute;
+        left: 80px;
+        right: 80px;
+        bottom: 360px;
+        z-index: 33;
+        text-align: center;
+        transform-origin: 50% 100%;
+      }
+      #cap p {
+        margin: 0;
+        font: 900 72px/1.06 Archivo;
+        text-transform: uppercase;
+        letter-spacing: -1px;
+        text-shadow:
+          -5px -5px 0 #000,
+          5px -5px 0 #000,
+          -5px 5px 0 #000,
+          5px 5px 0 #000,
+          0 -6px 0 #000,
+          0 6px 0 #000,
+          -6px 0 0 #000,
+          6px 0 0 #000,
+          0 14px 0 #000a;
+      }
+      #cap span {
+        color: #ffffff8c;
+      }
+      #cap span.dita {
+        color: #fff;
+      }
+      #cap span.agora {
+        color: var(--lime);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="bar">
+      <button id="play">▶ Tocar</button>
+      <button id="rst">⟲ Do início</button>
+      <input id="pos" type="range" min="0" max="1000" value="0" />
+      <label><input id="som" type="checkbox" checked /> efeitos</label>
+      <label class="btn"
+        >Carregar narração <input id="aud" type="file" accept="audio/*" hidden
+      /></label>
+      <span id="tt">0:00 / 0:00</span>
+      <span class="mut" id="estado">preparando os efeitos…</span>
+    </div>
+    <div id="wrap">
+      <div id="stage">
+        <div id="grade"></div>
+        <div id="pontos"></div>
+        <canvas id="mapa" width="1080" height="1920"></canvas>
 
-<!-- 1. PLANETA: imagine um jogo de estratégia e economia -->
-<section class="cena" id="c-planeta">
-<img class="a pix" id="p-pl" src="../../apps/web/public/arte/landing/planeta-brasil.png" alt="" style="left:160px;top:470px;width:760px;height:760px">
-<div class="a titulo" id="p-tit" style="top:230px">Estratégia<br><span class="lime">e economia</span></div>
-</section>
+        <!-- 1. PLANETA: imagine um jogo de estratégia e economia -->
+        <section class="cena" id="c-planeta">
+          <img
+            class="a pix"
+            id="p-pl"
+            src="../../apps/web/public/arte/landing/planeta-brasil.png"
+            alt=""
+            style="left: 160px; top: 470px; width: 760px; height: 760px"
+          />
+          <div class="a titulo" id="p-tit" style="top: 230px">
+            Estratégia<br /><span class="lime">e economia</span>
+          </div>
+        </section>
 
-<!-- 2. BRASIL: o mapa em pontos de pixel e três cidades de verdade -->
-<section class="cena" id="c-brasil">
-<div class="a titulo m" id="b-tit" style="top:236px">No mapa real<br><span class="lime">do Brasil</span></div>
-<div class="a cidade" id="b-sbo" style="--c:var(--lime)"><b>Santa Bárbara d'Oeste<small>SÃO PAULO</small></b><i></i></div>
-<div class="a cidade" id="b-acre" style="--c:var(--gold)"><b>Acre</b><i></i></div>
-<div class="a cidade" id="b-xx" style="--c:var(--ceu)"><b>Xique-Xique<small>BAHIA</small></b><i></i></div>
-</section>
+        <!-- 2. BRASIL: o mapa em pontos de pixel e três cidades de verdade -->
+        <section class="cena" id="c-brasil">
+          <div class="a titulo m" id="b-tit" style="top: 236px">
+            No mapa real<br /><span class="lime">do Brasil</span>
+          </div>
+          <div class="a cidade" id="b-sbo" style="--c: var(--lime)">
+            <b>Santa Bárbara d'Oeste<small>SÃO PAULO</small></b
+            ><i></i>
+          </div>
+          <div class="a cidade" id="b-acre" style="--c: var(--gold)"><b>Acre</b><i></i></div>
+          <div class="a cidade" id="b-xx" style="--c: var(--ceu)">
+            <b>Xique-Xique<small>BAHIA</small></b
+            ><i></i>
+          </div>
+        </section>
 
-<!-- 3. SUA HISTÓRIA: você, seu amigo e o concorrente na mesma região -->
-<section class="cena" id="c-historia">
-<svg class="camada" aria-hidden="true">
-<path id="h-r1" d="" stroke="#5aaee6" stroke-width="10"/>
-<path id="h-r2" d="" stroke="#a6e22e" stroke-width="10"/>
-<path id="h-vs" d="" stroke="#ef6a4c" stroke-width="8" stroke-dasharray="18 14"/>
-</svg>
-<img class="a cami pix" id="h-k1" src="../../apps/web/public/arte/landing/caminhao-se.png" alt="">
-<img class="a cami pix" id="h-k2" src="../../apps/web/public/arte/landing/caminhao-se.png" alt="">
-<div class="a no" id="h-fab" style="--c:var(--lime)"><div class="caixa"><img class="pix" src="../../apps/web/public/arte/soja-oleo.png" alt=""></div><div class="dono">VOCÊ</div><div class="nome">Fábrica<small>PIRACICABA</small></div></div>
-<div class="a no" id="h-loja" style="--c:var(--lime)"><div class="caixa"><img class="pix" src="../../apps/web/public/arte/loja.png" alt=""></div><div class="dono">VOCÊ</div><div class="nome">Loja<small>CAMPINAS</small></div></div>
-<div class="a no" id="h-faz" style="--c:var(--ceu)"><div class="caixa"><img class="pix" src="../../apps/web/public/arte/lavoura.png" alt=""></div><div class="dono">SEU AMIGO</div><div class="nome">Fazenda<small>LIMEIRA</small></div></div>
-<div class="a no" id="h-riv" style="--c:var(--brasa)"><div class="caixa"><img class="pix" src="../../apps/web/public/arte/loja.png" alt=""></div><div class="dono">CONCORRENTE</div><div class="nome">Loja<small>HORTOLÂNDIA</small></div></div>
-<div class="a vs" id="h-vstx">VS</div>
-<div class="a titulo m" id="h-tit">Sua história<br><span class="lime">de empresário</span></div>
-</section>
+        <!-- 3. SUA HISTÓRIA: você, seu amigo e o concorrente na mesma região -->
+        <section class="cena" id="c-historia">
+          <svg class="camada" aria-hidden="true">
+            <path id="h-r1" d="" stroke="#5aaee6" stroke-width="10" />
+            <path id="h-r2" d="" stroke="#a6e22e" stroke-width="10" />
+            <path id="h-vs" d="" stroke="#ef6a4c" stroke-width="8" stroke-dasharray="18 14" />
+          </svg>
+          <img
+            class="a cami pix"
+            id="h-k1"
+            src="../../apps/web/public/arte/landing/caminhao-se.png"
+            alt=""
+          />
+          <img
+            class="a cami pix"
+            id="h-k2"
+            src="../../apps/web/public/arte/landing/caminhao-se.png"
+            alt=""
+          />
+          <div class="a no" id="h-fab" style="--c: var(--lime)">
+            <div class="caixa">
+              <img class="pix" src="../../apps/web/public/arte/soja-oleo.png" alt="" />
+            </div>
+            <div class="dono">VOCÊ</div>
+            <div class="nome">Fábrica<small>PIRACICABA</small></div>
+          </div>
+          <div class="a no" id="h-loja" style="--c: var(--lime)">
+            <div class="caixa">
+              <img class="pix" src="../../apps/web/public/arte/loja.png" alt="" />
+            </div>
+            <div class="dono">VOCÊ</div>
+            <div class="nome">Loja<small>CAMPINAS</small></div>
+          </div>
+          <div class="a no" id="h-faz" style="--c: var(--ceu)">
+            <div class="caixa">
+              <img class="pix" src="../../apps/web/public/arte/lavoura.png" alt="" />
+            </div>
+            <div class="dono">SEU AMIGO</div>
+            <div class="nome">Fazenda<small>LIMEIRA</small></div>
+          </div>
+          <div class="a no" id="h-riv" style="--c: var(--brasa)">
+            <div class="caixa">
+              <img class="pix" src="../../apps/web/public/arte/loja.png" alt="" />
+            </div>
+            <div class="dono">CONCORRENTE</div>
+            <div class="nome">Loja<small>HORTOLÂNDIA</small></div>
+          </div>
+          <div class="a vs" id="h-vstx">VS</div>
+          <div class="a titulo m" id="h-tit">
+            Sua história<br /><span class="lime">de empresário</span>
+          </div>
+        </section>
 
-<!-- 4. CADEIA: diagrama limpo, cada elo é um jogador; o dinheiro volta pelo mesmo caminho -->
-<section class="cena" id="c-cadeia">
-<div class="a titulo m" id="k-tit" style="top:236px">Cada elo,<br><span class="gold">um jogador</span></div>
-<div class="trilho" id="k-t1" style="left:104px;top:530px;height:240px"><i id="k-t1i"></i></div>
-<div class="trilho" id="k-t2" style="left:104px;top:770px;height:240px"><i id="k-t2i"></i></div>
-<div class="trilho" id="k-t3" style="left:104px;top:1010px;height:240px"><i id="k-t3i"></i></div>
-<div class="trilho dinheiro" id="k-td" style="left:850px;top:540px;height:740px"><i id="k-tdi"></i></div>
-<div class="a elo" id="k-e1" style="top:446px;--c:#5c9e5a"><img class="pix" src="../../apps/web/public/arte/lavoura.png" alt=""><div><b>Fazenda</b><span>JOGADOR A</span></div></div>
-<div class="a elo" id="k-e2" style="top:686px;--c:#8a96a0"><img class="pix" src="../../apps/web/public/arte/soja-oleo.png" alt=""><div><b>Indústria</b><span>JOGADOR B</span></div></div>
-<div class="a elo" id="k-e3" style="top:926px;--c:#d9615a"><img class="pix" src="../../apps/web/public/arte/loja.png" alt=""><div><b>Loja</b><span>JOGADOR C</span></div></div>
-<div class="a elo" id="k-e4" style="top:1166px;--c:var(--gold)"><img class="pix" src="../../apps/web/public/arte/produto-arroz.png" alt=""><div><b>Famílias</b><span>QUEM COMPRA</span></div></div>
-<div class="a ficha" id="k-f" style="--c:var(--gold)"><img class="pix" id="k-fimg" src="../../apps/web/public/arte/lavoura.png" alt=""></div>
-<img class="a cami pix" id="k-cam" src="../../apps/web/public/arte/caminhao.png" alt="" style="width:120px;margin:-40px -60px">
-<div class="a rot-lado lime" id="k-rd" style="left:780px;top:1300px;width:150px">R$<br>VOLTA</div>
-<div class="a moeda" id="k-m1">R$</div><div class="a moeda" id="k-m2">R$</div><div class="a moeda" id="k-m3">R$</div>
-</section>
+        <!-- 4. CADEIA: diagrama limpo, cada elo é um jogador; o dinheiro volta pelo mesmo caminho -->
+        <section class="cena" id="c-cadeia">
+          <div class="a titulo m" id="k-tit" style="top: 236px">
+            Cada elo,<br /><span class="gold">um jogador</span>
+          </div>
+          <div class="trilho" id="k-t1" style="left: 104px; top: 530px; height: 240px">
+            <i id="k-t1i"></i>
+          </div>
+          <div class="trilho" id="k-t2" style="left: 104px; top: 770px; height: 240px">
+            <i id="k-t2i"></i>
+          </div>
+          <div class="trilho" id="k-t3" style="left: 104px; top: 1010px; height: 240px">
+            <i id="k-t3i"></i>
+          </div>
+          <div class="trilho dinheiro" id="k-td" style="left: 850px; top: 540px; height: 740px">
+            <i id="k-tdi"></i>
+          </div>
+          <div class="a elo" id="k-e1" style="top: 446px; --c: #5c9e5a">
+            <img class="pix" src="../../apps/web/public/arte/lavoura.png" alt="" />
+            <div><b>Fazenda</b><span>JOGADOR A</span></div>
+          </div>
+          <div class="a elo" id="k-e2" style="top: 686px; --c: #8a96a0">
+            <img class="pix" src="../../apps/web/public/arte/soja-oleo.png" alt="" />
+            <div><b>Indústria</b><span>JOGADOR B</span></div>
+          </div>
+          <div class="a elo" id="k-e3" style="top: 926px; --c: #d9615a">
+            <img class="pix" src="../../apps/web/public/arte/loja.png" alt="" />
+            <div><b>Loja</b><span>JOGADOR C</span></div>
+          </div>
+          <div class="a elo" id="k-e4" style="top: 1166px; --c: var(--gold)">
+            <img class="pix" src="../../apps/web/public/arte/produto-arroz.png" alt="" />
+            <div><b>Famílias</b><span>QUEM COMPRA</span></div>
+          </div>
+          <div class="a ficha" id="k-f" style="--c: var(--gold)">
+            <img class="pix" id="k-fimg" src="../../apps/web/public/arte/lavoura.png" alt="" />
+          </div>
+          <img
+            class="a cami pix"
+            id="k-cam"
+            src="../../apps/web/public/arte/caminhao.png"
+            alt=""
+            style="width: 120px; margin: -40px -60px"
+          />
+          <div class="a rot-lado lime" id="k-rd" style="left: 780px; top: 1300px; width: 150px">
+            R$<br />VOLTA
+          </div>
+          <div class="a moeda" id="k-m1">R$</div>
+          <div class="a moeda" id="k-m2">R$</div>
+          <div class="a moeda" id="k-m3">R$</div>
+        </section>
 
-<!-- 5. NO JOGO: a tela real da cadeia em blocos -->
-<section class="cena" id="c-tela">
-<div class="a titulo m" id="t-tit" style="top:250px">No jogo, é<br><span class="lime">encaixar blocos</span></div>
-<div class="a moldura" id="t-mold" style="top:560px"><img id="t-img" src="telas/pc-cadeia.png" alt=""></div>
-</section>
+        <!-- 5. NO JOGO: a tela real da cadeia em blocos -->
+        <section class="cena" id="c-tela">
+          <div class="a titulo m" id="t-tit" style="top: 250px">
+            No jogo, é<br /><span class="lime">encaixar blocos</span>
+          </div>
+          <div class="a moldura" id="t-mold" style="top: 560px">
+            <img id="t-img" src="telas/pc-cadeia.png" alt="" />
+          </div>
+        </section>
 
-<!-- 6. PROBLEMAS: cortes rápidos e a pergunta -->
-<section class="cena" id="c-problemas">
-<div class="a problema" id="q-p1" style="top:440px;--c:var(--brasa)"><div class="ic"><img class="pix" src="../../apps/web/public/arte/soja-oleo.png" alt=""></div><b>Faltou<br>soja</b></div>
-<div class="a problema" id="q-p2" style="top:690px;--c:var(--gold)"><div class="ic"><img class="pix" src="../../apps/web/public/arte/caminhao.png" alt=""></div><b>O frete<br>subiu</b></div>
-<div class="a problema" id="q-p3" style="top:940px;--c:var(--ceu)"><div class="ic">↓</div><b>O rival baixou<br>o preço</b></div>
-<div class="a interroga" id="q-int" style="top:330px">?</div>
-<div class="a pergunta" id="q-perg" style="top:640px">Como você<br><span class="lime">lidaria?</span></div>
-</section>
+        <!-- 6. PROBLEMAS: cortes rápidos e a pergunta -->
+        <section class="cena" id="c-problemas">
+          <div class="a problema" id="q-p1" style="top: 440px; --c: var(--brasa)">
+            <div class="ic">
+              <img class="pix" src="../../apps/web/public/arte/soja-oleo.png" alt="" />
+            </div>
+            <b>Faltou<br />soja</b>
+          </div>
+          <div class="a problema" id="q-p2" style="top: 690px; --c: var(--gold)">
+            <div class="ic">
+              <img class="pix" src="../../apps/web/public/arte/caminhao.png" alt="" />
+            </div>
+            <b>O frete<br />subiu</b>
+          </div>
+          <div class="a problema" id="q-p3" style="top: 940px; --c: var(--ceu)">
+            <div class="ic">↓</div>
+            <b>O rival baixou<br />o preço</b>
+          </div>
+          <div class="a interroga" id="q-int" style="top: 330px">?</div>
+          <div class="a pergunta" id="q-perg" style="top: 640px">
+            Como você<br /><span class="lime">lidaria?</span>
+          </div>
+        </section>
 
-<!-- 7. ROBÔS: exemplo real do mundo de teste -->
-<section class="cena" id="c-robos">
-<div class="a tag ceu" id="r-tag" style="top:250px">EXEMPLO REAL · MUNDO DE TESTE</div>
-<svg class="camada" aria-hidden="true">
-<path id="r-f1" d="" stroke="#e8bd4f" stroke-width="8"/>
-<path id="r-f2" d="" stroke="#e8bd4f" stroke-width="8"/>
-<path id="r-f3" d="" stroke="#e8bd4f" stroke-width="8"/>
-<path id="r-f4" d="" stroke="#a6e22e" stroke-width="10"/>
-</svg>
-<div class="a no" id="r-n1" style="--c:#5c9e5a"><div class="caixa"><img class="pix" src="../../apps/web/public/arte/lavoura.png" alt="" style="width:84px;height:84px"></div><div class="nome">União Agro<span class="robo">ROBÔ</span><small>SINOP · MT</small></div></div>
-<div class="a no" id="r-n2" style="--c:#5c9e5a"><div class="caixa"><img class="pix" src="../../apps/web/public/arte/lavoura.png" alt="" style="width:84px;height:84px"></div><div class="nome">Avenida Agro<span class="robo">ROBÔ</span><small>SORRISO · MT</small></div></div>
-<div class="a no" id="r-n3" style="--c:#5c9e5a"><div class="caixa"><img class="pix" src="../../apps/web/public/arte/lavoura.png" alt="" style="width:84px;height:84px"></div><div class="nome">Terra Nova Agro<span class="robo">ROBÔ</span><small>RONDONÓPOLIS · MT</small></div></div>
-<div class="a no" id="r-ind" style="--c:#8a96a0"><div class="caixa"><img class="pix" src="../../apps/web/public/arte/soja-oleo.png" alt="" style="width:100px;height:100px"></div><div class="nome">Rota Norte Industrial<span class="robo">ROBÔ</span><small>RONDONÓPOLIS · MT</small></div></div>
-<div class="a no" id="r-loja" style="--c:#d9615a"><div class="caixa"><img class="pix" src="../../apps/web/public/arte/loja.png" alt="" style="width:100px;height:100px"></div><div class="nome">Planalto Comercial<span class="robo">ROBÔ</span><small>SÃO PAULO · SP</small></div></div>
-<div class="a ficha" id="r-fs1" style="--c:var(--gold)"><img class="pix" src="../../apps/web/public/arte/lavoura.png" alt=""></div>
-<div class="a ficha" id="r-fs2" style="--c:var(--gold)"><img class="pix" src="../../apps/web/public/arte/lavoura.png" alt=""></div>
-<div class="a ficha" id="r-fo" style="--c:var(--lime)"><img class="pix" src="../../apps/web/public/arte/produto-oleo.png" alt=""></div>
-<div class="a titulo m" id="r-tit" style="top:300px">E se fossem<br><span class="lime">você e seus amigos?</span></div>
-</section>
+        <!-- 7. ROBÔS: exemplo real do mundo de teste -->
+        <section class="cena" id="c-robos">
+          <div class="a tag ceu" id="r-tag" style="top: 250px">EXEMPLO REAL · MUNDO DE TESTE</div>
+          <svg class="camada" aria-hidden="true">
+            <path id="r-f1" d="" stroke="#e8bd4f" stroke-width="8" />
+            <path id="r-f2" d="" stroke="#e8bd4f" stroke-width="8" />
+            <path id="r-f3" d="" stroke="#e8bd4f" stroke-width="8" />
+            <path id="r-f4" d="" stroke="#a6e22e" stroke-width="10" />
+          </svg>
+          <div class="a no" id="r-n1" style="--c: #5c9e5a">
+            <div class="caixa">
+              <img
+                class="pix"
+                src="../../apps/web/public/arte/lavoura.png"
+                alt=""
+                style="width: 84px; height: 84px"
+              />
+            </div>
+            <div class="nome">
+              União Agro<span class="robo">ROBÔ</span><small>SINOP · MT</small>
+            </div>
+          </div>
+          <div class="a no" id="r-n2" style="--c: #5c9e5a">
+            <div class="caixa">
+              <img
+                class="pix"
+                src="../../apps/web/public/arte/lavoura.png"
+                alt=""
+                style="width: 84px; height: 84px"
+              />
+            </div>
+            <div class="nome">
+              Avenida Agro<span class="robo">ROBÔ</span><small>SORRISO · MT</small>
+            </div>
+          </div>
+          <div class="a no" id="r-n3" style="--c: #5c9e5a">
+            <div class="caixa">
+              <img
+                class="pix"
+                src="../../apps/web/public/arte/lavoura.png"
+                alt=""
+                style="width: 84px; height: 84px"
+              />
+            </div>
+            <div class="nome">
+              Terra Nova Agro<span class="robo">ROBÔ</span><small>RONDONÓPOLIS · MT</small>
+            </div>
+          </div>
+          <div class="a no" id="r-ind" style="--c: #8a96a0">
+            <div class="caixa">
+              <img
+                class="pix"
+                src="../../apps/web/public/arte/soja-oleo.png"
+                alt=""
+                style="width: 100px; height: 100px"
+              />
+            </div>
+            <div class="nome">
+              Rota Norte Industrial<span class="robo">ROBÔ</span><small>RONDONÓPOLIS · MT</small>
+            </div>
+          </div>
+          <div class="a no" id="r-loja" style="--c: #d9615a">
+            <div class="caixa">
+              <img
+                class="pix"
+                src="../../apps/web/public/arte/loja.png"
+                alt=""
+                style="width: 100px; height: 100px"
+              />
+            </div>
+            <div class="nome">
+              Planalto Comercial<span class="robo">ROBÔ</span><small>SÃO PAULO · SP</small>
+            </div>
+          </div>
+          <div class="a ficha" id="r-fs1" style="--c: var(--gold)">
+            <img class="pix" src="../../apps/web/public/arte/lavoura.png" alt="" />
+          </div>
+          <div class="a ficha" id="r-fs2" style="--c: var(--gold)">
+            <img class="pix" src="../../apps/web/public/arte/lavoura.png" alt="" />
+          </div>
+          <div class="a ficha" id="r-fo" style="--c: var(--lime)">
+            <img class="pix" src="../../apps/web/public/arte/produto-oleo.png" alt="" />
+          </div>
+          <div class="a titulo m" id="r-tit" style="top: 300px">
+            E se fossem<br /><span class="lime">você e seus amigos?</span>
+          </div>
+        </section>
 
-<!-- 8. PAIXÃO -->
-<section class="cena" id="c-paixao">
-<div class="a coracao" id="x-cor" style="left:280px;top:520px"></div>
-<div class="a titulo m" id="x-tit" style="top:1060px">Feito por<br><span class="brasa">paixão</span></div>
-</section>
+        <!-- 8. PAIXÃO -->
+        <section class="cena" id="c-paixao">
+          <div class="a coracao" id="x-cor" style="left: 280px; top: 520px"></div>
+          <div class="a titulo m" id="x-tit" style="top: 1060px">
+            Feito por<br /><span class="brasa">paixão</span>
+          </div>
+        </section>
 
-<!-- 9. MUNDO: do Brasil para o mundo -->
-<section class="cena" id="c-mundo">
-<img class="a pix" id="w-pl" src="../../apps/web/public/arte/landing/planet.png" alt="" style="left:170px;top:470px;width:740px;height:740px">
-<div class="a titulo m" id="w-tit" style="top:240px">Do Brasil<br><span class="lime">para o mundo</span></div>
-</section>
+        <!-- 9. MUNDO: do Brasil para o mundo -->
+        <section class="cena" id="c-mundo">
+          <img
+            class="a pix"
+            id="w-pl"
+            src="../../apps/web/public/arte/landing/planet.png"
+            alt=""
+            style="left: 170px; top: 470px; width: 740px; height: 740px"
+          />
+          <div class="a titulo m" id="w-tit" style="top: 240px">
+            Do Brasil<br /><span class="lime">para o mundo</span>
+          </div>
+        </section>
 
-<!-- 10. CHAMADA: Discord -->
-<section class="cena" id="c-cta">
-<img class="a icone pix" id="z-ic" src="../../apps/web/public/arte/marca-logo.png" alt="" style="top:230px">
-<div class="a logo" id="z-logo" style="top:380px">AFTERMARKET</div>
-<div class="a selo" id="z-selo" style="left:290px;width:500px;top:500px">EM DESENVOLVIMENTO</div>
-<svg class="a balao-chat" id="z-chat" viewBox="0 0 15 12" style="top:640px" aria-hidden="true"><path d="M2 0h11v1h1v1h1v6h-1v1h-1v1H8v1H7v1H5v-2H2V8H1V7H0V2h1V1h1z" fill="#0f1114"/><path d="M2 1h11v1h1v6h-1v1H8v1H7v1H6V9H2V8H1V2h1z" fill="#a6e22e"/><path d="M4 4h2v2H4zM9 4h2v2H9z" fill="#0f1114"/></svg>
-<div class="a botao" id="z-bot" style="top:920px">Entrar no Discord</div>
-<div class="a beneficios" id="z-ben" style="top:1160px">NOVIDADES DO JOGO<br><span class="lime">+ ACESSO AOS PRIMEIROS TESTES</span></div>
-</section>
+        <!-- 10. CHAMADA: Discord -->
+        <section class="cena" id="c-cta">
+          <img
+            class="a icone pix"
+            id="z-ic"
+            src="../../apps/web/public/arte/marca-logo.png"
+            alt=""
+            style="top: 230px"
+          />
+          <div class="a logo" id="z-logo" style="top: 380px">AFTERMARKET</div>
+          <div class="a selo" id="z-selo" style="left: 290px; width: 500px; top: 500px">
+            EM DESENVOLVIMENTO
+          </div>
+          <svg
+            class="a balao-chat"
+            id="z-chat"
+            viewBox="0 0 15 12"
+            style="top: 640px"
+            aria-hidden="true"
+          >
+            <path d="M2 0h11v1h1v1h1v6h-1v1h-1v1H8v1H7v1H5v-2H2V8H1V7H0V2h1V1h1z" fill="#0f1114" />
+            <path d="M2 1h11v1h1v6h-1v1H8v1H7v1H6V9H2V8H1V2h1z" fill="#a6e22e" />
+            <path d="M4 4h2v2H4zM9 4h2v2H9z" fill="#0f1114" />
+          </svg>
+          <div class="a botao" id="z-bot" style="top: 920px">Entrar no Discord</div>
+          <div class="a beneficios" id="z-ben" style="top: 1160px">
+            NOVIDADES DO JOGO<br /><span class="lime">+ ACESSO AOS PRIMEIROS TESTES</span>
+          </div>
+        </section>
 
-<div id="wipe"></div>
-<div id="flash"></div>
-<div id="vinheta"></div>
-<div id="linhas"></div>
-<div id="marca">AFTERMARKET · EM DESENVOLVIMENTO</div>
-<div id="cap"><p id="capp"></p></div>
-</div></div>
+        <div id="wipe"></div>
+        <div id="flash"></div>
+        <div id="vinheta"></div>
+        <div id="linhas"></div>
+        <div id="marca">AFTERMARKET · EM DESENVOLVIMENTO</div>
+        <div id="cap"><p id="capp"></p></div>
+      </div>
+    </div>
 
-<script>
-// Roteiro e tempos: igual a aftermarket-marketing-01-roteiro.md. [id, duração, fala (narração), blocos de legenda, cor da transição]
-const ROTEIRO=[
-['planeta',4.2,'Imagine um jogo de estratégia e economia…',['Imagine um jogo','de estratégia','e economia…'],'none'],
-['brasil',7.0,"…onde você faz negócios em Santa Bárbara d'Oeste, no Acre… ou até em Xique-Xique, na Bahia!",['onde você faz negócios',"em Santa Bárbara d'Oeste,",'no Acre…','ou até em Xique-Xique,','na Bahia!'],'none'],
-['historia',7.0,'Construa sua história de empresário: com seus amigos… ou contra os concorrentes.',['Construa sua história','de empresário:','com seus amigos…','ou contra os concorrentes.'],'lime'],
-['cadeia',9.4,'Cada elo é um jogador. A soja de um vira o óleo do outro e chega à loja de um terceiro. E o dinheiro volta pelo mesmo caminho.',['Cada elo é um jogador.','A soja de um','vira o óleo do outro','e chega à loja','de um terceiro.','E o dinheiro volta','pelo mesmo caminho.'],'gold'],
-['tela',4.0,'No jogo, você monta tudo isso encaixando blocos.',['No jogo, você monta','tudo isso','encaixando blocos.'],'dark'],
-['problemas',7.6,'Faltou soja. O frete subiu. O rival baixou o preço. Afinal… como você lidaria com os problemas da economia?',['Faltou soja.','O frete subiu.','O rival baixou o preço.','Afinal…','como você lidaria','com os problemas','da economia?'],'brasa'],
-['robos',9.2,'No nosso mundo de teste, empresas-robô montaram sozinhas uma cadeia: do campo no Mato Grosso às lojas de São Paulo. Imagine com seus amigos.',['No nosso mundo de teste,','empresas-robô montaram','sozinhas uma cadeia:','do campo no Mato Grosso','às lojas de São Paulo.','Imagine com seus amigos.'],'dark'],
-['paixao',6.2,'E o melhor: o jogo não quer arrancar o seu dinheiro. É feito por vontade e paixão.',['E o melhor:','o jogo não quer','arrancar seu dinheiro.','É feito por vontade','e paixão.'],'brasa'],
-['mundo',5.0,'Começamos pelo Brasil. E queremos levar para o mundo inteiro.',['Começamos pelo Brasil.','E queremos levar','para o mundo inteiro.'],'dark'],
-['cta',7.4,'Entre no nosso Discord: novidades e acesso aos primeiros testes. Link no comentário fixado.',['Entre no nosso Discord:','novidades e acesso','aos primeiros testes.','Link no comentário fixado.'],'lime'],
-];
-const FPS=30;
-let A=0;const CENAS=ROTEIRO.map(([id,d,fala,leg,cor])=>{const c={id,a:A,d,fala,leg,cor,el:document.getElementById('c-'+id)};A+=d;return c});
-const DUR=A;const CENA_DE=Object.fromEntries(CENAS.map(c=>[c.id,c]));
-const $=id=>document.getElementById(id);
-const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
-const E={out:x=>1-Math.pow(1-x,3),io:x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2,
-  back:x=>{const c1=1.9,c3=c1+1;return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2)},
-  bounce:x=>{const n=7.5625,d=2.75;if(x<1/d)return n*x*x;if(x<2/d)return n*(x-=1.5/d)*x+.75;if(x<2.5/d)return n*(x-=2.25/d)*x+.9375;return n*(x-=2.625/d)*x+.984375}};
-const q=(u,a,d)=>clamp((u-a)/d);
-const lerp=(a,b,k)=>a+(b-a)*k;
-function T(el,{x=0,y=0,s=1,r=0,o=1,sx,sy}={}){if(!el)return;el.style.transform=`translate(${x}px,${y}px) scale(${sx??s},${sy??s}) rotate(${r}deg)`;el.style.opacity=o}
-const entra=(el,u,a,d=.5,dist=70)=>{const k=E.out(q(u,a,d));T(el,{y:(1-k)*dist,o:k,s:.95+.05*k});return k};
-const pop=(el,u,a,d=.42,r=0,extra={})=>{const p=q(u,a,d);T(el,{s:p<=0?0:E.back(p),o:clamp(p*4),r,...extra});return p};
-const tremor=(u,a,d,amp)=>u<a||u>a+d?[0,0]:[Math.sin(u*97)*amp*(1-(u-a)/d),Math.cos(u*83)*amp*(1-(u-a)/d)];
-let semente=11;const rnd=()=>(semente=semente*16807%2147483647)/2147483647;
+    <script>
+      // Roteiro e tempos: igual a aftermarket-marketing-01-roteiro.md. [id, duração, fala (narração), blocos de legenda, cor da transição]
+      const ROTEIRO = [
+        [
+          'planeta',
+          4.2,
+          'Imagine um jogo de estratégia e economia…',
+          ['Imagine um jogo', 'de estratégia', 'e economia…'],
+          'none',
+        ],
+        [
+          'brasil',
+          7.0,
+          "…onde você faz negócios em Santa Bárbara d'Oeste, no Acre… ou até em Xique-Xique, na Bahia!",
+          [
+            'onde você faz negócios',
+            "em Santa Bárbara d'Oeste,",
+            'no Acre…',
+            'ou até em Xique-Xique,',
+            'na Bahia!',
+          ],
+          'none',
+        ],
+        [
+          'historia',
+          7.0,
+          'Construa sua história de empresário: com seus amigos… ou contra os concorrentes.',
+          [
+            'Construa sua história',
+            'de empresário:',
+            'com seus amigos…',
+            'ou contra os concorrentes.',
+          ],
+          'lime',
+        ],
+        [
+          'cadeia',
+          9.4,
+          'Cada elo é um jogador. A soja de um vira o óleo do outro e chega à loja de um terceiro. E o dinheiro volta pelo mesmo caminho.',
+          [
+            'Cada elo é um jogador.',
+            'A soja de um',
+            'vira o óleo do outro',
+            'e chega à loja',
+            'de um terceiro.',
+            'E o dinheiro volta',
+            'pelo mesmo caminho.',
+          ],
+          'gold',
+        ],
+        [
+          'tela',
+          4.0,
+          'No jogo, você monta tudo isso encaixando blocos.',
+          ['No jogo, você monta', 'tudo isso', 'encaixando blocos.'],
+          'dark',
+        ],
+        [
+          'problemas',
+          7.6,
+          'Faltou soja. O frete subiu. O rival baixou o preço. Afinal… como você lidaria com os problemas da economia?',
+          [
+            'Faltou soja.',
+            'O frete subiu.',
+            'O rival baixou o preço.',
+            'Afinal…',
+            'como você lidaria',
+            'com os problemas',
+            'da economia?',
+          ],
+          'brasa',
+        ],
+        [
+          'robos',
+          9.2,
+          'No nosso mundo de teste, empresas-robô montaram sozinhas uma cadeia: do campo no Mato Grosso às lojas de São Paulo. Imagine com seus amigos.',
+          [
+            'No nosso mundo de teste,',
+            'empresas-robô montaram',
+            'sozinhas uma cadeia:',
+            'do campo no Mato Grosso',
+            'às lojas de São Paulo.',
+            'Imagine com seus amigos.',
+          ],
+          'dark',
+        ],
+        [
+          'paixao',
+          6.2,
+          'E o melhor: o jogo não quer arrancar o seu dinheiro. É feito por vontade e paixão.',
+          [
+            'E o melhor:',
+            'o jogo não quer',
+            'arrancar seu dinheiro.',
+            'É feito por vontade',
+            'e paixão.',
+          ],
+          'brasa',
+        ],
+        [
+          'mundo',
+          5.0,
+          'Começamos pelo Brasil. E queremos levar para o mundo inteiro.',
+          ['Começamos pelo Brasil.', 'E queremos levar', 'para o mundo inteiro.'],
+          'dark',
+        ],
+        [
+          'cta',
+          7.4,
+          'Entre no nosso Discord: novidades e acesso aos primeiros testes. Link no comentário fixado.',
+          [
+            'Entre no nosso Discord:',
+            'novidades e acesso',
+            'aos primeiros testes.',
+            'Link no comentário fixado.',
+          ],
+          'lime',
+        ],
+      ];
+      const FPS = 30;
+      let A = 0;
+      const CENAS = ROTEIRO.map(([id, d, fala, leg, cor]) => {
+        const c = { id, a: A, d, fala, leg, cor, el: document.getElementById('c-' + id) };
+        A += d;
+        return c;
+      });
+      const DUR = A;
+      const CENA_DE = Object.fromEntries(CENAS.map((c) => [c.id, c]));
+      const $ = (id) => document.getElementById(id);
+      const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+      const E = {
+        out: (x) => 1 - Math.pow(1 - x, 3),
+        io: (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2),
+        back: (x) => {
+          const c1 = 1.9,
+            c3 = c1 + 1;
+          return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2);
+        },
+        bounce: (x) => {
+          const n = 7.5625,
+            d = 2.75;
+          if (x < 1 / d) return n * x * x;
+          if (x < 2 / d) return n * (x -= 1.5 / d) * x + 0.75;
+          if (x < 2.5 / d) return n * (x -= 2.25 / d) * x + 0.9375;
+          return n * (x -= 2.625 / d) * x + 0.984375;
+        },
+      };
+      const q = (u, a, d) => clamp((u - a) / d);
+      const lerp = (a, b, k) => a + (b - a) * k;
+      function T(el, { x = 0, y = 0, s = 1, r = 0, o = 1, sx, sy } = {}) {
+        if (!el) return;
+        el.style.transform = `translate(${x}px,${y}px) scale(${sx ?? s},${sy ?? s}) rotate(${r}deg)`;
+        el.style.opacity = o;
+      }
+      const entra = (el, u, a, d = 0.5, dist = 70) => {
+        const k = E.out(q(u, a, d));
+        T(el, { y: (1 - k) * dist, o: k, s: 0.95 + 0.05 * k });
+        return k;
+      };
+      const pop = (el, u, a, d = 0.42, r = 0, extra = {}) => {
+        const p = q(u, a, d);
+        T(el, { s: p <= 0 ? 0 : E.back(p), o: clamp(p * 4), r, ...extra });
+        return p;
+      };
+      const tremor = (u, a, d, amp) =>
+        u < a || u > a + d
+          ? [0, 0]
+          : [
+              Math.sin(u * 97) * amp * (1 - (u - a) / d),
+              Math.cos(u * 83) * amp * (1 - (u - a) / d),
+            ];
+      let semente = 11;
+      const rnd = () => (semente = (semente * 16807) % 2147483647) / 2147483647;
 
-// Títulos: cada palavra entra separada.
-document.querySelectorAll('.titulo,.pergunta').forEach(t=>{
-  const walk=n=>{[...n.childNodes].forEach(c=>{
-    if(c.nodeType===3){const f=document.createDocumentFragment();c.textContent.split(/(\s+)/).forEach(p=>{if(!p)return;if(/^\s+$/.test(p)){f.append(p)}else{const s=document.createElement('span');s.className='w';s.textContent=p;f.append(s)}});c.replaceWith(f)}
-    else if(c.nodeName!=='BR')walk(c)})};
-  walk(t);
-});
-function palavras(el,u,a,passo=.075,d=.45){if(!el)return;el.style.transform='none';el.style.opacity=1;el.querySelectorAll('.w').forEach((w,i)=>{const p=q(u,a+i*passo,d);T(w,{y:(1-E.out(p))*80,s:p<=0?.6:lerp(.6,1,E.back(p)),o:clamp(p*4)})})}
-function some(el,u,a,d=.3){const k=q(u,a,d);if(k>0){el.style.opacity=String(+el.style.opacity*(1-k))}}
+      // Títulos: cada palavra entra separada.
+      document.querySelectorAll('.titulo,.pergunta').forEach((t) => {
+        const walk = (n) => {
+          [...n.childNodes].forEach((c) => {
+            if (c.nodeType === 3) {
+              const f = document.createDocumentFragment();
+              c.textContent.split(/(\s+)/).forEach((p) => {
+                if (!p) return;
+                if (/^\s+$/.test(p)) {
+                  f.append(p);
+                } else {
+                  const s = document.createElement('span');
+                  s.className = 'w';
+                  s.textContent = p;
+                  f.append(s);
+                }
+              });
+              c.replaceWith(f);
+            } else if (c.nodeName !== 'BR') walk(c);
+          });
+        };
+        walk(t);
+      });
+      function palavras(el, u, a, passo = 0.075, d = 0.45) {
+        if (!el) return;
+        el.style.transform = 'none';
+        el.style.opacity = 1;
+        el.querySelectorAll('.w').forEach((w, i) => {
+          const p = q(u, a + i * passo, d);
+          T(w, {
+            y: (1 - E.out(p)) * 80,
+            s: p <= 0 ? 0.6 : lerp(0.6, 1, E.back(p)),
+            o: clamp(p * 4),
+          });
+        });
+      }
+      function some(el, u, a, d = 0.3) {
+        const k = q(u, a, d);
+        if (k > 0) {
+          el.style.opacity = String(+el.style.opacity * (1 - k));
+        }
+      }
 
-// ---------- Mapa do Brasil em pontos de pixel (contorno simplificado; cidades em coordenadas reais) ----------
-const BR=[[-51.6,4.4],[-50.9,3],[-50.2,1.8],[-49.9,1],[-50.3,.3],[-49.3,-.2],[-48.4,-.6],[-47.9,-.6],[-46.8,-.9],[-45.3,-1.4],[-44.4,-2.4],[-43.4,-2.4],[-41.9,-2.9],[-40.5,-2.8],[-39,-3.5],[-37.8,-4.4],[-36.6,-5],[-35.4,-5.1],[-35,-6],[-34.8,-7.2],[-34.9,-8],[-35.3,-9],[-35.9,-9.8],[-36.9,-10.6],[-37.5,-11.5],[-38.3,-12.6],[-38.9,-13.6],[-39,-15],[-38.9,-16],[-39.2,-17.5],[-39.6,-18.4],[-39.8,-19.6],[-40.4,-20.6],[-41,-21.7],[-41.8,-22.6],[-43.1,-23],[-44.6,-23.3],[-46.3,-24],[-47.4,-24.9],[-48.3,-25.6],[-48.6,-26.4],[-48.6,-27.6],[-48.8,-28.6],[-49.7,-29.4],[-50.3,-30.4],[-51,-31.4],[-52.1,-32.3],[-52.8,-33.2],[-53.4,-33.7],[-53.5,-33.1],[-53.2,-32.6],[-53.8,-32.1],[-54.6,-31.5],[-55.6,-30.9],[-56,-30.8],[-57,-30.2],[-57.6,-30.2],[-56.4,-28.8],[-55.6,-28.2],[-54.6,-27.5],[-53.8,-27.1],[-53.6,-26.2],[-53.9,-25.6],[-54.6,-25.6],[-54.3,-24.6],[-54.4,-24],[-55.4,-23.9],[-55.6,-23],[-55.8,-22.3],[-56.9,-22.3],[-57.9,-22.1],[-57.9,-20.8],[-58.1,-20.2],[-57.6,-19],[-57.5,-18.2],[-58.4,-17.6],[-58.4,-16.3],[-60.2,-16.2],[-60.2,-15.1],[-60.6,-13.8],[-61.8,-13.5],[-63,-12.8],[-64.4,-12.4],[-65,-11.9],[-65.4,-10.8],[-65.3,-9.8],[-66.6,-9.9],[-67.6,-10.5],[-68.3,-11],[-69.6,-10.95],[-70.6,-11],[-70.5,-9.5],[-71.4,-10],[-72.2,-10],[-72.6,-9.4],[-73.2,-9.4],[-73,-8.6],[-74,-7.4],[-73.7,-6.6],[-73.2,-6],[-72.9,-5.2],[-71.9,-4.5],[-70.9,-4.4],[-70,-4.3],[-69.9,-3.5],[-69.4,-1.1],[-69.8,-.6],[-69.9,.6],[-69.2,1],[-68.2,1.1],[-67.2,1.8],[-66.9,1.2],[-66.3,.8],[-65.6,.8],[-65.2,1.2],[-64.4,1.5],[-64,2.1],[-63.4,2.2],[-64.2,3.6],[-64.8,4.2],[-63.9,4],[-62.8,4],[-62,4.2],[-61.1,4.5],[-60.6,4.9],[-60.1,5.2],[-59.6,3.9],[-59.8,2.7],[-59.6,1.8],[-58.8,1.2],[-58.1,1.5],[-57.3,1.9],[-56.5,1.9],[-55.9,2],[-55,2.4],[-54.6,2.3],[-54,2.2],[-52.9,2.2],[-52.3,3.1],[-51.7,4]];
-const dentro=(lon,lat)=>{let d=false;for(let i=0,j=BR.length-1;i<BR.length;j=i++){const[xi,yi]=BR[i],[xj,yj]=BR[j];if((yi>lat)!==(yj>lat)&&lon<(xj-xi)*(lat-yi)/(yj-yi)+xi)d=!d}return d};
-const COSL=Math.cos(15*Math.PI/180);
-const CID={sbo:[-47.41,-22.75],acre:[-67.81,-9.97],xx:[-42.73,-10.82],piracicaba:[-47.65,-22.72],limeira:[-47.40,-22.56],campinas:[-47.06,-22.90],hortolandia:[-47.22,-22.86],sinop:[-55.50,-11.86],sorriso:[-55.71,-12.55],rondonopolis:[-54.64,-16.47],saopaulo:[-46.63,-23.55]};
-const proj=(c,[lon,lat])=>[540+(lon-c.lon)*c.k*COSL,c.cy-(lat-c.lat)*c.k];
-const CAM={brasil:{lon:-53.6,lat:-14.4,k:24,cy:900},regiao:{lon:-47.36,lat:-22.74,k:900,cy:860},mt:{lon:-51.2,lat:-17.6,k:64,cy:900}};
-const mixCam=(a,b,k)=>({lon:lerp(a.lon,b.lon,k),lat:lerp(a.lat,b.lat,k),k:Math.exp(lerp(Math.log(a.k),Math.log(b.k),k)),cy:lerp(a.cy,b.cy,k)});
-const ctx=$('mapa').getContext('2d');
-// Desenha o Brasil em quadradinhos: revela a partir de uma origem; brilha perto dos pontos ativos.
-function mapa(c,{passo=20,tam=12,revela=1,origem=[540,860],brilhos=[],alpha=1,topo=330,base=1360}={}){
-  if(alpha<=0)return;const maxd=1400;ctx.globalAlpha=alpha;
-  for(let y=topo;y<base;y+=passo)for(let x=10;x<1080;x+=passo){
-    const lon=c.lon+(x-540)/(c.k*COSL),lat=c.lat-(y-c.cy)/c.k;if(!dentro(lon,lat))continue;
-    const d=Math.hypot(x-origem[0],y-origem[1])/maxd;if(d>revela)continue;
-    const s=clamp((revela-d)*8);let b=0;
-    for(const [bx,by,r,f] of brilhos){const dd=Math.hypot(x-bx,y-by);if(dd<r)b=Math.max(b,(1-dd/r)*f)}
-    ctx.fillStyle=b>0?`rgb(${lerp(43,166,b)|0},${lerp(58,226,b)|0},${lerp(46,46,b)|0})`:'#3f5a40';
-    const t2=tam*s*(1+b*.25);ctx.fillRect(x-t2/2,y-t2/2,t2,t2);
-  }
-  ctx.globalAlpha=1;
-}
-const curva=(a,b,dobra=.18)=>{const mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2,dx=b[0]-a[0],dy=b[1]-a[1];return `M${a[0]} ${a[1]} Q${mx-dy*dobra} ${my+dx*dobra} ${b[0]} ${b[1]}`};
-function desenha(path,k){const L=path.getTotalLength();path.style.strokeDasharray=path.getAttribute('stroke-dasharray')&&k>=1?path.getAttribute('stroke-dasharray'):L;path.style.strokeDashoffset=k>=1?0:L*(1-k)}
-const noCaminho=(path,f)=>{const L=path.getTotalLength(),p=path.getPointAtLength(clamp(f)*L);return[p.x,p.y]};
+      // ---------- Mapa do Brasil em pontos de pixel (contorno simplificado; cidades em coordenadas reais) ----------
+      const BR = [
+        [-51.6, 4.4],
+        [-50.9, 3],
+        [-50.2, 1.8],
+        [-49.9, 1],
+        [-50.3, 0.3],
+        [-49.3, -0.2],
+        [-48.4, -0.6],
+        [-47.9, -0.6],
+        [-46.8, -0.9],
+        [-45.3, -1.4],
+        [-44.4, -2.4],
+        [-43.4, -2.4],
+        [-41.9, -2.9],
+        [-40.5, -2.8],
+        [-39, -3.5],
+        [-37.8, -4.4],
+        [-36.6, -5],
+        [-35.4, -5.1],
+        [-35, -6],
+        [-34.8, -7.2],
+        [-34.9, -8],
+        [-35.3, -9],
+        [-35.9, -9.8],
+        [-36.9, -10.6],
+        [-37.5, -11.5],
+        [-38.3, -12.6],
+        [-38.9, -13.6],
+        [-39, -15],
+        [-38.9, -16],
+        [-39.2, -17.5],
+        [-39.6, -18.4],
+        [-39.8, -19.6],
+        [-40.4, -20.6],
+        [-41, -21.7],
+        [-41.8, -22.6],
+        [-43.1, -23],
+        [-44.6, -23.3],
+        [-46.3, -24],
+        [-47.4, -24.9],
+        [-48.3, -25.6],
+        [-48.6, -26.4],
+        [-48.6, -27.6],
+        [-48.8, -28.6],
+        [-49.7, -29.4],
+        [-50.3, -30.4],
+        [-51, -31.4],
+        [-52.1, -32.3],
+        [-52.8, -33.2],
+        [-53.4, -33.7],
+        [-53.5, -33.1],
+        [-53.2, -32.6],
+        [-53.8, -32.1],
+        [-54.6, -31.5],
+        [-55.6, -30.9],
+        [-56, -30.8],
+        [-57, -30.2],
+        [-57.6, -30.2],
+        [-56.4, -28.8],
+        [-55.6, -28.2],
+        [-54.6, -27.5],
+        [-53.8, -27.1],
+        [-53.6, -26.2],
+        [-53.9, -25.6],
+        [-54.6, -25.6],
+        [-54.3, -24.6],
+        [-54.4, -24],
+        [-55.4, -23.9],
+        [-55.6, -23],
+        [-55.8, -22.3],
+        [-56.9, -22.3],
+        [-57.9, -22.1],
+        [-57.9, -20.8],
+        [-58.1, -20.2],
+        [-57.6, -19],
+        [-57.5, -18.2],
+        [-58.4, -17.6],
+        [-58.4, -16.3],
+        [-60.2, -16.2],
+        [-60.2, -15.1],
+        [-60.6, -13.8],
+        [-61.8, -13.5],
+        [-63, -12.8],
+        [-64.4, -12.4],
+        [-65, -11.9],
+        [-65.4, -10.8],
+        [-65.3, -9.8],
+        [-66.6, -9.9],
+        [-67.6, -10.5],
+        [-68.3, -11],
+        [-69.6, -10.95],
+        [-70.6, -11],
+        [-70.5, -9.5],
+        [-71.4, -10],
+        [-72.2, -10],
+        [-72.6, -9.4],
+        [-73.2, -9.4],
+        [-73, -8.6],
+        [-74, -7.4],
+        [-73.7, -6.6],
+        [-73.2, -6],
+        [-72.9, -5.2],
+        [-71.9, -4.5],
+        [-70.9, -4.4],
+        [-70, -4.3],
+        [-69.9, -3.5],
+        [-69.4, -1.1],
+        [-69.8, -0.6],
+        [-69.9, 0.6],
+        [-69.2, 1],
+        [-68.2, 1.1],
+        [-67.2, 1.8],
+        [-66.9, 1.2],
+        [-66.3, 0.8],
+        [-65.6, 0.8],
+        [-65.2, 1.2],
+        [-64.4, 1.5],
+        [-64, 2.1],
+        [-63.4, 2.2],
+        [-64.2, 3.6],
+        [-64.8, 4.2],
+        [-63.9, 4],
+        [-62.8, 4],
+        [-62, 4.2],
+        [-61.1, 4.5],
+        [-60.6, 4.9],
+        [-60.1, 5.2],
+        [-59.6, 3.9],
+        [-59.8, 2.7],
+        [-59.6, 1.8],
+        [-58.8, 1.2],
+        [-58.1, 1.5],
+        [-57.3, 1.9],
+        [-56.5, 1.9],
+        [-55.9, 2],
+        [-55, 2.4],
+        [-54.6, 2.3],
+        [-54, 2.2],
+        [-52.9, 2.2],
+        [-52.3, 3.1],
+        [-51.7, 4],
+      ];
+      const dentro = (lon, lat) => {
+        let d = false;
+        for (let i = 0, j = BR.length - 1; i < BR.length; j = i++) {
+          const [xi, yi] = BR[i],
+            [xj, yj] = BR[j];
+          if (yi > lat !== yj > lat && lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) d = !d;
+        }
+        return d;
+      };
+      const COSL = Math.cos((15 * Math.PI) / 180);
+      const CID = {
+        sbo: [-47.41, -22.75],
+        acre: [-67.81, -9.97],
+        xx: [-42.73, -10.82],
+        piracicaba: [-47.65, -22.72],
+        limeira: [-47.4, -22.56],
+        campinas: [-47.06, -22.9],
+        hortolandia: [-47.22, -22.86],
+        sinop: [-55.5, -11.86],
+        sorriso: [-55.71, -12.55],
+        rondonopolis: [-54.64, -16.47],
+        saopaulo: [-46.63, -23.55],
+      };
+      const proj = (c, [lon, lat]) => [
+        540 + (lon - c.lon) * c.k * COSL,
+        c.cy - (lat - c.lat) * c.k,
+      ];
+      const CAM = {
+        brasil: { lon: -53.6, lat: -14.4, k: 24, cy: 900 },
+        regiao: { lon: -47.36, lat: -22.74, k: 900, cy: 860 },
+        mt: { lon: -51.2, lat: -17.6, k: 64, cy: 900 },
+      };
+      const mixCam = (a, b, k) => ({
+        lon: lerp(a.lon, b.lon, k),
+        lat: lerp(a.lat, b.lat, k),
+        k: Math.exp(lerp(Math.log(a.k), Math.log(b.k), k)),
+        cy: lerp(a.cy, b.cy, k),
+      });
+      const ctx = $('mapa').getContext('2d');
+      // Desenha o Brasil em quadradinhos: revela a partir de uma origem; brilha perto dos pontos ativos.
+      function mapa(
+        c,
+        {
+          passo = 20,
+          tam = 12,
+          revela = 1,
+          origem = [540, 860],
+          brilhos = [],
+          alpha = 1,
+          topo = 330,
+          base = 1360,
+        } = {},
+      ) {
+        if (alpha <= 0) return;
+        const maxd = 1400;
+        ctx.globalAlpha = alpha;
+        for (let y = topo; y < base; y += passo)
+          for (let x = 10; x < 1080; x += passo) {
+            const lon = c.lon + (x - 540) / (c.k * COSL),
+              lat = c.lat - (y - c.cy) / c.k;
+            if (!dentro(lon, lat)) continue;
+            const d = Math.hypot(x - origem[0], y - origem[1]) / maxd;
+            if (d > revela) continue;
+            const s = clamp((revela - d) * 8);
+            let b = 0;
+            for (const [bx, by, r, f] of brilhos) {
+              const dd = Math.hypot(x - bx, y - by);
+              if (dd < r) b = Math.max(b, (1 - dd / r) * f);
+            }
+            ctx.fillStyle =
+              b > 0
+                ? `rgb(${lerp(43, 166, b) | 0},${lerp(58, 226, b) | 0},${lerp(46, 46, b) | 0})`
+                : '#3f5a40';
+            const t2 = tam * s * (1 + b * 0.25);
+            ctx.fillRect(x - t2 / 2, y - t2 / 2, t2, t2);
+          }
+        ctx.globalAlpha = 1;
+      }
+      const curva = (a, b, dobra = 0.18) => {
+        const mx = (a[0] + b[0]) / 2,
+          my = (a[1] + b[1]) / 2,
+          dx = b[0] - a[0],
+          dy = b[1] - a[1];
+        return `M${a[0]} ${a[1]} Q${mx - dy * dobra} ${my + dx * dobra} ${b[0]} ${b[1]}`;
+      };
+      function desenha(path, k) {
+        const L = path.getTotalLength();
+        path.style.strokeDasharray =
+          path.getAttribute('stroke-dasharray') && k >= 1
+            ? path.getAttribute('stroke-dasharray')
+            : L;
+        path.style.strokeDashoffset = k >= 1 ? 0 : L * (1 - k);
+      }
+      const noCaminho = (path, f) => {
+        const L = path.getTotalLength(),
+          p = path.getPointAtLength(clamp(f) * L);
+        return [p.x, p.y];
+      };
 
-// Fundo vivo
-const pts=[];for(let k=0;k<18;k++){const i=document.createElement('i');$('pontos').append(i);pts.push({i,x:rnd()*1080,v:70+rnd()*110,o:rnd()*2300,s:.6+rnd()*.8})}
-// Coração de pixel (13×11)
-['0011100011100','0111110111110','1111111111111','1111111111111','1111111111111','0111111111110','0011111111100','0001111111000','0000111110000','0000011100000','0000001000000'].forEach((l,y)=>[...l].forEach((v,x)=>{const i=document.createElement('i');i.style.background=v==='1'?((x+y)%5===0?'#ff8c6e':'#ef6a4c'):'transparent';$('x-cor').append(i)}));
-// Transição em pixels
-const BLOCOS=[];for(let r=0;r<22;r++)for(let c=0;c<12;c++){const i=document.createElement('i');i.style.left=c*90+'px';i.style.top=r*90+'px';$('wipe').append(i);BLOCOS.push({i,ord:clamp((c/11)*.35+(r/21)*.55+rnd()*.1)})}
-const COR={lime:'#a6e22e',gold:'#e8bd4f',brasa:'#ef6a4c',dark:'#0f1114',ceu:'#5aaee6'};
-const COBRE=.18,DESCOBRE=.22;
-function transicao(t){
-  let b=-1,cor='dark';for(const c of CENAS){if(c.a>0&&c.cor!=='none'&&Math.abs(t-c.a)<.3){b=c.a;cor=c.cor}}
-  for(const k of BLOCOS){if(b<0){k.i.style.opacity=0;continue}
-    const ini=b-COBRE+COBRE*.9*k.ord,fim=b+.02+DESCOBRE*.9*k.ord;k.i.style.opacity=t>=ini&&t<fim?1:0;k.i.style.background=COR[cor]}
-}
+      // Fundo vivo
+      const pts = [];
+      for (let k = 0; k < 18; k++) {
+        const i = document.createElement('i');
+        $('pontos').append(i);
+        pts.push({
+          i,
+          x: rnd() * 1080,
+          v: 70 + rnd() * 110,
+          o: rnd() * 2300,
+          s: 0.6 + rnd() * 0.8,
+        });
+      }
+      // Coração de pixel (13×11)
+      [
+        '0011100011100',
+        '0111110111110',
+        '1111111111111',
+        '1111111111111',
+        '1111111111111',
+        '0111111111110',
+        '0011111111100',
+        '0001111111000',
+        '0000111110000',
+        '0000011100000',
+        '0000001000000',
+      ].forEach((l, y) =>
+        [...l].forEach((v, x) => {
+          const i = document.createElement('i');
+          i.style.background =
+            v === '1' ? ((x + y) % 5 === 0 ? '#ff8c6e' : '#ef6a4c') : 'transparent';
+          $('x-cor').append(i);
+        }),
+      );
+      // Transição em pixels
+      const BLOCOS = [];
+      for (let r = 0; r < 22; r++)
+        for (let c = 0; c < 12; c++) {
+          const i = document.createElement('i');
+          i.style.left = c * 90 + 'px';
+          i.style.top = r * 90 + 'px';
+          $('wipe').append(i);
+          BLOCOS.push({ i, ord: clamp((c / 11) * 0.35 + (r / 21) * 0.55 + rnd() * 0.1) });
+        }
+      const COR = {
+        lime: '#a6e22e',
+        gold: '#e8bd4f',
+        brasa: '#ef6a4c',
+        dark: '#0f1114',
+        ceu: '#5aaee6',
+      };
+      const COBRE = 0.18,
+        DESCOBRE = 0.22;
+      function transicao(t) {
+        let b = -1,
+          cor = 'dark';
+        for (const c of CENAS) {
+          if (c.a > 0 && c.cor !== 'none' && Math.abs(t - c.a) < 0.3) {
+            b = c.a;
+            cor = c.cor;
+          }
+        }
+        for (const k of BLOCOS) {
+          if (b < 0) {
+            k.i.style.opacity = 0;
+            continue;
+          }
+          const ini = b - COBRE + COBRE * 0.9 * k.ord,
+            fim = b + 0.02 + DESCOBRE * 0.9 * k.ord;
+          k.i.style.opacity = t >= ini && t < fim ? 1 : 0;
+          k.i.style.background = COR[cor];
+        }
+      }
 
-// ---------- Cenas (u = segundos dentro da cena) ----------
-const CENA={
-planeta(u){
-  // O planeta gira devagar e o zoom mergulha no Brasil no fim.
-  const z=E.io(q(u,2.6,1.6));
-  const s=lerp(1,8.5,z)*lerp(.92,1,E.out(q(u,0,1.2)));
-  T($('p-pl'),{s,r:lerp(-6,0,q(u,0,2.6)),x:lerp(0,-106*s,z),y:lerp(0,10-152*s,z),o:1-q(u,3.85,.3)});
-  palavras($('p-tit'),u,-.6,.08);$('p-tit').style.opacity=String(1-q(u,2.6,.4));
-},
-brasil(u){
-  const c=CAM.brasil;palavras($('b-tit'),u,.05,.08);
-  const pinos=[['b-sbo','sbo',BLOCO('brasil',1,.15)],['b-acre','acre',BLOCO('brasil',2,.05)],['b-xx','xx',BLOCO('brasil',3,.25)]];
-  const brilhos=pinos.filter(([, ,a])=>u>a).map(([, cid,a])=>{const [x,y]=proj(c,CID[cid]);return[x,y,90,clamp((u-a)*3)*(.6+.4*Math.sin((u-a)*6)**2)]});
-  mapa(c,{revela:E.out(q(u,0,1.4))*1.05,origem:proj(c,CID.sbo),brilhos});
-  pinos.forEach(([id,cid,a])=>{const [x,y]=proj(c,CID[cid]);const el=$(id);const p=q(u,a,.6);const w=el.offsetWidth,h=el.offsetHeight;
-    const extra=id==='b-xx'&&u>a+.5?Math.sin((u-a-.5)*9)*4*clamp(1-(u-a-.5)/1.5):0;
-    T(el,{x:x-w/2,y:y-h+11-(1-E.bounce(p))*360,o:clamp(p*5),r:extra});});
-},
-historia(u){
-  // Câmera na região de Campinas: você, seu amigo e o concorrente
-  const c=CAM.regiao;
-  const pos={fab:proj(c,CID.piracicaba),loja:proj(c,CID.campinas),faz:proj(c,CID.limeira),riv:proj(c,CID.hortolandia)};
-  pos.riv=[pos.riv[0]-200,pos.riv[1]+200];pos.loja=[pos.loja[0]+20,pos.loja[1]+40];
-  const ativos=[[...pos.fab,170,u>.4?1:0],[...pos.loja,170,u>.8?1:0],[...pos.faz,170,u>2.2?.8:0],[...pos.riv,170,u>4.2?.7:0]];
-  mapa(c,{passo:22,tam:13,revela:E.out(q(u,0,1))*1.05,origem:pos.fab,brilhos:ativos});
-  palavras($('h-tit'),u,.1,.09);
-  const coloca=(id,[x,y],a)=>{const el=$(id);const p=q(u,a,.5);T(el,{x:x-el.offsetWidth/2,y:y-el.offsetHeight+30-(1-E.bounce(p))*300,o:clamp(p*5)})};
-  coloca('h-fab',pos.fab,.4);coloca('h-loja',pos.loja,.8);coloca('h-faz',pos.faz,2.2);
-  const [dx,dy]=tremor(u,4.75,.4,14);
-  const rp=q(u,4.2,.5),rv=$('h-riv');T(rv,{x:pos.riv[0]-rv.offsetWidth/2+dx,y:pos.riv[1]-rv.offsetHeight+30-(1-E.bounce(rp))*300+dy,o:clamp(rp*5)});
-  // Rotas: amigo → sua fábrica (azul), sua fábrica → sua loja (verde)
-  const r1=$('h-r1'),r2=$('h-r2'),vs=$('h-vs');
-  r1.setAttribute('d',curva([pos.faz[0],pos.faz[1]-40],[pos.fab[0]+10,pos.fab[1]-40],-.2));
-  r2.setAttribute('d',curva([pos.fab[0]+30,pos.fab[1]-30],[pos.loja[0]-30,pos.loja[1]-40],.12));
-  vs.setAttribute('d',`M${pos.loja[0]-40} ${pos.loja[1]+20} L${pos.riv[0]+40} ${pos.riv[1]-100}`);
-  desenha(r2,E.io(q(u,1.1,.8)));desenha(r1,E.io(q(u,2.6,.8)));
-  vs.style.opacity=u>4.6?(Math.floor(u*6)%2?1:.55):0;
-  const k1=$('h-k1'),k2=$('h-k2');
-  if(u>3.3){const f=((u-3.3)%2.2)/2.2;const [x,y]=noCaminho(r1,f);T(k1,{x,y,o:clamp(Math.min(f,1-f)*8)})}else k1.style.opacity=0;
-  if(u>1.9){const f=((u-1.9)%2.4)/2.4;const [x,y]=noCaminho(r2,f);T(k2,{x,y,o:clamp(Math.min(f,1-f)*8)})}else k2.style.opacity=0;
-  const vp=q(u,4.7,.25),meio=[(pos.loja[0]+pos.riv[0])/2,(pos.loja[1]+pos.riv[1])/2-40];
-  T($('h-vstx'),{x:meio[0]-70+dx,y:meio[1]-35+dy,s:vp<=0?0:lerp(3,1,E.out(vp)),o:clamp(vp*4)});
-},
-cadeia(u){
-  palavras($('k-tit'),u,0,.08);
-  ['k-e1','k-e2','k-e3','k-e4'].forEach((id,i)=>pop($(id),u,.1+i*.15,.4));
-  const ch=c=>BLOCO('cadeia',c,0);
-  // Mercadoria desce: soja (fazenda → indústria), óleo (indústria → loja), óleo (loja → famílias)
-  const seg=[[ch(1)-.1,1.0,'k-t1i',530,'lavoura'],[ch(3)-.1,1.1,'k-t2i',770,'produto-oleo'],[ch(4)+.4,1.0,'k-t3i',1010,'produto-oleo']];
-  const f=$('k-f');let mostrou=false;
-  seg.forEach(([a,d,tid,y0,img])=>{const k=E.io(q(u,a,d));$(tid).style.height=(k*100)+'%';
-    if(u>=a&&u<a+d+.15&&tid!=='k-t2i'){mostrou=true;$('k-fimg').src=`../../apps/web/public/arte/${img}.png`;T(f,{x:110,y:y0+k*240,o:1,s:lerp(.8,1,E.back(q(u,a,.25)))})}});
-  if(!mostrou)f.style.opacity=0;
-  // A indústria transforma: pulso
-  const pulso=q(u,ch(2),.4);$('k-e2').style.boxShadow=pulso>0&&pulso<1?`0 22px 44px #000b,0 0 0 ${12*(1-pulso)}px #e8bd4f`:'0 22px 44px #000b';
-  // Caminhão da transportadora leva o óleo da indústria à loja
-  const cam=$('k-cam');const ck=E.io(q(u,ch(3)-.1,1.1));if(u>ch(3)-.15&&u<ch(3)+1.1){T(cam,{x:110,y:770+ck*240,o:1,r:90})}else cam.style.opacity=0;
-  // O dinheiro volta: sobe pela faixa da direita
-  const da=ch(5)-.1;const dk=E.io(q(u,da,1.6));$('k-tdi').style.height=(dk*100)+'%';$('k-tdi').style.top=((1-dk)*100)+'%';
-  ['k-m1','k-m2','k-m3'].forEach((id,i)=>{const a=da+i*.45;if(u<a){$(id).style.opacity=0;return}const k=((u-a)%1.6)/1.6;T($(id),{x:856,y:lerp(1270,560,E.io(k)),o:clamp(Math.min(k,1-k)*10),s:1})});
-  entra($('k-rd'),u,da,.4);
-},
-tela(u){
-  palavras($('t-tit'),u,.1,.1);
-  entra($('t-mold'),u,.2,.6,160);
-  T($('t-img'),{s:lerp(1.18,1,E.out(q(u,.2,3.6))),x:lerp(-60,0,q(u,.2,3.6))});
-},
-problemas(u){
-  const b=i=>BLOCO('problemas',i,0);
-  const slam=(id,a,r)=>{const p=q(u,a,.22);const [dx,dy]=tremor(u,a+.2,.3,12);T($(id),{s:p<=0?0:lerp(1.8,1,E.out(p)),o:clamp(p*4),r,x:dx,y:dy})};
-  slam('q-p1',b(0),-2);slam('q-p2',b(1),1.5);slam('q-p3',b(2),-1);
-  // A pergunta tira os cartões da frente
-  const sai=E.io(q(u,b(3)-.1,.4));
-  ['q-p1','q-p2','q-p3'].forEach((id,i)=>{if(sai>0){$(id).style.opacity=String(+$(id).style.opacity*(1-sai));$(id).style.transform+=` translate(${(i%2?1:-1)*sai*700}px,0)`}});
-  const ip=q(u,b(3),.5);T($('q-int'),{s:ip<=0?0:E.back(ip),o:clamp(ip*4),y:Math.sin(u*5)*10*clamp(ip),r:Math.sin(u*3)*6});
-  palavras($('q-perg'),u,b(4),.12,.5);
-},
-robos(u){
-  const c=mixCam(CAM.brasil,CAM.mt,E.io(q(u,0,1.2)));
-  const pos={n1:proj(c,CID.sinop),n2:proj(c,CID.sorriso),n3:proj(c,CID.rondonopolis),ind:proj(c,CID.rondonopolis),loja:proj(c,CID.saopaulo)};
-  // afasta os rótulos que caem na mesma cidade
-  pos.n1=[pos.n1[0]+200,pos.n1[1]-40];pos.n2=[pos.n2[0]-90,pos.n2[1]+40];pos.n3=[pos.n3[0]-140,pos.n3[1]+90];pos.ind=[pos.ind[0]+230,pos.ind[1]-20];pos.loja=[pos.loja[0]-60,pos.loja[1]+10];
-  const brilhos=Object.values(pos).map(([x,y])=>[x,y,80,u>1.4?.5:0]);
-  mapa(c,{revela:1.1,brilhos,alpha:lerp(1,.75,q(u,6.6,.6))});
-  entra($('r-tag'),u,.2);
-  const nos=[['r-n1',pos.n1,1.1],['r-n2',pos.n2,1.3],['r-n3',pos.n3,1.5],['r-ind',pos.ind,2.1],['r-loja',pos.loja,3.4]];
-  nos.forEach(([id,[x,y],a])=>{const el=$(id);const p=q(u,a,.45);T(el,{x:x-el.offsetWidth/2,y:y-el.offsetHeight+20-(1-E.bounce(p))*240,o:clamp(p*5)})});
-  const topo=(id)=>{const el=$(id);const tr=el.style.transform.match(/translate\(([-\d.]+)px, ?([-\d.]+)px\)/);return tr?[+tr[1]+el.offsetWidth/2,+tr[2]+46]:[0,0]};
-  ['r-f1','r-f2','r-f3'].forEach((id,i)=>{const p=$(id);p.setAttribute('d',curva(topo(['r-n1','r-n2','r-n3'][i]),topo('r-ind'),.12));desenha(p,E.io(q(u,2.4+i*.12,.7)))});
-  const f4=$('r-f4');f4.setAttribute('d',curva(topo('r-ind'),topo('r-loja'),-.15));desenha(f4,E.io(q(u,3.7,.9)));
-  [['r-fs1','r-f1',3.0],['r-fs2','r-f3',3.3]].forEach(([id,cam,a])=>{if(u<a||u>a+1.2){$(id).style.opacity=0;return}const [x,y]=noCaminho($(cam),E.io(q(u,a,1.1)));T($(id),{x,y,o:1,s:.8})});
-  if(u>4.4&&u<6.2){const [x,y]=noCaminho(f4,E.io(q(u,4.4,1.6)));T($('r-fo'),{x,y,o:1,s:.9})}else $('r-fo').style.opacity=0;
-  // No fim, a pergunta toma a tela
-  const fim=q(u,6.6,.5);['r-n1','r-n2','r-n3','r-ind','r-loja','r-tag','r-fs1','r-fs2','r-fo'].forEach(id=>{if(fim>0)$(id).style.opacity=String(+$(id).style.opacity*(1-fim))});
-  document.querySelectorAll('#c-robos path').forEach(p=>p.style.opacity=1-fim);
-  if(u>6.6)palavras($('r-tit'),u,6.75,.1);else $('r-tit').style.opacity=0;
-},
-paixao(u){
-  const bat=x=>{const f=(x%1.05)/1.05;return 1+.12*Math.exp(-((f-.05)**2)/.003)+.08*Math.exp(-((f-.22)**2)/.003)};
-  const p=q(u,.1,.5);T($('x-cor'),{s:(p<=0?0:E.back(p))*(u>.6?bat(u-.6):1),o:clamp(p*4)});
-  palavras($('x-tit'),u,BLOCO('paixao',3,0)-.2,.12);
-},
-mundo(u){
-  // O Brasil encolhe e vira um ponto no planeta, que se acende pelo mundo
-  const c=mixCam(CAM.brasil,{lon:-53.6,lat:-14.4,k:3,cy:900},E.io(q(u,0,1.1)));
-  mapa(c,{passo:Math.max(6,20*c.k/24),tam:Math.max(4,12*c.k/24),alpha:1-q(u,.8,.4)});
-  const p=q(u,.7,.8);T($('w-pl'),{s:lerp(.3,1,E.out(p)),r:lerp(-20,0,q(u,.7,4)),o:clamp(p*3)});
-  // luzes pelo planeta
-  if(u>1.3){semente=77;for(let i=0;i<70;i++){const ang=rnd()*Math.PI*2,rad=Math.sqrt(rnd())*330,ap=1.3+rnd()*2.6;if(u<ap)continue;const x=540+Math.cos(ang)*rad,y=840+Math.sin(ang)*rad,k=clamp((u-ap)*4);ctx.fillStyle=`rgba(166,226,46,${.9*k})`;const tm=8+6*(1-clamp((u-ap)*2));ctx.fillRect(x-tm/2,y-tm/2,tm,tm)}}
-  palavras($('w-tit'),u,1.0,.12);
-},
-cta(u){
-  pop($('z-ic'),u,0,.4);
-  const n=Math.floor(q(u,.15,.7)*11);$('z-logo').textContent='AFTERMARKET'.slice(0,n);T($('z-logo'),{});
-  pop($('z-selo'),u,.8,.4,-2);
-  pop($('z-chat'),u,1.2,.45,0,{y:Math.sin(u*3)*8});
-  pop($('z-bot'),u,1.7,.5);
-  if(u>2.2){const g=(Math.sin((u-2.2)*5)+1)/2;$('z-bot').style.boxShadow=`0 12px 0 #6f9c16,0 0 0 ${g*30}px #a6e22e${Math.round((1-g)*90).toString(16).padStart(2,'0')}`}
-  entra($('z-ben'),u,2.4);
-},
-};
+      // ---------- Cenas (u = segundos dentro da cena) ----------
+      const CENA = {
+        planeta(u) {
+          // O planeta gira devagar e o zoom mergulha no Brasil no fim.
+          const z = E.io(q(u, 2.6, 1.6));
+          const s = lerp(1, 8.5, z) * lerp(0.92, 1, E.out(q(u, 0, 1.2)));
+          T($('p-pl'), {
+            s,
+            r: lerp(-6, 0, q(u, 0, 2.6)),
+            x: lerp(0, -106 * s, z),
+            y: lerp(0, 10 - 152 * s, z),
+            o: 1 - q(u, 3.85, 0.3),
+          });
+          palavras($('p-tit'), u, -0.6, 0.08);
+          $('p-tit').style.opacity = String(1 - q(u, 2.6, 0.4));
+        },
+        brasil(u) {
+          const c = CAM.brasil;
+          palavras($('b-tit'), u, 0.05, 0.08);
+          const pinos = [
+            ['b-sbo', 'sbo', BLOCO('brasil', 1, 0.15)],
+            ['b-acre', 'acre', BLOCO('brasil', 2, 0.05)],
+            ['b-xx', 'xx', BLOCO('brasil', 3, 0.25)],
+          ];
+          const brilhos = pinos
+            .filter(([, , a]) => u > a)
+            .map(([, cid, a]) => {
+              const [x, y] = proj(c, CID[cid]);
+              return [x, y, 90, clamp((u - a) * 3) * (0.6 + 0.4 * Math.sin((u - a) * 6) ** 2)];
+            });
+          mapa(c, { revela: E.out(q(u, 0, 1.4)) * 1.05, origem: proj(c, CID.sbo), brilhos });
+          pinos.forEach(([id, cid, a]) => {
+            const [x, y] = proj(c, CID[cid]);
+            const el = $(id);
+            const p = q(u, a, 0.6);
+            const w = el.offsetWidth,
+              h = el.offsetHeight;
+            const extra =
+              id === 'b-xx' && u > a + 0.5
+                ? Math.sin((u - a - 0.5) * 9) * 4 * clamp(1 - (u - a - 0.5) / 1.5)
+                : 0;
+            T(el, {
+              x: x - w / 2,
+              y: y - h + 11 - (1 - E.bounce(p)) * 360,
+              o: clamp(p * 5),
+              r: extra,
+            });
+          });
+        },
+        historia(u) {
+          // Câmera na região de Campinas: você, seu amigo e o concorrente
+          const c = CAM.regiao;
+          const pos = {
+            fab: proj(c, CID.piracicaba),
+            loja: proj(c, CID.campinas),
+            faz: proj(c, CID.limeira),
+            riv: proj(c, CID.hortolandia),
+          };
+          pos.riv = [pos.riv[0] - 200, pos.riv[1] + 200];
+          pos.loja = [pos.loja[0] + 20, pos.loja[1] + 40];
+          const ativos = [
+            [...pos.fab, 170, u > 0.4 ? 1 : 0],
+            [...pos.loja, 170, u > 0.8 ? 1 : 0],
+            [...pos.faz, 170, u > 2.2 ? 0.8 : 0],
+            [...pos.riv, 170, u > 4.2 ? 0.7 : 0],
+          ];
+          mapa(c, {
+            passo: 22,
+            tam: 13,
+            revela: E.out(q(u, 0, 1)) * 1.05,
+            origem: pos.fab,
+            brilhos: ativos,
+          });
+          palavras($('h-tit'), u, 0.1, 0.09);
+          const coloca = (id, [x, y], a) => {
+            const el = $(id);
+            const p = q(u, a, 0.5);
+            T(el, {
+              x: x - el.offsetWidth / 2,
+              y: y - el.offsetHeight + 30 - (1 - E.bounce(p)) * 300,
+              o: clamp(p * 5),
+            });
+          };
+          coloca('h-fab', pos.fab, 0.4);
+          coloca('h-loja', pos.loja, 0.8);
+          coloca('h-faz', pos.faz, 2.2);
+          const [dx, dy] = tremor(u, 4.75, 0.4, 14);
+          const rp = q(u, 4.2, 0.5),
+            rv = $('h-riv');
+          T(rv, {
+            x: pos.riv[0] - rv.offsetWidth / 2 + dx,
+            y: pos.riv[1] - rv.offsetHeight + 30 - (1 - E.bounce(rp)) * 300 + dy,
+            o: clamp(rp * 5),
+          });
+          // Rotas: amigo → sua fábrica (azul), sua fábrica → sua loja (verde)
+          const r1 = $('h-r1'),
+            r2 = $('h-r2'),
+            vs = $('h-vs');
+          r1.setAttribute(
+            'd',
+            curva([pos.faz[0], pos.faz[1] - 40], [pos.fab[0] + 10, pos.fab[1] - 40], -0.2),
+          );
+          r2.setAttribute(
+            'd',
+            curva([pos.fab[0] + 30, pos.fab[1] - 30], [pos.loja[0] - 30, pos.loja[1] - 40], 0.12),
+          );
+          vs.setAttribute(
+            'd',
+            `M${pos.loja[0] - 40} ${pos.loja[1] + 20} L${pos.riv[0] + 40} ${pos.riv[1] - 100}`,
+          );
+          desenha(r2, E.io(q(u, 1.1, 0.8)));
+          desenha(r1, E.io(q(u, 2.6, 0.8)));
+          vs.style.opacity = u > 4.6 ? (Math.floor(u * 6) % 2 ? 1 : 0.55) : 0;
+          const k1 = $('h-k1'),
+            k2 = $('h-k2');
+          if (u > 3.3) {
+            const f = ((u - 3.3) % 2.2) / 2.2;
+            const [x, y] = noCaminho(r1, f);
+            T(k1, { x, y, o: clamp(Math.min(f, 1 - f) * 8) });
+          } else k1.style.opacity = 0;
+          if (u > 1.9) {
+            const f = ((u - 1.9) % 2.4) / 2.4;
+            const [x, y] = noCaminho(r2, f);
+            T(k2, { x, y, o: clamp(Math.min(f, 1 - f) * 8) });
+          } else k2.style.opacity = 0;
+          const vp = q(u, 4.7, 0.25),
+            meio = [(pos.loja[0] + pos.riv[0]) / 2, (pos.loja[1] + pos.riv[1]) / 2 - 40];
+          T($('h-vstx'), {
+            x: meio[0] - 70 + dx,
+            y: meio[1] - 35 + dy,
+            s: vp <= 0 ? 0 : lerp(3, 1, E.out(vp)),
+            o: clamp(vp * 4),
+          });
+        },
+        cadeia(u) {
+          palavras($('k-tit'), u, 0, 0.08);
+          ['k-e1', 'k-e2', 'k-e3', 'k-e4'].forEach((id, i) => pop($(id), u, 0.1 + i * 0.15, 0.4));
+          const ch = (c) => BLOCO('cadeia', c, 0);
+          // Mercadoria desce: soja (fazenda → indústria), óleo (indústria → loja), óleo (loja → famílias)
+          const seg = [
+            [ch(1) - 0.1, 1.0, 'k-t1i', 530, 'lavoura'],
+            [ch(3) - 0.1, 1.1, 'k-t2i', 770, 'produto-oleo'],
+            [ch(4) + 0.4, 1.0, 'k-t3i', 1010, 'produto-oleo'],
+          ];
+          const f = $('k-f');
+          let mostrou = false;
+          seg.forEach(([a, d, tid, y0, img]) => {
+            const k = E.io(q(u, a, d));
+            $(tid).style.height = k * 100 + '%';
+            if (u >= a && u < a + d + 0.15 && tid !== 'k-t2i') {
+              mostrou = true;
+              $('k-fimg').src = `../../apps/web/public/arte/${img}.png`;
+              T(f, { x: 110, y: y0 + k * 240, o: 1, s: lerp(0.8, 1, E.back(q(u, a, 0.25))) });
+            }
+          });
+          if (!mostrou) f.style.opacity = 0;
+          // A indústria transforma: pulso
+          const pulso = q(u, ch(2), 0.4);
+          $('k-e2').style.boxShadow =
+            pulso > 0 && pulso < 1
+              ? `0 22px 44px #000b,0 0 0 ${12 * (1 - pulso)}px #e8bd4f`
+              : '0 22px 44px #000b';
+          // Caminhão da transportadora leva o óleo da indústria à loja
+          const cam = $('k-cam');
+          const ck = E.io(q(u, ch(3) - 0.1, 1.1));
+          if (u > ch(3) - 0.15 && u < ch(3) + 1.1) {
+            T(cam, { x: 110, y: 770 + ck * 240, o: 1, r: 90 });
+          } else cam.style.opacity = 0;
+          // O dinheiro volta: sobe pela faixa da direita
+          const da = ch(5) - 0.1;
+          const dk = E.io(q(u, da, 1.6));
+          $('k-tdi').style.height = dk * 100 + '%';
+          $('k-tdi').style.top = (1 - dk) * 100 + '%';
+          ['k-m1', 'k-m2', 'k-m3'].forEach((id, i) => {
+            const a = da + i * 0.45;
+            if (u < a) {
+              $(id).style.opacity = 0;
+              return;
+            }
+            const k = ((u - a) % 1.6) / 1.6;
+            T($(id), {
+              x: 856,
+              y: lerp(1270, 560, E.io(k)),
+              o: clamp(Math.min(k, 1 - k) * 10),
+              s: 1,
+            });
+          });
+          entra($('k-rd'), u, da, 0.4);
+        },
+        tela(u) {
+          palavras($('t-tit'), u, 0.1, 0.1);
+          entra($('t-mold'), u, 0.2, 0.6, 160);
+          T($('t-img'), {
+            s: lerp(1.18, 1, E.out(q(u, 0.2, 3.6))),
+            x: lerp(-60, 0, q(u, 0.2, 3.6)),
+          });
+        },
+        problemas(u) {
+          const b = (i) => BLOCO('problemas', i, 0);
+          const slam = (id, a, r) => {
+            const p = q(u, a, 0.22);
+            const [dx, dy] = tremor(u, a + 0.2, 0.3, 12);
+            T($(id), { s: p <= 0 ? 0 : lerp(1.8, 1, E.out(p)), o: clamp(p * 4), r, x: dx, y: dy });
+          };
+          slam('q-p1', b(0), -2);
+          slam('q-p2', b(1), 1.5);
+          slam('q-p3', b(2), -1);
+          // A pergunta tira os cartões da frente
+          const sai = E.io(q(u, b(3) - 0.1, 0.4));
+          ['q-p1', 'q-p2', 'q-p3'].forEach((id, i) => {
+            if (sai > 0) {
+              $(id).style.opacity = String(+$(id).style.opacity * (1 - sai));
+              $(id).style.transform += ` translate(${(i % 2 ? 1 : -1) * sai * 700}px,0)`;
+            }
+          });
+          const ip = q(u, b(3), 0.5);
+          T($('q-int'), {
+            s: ip <= 0 ? 0 : E.back(ip),
+            o: clamp(ip * 4),
+            y: Math.sin(u * 5) * 10 * clamp(ip),
+            r: Math.sin(u * 3) * 6,
+          });
+          palavras($('q-perg'), u, b(4), 0.12, 0.5);
+        },
+        robos(u) {
+          const c = mixCam(CAM.brasil, CAM.mt, E.io(q(u, 0, 1.2)));
+          const pos = {
+            n1: proj(c, CID.sinop),
+            n2: proj(c, CID.sorriso),
+            n3: proj(c, CID.rondonopolis),
+            ind: proj(c, CID.rondonopolis),
+            loja: proj(c, CID.saopaulo),
+          };
+          // afasta os rótulos que caem na mesma cidade
+          pos.n1 = [pos.n1[0] + 200, pos.n1[1] - 40];
+          pos.n2 = [pos.n2[0] - 90, pos.n2[1] + 40];
+          pos.n3 = [pos.n3[0] - 140, pos.n3[1] + 90];
+          pos.ind = [pos.ind[0] + 230, pos.ind[1] - 20];
+          pos.loja = [pos.loja[0] - 60, pos.loja[1] + 10];
+          const brilhos = Object.values(pos).map(([x, y]) => [x, y, 80, u > 1.4 ? 0.5 : 0]);
+          mapa(c, { revela: 1.1, brilhos, alpha: lerp(1, 0.75, q(u, 6.6, 0.6)) });
+          entra($('r-tag'), u, 0.2);
+          const nos = [
+            ['r-n1', pos.n1, 1.1],
+            ['r-n2', pos.n2, 1.3],
+            ['r-n3', pos.n3, 1.5],
+            ['r-ind', pos.ind, 2.1],
+            ['r-loja', pos.loja, 3.4],
+          ];
+          nos.forEach(([id, [x, y], a]) => {
+            const el = $(id);
+            const p = q(u, a, 0.45);
+            T(el, {
+              x: x - el.offsetWidth / 2,
+              y: y - el.offsetHeight + 20 - (1 - E.bounce(p)) * 240,
+              o: clamp(p * 5),
+            });
+          });
+          const topo = (id) => {
+            const el = $(id);
+            const tr = el.style.transform.match(/translate\(([-\d.]+)px, ?([-\d.]+)px\)/);
+            return tr ? [+tr[1] + el.offsetWidth / 2, +tr[2] + 46] : [0, 0];
+          };
+          ['r-f1', 'r-f2', 'r-f3'].forEach((id, i) => {
+            const p = $(id);
+            p.setAttribute('d', curva(topo(['r-n1', 'r-n2', 'r-n3'][i]), topo('r-ind'), 0.12));
+            desenha(p, E.io(q(u, 2.4 + i * 0.12, 0.7)));
+          });
+          const f4 = $('r-f4');
+          f4.setAttribute('d', curva(topo('r-ind'), topo('r-loja'), -0.15));
+          desenha(f4, E.io(q(u, 3.7, 0.9)));
+          [
+            ['r-fs1', 'r-f1', 3.0],
+            ['r-fs2', 'r-f3', 3.3],
+          ].forEach(([id, cam, a]) => {
+            if (u < a || u > a + 1.2) {
+              $(id).style.opacity = 0;
+              return;
+            }
+            const [x, y] = noCaminho($(cam), E.io(q(u, a, 1.1)));
+            T($(id), { x, y, o: 1, s: 0.8 });
+          });
+          if (u > 4.4 && u < 6.2) {
+            const [x, y] = noCaminho(f4, E.io(q(u, 4.4, 1.6)));
+            T($('r-fo'), { x, y, o: 1, s: 0.9 });
+          } else $('r-fo').style.opacity = 0;
+          // No fim, a pergunta toma a tela
+          const fim = q(u, 6.6, 0.5);
+          ['r-n1', 'r-n2', 'r-n3', 'r-ind', 'r-loja', 'r-tag', 'r-fs1', 'r-fs2', 'r-fo'].forEach(
+            (id) => {
+              if (fim > 0) $(id).style.opacity = String(+$(id).style.opacity * (1 - fim));
+            },
+          );
+          document.querySelectorAll('#c-robos path').forEach((p) => (p.style.opacity = 1 - fim));
+          if (u > 6.6) palavras($('r-tit'), u, 6.75, 0.1);
+          else $('r-tit').style.opacity = 0;
+        },
+        paixao(u) {
+          const bat = (x) => {
+            const f = (x % 1.05) / 1.05;
+            return (
+              1 +
+              0.12 * Math.exp(-((f - 0.05) ** 2) / 0.003) +
+              0.08 * Math.exp(-((f - 0.22) ** 2) / 0.003)
+            );
+          };
+          const p = q(u, 0.1, 0.5);
+          T($('x-cor'), {
+            s: (p <= 0 ? 0 : E.back(p)) * (u > 0.6 ? bat(u - 0.6) : 1),
+            o: clamp(p * 4),
+          });
+          palavras($('x-tit'), u, BLOCO('paixao', 3, 0) - 0.2, 0.12);
+        },
+        mundo(u) {
+          // O Brasil encolhe e vira um ponto no planeta, que se acende pelo mundo
+          const c = mixCam(
+            CAM.brasil,
+            { lon: -53.6, lat: -14.4, k: 3, cy: 900 },
+            E.io(q(u, 0, 1.1)),
+          );
+          mapa(c, {
+            passo: Math.max(6, (20 * c.k) / 24),
+            tam: Math.max(4, (12 * c.k) / 24),
+            alpha: 1 - q(u, 0.8, 0.4),
+          });
+          const p = q(u, 0.7, 0.8);
+          T($('w-pl'), {
+            s: lerp(0.3, 1, E.out(p)),
+            r: lerp(-20, 0, q(u, 0.7, 4)),
+            o: clamp(p * 3),
+          });
+          // luzes pelo planeta
+          if (u > 1.3) {
+            semente = 77;
+            for (let i = 0; i < 70; i++) {
+              const ang = rnd() * Math.PI * 2,
+                rad = Math.sqrt(rnd()) * 330,
+                ap = 1.3 + rnd() * 2.6;
+              if (u < ap) continue;
+              const x = 540 + Math.cos(ang) * rad,
+                y = 840 + Math.sin(ang) * rad,
+                k = clamp((u - ap) * 4);
+              ctx.fillStyle = `rgba(166,226,46,${0.9 * k})`;
+              const tm = 8 + 6 * (1 - clamp((u - ap) * 2));
+              ctx.fillRect(x - tm / 2, y - tm / 2, tm, tm);
+            }
+          }
+          palavras($('w-tit'), u, 1.0, 0.12);
+        },
+        cta(u) {
+          pop($('z-ic'), u, 0, 0.4);
+          const n = Math.floor(q(u, 0.15, 0.7) * 11);
+          $('z-logo').textContent = 'AFTERMARKET'.slice(0, n);
+          T($('z-logo'), {});
+          pop($('z-selo'), u, 0.8, 0.4, -2);
+          pop($('z-chat'), u, 1.2, 0.45, 0, { y: Math.sin(u * 3) * 8 });
+          pop($('z-bot'), u, 1.7, 0.5);
+          if (u > 2.2) {
+            const g = (Math.sin((u - 2.2) * 5) + 1) / 2;
+            $('z-bot').style.boxShadow = `0 12px 0 #6f9c16,0 0 0 ${g * 30}px #a6e22e${Math.round(
+              (1 - g) * 90,
+            )
+              .toString(16)
+              .padStart(2, '0')}`;
+          }
+          entra($('z-ben'), u, 2.4);
+        },
+      };
 
-// ---------- Legenda: blocos curtos, palavra da vez em verde ----------
-const LEG=CENAS.map(c=>{
-  if(!c.leg.length)return[];
-  const ini=c.a+.15,fim=c.a+c.d-.2,peso=w=>w.length+3;
-  const tot=c.leg.reduce((s,b)=>s+b.split(' ').reduce((x,w)=>x+peso(w),0),0);
-  let t=ini;return c.leg.map(b=>{const ws=b.split(' ').map(w=>{const d=(fim-ini)*peso(w)/tot;const o={w,a:t,b:t+d};t+=d;return o});return{a:ws[0].a,b:ws[ws.length-1].b,ws}});
-});
-// Início (em segundos dentro da cena) do bloco de legenda n da cena: sincroniza imagem e som com a fala.
-function BLOCO(id,n,mais=0){const i=CENAS.findIndex(c=>c.id===id);const b=LEG[i][Math.min(n,LEG[i].length-1)];return b.a-CENAS[i].a+mais}
-let blocoAtual=null;
-function legenda(t,i){
-  const lista=LEG[i];const bl=lista.find((b,k)=>t>=b.a&&t<(k===lista.length-1?b.b+.2:lista[k+1].a));
-  const p=$('capp');
-  if(bl!==blocoAtual){blocoAtual=bl;p.innerHTML=bl?bl.ws.map(x=>`<span>${x.w}</span>`).join(' '):''}
-  if(!bl){$('cap').style.opacity=0;return}
-  [...p.children].forEach((s,k)=>{const x=bl.ws[k];s.className=t>=x.b?'dita':t>=x.a?'agora':''});
-  const e=q(t,bl.a,.14);T($('cap'),{s:lerp(.88,1,E.back(e)),o:clamp(e*4)});
-}
+      // ---------- Legenda: blocos curtos, palavra da vez em verde ----------
+      const LEG = CENAS.map((c) => {
+        if (!c.leg.length) return [];
+        const ini = c.a + 0.15,
+          fim = c.a + c.d - 0.2,
+          peso = (w) => w.length + 3;
+        const tot = c.leg.reduce((s, b) => s + b.split(' ').reduce((x, w) => x + peso(w), 0), 0);
+        let t = ini;
+        return c.leg.map((b) => {
+          const ws = b.split(' ').map((w) => {
+            const d = ((fim - ini) * peso(w)) / tot;
+            const o = { w, a: t, b: t + d };
+            t += d;
+            return o;
+          });
+          return { a: ws[0].a, b: ws[ws.length - 1].b, ws };
+        });
+      });
+      // Início (em segundos dentro da cena) do bloco de legenda n da cena: sincroniza imagem e som com a fala.
+      function BLOCO(id, n, mais = 0) {
+        const i = CENAS.findIndex((c) => c.id === id);
+        const b = LEG[i][Math.min(n, LEG[i].length - 1)];
+        return b.a - CENAS[i].a + mais;
+      }
+      let blocoAtual = null;
+      function legenda(t, i) {
+        const lista = LEG[i];
+        const bl = lista.find(
+          (b, k) => t >= b.a && t < (k === lista.length - 1 ? b.b + 0.2 : lista[k + 1].a),
+        );
+        const p = $('capp');
+        if (bl !== blocoAtual) {
+          blocoAtual = bl;
+          p.innerHTML = bl ? bl.ws.map((x) => `<span>${x.w}</span>`).join(' ') : '';
+        }
+        if (!bl) {
+          $('cap').style.opacity = 0;
+          return;
+        }
+        [...p.children].forEach((s, k) => {
+          const x = bl.ws[k];
+          s.className = t >= x.b ? 'dita' : t >= x.a ? 'agora' : '';
+        });
+        const e = q(t, bl.a, 0.14);
+        T($('cap'), { s: lerp(0.88, 1, E.back(e)), o: clamp(e * 4) });
+      }
 
-let t=0,atual=-1;
-function render(){
-  const idx=t>=DUR?CENAS.length-1:Math.max(0,CENAS.findIndex(c=>t>=c.a&&t<c.a+c.d));
-  if(idx!==atual){CENAS.forEach((c,k)=>c.el.classList.toggle('on',k===idx));atual=idx}
-  ctx.clearRect(0,0,1080,1920);
-  const c=CENAS[idx];CENA[c.id](t-c.a);
-  $('grade').style.transform=`translate(${-(t*18)%60}px,${-(t*30)%60}px)`;
-  pts.forEach(p=>{const y=2100-((t*p.v+p.o)%2300);p.i.style.transform=`translate(${p.x}px,${y}px) scale(${p.s})`;p.i.style.opacity=.22+.18*Math.sin(t*2+p.o)});
-  transicao(t);
-  let fl=0;IMPACTOS.forEach(([h,amp])=>{if(t>=h&&t<h+.2)fl=Math.max(fl,amp*(1-(t-h)/.2))});$('flash').style.opacity=fl;
-  $('marca').style.opacity=c.id==='cta'||c.id==='planeta'?0:.7;
-  legenda(t,idx);
-  $('tt').textContent=fmt(t)+' / '+fmt(DUR);$('pos').value=Math.round(1000*t/DUR);
-}
-const fmt=s=>Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
-const ini=id=>CENA_DE[id].a;
-const IMPACTOS=[[ini('historia')+4.7,.35],...[0,1,2].map(i=>[ini('problemas')+BLOCO('problemas',i,0),.3]),[ini('cta')+1.7,.25]];
+      let t = 0,
+        atual = -1;
+      function render() {
+        const idx =
+          t >= DUR
+            ? CENAS.length - 1
+            : Math.max(
+                0,
+                CENAS.findIndex((c) => t >= c.a && t < c.a + c.d),
+              );
+        if (idx !== atual) {
+          CENAS.forEach((c, k) => c.el.classList.toggle('on', k === idx));
+          atual = idx;
+        }
+        ctx.clearRect(0, 0, 1080, 1920);
+        const c = CENAS[idx];
+        CENA[c.id](t - c.a);
+        $('grade').style.transform = `translate(${-(t * 18) % 60}px,${-(t * 30) % 60}px)`;
+        pts.forEach((p) => {
+          const y = 2100 - ((t * p.v + p.o) % 2300);
+          p.i.style.transform = `translate(${p.x}px,${y}px) scale(${p.s})`;
+          p.i.style.opacity = 0.22 + 0.18 * Math.sin(t * 2 + p.o);
+        });
+        transicao(t);
+        let fl = 0;
+        IMPACTOS.forEach(([h, amp]) => {
+          if (t >= h && t < h + 0.2) fl = Math.max(fl, amp * (1 - (t - h) / 0.2));
+        });
+        $('flash').style.opacity = fl;
+        $('marca').style.opacity = c.id === 'cta' || c.id === 'planeta' ? 0 : 0.7;
+        legenda(t, idx);
+        $('tt').textContent = fmt(t) + ' / ' + fmt(DUR);
+        $('pos').value = Math.round((1000 * t) / DUR);
+      }
+      const fmt = (s) => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+      const ini = (id) => CENA_DE[id].a;
+      const IMPACTOS = [
+        [ini('historia') + 4.7, 0.35],
+        ...[0, 1, 2].map((i) => [ini('problemas') + BLOCO('problemas', i, 0), 0.3]),
+        [ini('cta') + 1.7, 0.25],
+      ];
 
-// ---------- Efeitos sonoros (síntese no estilo dos geradores retrô, como o ZzFX) ----------
-// Tudo é gerado aqui, no tempo exato de cada evento, sem arquivos de som externos.
-function trilha(sr=48000){
-  const ac=new OfflineAudioContext(2,Math.ceil((DUR+.6)*sr),sr);
-  const master=ac.createGain();master.gain.value=1.15;
-  const comp=ac.createDynamicsCompressor();comp.threshold.value=-14;comp.knee.value=6;comp.ratio.value=14;comp.attack.value=.002;comp.release.value=.18;
-  master.connect(comp);comp.connect(ac.destination);
-  // Sala: reverb curto gerado (ruído que decai)
-  semente=303;const ir=ac.createBuffer(2,sr*1.4|0,sr);for(let ch=0;ch<2;ch++){const d=ir.getChannelData(ch);for(let i=0;i<d.length;i++)d[i]=(rnd()*2-1)*Math.pow(1-i/d.length,3.2)}
-  const rev=ac.createConvolver();rev.buffer=ir;const revG=ac.createGain();revG.gain.value=.3;rev.connect(revG);revG.connect(master);
-  semente=99;const rb=ac.createBuffer(1,sr*2,sr);const rd=rb.getChannelData(0);for(let i=0;i<rd.length;i++)rd[i]=rnd()*2-1;
-  const saida=(no,pan=0,send=.2)=>{const p=ac.createStereoPanner();p.pan.value=pan;no.connect(p);p.connect(master);if(send>0){const s=ac.createGain();s.gain.value=send;p.connect(s);s.connect(rev)}};
-  const env=(g,t,vol,at,dur)=>{g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+at);g.gain.exponentialRampToValueAtTime(.0001,t+dur)};
-  const tom=(t,{tipo='square',f0=440,f1,dur=.2,vol=.15,at=.004,pan=0,send=.2,lp}={})=>{const o=ac.createOscillator();o.type=tipo;o.frequency.setValueAtTime(f0,t);if(f1)o.frequency.exponentialRampToValueAtTime(f1,t+dur);const g=ac.createGain();env(g,t,vol,at,dur);let no=g;if(lp){const f=ac.createBiquadFilter();f.type='lowpass';f.frequency.value=lp;g.connect(f);no=f}o.connect(g);saida(no,pan,send);o.start(t);o.stop(t+dur+.05)};
-  const ruido=(t,{dur=.2,vol=.15,tipo='bandpass',f0=1000,f1,q=1,at=.004,pan=0,send=.2}={})=>{const s=ac.createBufferSource();s.buffer=rb;const f=ac.createBiquadFilter();f.type=tipo;f.Q.value=q;f.frequency.setValueAtTime(f0,t);if(f1)f.frequency.exponentialRampToValueAtTime(f1,t+dur);const g=ac.createGain();env(g,t,vol,at,dur);s.connect(f);f.connect(g);saida(g,pan,send);s.start(t,(t*7.3)%1.5);s.stop(t+dur+.05)};
-  const N=n=>440*Math.pow(2,(n-69)/12);
-  const S={
-    whoosh:(t,d=.34,v=.16)=>{ruido(t,{dur:d,vol:v,f0:500,f1:5000,q:.8,at:d*.6,send:.15});},
-    whooshDesce:(t,d=.4,v=.14)=>{ruido(t,{dur:d,vol:v,f0:4000,f1:400,q:.8,at:d*.3,send:.15})},
-    pop:(t,f=620,v=.16,pan=0)=>{tom(t,{tipo:'triangle',f0:f*.7,f1:f*1.6,dur:.11,vol:v,pan,send:.12})},
-    blip:(t,f=880,v=.08,pan=0)=>{tom(t,{f0:f,dur:.06,vol:v,pan,send:.1})},
-    tick:(t,f=2600,v=.035,pan=0)=>{tom(t,{f0:f,dur:.025,vol:v,pan,send:.05})},
-    tecla:(t,v=.07)=>{ruido(t,{dur:.03,vol:v,tipo:'highpass',f0:3500,send:.05});tom(t,{f0:1900,dur:.02,vol:v*.5,send:0})},
-    thud:(t,v=.5)=>{tom(t,{tipo:'sine',f0:150,f1:42,dur:.3,vol:v,send:.08});ruido(t,{dur:.07,vol:v*.4,tipo:'lowpass',f0:500,send:.05})},
-    cai:(t,v=.1,pan=0)=>{tom(t,{f0:1500,f1:240,dur:.3,vol:v,pan,send:.15});},
-    ping:(t,f=1568,v=.11,pan=0)=>{tom(t,{tipo:'sine',f0:f,dur:.8,vol:v,pan,send:.6});tom(t,{tipo:'sine',f0:f*2,dur:.4,vol:v*.3,pan,send:.6})},
-    moeda:(t,v=.1,pan=0)=>{tom(t,{f0:N(83),dur:.08,vol:v,pan,send:.25});tom(t+.075,{f0:N(88),dur:.32,vol:v,pan,send:.35})},
-    impacto:(t,v=.75)=>{S.thud(t,v);tom(t,{tipo:'sine',f0:70,f1:32,dur:.7,vol:v*.6,send:.1});ruido(t,{dur:.35,vol:v*.45,f0:1200,f1:250,q:.7,send:.3})},
-    buzz:(t,v=.06)=>{tom(t,{tipo:'sawtooth',f0:110,dur:.35,vol:v,lp:1200,send:.1});tom(t,{tipo:'sawtooth',f0:116.5,dur:.35,vol:v,lp:1200,send:.1})},
-    zip:(t,d=.6,v=.05,f0=260,f1=1300)=>{tom(t,{tipo:'sawtooth',f0,f1,dur:d,vol:v,at:d*.5,lp:2200,send:.2})},
-    motor:(t,d,v=.05,pan=0)=>{ruido(t,{dur:d,vol:v,tipo:'lowpass',f0:240,at:.3,pan,send:.05});tom(t,{tipo:'sawtooth',f0:52,dur:d,vol:v*.7,at:.3,lp:320,pan,send:0})},
-    arpejo:(t,notas,passo=.09,tipo='square',v=.07,d=.22)=>{notas.forEach((n,i)=>tom(t+i*passo,{tipo,f0:N(n),dur:d,vol:v,send:.35}))},
-    acorde:(t,notas,d=1.4,v=.05,tipo='triangle')=>{notas.forEach(n=>tom(t,{tipo,f0:N(n),dur:d,vol:v,at:.08,send:.5}))},
-    sobe:(t,d=1.5,v=.08)=>{ruido(t,{dur:d,vol:v,f0:200,f1:3000,q:1.2,at:d*.9,send:.3});tom(t,{tipo:'sine',f0:60,f1:120,dur:d,vol:v*.8,at:d*.8,send:.2})},
-    brilho:(t,n=6,v=.05)=>{semente=Math.floor(t*1000)+1;for(let i=0;i<n;i++)tom(t+i*.07,{tipo:'sine',f0:2000+rnd()*2400,dur:.35,vol:v,pan:rnd()*1.6-.8,send:.7})},
-    rabisco:(t,d=.4,v=.05)=>{for(let i=0;i<6;i++)ruido(t+i*d/6,{dur:d/6,vol:v,f0:2200+((i*397)%900),q:3,send:.05})},
-    coracao:(t,v=.5)=>{tom(t,{tipo:'sine',f0:90,f1:45,dur:.18,vol:v,send:.1});tom(t+.2,{tipo:'sine',f0:80,f1:42,dur:.16,vol:v*.7,send:.1})},
-    robo:(t,f=660,v=.06,pan=0)=>{tom(t,{f0:f,f1:f*1.5,dur:.08,vol:v,pan,send:.15});tom(t+.09,{f0:f*.75,dur:.08,vol:v,pan,send:.15})},
-    clique:(t,v=.12)=>{ruido(t,{dur:.025,vol:v,tipo:'highpass',f0:2500,send:.05});tom(t,{f0:1400,dur:.03,vol:v*.6,send:0})},
-  };
-  const at=(id,u)=>CENA_DE[id].a+u;
-  // Base sonora suave: um acorde grave por cena (baixo o bastante para a narração) e pulso nas cenas intensas
-  const BASE={planeta:[45,57,64,71],brasil:[41,53,60,69],historia:[48,55,64,67],cadeia:[43,55,62,71],tela:[48,55,60,64],problemas:[38,50,57,65],robos:[40,52,59,67],paixao:[41,53,60,65],mundo:[45,57,64,72],cta:[48,55,64,72]};
-  CENAS.forEach(c=>{BASE[c.id].forEach((n,i)=>{const o=ac.createOscillator();o.type=i?'triangle':'sine';o.frequency.value=N(n);const lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=i?900:400;const g=ac.createGain();const v=i?.016:.05,t0=Math.max(0,c.a-.15),t1=c.a+c.d+.15;g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(v,t0+.35);g.gain.setValueAtTime(v,t1-.35);g.gain.linearRampToValueAtTime(0,t1);o.connect(lp);lp.connect(g);saida(g,(i%2?.25:-.25)*(i>0),.25);o.start(t0);o.stop(t1+.05)})});
-  [['historia',0,7],['problemas',0,7.6],['cta',1.7,7.4],['robos',2,6.6]].forEach(([id,u0,u1])=>{for(let u=u0;u<u1;u+=.6)tom(at(id,u),{tipo:'sine',f0:120,f1:46,dur:.16,vol:.16,send:0})});
-  // Transições
-  CENAS.forEach(c=>{if(c.a>0&&c.cor!=='none')S.whoosh(c.a-.24,.36,.14)});
-  // Títulos: um toque por palavra (bem baixo)
-  const toques=(id,u0,n,passo)=>{for(let i=0;i<n;i++)S.tick(at(id,u0+i*passo),2200+i*140,.03)};
-  // 1 planeta
-  S.sobe(at('planeta',0),3.6,.12);S.brilho(at('planeta',.3),5,.06);S.brilho(at('planeta',1.6),4,.05);S.whoosh(at('planeta',3.0),1.0,.26);
-  // 2 brasil
-  for(let i=0;i<14;i++)S.tick(at('brasil',.05+i*.08),1600+i*90,.025);
-  [[1,.15,-.1,N(76)],[2,.05,-.6,N(79)],[3,.25,.4,N(84)]].forEach(([n,m,pan,f])=>{const u=BLOCO('brasil',n,m);S.cai(at('brasil',u),.09,pan);S.thud(at('brasil',u+.32),.35);S.ping(at('brasil',u+.34),f,.09,pan)});
-  {const u=BLOCO('brasil',3,.25);tom(at('brasil',u+.55),{tipo:'square',f0:N(72),f1:N(84),dur:.18,vol:.06,send:.3});tom(at('brasil',u+.75),{tipo:'square',f0:N(84),f1:N(72),dur:.18,vol:.06,send:.3});S.brilho(at('brasil',BLOCO('brasil',4,.1)),6,.04)}
-  // 3 história
-  toques('historia',.1,4,.09);
-  S.cai(at('historia',.4),.07,-.4);S.thud(at('historia',.72),.3);S.cai(at('historia',.8),.07,.4);S.thud(at('historia',1.12),.3);
-  S.zip(at('historia',1.1),.8,.04);S.motor(at('historia',1.9),5,.03,.3);
-  S.cai(at('historia',2.2),.07,0);S.thud(at('historia',2.52),.3);S.zip(at('historia',2.6),.8,.04,330,1500);S.moeda(at('historia',3.0),.07,-.2);
-  S.cai(at('historia',4.2),.07,.3);S.impacto(at('historia',4.7),.7);S.buzz(at('historia',4.8),.05);
-  // 4 cadeia
-  toques('cadeia',.1,4,.1);
-  [0,1,2,3].forEach(i=>S.pop(at('cadeia',.1+i*.15),[N(67),N(71),N(74),N(79)][i],.2));
-  {const ch=c=>BLOCO('cadeia',c,0);
-   S.whooshDesce(at('cadeia',ch(1)-.1),1.0,.16);S.blip(at('cadeia',ch(1)+.9),N(76),.09);
-   S.arpejo(at('cadeia',ch(2)),[76,79,83],.07,'square',.1);
-   S.motor(at('cadeia',ch(3)-.15),1.3,.09,.2);S.whooshDesce(at('cadeia',ch(4)+.4),1.0,.14);S.blip(at('cadeia',ch(4)+1.3),N(81),.09);
-   for(let i=0;i<6;i++)S.moeda(at('cadeia',ch(5)+i*.45),.1+i*.01,.3)}
-  // 5 tela
-  toques('tela',.1,5,.1);S.whoosh(at('tela',.2),.5,.16);S.clique(at('tela',1.4),.22);S.blip(at('tela',1.45),N(79),.08);S.clique(at('tela',2.2),.22);S.blip(at('tela',2.25),N(84),.1);S.moeda(at('tela',3.0),.08);
-  // 6 problemas
-  [0,1,2].forEach(i=>{const u=BLOCO('problemas',i,0);S.impacto(at('problemas',u),.55);S.buzz(at('problemas',u+.08),.035)});
-  {const u=BLOCO('problemas',3,0);S.whoosh(at('problemas',u-.1),.4,.14);S.sobe(at('problemas',u),2.4,.06);
-   tom(at('problemas',u+.05),{tipo:'square',f0:N(64),f1:N(76),dur:.25,vol:.07,send:.4});
-   toques('problemas',BLOCO('problemas',4,0),3,.12);S.acorde(at('problemas',BLOCO('problemas',6,0)),[52,59,64,67],1.6,.045)}
-  // 7 robôs
-  S.whoosh(at('robos',0),1.0,.12);
-  [1.1,1.3,1.5].forEach((u,i)=>{S.robo(at('robos',u),[660,720,780][i],.05,-.4+i*.2);S.thud(at('robos',u+.3),.2)});
-  S.robo(at('robos',2.1),520,.06,.3);S.thud(at('robos',2.4),.25);S.robo(at('robos',3.4),880,.06,.5);S.thud(at('robos',3.7),.25);
-  S.zip(at('robos',2.4),.8,.04);S.zip(at('robos',3.7),.9,.05,300,1600);S.motor(at('robos',4.4),1.7,.03,.3);S.moeda(at('robos',6.0),.08,.4);
-  S.whooshDesce(at('robos',6.55),.5,.12);S.arpejo(at('robos',6.8),[72,76,79,84],.1,'triangle',.07,.4);
-  // 8 paixão
-  S.pop(at('paixao',.1),N(72),.14);for(let i=0;i<5;i++)S.coracao(at('paixao',.6+i*1.05),.42);
-  S.acorde(at('paixao',BLOCO('paixao',3,0)-.2),[60,64,67,72],2.2,.05);
-  // 9 mundo
-  S.whooshDesce(at('mundo',0),1.0,.18);S.sobe(at('mundo',.6),2.2,.09);
-  for(let i=0;i<10;i++)S.blip(at('mundo',1.4+i*.28),N(84+(i%5)*2),.06,(i%2?.5:-.5));
-  S.acorde(at('mundo',1.0),[57,64,69,72],2.6,.04);
-  // 10 chamada
-  S.pop(at('cta',0),N(67),.12);for(let i=0;i<11;i++)S.tecla(at('cta',.15+i*.7/11),.06);
-  S.thud(at('cta',.85),.25);S.pop(at('cta',1.2),N(79),.12);
-  S.impacto(at('cta',1.7),.45);S.arpejo(at('cta',1.8),[72,76,79,84,88],.08,'square',.07,.3);S.moeda(at('cta',2.3),.08);
-  S.acorde(at('cta',2.6),[60,67,72,76],3.6,.05);
-  return ac.startRendering();
-}
-// Trilha pronta (uma vez): usada na prévia e na gravação.
-let TRILHA=null;const trilhaPronta=()=>TRILHA??=trilha();
-window.__trilha=trilhaPronta;
+      // ---------- Efeitos sonoros (síntese no estilo dos geradores retrô, como o ZzFX) ----------
+      // Tudo é gerado aqui, no tempo exato de cada evento, sem arquivos de som externos.
+      function trilha(sr = 48000) {
+        const ac = new OfflineAudioContext(2, Math.ceil((DUR + 0.6) * sr), sr);
+        const master = ac.createGain();
+        master.gain.value = 1.15;
+        const comp = ac.createDynamicsCompressor();
+        comp.threshold.value = -14;
+        comp.knee.value = 6;
+        comp.ratio.value = 14;
+        comp.attack.value = 0.002;
+        comp.release.value = 0.18;
+        master.connect(comp);
+        comp.connect(ac.destination);
+        // Sala: reverb curto gerado (ruído que decai)
+        semente = 303;
+        const ir = ac.createBuffer(2, (sr * 1.4) | 0, sr);
+        for (let ch = 0; ch < 2; ch++) {
+          const d = ir.getChannelData(ch);
+          for (let i = 0; i < d.length; i++)
+            d[i] = (rnd() * 2 - 1) * Math.pow(1 - i / d.length, 3.2);
+        }
+        const rev = ac.createConvolver();
+        rev.buffer = ir;
+        const revG = ac.createGain();
+        revG.gain.value = 0.3;
+        rev.connect(revG);
+        revG.connect(master);
+        semente = 99;
+        const rb = ac.createBuffer(1, sr * 2, sr);
+        const rd = rb.getChannelData(0);
+        for (let i = 0; i < rd.length; i++) rd[i] = rnd() * 2 - 1;
+        const saida = (no, pan = 0, send = 0.2) => {
+          const p = ac.createStereoPanner();
+          p.pan.value = pan;
+          no.connect(p);
+          p.connect(master);
+          if (send > 0) {
+            const s = ac.createGain();
+            s.gain.value = send;
+            p.connect(s);
+            s.connect(rev);
+          }
+        };
+        const env = (g, t, vol, at, dur) => {
+          g.gain.setValueAtTime(0, t);
+          g.gain.linearRampToValueAtTime(vol, t + at);
+          g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+        };
+        const tom = (
+          t,
+          {
+            tipo = 'square',
+            f0 = 440,
+            f1,
+            dur = 0.2,
+            vol = 0.15,
+            at = 0.004,
+            pan = 0,
+            send = 0.2,
+            lp,
+          } = {},
+        ) => {
+          const o = ac.createOscillator();
+          o.type = tipo;
+          o.frequency.setValueAtTime(f0, t);
+          if (f1) o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+          const g = ac.createGain();
+          env(g, t, vol, at, dur);
+          let no = g;
+          if (lp) {
+            const f = ac.createBiquadFilter();
+            f.type = 'lowpass';
+            f.frequency.value = lp;
+            g.connect(f);
+            no = f;
+          }
+          o.connect(g);
+          saida(no, pan, send);
+          o.start(t);
+          o.stop(t + dur + 0.05);
+        };
+        const ruido = (
+          t,
+          {
+            dur = 0.2,
+            vol = 0.15,
+            tipo = 'bandpass',
+            f0 = 1000,
+            f1,
+            q = 1,
+            at = 0.004,
+            pan = 0,
+            send = 0.2,
+          } = {},
+        ) => {
+          const s = ac.createBufferSource();
+          s.buffer = rb;
+          const f = ac.createBiquadFilter();
+          f.type = tipo;
+          f.Q.value = q;
+          f.frequency.setValueAtTime(f0, t);
+          if (f1) f.frequency.exponentialRampToValueAtTime(f1, t + dur);
+          const g = ac.createGain();
+          env(g, t, vol, at, dur);
+          s.connect(f);
+          f.connect(g);
+          saida(g, pan, send);
+          s.start(t, (t * 7.3) % 1.5);
+          s.stop(t + dur + 0.05);
+        };
+        const N = (n) => 440 * Math.pow(2, (n - 69) / 12);
+        const S = {
+          whoosh: (t, d = 0.34, v = 0.16) => {
+            ruido(t, { dur: d, vol: v, f0: 500, f1: 5000, q: 0.8, at: d * 0.6, send: 0.15 });
+          },
+          whooshDesce: (t, d = 0.4, v = 0.14) => {
+            ruido(t, { dur: d, vol: v, f0: 4000, f1: 400, q: 0.8, at: d * 0.3, send: 0.15 });
+          },
+          pop: (t, f = 620, v = 0.16, pan = 0) => {
+            tom(t, {
+              tipo: 'triangle',
+              f0: f * 0.7,
+              f1: f * 1.6,
+              dur: 0.11,
+              vol: v,
+              pan,
+              send: 0.12,
+            });
+          },
+          blip: (t, f = 880, v = 0.08, pan = 0) => {
+            tom(t, { f0: f, dur: 0.06, vol: v, pan, send: 0.1 });
+          },
+          tick: (t, f = 2600, v = 0.035, pan = 0) => {
+            tom(t, { f0: f, dur: 0.025, vol: v, pan, send: 0.05 });
+          },
+          tecla: (t, v = 0.07) => {
+            ruido(t, { dur: 0.03, vol: v, tipo: 'highpass', f0: 3500, send: 0.05 });
+            tom(t, { f0: 1900, dur: 0.02, vol: v * 0.5, send: 0 });
+          },
+          thud: (t, v = 0.5) => {
+            tom(t, { tipo: 'sine', f0: 150, f1: 42, dur: 0.3, vol: v, send: 0.08 });
+            ruido(t, { dur: 0.07, vol: v * 0.4, tipo: 'lowpass', f0: 500, send: 0.05 });
+          },
+          cai: (t, v = 0.1, pan = 0) => {
+            tom(t, { f0: 1500, f1: 240, dur: 0.3, vol: v, pan, send: 0.15 });
+          },
+          ping: (t, f = 1568, v = 0.11, pan = 0) => {
+            tom(t, { tipo: 'sine', f0: f, dur: 0.8, vol: v, pan, send: 0.6 });
+            tom(t, { tipo: 'sine', f0: f * 2, dur: 0.4, vol: v * 0.3, pan, send: 0.6 });
+          },
+          moeda: (t, v = 0.1, pan = 0) => {
+            tom(t, { f0: N(83), dur: 0.08, vol: v, pan, send: 0.25 });
+            tom(t + 0.075, { f0: N(88), dur: 0.32, vol: v, pan, send: 0.35 });
+          },
+          impacto: (t, v = 0.75) => {
+            S.thud(t, v);
+            tom(t, { tipo: 'sine', f0: 70, f1: 32, dur: 0.7, vol: v * 0.6, send: 0.1 });
+            ruido(t, { dur: 0.35, vol: v * 0.45, f0: 1200, f1: 250, q: 0.7, send: 0.3 });
+          },
+          buzz: (t, v = 0.06) => {
+            tom(t, { tipo: 'sawtooth', f0: 110, dur: 0.35, vol: v, lp: 1200, send: 0.1 });
+            tom(t, { tipo: 'sawtooth', f0: 116.5, dur: 0.35, vol: v, lp: 1200, send: 0.1 });
+          },
+          zip: (t, d = 0.6, v = 0.05, f0 = 260, f1 = 1300) => {
+            tom(t, { tipo: 'sawtooth', f0, f1, dur: d, vol: v, at: d * 0.5, lp: 2200, send: 0.2 });
+          },
+          motor: (t, d, v = 0.05, pan = 0) => {
+            ruido(t, { dur: d, vol: v, tipo: 'lowpass', f0: 240, at: 0.3, pan, send: 0.05 });
+            tom(t, {
+              tipo: 'sawtooth',
+              f0: 52,
+              dur: d,
+              vol: v * 0.7,
+              at: 0.3,
+              lp: 320,
+              pan,
+              send: 0,
+            });
+          },
+          arpejo: (t, notas, passo = 0.09, tipo = 'square', v = 0.07, d = 0.22) => {
+            notas.forEach((n, i) =>
+              tom(t + i * passo, { tipo, f0: N(n), dur: d, vol: v, send: 0.35 }),
+            );
+          },
+          acorde: (t, notas, d = 1.4, v = 0.05, tipo = 'triangle') => {
+            notas.forEach((n) => tom(t, { tipo, f0: N(n), dur: d, vol: v, at: 0.08, send: 0.5 }));
+          },
+          sobe: (t, d = 1.5, v = 0.08) => {
+            ruido(t, { dur: d, vol: v, f0: 200, f1: 3000, q: 1.2, at: d * 0.9, send: 0.3 });
+            tom(t, { tipo: 'sine', f0: 60, f1: 120, dur: d, vol: v * 0.8, at: d * 0.8, send: 0.2 });
+          },
+          brilho: (t, n = 6, v = 0.05) => {
+            semente = Math.floor(t * 1000) + 1;
+            for (let i = 0; i < n; i++)
+              tom(t + i * 0.07, {
+                tipo: 'sine',
+                f0: 2000 + rnd() * 2400,
+                dur: 0.35,
+                vol: v,
+                pan: rnd() * 1.6 - 0.8,
+                send: 0.7,
+              });
+          },
+          rabisco: (t, d = 0.4, v = 0.05) => {
+            for (let i = 0; i < 6; i++)
+              ruido(t + (i * d) / 6, {
+                dur: d / 6,
+                vol: v,
+                f0: 2200 + ((i * 397) % 900),
+                q: 3,
+                send: 0.05,
+              });
+          },
+          coracao: (t, v = 0.5) => {
+            tom(t, { tipo: 'sine', f0: 90, f1: 45, dur: 0.18, vol: v, send: 0.1 });
+            tom(t + 0.2, { tipo: 'sine', f0: 80, f1: 42, dur: 0.16, vol: v * 0.7, send: 0.1 });
+          },
+          robo: (t, f = 660, v = 0.06, pan = 0) => {
+            tom(t, { f0: f, f1: f * 1.5, dur: 0.08, vol: v, pan, send: 0.15 });
+            tom(t + 0.09, { f0: f * 0.75, dur: 0.08, vol: v, pan, send: 0.15 });
+          },
+          clique: (t, v = 0.12) => {
+            ruido(t, { dur: 0.025, vol: v, tipo: 'highpass', f0: 2500, send: 0.05 });
+            tom(t, { f0: 1400, dur: 0.03, vol: v * 0.6, send: 0 });
+          },
+        };
+        const at = (id, u) => CENA_DE[id].a + u;
+        // Base sonora suave: um acorde grave por cena (baixo o bastante para a narração) e pulso nas cenas intensas
+        const BASE = {
+          planeta: [45, 57, 64, 71],
+          brasil: [41, 53, 60, 69],
+          historia: [48, 55, 64, 67],
+          cadeia: [43, 55, 62, 71],
+          tela: [48, 55, 60, 64],
+          problemas: [38, 50, 57, 65],
+          robos: [40, 52, 59, 67],
+          paixao: [41, 53, 60, 65],
+          mundo: [45, 57, 64, 72],
+          cta: [48, 55, 64, 72],
+        };
+        CENAS.forEach((c) => {
+          BASE[c.id].forEach((n, i) => {
+            const o = ac.createOscillator();
+            o.type = i ? 'triangle' : 'sine';
+            o.frequency.value = N(n);
+            const lp = ac.createBiquadFilter();
+            lp.type = 'lowpass';
+            lp.frequency.value = i ? 900 : 400;
+            const g = ac.createGain();
+            const v = i ? 0.016 : 0.05,
+              t0 = Math.max(0, c.a - 0.15),
+              t1 = c.a + c.d + 0.15;
+            g.gain.setValueAtTime(0, t0);
+            g.gain.linearRampToValueAtTime(v, t0 + 0.35);
+            g.gain.setValueAtTime(v, t1 - 0.35);
+            g.gain.linearRampToValueAtTime(0, t1);
+            o.connect(lp);
+            lp.connect(g);
+            saida(g, (i % 2 ? 0.25 : -0.25) * (i > 0), 0.25);
+            o.start(t0);
+            o.stop(t1 + 0.05);
+          });
+        });
+        [
+          ['historia', 0, 7],
+          ['problemas', 0, 7.6],
+          ['cta', 1.7, 7.4],
+          ['robos', 2, 6.6],
+        ].forEach(([id, u0, u1]) => {
+          for (let u = u0; u < u1; u += 0.6)
+            tom(at(id, u), { tipo: 'sine', f0: 120, f1: 46, dur: 0.16, vol: 0.16, send: 0 });
+        });
+        // Transições
+        CENAS.forEach((c) => {
+          if (c.a > 0 && c.cor !== 'none') S.whoosh(c.a - 0.24, 0.36, 0.14);
+        });
+        // Títulos: um toque por palavra (bem baixo)
+        const toques = (id, u0, n, passo) => {
+          for (let i = 0; i < n; i++) S.tick(at(id, u0 + i * passo), 2200 + i * 140, 0.03);
+        };
+        // 1 planeta
+        S.sobe(at('planeta', 0), 3.6, 0.12);
+        S.brilho(at('planeta', 0.3), 5, 0.06);
+        S.brilho(at('planeta', 1.6), 4, 0.05);
+        S.whoosh(at('planeta', 3.0), 1.0, 0.26);
+        // 2 brasil
+        for (let i = 0; i < 14; i++) S.tick(at('brasil', 0.05 + i * 0.08), 1600 + i * 90, 0.025);
+        [
+          [1, 0.15, -0.1, N(76)],
+          [2, 0.05, -0.6, N(79)],
+          [3, 0.25, 0.4, N(84)],
+        ].forEach(([n, m, pan, f]) => {
+          const u = BLOCO('brasil', n, m);
+          S.cai(at('brasil', u), 0.09, pan);
+          S.thud(at('brasil', u + 0.32), 0.35);
+          S.ping(at('brasil', u + 0.34), f, 0.09, pan);
+        });
+        {
+          const u = BLOCO('brasil', 3, 0.25);
+          tom(at('brasil', u + 0.55), {
+            tipo: 'square',
+            f0: N(72),
+            f1: N(84),
+            dur: 0.18,
+            vol: 0.06,
+            send: 0.3,
+          });
+          tom(at('brasil', u + 0.75), {
+            tipo: 'square',
+            f0: N(84),
+            f1: N(72),
+            dur: 0.18,
+            vol: 0.06,
+            send: 0.3,
+          });
+          S.brilho(at('brasil', BLOCO('brasil', 4, 0.1)), 6, 0.04);
+        }
+        // 3 história
+        toques('historia', 0.1, 4, 0.09);
+        S.cai(at('historia', 0.4), 0.07, -0.4);
+        S.thud(at('historia', 0.72), 0.3);
+        S.cai(at('historia', 0.8), 0.07, 0.4);
+        S.thud(at('historia', 1.12), 0.3);
+        S.zip(at('historia', 1.1), 0.8, 0.04);
+        S.motor(at('historia', 1.9), 5, 0.03, 0.3);
+        S.cai(at('historia', 2.2), 0.07, 0);
+        S.thud(at('historia', 2.52), 0.3);
+        S.zip(at('historia', 2.6), 0.8, 0.04, 330, 1500);
+        S.moeda(at('historia', 3.0), 0.07, -0.2);
+        S.cai(at('historia', 4.2), 0.07, 0.3);
+        S.impacto(at('historia', 4.7), 0.7);
+        S.buzz(at('historia', 4.8), 0.05);
+        // 4 cadeia
+        toques('cadeia', 0.1, 4, 0.1);
+        [0, 1, 2, 3].forEach((i) =>
+          S.pop(at('cadeia', 0.1 + i * 0.15), [N(67), N(71), N(74), N(79)][i], 0.2),
+        );
+        {
+          const ch = (c) => BLOCO('cadeia', c, 0);
+          S.whooshDesce(at('cadeia', ch(1) - 0.1), 1.0, 0.16);
+          S.blip(at('cadeia', ch(1) + 0.9), N(76), 0.09);
+          S.arpejo(at('cadeia', ch(2)), [76, 79, 83], 0.07, 'square', 0.1);
+          S.motor(at('cadeia', ch(3) - 0.15), 1.3, 0.09, 0.2);
+          S.whooshDesce(at('cadeia', ch(4) + 0.4), 1.0, 0.14);
+          S.blip(at('cadeia', ch(4) + 1.3), N(81), 0.09);
+          for (let i = 0; i < 6; i++) S.moeda(at('cadeia', ch(5) + i * 0.45), 0.1 + i * 0.01, 0.3);
+        }
+        // 5 tela
+        toques('tela', 0.1, 5, 0.1);
+        S.whoosh(at('tela', 0.2), 0.5, 0.16);
+        S.clique(at('tela', 1.4), 0.22);
+        S.blip(at('tela', 1.45), N(79), 0.08);
+        S.clique(at('tela', 2.2), 0.22);
+        S.blip(at('tela', 2.25), N(84), 0.1);
+        S.moeda(at('tela', 3.0), 0.08);
+        // 6 problemas
+        [0, 1, 2].forEach((i) => {
+          const u = BLOCO('problemas', i, 0);
+          S.impacto(at('problemas', u), 0.55);
+          S.buzz(at('problemas', u + 0.08), 0.035);
+        });
+        {
+          const u = BLOCO('problemas', 3, 0);
+          S.whoosh(at('problemas', u - 0.1), 0.4, 0.14);
+          S.sobe(at('problemas', u), 2.4, 0.06);
+          tom(at('problemas', u + 0.05), {
+            tipo: 'square',
+            f0: N(64),
+            f1: N(76),
+            dur: 0.25,
+            vol: 0.07,
+            send: 0.4,
+          });
+          toques('problemas', BLOCO('problemas', 4, 0), 3, 0.12);
+          S.acorde(at('problemas', BLOCO('problemas', 6, 0)), [52, 59, 64, 67], 1.6, 0.045);
+        }
+        // 7 robôs
+        S.whoosh(at('robos', 0), 1.0, 0.12);
+        [1.1, 1.3, 1.5].forEach((u, i) => {
+          S.robo(at('robos', u), [660, 720, 780][i], 0.05, -0.4 + i * 0.2);
+          S.thud(at('robos', u + 0.3), 0.2);
+        });
+        S.robo(at('robos', 2.1), 520, 0.06, 0.3);
+        S.thud(at('robos', 2.4), 0.25);
+        S.robo(at('robos', 3.4), 880, 0.06, 0.5);
+        S.thud(at('robos', 3.7), 0.25);
+        S.zip(at('robos', 2.4), 0.8, 0.04);
+        S.zip(at('robos', 3.7), 0.9, 0.05, 300, 1600);
+        S.motor(at('robos', 4.4), 1.7, 0.03, 0.3);
+        S.moeda(at('robos', 6.0), 0.08, 0.4);
+        S.whooshDesce(at('robos', 6.55), 0.5, 0.12);
+        S.arpejo(at('robos', 6.8), [72, 76, 79, 84], 0.1, 'triangle', 0.07, 0.4);
+        // 8 paixão
+        S.pop(at('paixao', 0.1), N(72), 0.14);
+        for (let i = 0; i < 5; i++) S.coracao(at('paixao', 0.6 + i * 1.05), 0.42);
+        S.acorde(at('paixao', BLOCO('paixao', 3, 0) - 0.2), [60, 64, 67, 72], 2.2, 0.05);
+        // 9 mundo
+        S.whooshDesce(at('mundo', 0), 1.0, 0.18);
+        S.sobe(at('mundo', 0.6), 2.2, 0.09);
+        for (let i = 0; i < 10; i++)
+          S.blip(at('mundo', 1.4 + i * 0.28), N(84 + (i % 5) * 2), 0.06, i % 2 ? 0.5 : -0.5);
+        S.acorde(at('mundo', 1.0), [57, 64, 69, 72], 2.6, 0.04);
+        // 10 chamada
+        S.pop(at('cta', 0), N(67), 0.12);
+        for (let i = 0; i < 11; i++) S.tecla(at('cta', 0.15 + (i * 0.7) / 11), 0.06);
+        S.thud(at('cta', 0.85), 0.25);
+        S.pop(at('cta', 1.2), N(79), 0.12);
+        S.impacto(at('cta', 1.7), 0.45);
+        S.arpejo(at('cta', 1.8), [72, 76, 79, 84, 88], 0.08, 'square', 0.07, 0.3);
+        S.moeda(at('cta', 2.3), 0.08);
+        S.acorde(at('cta', 2.6), [60, 67, 72, 76], 3.6, 0.05);
+        return ac.startRendering();
+      }
+      // Trilha pronta (uma vez): usada na prévia e na gravação.
+      let TRILHA = null;
+      const trilhaPronta = () => (TRILHA ??= trilha());
+      window.__trilha = trilhaPronta;
 
-// Gravação quadro a quadro
-window.__duracao=DUR;window.__fps=FPS;
-window.__pronto=Promise.all([document.fonts.ready,...[...document.images].map(im=>im.decode().catch(()=>{}))]).then(()=>{render();return true});
-window.__seek=v=>{t=Math.min(v,DUR-1e-6);render();return true};
-// Prévia no navegador: imagem + efeitos + narração opcional
-const au=new Audio();let tocando=false,ult=0,temAudio=false,actx=null,fonte=null;
-trilhaPronta().then(()=>{$('estado').textContent='efeitos prontos'});
-async function somDe(t0){if(!$('som').checked)return;const buf=await trilhaPronta();actx??=new AudioContext();fonte=actx.createBufferSource();fonte.buffer=buf;fonte.connect(actx.destination);fonte.start(0,t0)}
-const paraSom=()=>{try{fonte?.stop()}catch{}fonte=null};
-function tick(now){if(tocando){t=temAudio?au.currentTime:t+(now-ult)/1000;ult=now;if(t>=DUR){tocando=false;t=DUR-1e-6;au.pause();paraSom();$('play').textContent='▶ Tocar'}render()}requestAnimationFrame(tick)}
-$('play').onclick=()=>{if(tocando){tocando=false;au.pause();paraSom();$('play').textContent='▶ Tocar';return}if(t>=DUR-.05)t=0;tocando=true;ult=performance.now();if(temAudio){au.currentTime=t;au.play()}somDe(t);$('play').textContent='❚❚ Pausar'};
-$('rst').onclick=()=>{t=0;if(temAudio)au.currentTime=0;paraSom();if(tocando)somDe(0);render()};
-$('pos').oninput=e=>{t=DUR*e.target.value/1000;if(temAudio)au.currentTime=t;paraSom();if(tocando)somDe(t);render()};
-$('aud').onchange=e=>{const f=e.target.files[0];if(!f)return;au.src=URL.createObjectURL(f);temAudio=true};
-document.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();$('play').click()}});
-if(new URLSearchParams(location.search).has('render'))document.body.classList.add('render');
-function fit(){if(document.body.classList.contains('render'))return;const wr=$('wrap').getBoundingClientRect();const k=Math.min(wr.width/1080,wr.height/1920);$('stage').style.transform='scale('+k+')';$('stage').style.margin=(-(1920*(1-k))/2)+'px '+(-(1080*(1-k))/2)+'px'}
-addEventListener('resize',fit);fit();render();requestAnimationFrame(tick);
-</script>
-</body>
+      // Gravação quadro a quadro
+      window.__duracao = DUR;
+      window.__fps = FPS;
+      window.__pronto = Promise.all([
+        document.fonts.ready,
+        ...[...document.images].map((im) => im.decode().catch(() => {})),
+      ]).then(() => {
+        render();
+        return true;
+      });
+      window.__seek = (v) => {
+        t = Math.min(v, DUR - 1e-6);
+        render();
+        return true;
+      };
+      // Prévia no navegador: imagem + efeitos + narração opcional
+      const au = new Audio();
+      let tocando = false,
+        ult = 0,
+        temAudio = false,
+        actx = null,
+        fonte = null;
+      trilhaPronta().then(() => {
+        $('estado').textContent = 'efeitos prontos';
+      });
+      async function somDe(t0) {
+        if (!$('som').checked) return;
+        const buf = await trilhaPronta();
+        actx ??= new AudioContext();
+        fonte = actx.createBufferSource();
+        fonte.buffer = buf;
+        fonte.connect(actx.destination);
+        fonte.start(0, t0);
+      }
+      const paraSom = () => {
+        try {
+          fonte?.stop();
+        } catch {}
+        fonte = null;
+      };
+      function tick(now) {
+        if (tocando) {
+          t = temAudio ? au.currentTime : t + (now - ult) / 1000;
+          ult = now;
+          if (t >= DUR) {
+            tocando = false;
+            t = DUR - 1e-6;
+            au.pause();
+            paraSom();
+            $('play').textContent = '▶ Tocar';
+          }
+          render();
+        }
+        requestAnimationFrame(tick);
+      }
+      $('play').onclick = () => {
+        if (tocando) {
+          tocando = false;
+          au.pause();
+          paraSom();
+          $('play').textContent = '▶ Tocar';
+          return;
+        }
+        if (t >= DUR - 0.05) t = 0;
+        tocando = true;
+        ult = performance.now();
+        if (temAudio) {
+          au.currentTime = t;
+          au.play();
+        }
+        somDe(t);
+        $('play').textContent = '❚❚ Pausar';
+      };
+      $('rst').onclick = () => {
+        t = 0;
+        if (temAudio) au.currentTime = 0;
+        paraSom();
+        if (tocando) somDe(0);
+        render();
+      };
+      $('pos').oninput = (e) => {
+        t = (DUR * e.target.value) / 1000;
+        if (temAudio) au.currentTime = t;
+        paraSom();
+        if (tocando) somDe(t);
+        render();
+      };
+      $('aud').onchange = (e) => {
+        const f = e.target.files[0];
+        if (!f) return;
+        au.src = URL.createObjectURL(f);
+        temAudio = true;
+      };
+      document.addEventListener('keydown', (e) => {
+        if (e.code === 'Space') {
+          e.preventDefault();
+          $('play').click();
+        }
+      });
+      if (new URLSearchParams(location.search).has('render')) document.body.classList.add('render');
+      function fit() {
+        if (document.body.classList.contains('render')) return;
+        const wr = $('wrap').getBoundingClientRect();
+        const k = Math.min(wr.width / 1080, wr.height / 1920);
+        $('stage').style.transform = 'scale(' + k + ')';
+        $('stage').style.margin = -(1920 * (1 - k)) / 2 + 'px ' + -(1080 * (1 - k)) / 2 + 'px';
+      }
+      addEventListener('resize', fit);
+      fit();
+      render();
+      requestAnimationFrame(tick);
+    </script>
+  </body>
 </html>

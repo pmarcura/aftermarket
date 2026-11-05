@@ -1,164 +1,478 @@
 <!doctype html>
 <html lang="pt-BR">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Aftermarket · Reel 2 · Problemas</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Archivo:wght@500;700;800;900&display=block">
-<style>
-/* Reel 2 · "Faltou soja." 20 s, 9:16. Tempos e cenas no fim da página.
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Aftermarket · Reel 2 · Problemas</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Archivo:wght@500;700;800;900&display=block"
+    />
+    <style>
+      /* Reel 2 · "Faltou soja." 20 s, 9:16. Tempos e cenas no fim da página.
    Área segura: nada importante acima de 200 px nem abaixo de 1560 px. */
-:root{--bg:#0f1114;--tx:#f2f4ee;--lime:#a6e22e;--gold:#e8bd4f;--brasa:#ef6a4c;--ceu:#5aaee6;--panel:#171b20}
-html,body{margin:0;height:100%;background:#07080a;font-family:Archivo,system-ui,sans-serif;color:var(--tx)}
-#bar{display:flex;gap:10px;align-items:center;justify-content:center;padding:10px;background:#14161a;font:13px Archivo}
-#bar button{background:var(--lime);color:#111;border:0;padding:8px 14px;font:700 13px Archivo;cursor:pointer}
-#wrap{display:flex;justify-content:center;align-items:center;overflow:hidden}
-#stage{position:relative;width:1080px;height:1920px;flex:none;overflow:hidden;background:radial-gradient(ellipse at 50% 40%,#1b2229 0%,var(--bg) 58%,#06070a 100%)}
-#grade{position:absolute;inset:-60px;background-image:linear-gradient(#ffffff08 2px,transparent 2px),linear-gradient(90deg,#ffffff08 2px,transparent 2px);background-size:60px 60px}
-#linhas{position:absolute;inset:0;background:repeating-linear-gradient(0deg,#0000 0 4px,#0000001c 4px 6px);pointer-events:none;z-index:40}
-#vinheta{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,#0000 58%,#000a 100%);pointer-events:none;z-index:39}
-#flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:38}
-#marca{position:absolute;top:210px;left:0;right:0;text-align:center;font:400 20px "Press Start 2P";color:#9aa39b;z-index:32}
-.cena{position:absolute;inset:0;visibility:hidden;z-index:5}
-.a{position:absolute;will-change:transform,opacity}
-.pix{image-rendering:pixelated}
-.h{left:60px;right:60px;text-align:center;font:900 150px/.92 Archivo;text-transform:uppercase;letter-spacing:-4px;text-shadow:0 10px 0 #000a}
-.h small{display:block;font:900 96px/1 Archivo;letter-spacing:-2px}
-.lime{color:var(--lime)} .gold{color:var(--gold)} .brasa{color:var(--brasa)}
-.tag{font:400 22px/1.5 "Press Start 2P";text-align:center;letter-spacing:1px}
-.card{left:70px;width:940px;display:flex;align-items:center;gap:36px;background:var(--panel);border:8px solid var(--c);padding:34px 40px;box-shadow:0 30px 70px #000c}
-.card img{width:170px;height:170px;flex:none}
-.card b{font:900 72px/.95 Archivo;text-transform:uppercase}
-.carimbo{border:8px solid var(--brasa);color:var(--brasa);padding:18px 26px;font:400 34px/1.4 "Press Start 2P";background:#0f1114;transform-origin:50% 50%}
-.chip{left:90px;width:900px;background:var(--lime);color:#0d0f0b;font:900 66px/1.05 Archivo;text-transform:uppercase;text-align:center;padding:38px 0;box-shadow:0 12px 0 #6f9c16}
-.botao{left:80px;width:920px;background:var(--lime);color:#0d0f0b;font:900 82px/1 Archivo;text-transform:uppercase;text-align:center;padding:44px 0;box-shadow:0 12px 0 #6f9c16}
-#cap{position:absolute;left:80px;right:80px;bottom:330px;z-index:33;text-align:center}
-#cap p{margin:0;font:900 74px/1.05 Archivo;text-transform:uppercase;letter-spacing:-1px;
-  text-shadow:-5px -5px 0 #000,5px -5px 0 #000,-5px 5px 0 #000,5px 5px 0 #000,0 14px 0 #000a}
-#cap .dita{color:#fff} #cap .agora{color:var(--lime)}
-</style>
-</head>
-<body>
-<div id="bar">
-  <button id="play">▶ Tocar</button>
-  <button id="rst">⟲ Do início</button>
-  <span id="tt">0.0 / 0.0 s</span>
-</div>
-<div id="wrap"><div id="stage">
-  <div id="grade"></div>
-  <div class="a tag" id="marca" style="color:#9aa39b">AFTERMARKET · EM DESENVOLVIMENTO</div>
+      :root {
+        --bg: #0f1114;
+        --tx: #f2f4ee;
+        --lime: #a6e22e;
+        --gold: #e8bd4f;
+        --brasa: #ef6a4c;
+        --ceu: #5aaee6;
+        --panel: #171b20;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #07080a;
+        font-family: Archivo, system-ui, sans-serif;
+        color: var(--tx);
+      }
+      #bar {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
+        background: #14161a;
+        font: 13px Archivo;
+      }
+      #bar button {
+        background: var(--lime);
+        color: #111;
+        border: 0;
+        padding: 8px 14px;
+        font: 700 13px Archivo;
+        cursor: pointer;
+      }
+      #wrap {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+      }
+      #stage {
+        position: relative;
+        width: 1080px;
+        height: 1920px;
+        flex: none;
+        overflow: hidden;
+        background: radial-gradient(ellipse at 50% 40%, #1b2229 0%, var(--bg) 58%, #06070a 100%);
+      }
+      #grade {
+        position: absolute;
+        inset: -60px;
+        background-image:
+          linear-gradient(#ffffff08 2px, transparent 2px),
+          linear-gradient(90deg, #ffffff08 2px, transparent 2px);
+        background-size: 60px 60px;
+      }
+      #linhas {
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(0deg, #0000 0 4px, #0000001c 4px 6px);
+        pointer-events: none;
+        z-index: 40;
+      }
+      #vinheta {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse at 50% 45%, #0000 58%, #000a 100%);
+        pointer-events: none;
+        z-index: 39;
+      }
+      #flash {
+        position: absolute;
+        inset: 0;
+        background: #fff;
+        opacity: 0;
+        pointer-events: none;
+        z-index: 38;
+      }
+      #marca {
+        position: absolute;
+        top: 210px;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font: 400 20px 'Press Start 2P';
+        color: #9aa39b;
+        z-index: 32;
+      }
+      .cena {
+        position: absolute;
+        inset: 0;
+        visibility: hidden;
+        z-index: 5;
+      }
+      .a {
+        position: absolute;
+        will-change: transform, opacity;
+      }
+      .pix {
+        image-rendering: pixelated;
+      }
+      .h {
+        left: 60px;
+        right: 60px;
+        text-align: center;
+        font: 900 150px/0.92 Archivo;
+        text-transform: uppercase;
+        letter-spacing: -4px;
+        text-shadow: 0 10px 0 #000a;
+      }
+      .h small {
+        display: block;
+        font: 900 96px/1 Archivo;
+        letter-spacing: -2px;
+      }
+      .lime {
+        color: var(--lime);
+      }
+      .gold {
+        color: var(--gold);
+      }
+      .brasa {
+        color: var(--brasa);
+      }
+      .tag {
+        font: 400 22px/1.5 'Press Start 2P';
+        text-align: center;
+        letter-spacing: 1px;
+      }
+      .card {
+        left: 70px;
+        width: 940px;
+        display: flex;
+        align-items: center;
+        gap: 36px;
+        background: var(--panel);
+        border: 8px solid var(--c);
+        padding: 34px 40px;
+        box-shadow: 0 30px 70px #000c;
+      }
+      .card img {
+        width: 170px;
+        height: 170px;
+        flex: none;
+      }
+      .card b {
+        font: 900 72px/0.95 Archivo;
+        text-transform: uppercase;
+      }
+      .carimbo {
+        border: 8px solid var(--brasa);
+        color: var(--brasa);
+        padding: 18px 26px;
+        font: 400 34px/1.4 'Press Start 2P';
+        background: #0f1114;
+        transform-origin: 50% 50%;
+      }
+      .chip {
+        left: 90px;
+        width: 900px;
+        background: var(--lime);
+        color: #0d0f0b;
+        font: 900 66px/1.05 Archivo;
+        text-transform: uppercase;
+        text-align: center;
+        padding: 38px 0;
+        box-shadow: 0 12px 0 #6f9c16;
+      }
+      .botao {
+        left: 80px;
+        width: 920px;
+        background: var(--lime);
+        color: #0d0f0b;
+        font: 900 82px/1 Archivo;
+        text-transform: uppercase;
+        text-align: center;
+        padding: 44px 0;
+        box-shadow: 0 12px 0 #6f9c16;
+      }
+      #cap {
+        position: absolute;
+        left: 80px;
+        right: 80px;
+        bottom: 330px;
+        z-index: 33;
+        text-align: center;
+      }
+      #cap p {
+        margin: 0;
+        font: 900 74px/1.05 Archivo;
+        text-transform: uppercase;
+        letter-spacing: -1px;
+        text-shadow:
+          -5px -5px 0 #000,
+          5px -5px 0 #000,
+          -5px 5px 0 #000,
+          5px 5px 0 #000,
+          0 14px 0 #000a;
+      }
+      #cap .dita {
+        color: #fff;
+      }
+      #cap .agora {
+        color: var(--lime);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="bar">
+      <button id="play">▶ Tocar</button>
+      <button id="rst">⟲ Do início</button>
+      <span id="tt">0.0 / 0.0 s</span>
+    </div>
+    <div id="wrap">
+      <div id="stage">
+        <div id="grade"></div>
+        <div class="a tag" id="marca" style="color: #9aa39b">AFTERMARKET · EM DESENVOLVIMENTO</div>
 
-  <!-- 1. GANCHO: o problema em duas palavras -->
-  <section class="cena" id="c-gancho">
-    <div class="a h" id="g1" style="top:520px">Faltou</div>
-    <div class="a h lime" id="g2" style="top:730px">soja.</div>
-  </section>
+        <!-- 1. GANCHO: o problema em duas palavras -->
+        <section class="cena" id="c-gancho">
+          <div class="a h" id="g1" style="top: 520px">Faltou</div>
+          <div class="a h lime" id="g2" style="top: 730px">soja.</div>
+        </section>
 
-  <!-- 2. FÁBRICA: o efeito na sua empresa -->
-  <section class="cena" id="c-fabrica">
-    <div class="a h" id="f1" style="top:250px;font-size:120px">Sua fábrica</div>
-    <img class="a pix" id="f-img" src="../../../apps/web/public/arte/soja-oleo.png" alt="" style="left:260px;top:560px;width:560px;height:560px">
-    <div class="a carimbo" id="f-st" style="left:250px;top:1190px;transform:rotate(-6deg)">PARADA</div>
-  </section>
+        <!-- 2. FÁBRICA: o efeito na sua empresa -->
+        <section class="cena" id="c-fabrica">
+          <div class="a h" id="f1" style="top: 250px; font-size: 120px">Sua fábrica</div>
+          <img
+            class="a pix"
+            id="f-img"
+            src="../../../apps/web/public/arte/soja-oleo.png"
+            alt=""
+            style="left: 260px; top: 560px; width: 560px; height: 560px"
+          />
+          <div
+            class="a carimbo"
+            id="f-st"
+            style="left: 250px; top: 1190px; transform: rotate(-6deg)"
+          >
+            PARADA
+          </div>
+        </section>
 
-  <!-- 3. FRETE: custo sobe -->
-  <section class="cena" id="c-frete">
-    <div class="a card" id="fr-card" style="top:620px;--c:var(--gold)"><img class="pix" src="../../../apps/web/public/arte/caminhao.png" alt=""><b>O frete<br>subiu</b></div>
-    <div class="a h gold" id="fr-h" style="top:1000px;font-size:120px">Seu custo</div>
-  </section>
+        <!-- 3. FRETE: custo sobe -->
+        <section class="cena" id="c-frete">
+          <div class="a card" id="fr-card" style="top: 620px; --c: var(--gold)">
+            <img class="pix" src="../../../apps/web/public/arte/caminhao.png" alt="" /><b
+              >O frete<br />subiu</b
+            >
+          </div>
+          <div class="a h gold" id="fr-h" style="top: 1000px; font-size: 120px">Seu custo</div>
+        </section>
 
-  <!-- 4. RIVAL: preço cai -->
-  <section class="cena" id="c-rival">
-    <div class="a card" id="rv-card" style="top:620px;--c:var(--ceu)"><div class="pix" style="width:170px;height:170px;display:grid;place-items:center;font:400 120px 'Press Start 2P';color:var(--ceu)">↓</div><b>O rival<br>baixou<br>o preço</b></div>
-    <div class="a h" id="rv-h" style="top:1020px;font-size:120px">Seu lucro</div>
-  </section>
+        <!-- 4. RIVAL: preço cai -->
+        <section class="cena" id="c-rival">
+          <div class="a card" id="rv-card" style="top: 620px; --c: var(--ceu)">
+            <div
+              class="pix"
+              style="
+                width: 170px;
+                height: 170px;
+                display: grid;
+                place-items: center;
+                font: 400 120px 'Press Start 2P';
+                color: var(--ceu);
+              "
+            >
+              ↓
+            </div>
+            <b>O rival<br />baixou<br />o preço</b>
+          </div>
+          <div class="a h" id="rv-h" style="top: 1020px; font-size: 120px">Seu lucro</div>
+        </section>
 
-  <!-- 5. PERGUNTA: os três problemas saem e fica a dúvida -->
-  <section class="cena" id="c-pergunta">
-    <div class="a tag" id="p1" style="top:520px;left:60px;right:60px;color:var(--brasa)">FALTOU SOJA</div>
-    <div class="a tag" id="p2" style="top:600px;left:60px;right:60px;color:var(--gold)">O FRETE SUBIU</div>
-    <div class="a tag" id="p3" style="top:680px;left:60px;right:60px;color:var(--ceu)">O RIVAL BAIXOU O PREÇO</div>
-    <div class="a h" id="p-q" style="top:820px;font-size:132px">Como você<br><span class="lime">lidaria?</span></div>
-    <div class="a" id="p-int" style="left:0;right:0;top:1130px;text-align:center;font:400 200px 'Press Start 2P';color:var(--gold);text-shadow:0 12px 0 #000">?</div>
-  </section>
+        <!-- 5. PERGUNTA: os três problemas saem e fica a dúvida -->
+        <section class="cena" id="c-pergunta">
+          <div
+            class="a tag"
+            id="p1"
+            style="top: 520px; left: 60px; right: 60px; color: var(--brasa)"
+          >
+            FALTOU SOJA
+          </div>
+          <div
+            class="a tag"
+            id="p2"
+            style="top: 600px; left: 60px; right: 60px; color: var(--gold)"
+          >
+            O FRETE SUBIU
+          </div>
+          <div class="a tag" id="p3" style="top: 680px; left: 60px; right: 60px; color: var(--ceu)">
+            O RIVAL BAIXOU O PREÇO
+          </div>
+          <div class="a h" id="p-q" style="top: 820px; font-size: 132px">
+            Como você<br /><span class="lime">lidaria?</span>
+          </div>
+          <div
+            class="a"
+            id="p-int"
+            style="
+              left: 0;
+              right: 0;
+              top: 1130px;
+              text-align: center;
+              font: 400 200px 'Press Start 2P';
+              color: var(--gold);
+              text-shadow: 0 12px 0 #000;
+            "
+          >
+            ?
+          </div>
+        </section>
 
-  <!-- 6. OPÇÕES: as escolhas aparecem uma por uma -->
-  <section class="cena" id="c-opcoes">
-    <div class="a chip" id="o1" style="top:560px">Comprar mais caro</div>
-    <div class="a chip" id="o2" style="top:800px;background:var(--gold);box-shadow:0 12px 0 #9c7c1f">Esperar</div>
-    <div class="a chip" id="o3" style="top:1040px;background:var(--ceu);box-shadow:0 12px 0 #3a6f94">Buscar outro fornecedor</div>
-  </section>
+        <!-- 6. OPÇÕES: as escolhas aparecem uma por uma -->
+        <section class="cena" id="c-opcoes">
+          <div class="a chip" id="o1" style="top: 560px">Comprar mais caro</div>
+          <div
+            class="a chip"
+            id="o2"
+            style="top: 800px; background: var(--gold); box-shadow: 0 12px 0 #9c7c1f"
+          >
+            Esperar
+          </div>
+          <div
+            class="a chip"
+            id="o3"
+            style="top: 1040px; background: var(--ceu); box-shadow: 0 12px 0 #3a6f94"
+          >
+            Buscar outro fornecedor
+          </div>
+        </section>
 
-  <!-- 7. CHAMADA: a conversa vai para o Discord -->
-  <section class="cena" id="c-cta">
-    <img class="a pix" id="z-ic" src="../../../apps/web/public/arte/marca-logo.png" alt="" style="left:436px;top:430px;width:208px;height:120px">
-    <div class="a h lime" id="z-logo" style="top:600px;font:400 96px 'Press Start 2P';letter-spacing:-4px;text-shadow:0 8px 0 #000">AFTERMARKET</div>
-    <div class="a h" id="z-h" style="top:840px;font-size:112px">Comente:<br><span class="lime">o que você faria?</span></div>
-    <div class="a botao" id="z-bot" style="top:1150px">Entre no Discord</div>
-    <div class="a tag" id="z-l" style="top:1330px;left:0;right:0;color:#f2f4ee">Link na bio</div>
-  </section>
+        <!-- 7. CHAMADA: a conversa vai para o Discord -->
+        <section class="cena" id="c-cta">
+          <img
+            class="a pix"
+            id="z-ic"
+            src="../../../apps/web/public/arte/marca-logo.png"
+            alt=""
+            style="left: 436px; top: 430px; width: 208px; height: 120px"
+          />
+          <div
+            class="a h lime"
+            id="z-logo"
+            style="
+              top: 600px;
+              font: 400 96px 'Press Start 2P';
+              letter-spacing: -4px;
+              text-shadow: 0 8px 0 #000;
+            "
+          >
+            AFTERMARKET
+          </div>
+          <div class="a h" id="z-h" style="top: 840px; font-size: 112px">
+            Comente:<br /><span class="lime">o que você faria?</span>
+          </div>
+          <div class="a botao" id="z-bot" style="top: 1150px">Entre no Discord</div>
+          <div class="a tag" id="z-l" style="top: 1330px; left: 0; right: 0; color: #f2f4ee">
+            Link na bio
+          </div>
+        </section>
 
-  <div id="flash"></div>
-  <div id="linhas"></div>
-  <div id="vinheta"></div>
-  <div id="cap"><p id="cap-p"></p></div>
-</div></div>
+        <div id="flash"></div>
+        <div id="linhas"></div>
+        <div id="vinheta"></div>
+        <div id="cap"><p id="cap-p"></p></div>
+      </div>
+    </div>
 
-<script src="motor.js"></script>
-<script>
-// Cenas: [id, duração, legenda, animação]. A animação recebe u (tempo dentro da cena) e d.
-const SHAKE = (el, u, a, amp) => { const [x, y] = treme(u, a, amp, 0.3); el.style.transform = `translate(${x}px,${y}px)`; };
-montar([
-  ['gancho', 2.2, 'Faltou soja.', (u, d) => {
-    const c = $('c-gancho');
-    estala($('g1'), u, 0.05, 0.35);
-    estala($('g2'), u, 0.2, 0.35, -3);
-    SHAKE(c, u, 0.22, 16);
-  }],
-  ['fabrica', 2.8, 'Sua fábrica parou.', (u, d) => {
-    entra($('f1'), u, 0, 0.4, 60);
-    estala($('f-img'), u, 0.15, 0.45);
-    estala($('f-st'), u, 1.1, 0.25, -6);
-    SHAKE($('c-fabrica'), u, 1.15, 12);
-  }],
-  ['frete', 2.6, 'O frete subiu.', (u, d) => {
-    const k = E.out(q(u, 0, 0.5));
-    T($('fr-card'), { x: (1 - k) * -700, o: k });
-    estala($('fr-h'), u, 0.5, 0.35);
-    SHAKE($('c-frete'), u, 0.5, 10);
-  }],
-  ['rival', 2.6, 'O rival baixou o preço.', (u, d) => {
-    const k = E.out(q(u, 0, 0.35));
-    T($('rv-card'), { y: (1 - k) * -500, o: k });
-    estala($('rv-h'), u, 0.4, 0.35);
-    SHAKE($('c-rival'), u, 0.35, 14);
-  }],
-  ['pergunta', 3.6, 'Como você lidaria?', (u, d) => {
-    ['p1', 'p2', 'p3'].forEach((id, i) => {
-      const a = i * 0.15;
-      const enter = E.out(q(u, a, 0.35));
-      const leave = E.io(q(u, 1.5 + i * 0.05, 0.35));
-      T($(id), { y: (1 - enter) * 80 - leave * 700, o: enter * (1 - leave) });
-    });
-    estala($('p-q'), u, 1.8, 0.45);
-    const k = estala($('p-int'), u, 2.2, 0.4, 0);
-    if (k >= 1) $('p-int').style.transform += ` translateY(${Math.sin(u * 5) * 14}px)`;
-  }],
-  ['opcoes', 3.6, 'Comprar mais caro? Esperar? Buscar outro fornecedor?', (u, d) => {
-    ['o1', 'o2', 'o3'].forEach((id, i) => {
-      const k = E.out(q(u, 0.3 + i * 0.6, 0.45));
-      T($(id), { x: (1 - k) * -900, o: k });
-    });
-  }],
-  ['cta', 3.0, 'Entre no Discord. Link na bio.', (u, d) => {
-    estala($('z-ic'), u, 0, 0.4);
-    entra($('z-logo'), u, 0.2, 0.4, 40);
-    estala($('z-h'), u, 0.5, 0.45);
-    estala($('z-bot'), u, 1.1, 0.45);
-  }],
-]);
+    <script src="motor.js"></script>
+    <script>
+      // Cenas: [id, duração, legenda, animação]. A animação recebe u (tempo dentro da cena) e d.
+      const SHAKE = (el, u, a, amp) => {
+        const [x, y] = treme(u, a, amp, 0.3);
+        el.style.transform = `translate(${x}px,${y}px)`;
+      };
+      montar([
+        [
+          'gancho',
+          2.2,
+          'Faltou soja.',
+          (u, d) => {
+            const c = $('c-gancho');
+            estala($('g1'), u, 0.05, 0.35);
+            estala($('g2'), u, 0.2, 0.35, -3);
+            SHAKE(c, u, 0.22, 16);
+          },
+        ],
+        [
+          'fabrica',
+          2.8,
+          'Sua fábrica parou.',
+          (u, d) => {
+            entra($('f1'), u, 0, 0.4, 60);
+            estala($('f-img'), u, 0.15, 0.45);
+            estala($('f-st'), u, 1.1, 0.25, -6);
+            SHAKE($('c-fabrica'), u, 1.15, 12);
+          },
+        ],
+        [
+          'frete',
+          2.6,
+          'O frete subiu.',
+          (u, d) => {
+            const k = E.out(q(u, 0, 0.5));
+            T($('fr-card'), { x: (1 - k) * -700, o: k });
+            estala($('fr-h'), u, 0.5, 0.35);
+            SHAKE($('c-frete'), u, 0.5, 10);
+          },
+        ],
+        [
+          'rival',
+          2.6,
+          'O rival baixou o preço.',
+          (u, d) => {
+            const k = E.out(q(u, 0, 0.35));
+            T($('rv-card'), { y: (1 - k) * -500, o: k });
+            estala($('rv-h'), u, 0.4, 0.35);
+            SHAKE($('c-rival'), u, 0.35, 14);
+          },
+        ],
+        [
+          'pergunta',
+          3.6,
+          'Como você lidaria?',
+          (u, d) => {
+            ['p1', 'p2', 'p3'].forEach((id, i) => {
+              const a = i * 0.15;
+              const enter = E.out(q(u, a, 0.35));
+              const leave = E.io(q(u, 1.5 + i * 0.05, 0.35));
+              T($(id), { y: (1 - enter) * 80 - leave * 700, o: enter * (1 - leave) });
+            });
+            estala($('p-q'), u, 1.8, 0.45);
+            const k = estala($('p-int'), u, 2.2, 0.4, 0);
+            if (k >= 1) $('p-int').style.transform += ` translateY(${Math.sin(u * 5) * 14}px)`;
+          },
+        ],
+        [
+          'opcoes',
+          3.6,
+          'Comprar mais caro? Esperar? Buscar outro fornecedor?',
+          (u, d) => {
+            ['o1', 'o2', 'o3'].forEach((id, i) => {
+              const k = E.out(q(u, 0.3 + i * 0.6, 0.45));
+              T($(id), { x: (1 - k) * -900, o: k });
+            });
+          },
+        ],
+        [
+          'cta',
+          3.0,
+          'Entre no Discord. Link na bio.',
+          (u, d) => {
+            estala($('z-ic'), u, 0, 0.4);
+            entra($('z-logo'), u, 0.2, 0.4, 40);
+            estala($('z-h'), u, 0.5, 0.45);
+            estala($('z-bot'), u, 1.1, 0.45);
+          },
+        ],
+      ]);
 
-// Cortes: o flash do motor marca cada troca de cena.
-</script>
-</body>
+      // Cortes: o flash do motor marca cada troca de cena.
+    </script>
+  </body>
 </html>

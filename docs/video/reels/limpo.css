@@ -1,29 +1,207 @@
 /* Estilo "limpo" das animações explicativas (9:16, 1080×1920).
    Poucos elementos, muito espaço, sem linhas de varredura. Área segura: nada importante
    acima de 220 px nem abaixo de 1540 px (interface do Instagram e do TikTok). */
-:root{--bg:#0f1114;--tx:#f2f4ee;--mut:#8f9890;--lime:#a6e22e;--gold:#e8bd4f;--brasa:#ef6a4c;--ceu:#5aaee6;--panel:#171b20;--line:#2a3038}
-html,body{margin:0;height:100%;background:#07080a;font-family:Archivo,system-ui,sans-serif;color:var(--tx)}
-#bar{display:flex;gap:10px;align-items:center;justify-content:center;padding:10px;background:#14161a;font:13px Archivo}
-#bar button{background:var(--lime);color:#111;border:0;padding:8px 14px;font:700 13px Archivo;cursor:pointer}
-#wrap{display:flex;justify-content:center;align-items:center;overflow:hidden}
-#stage{position:relative;width:1080px;height:1920px;flex:none;overflow:hidden;background:radial-gradient(ellipse at 50% 36%,#1a2128 0%,var(--bg) 62%,#07080a 100%)}
-#grade{position:absolute;inset:-60px;background-image:linear-gradient(#ffffff06 2px,transparent 2px),linear-gradient(90deg,#ffffff06 2px,transparent 2px);background-size:60px 60px}
-#flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:38}
-#marca{position:absolute;top:150px;left:0;right:0;text-align:center;font:400 18px "Press Start 2P";color:#7d867f;z-index:32;letter-spacing:2px}
-.cena{position:absolute;inset:0;visibility:hidden;z-index:5}
-.a{position:absolute;will-change:transform,opacity}
-.pix{image-rendering:pixelated}
-.h{left:70px;right:70px;text-align:center;font:900 112px/.94 Archivo;text-transform:uppercase;letter-spacing:-3px;text-shadow:0 8px 0 #000a}
-.w{display:inline-block}
-.lime{color:var(--lime)} .gold{color:var(--gold)} .brasa{color:var(--brasa)} .ceu{color:var(--ceu)} .mut{color:var(--mut)}
-.tag{font:400 20px/1.5 "Press Start 2P";text-align:center;letter-spacing:1px}
-.elo{left:110px;width:860px;height:178px;display:flex;align-items:center;gap:28px;background:var(--panel);border:6px solid var(--c);padding:0 32px;box-sizing:border-box;box-shadow:0 24px 50px #0009}
-.elo img{width:110px;height:110px;flex:none}
-.elo b{display:block;font:900 52px/1 Archivo;text-transform:uppercase}
-.elo small{display:block;font:800 22px Archivo;letter-spacing:3px;color:var(--mut);margin-top:8px}
-.botao{left:80px;width:920px;background:var(--lime);color:#0d0f0b;font:900 78px/1 Archivo;text-transform:uppercase;text-align:center;padding:42px 0;box-shadow:0 12px 0 #6f9c16}
-.chip{box-sizing:border-box;background:var(--lime);color:#0d0f0b;font:400 20px/1 "Press Start 2P";padding:12px 14px;text-align:center}
-#fundo-cap{position:absolute;left:0;right:0;bottom:0;height:560px;background:linear-gradient(#0000,#000c);z-index:32;pointer-events:none}
-#cap{position:absolute;left:70px;right:70px;bottom:330px;z-index:33;text-align:center}
-#cap p{margin:0;font:900 66px/1.06 Archivo;text-transform:uppercase;letter-spacing:-1px;text-shadow:0 3px 0 #000,0 0 28px #000c}
-#cap .dita{color:#fff} #cap .agora{color:var(--lime)}
+:root {
+  --bg: #0f1114;
+  --tx: #f2f4ee;
+  --mut: #8f9890;
+  --lime: #a6e22e;
+  --gold: #e8bd4f;
+  --brasa: #ef6a4c;
+  --ceu: #5aaee6;
+  --panel: #171b20;
+  --line: #2a3038;
+}
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: #07080a;
+  font-family: Archivo, system-ui, sans-serif;
+  color: var(--tx);
+}
+#bar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  background: #14161a;
+  font: 13px Archivo;
+}
+#bar button {
+  background: var(--lime);
+  color: #111;
+  border: 0;
+  padding: 8px 14px;
+  font: 700 13px Archivo;
+  cursor: pointer;
+}
+#wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+#stage {
+  position: relative;
+  width: 1080px;
+  height: 1920px;
+  flex: none;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 36%, #1a2128 0%, var(--bg) 62%, #07080a 100%);
+}
+#grade {
+  position: absolute;
+  inset: -60px;
+  background-image:
+    linear-gradient(#ffffff06 2px, transparent 2px),
+    linear-gradient(90deg, #ffffff06 2px, transparent 2px);
+  background-size: 60px 60px;
+}
+#flash {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 38;
+}
+#marca {
+  position: absolute;
+  top: 150px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font: 400 18px 'Press Start 2P';
+  color: #7d867f;
+  z-index: 32;
+  letter-spacing: 2px;
+}
+.cena {
+  position: absolute;
+  inset: 0;
+  visibility: hidden;
+  z-index: 5;
+}
+.a {
+  position: absolute;
+  will-change: transform, opacity;
+}
+.pix {
+  image-rendering: pixelated;
+}
+.h {
+  left: 70px;
+  right: 70px;
+  text-align: center;
+  font: 900 112px/0.94 Archivo;
+  text-transform: uppercase;
+  letter-spacing: -3px;
+  text-shadow: 0 8px 0 #000a;
+}
+.w {
+  display: inline-block;
+}
+.lime {
+  color: var(--lime);
+}
+.gold {
+  color: var(--gold);
+}
+.brasa {
+  color: var(--brasa);
+}
+.ceu {
+  color: var(--ceu);
+}
+.mut {
+  color: var(--mut);
+}
+.tag {
+  font: 400 20px/1.5 'Press Start 2P';
+  text-align: center;
+  letter-spacing: 1px;
+}
+.elo {
+  left: 110px;
+  width: 860px;
+  height: 178px;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  background: var(--panel);
+  border: 6px solid var(--c);
+  padding: 0 32px;
+  box-sizing: border-box;
+  box-shadow: 0 24px 50px #0009;
+}
+.elo img {
+  width: 110px;
+  height: 110px;
+  flex: none;
+}
+.elo b {
+  display: block;
+  font: 900 52px/1 Archivo;
+  text-transform: uppercase;
+}
+.elo small {
+  display: block;
+  font: 800 22px Archivo;
+  letter-spacing: 3px;
+  color: var(--mut);
+  margin-top: 8px;
+}
+.botao {
+  left: 80px;
+  width: 920px;
+  background: var(--lime);
+  color: #0d0f0b;
+  font: 900 78px/1 Archivo;
+  text-transform: uppercase;
+  text-align: center;
+  padding: 42px 0;
+  box-shadow: 0 12px 0 #6f9c16;
+}
+.chip {
+  box-sizing: border-box;
+  background: var(--lime);
+  color: #0d0f0b;
+  font: 400 20px/1 'Press Start 2P';
+  padding: 12px 14px;
+  text-align: center;
+}
+#fundo-cap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 560px;
+  background: linear-gradient(#0000, #000c);
+  z-index: 32;
+  pointer-events: none;
+}
+#cap {
+  position: absolute;
+  left: 70px;
+  right: 70px;
+  bottom: 330px;
+  z-index: 33;
+  text-align: center;
+}
+#cap p {
+  margin: 0;
+  font: 900 66px/1.06 Archivo;
+  text-transform: uppercase;
+  letter-spacing: -1px;
+  text-shadow:
+    0 3px 0 #000,
+    0 0 28px #000c;
+}
+#cap .dita {
+  color: #fff;
+}
+#cap .agora {
+  color: var(--lime);
+}

@@ -1,163 +1,374 @@
 <!doctype html>
 <html lang="pt-BR">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Aftermarket · Animação 3 · Zero jogadores</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Archivo:wght@500;700;800;900&display=block">
-<link rel="stylesheet" href="limpo.css">
-<style>/* Gatilho: surpresa e prova. A economia do jogo funciona sozinha. */
-.tx{display:grid}
-.tx>div{grid-area:1/1}
-.rob{font:400 18px "Press Start 2P";background:var(--ceu);color:#0d0f0b;padding:8px 10px;margin-left:auto;flex:none}
-</style>
-</head>
-<body>
-<div id="bar"><button id="play">▶ Tocar</button><button id="rst">⟲ Do início</button><span id="tt">0.0 / 0.0 s</span></div>
-<div id="wrap"><div id="stage">
-  <div id="grade"></div>
-  <div class="a tag" id="marca">AFTERMARKET · EM DESENVOLVIMENTO</div>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Aftermarket · Animação 3 · Zero jogadores</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Archivo:wght@500;700;800;900&display=block"
+    />
+    <link rel="stylesheet" href="limpo.css" />
+    <style>
+      /* Gatilho: surpresa e prova. A economia do jogo funciona sozinha. */
+      .tx {
+        display: grid;
+      }
+      .tx > div {
+        grid-area: 1/1;
+      }
+      .rob {
+        font: 400 18px 'Press Start 2P';
+        background: var(--ceu);
+        color: #0d0f0b;
+        padding: 8px 10px;
+        margin-left: auto;
+        flex: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="bar">
+      <button id="play">▶ Tocar</button><button id="rst">⟲ Do início</button
+      ><span id="tt">0.0 / 0.0 s</span>
+    </div>
+    <div id="wrap">
+      <div id="stage">
+        <div id="grade"></div>
+        <div class="a tag" id="marca">AFTERMARKET · EM DESENVOLVIMENTO</div>
 
-  <!-- 1. GANCHO: zero jogadores -->
-  <section class="cena" id="c-gancho">
-    <div class="a" id="g-n" style="left:0;right:0;top:360px;text-align:center;font:900 600px/1 Archivo;color:var(--lime);text-shadow:0 16px 0 #000a">0</div>
-    <div class="a h" id="g-t" style="top:1050px;font-size:96px">jogadores humanos</div>
-    <div class="a h" id="g-u" style="top:1210px;font-size:84px"><span class="lime">e a economia funciona</span></div>
-  </section>
+        <!-- 1. GANCHO: zero jogadores -->
+        <section class="cena" id="c-gancho">
+          <div
+            class="a"
+            id="g-n"
+            style="
+              left: 0;
+              right: 0;
+              top: 360px;
+              text-align: center;
+              font: 900 600px/1 Archivo;
+              color: var(--lime);
+              text-shadow: 0 16px 0 #000a;
+            "
+          >
+            0
+          </div>
+          <div class="a h" id="g-t" style="top: 1050px; font-size: 96px">jogadores humanos</div>
+          <div class="a h" id="g-u" style="top: 1210px; font-size: 84px">
+            <span class="lime">e a economia funciona</span>
+          </div>
+        </section>
 
-  <!-- 2. REDE: centenas de empresas-robô negociando -->
-  <section class="cena" id="c-rede">
-    <div class="a tag ceu" id="r-tag" style="top:250px;left:0;right:0">MUNDO DE TESTE · ESCALA GRANDE</div>
-    <div class="a" id="r-n" style="left:0;right:0;top:300px;text-align:center;font:900 150px/1 Archivo;color:var(--lime)">~0</div>
-    <div class="a tag" id="r-l" style="left:0;right:0;top:470px;color:#f2f4ee;font-size:22px">EMPRESAS-ROBÔ NEGOCIANDO</div>
-    <svg id="rede" class="a" style="left:0;top:0" width="1080" height="1920"></svg>
-  </section>
+        <!-- 2. REDE: centenas de empresas-robô negociando -->
+        <section class="cena" id="c-rede">
+          <div class="a tag ceu" id="r-tag" style="top: 250px; left: 0; right: 0">
+            MUNDO DE TESTE · ESCALA GRANDE
+          </div>
+          <div
+            class="a"
+            id="r-n"
+            style="
+              left: 0;
+              right: 0;
+              top: 300px;
+              text-align: center;
+              font: 900 150px/1 Archivo;
+              color: var(--lime);
+            "
+          >
+            ~0
+          </div>
+          <div
+            class="a tag"
+            id="r-l"
+            style="left: 0; right: 0; top: 470px; color: #f2f4ee; font-size: 22px"
+          >
+            EMPRESAS-ROBÔ NEGOCIANDO
+          </div>
+          <svg id="rede" class="a" style="left: 0; top: 0" width="1080" height="1920"></svg>
+        </section>
 
-  <!-- 3. EXEMPLO: uma cadeia montada pelos robôs; depois, você e seus amigos -->
-  <section class="cena" id="c-exemplo">
-    <div class="a h" id="x-t1" style="top:230px;font-size:76px">Uma cadeia de soja<br><span class="lime">montada por robôs</span></div>
-    <div class="a h" id="x-t2" style="top:230px;font-size:76px">Agora imagine<br><span class="lime">você e seus amigos</span></div>
-    <div class="a elo" id="x1" style="top:460px;--c:#5c9e5a"><img class="pix" src="../../../apps/web/public/arte/lavoura.png" alt=""><div class="tx"><div id="x1r"><b>União Agro</b><small>SINOP · MT</small></div><div id="x1a"><b>Você</b><small>FAZENDA</small></div></div><span class="rob" id="x1c">ROBÔ</span></div>
-    <div class="a" id="xb1" style="left:526px;top:638px;width:8px;height:54px;background:var(--gold);transform-origin:top"></div>
-    <div class="a elo" id="x2" style="top:692px;--c:#8a96a0"><img class="pix" src="../../../apps/web/public/arte/soja-oleo.png" alt=""><div class="tx"><div id="x2r"><b>Rota Norte</b><small>RONDONÓPOLIS · MT</small></div><div id="x2a"><b>Seu amigo</b><small>FÁBRICA</small></div></div><span class="rob" id="x2c">ROBÔ</span></div>
-    <div class="a" id="xb2" style="left:526px;top:870px;width:8px;height:54px;background:var(--gold);transform-origin:top"></div>
-    <div class="a elo" id="x3" style="top:924px;--c:#d9615a"><img class="pix" src="../../../apps/web/public/arte/loja.png" alt=""><div class="tx"><div id="x3r"><b>Planalto</b><small>SÃO PAULO · SP</small></div><div id="x3a"><b>Sua amiga</b><small>LOJA</small></div></div><span class="rob" id="x3c">ROBÔ</span></div>
-    <div class="a chip" id="xs" style="left:455px;top:622px;width:170px;font-size:16px;z-index:7">SOJA</div>
-    <div class="a chip" id="xo" style="left:455px;top:854px;width:170px;font-size:16px;z-index:7;background:var(--gold)">ÓLEO</div>
-  </section>
+        <!-- 3. EXEMPLO: uma cadeia montada pelos robôs; depois, você e seus amigos -->
+        <section class="cena" id="c-exemplo">
+          <div class="a h" id="x-t1" style="top: 230px; font-size: 76px">
+            Uma cadeia de soja<br /><span class="lime">montada por robôs</span>
+          </div>
+          <div class="a h" id="x-t2" style="top: 230px; font-size: 76px">
+            Agora imagine<br /><span class="lime">você e seus amigos</span>
+          </div>
+          <div class="a elo" id="x1" style="top: 460px; --c: #5c9e5a">
+            <img class="pix" src="../../../apps/web/public/arte/lavoura.png" alt="" />
+            <div class="tx">
+              <div id="x1r"><b>União Agro</b><small>SINOP · MT</small></div>
+              <div id="x1a"><b>Você</b><small>FAZENDA</small></div>
+            </div>
+            <span class="rob" id="x1c">ROBÔ</span>
+          </div>
+          <div
+            class="a"
+            id="xb1"
+            style="
+              left: 526px;
+              top: 638px;
+              width: 8px;
+              height: 54px;
+              background: var(--gold);
+              transform-origin: top;
+            "
+          ></div>
+          <div class="a elo" id="x2" style="top: 692px; --c: #8a96a0">
+            <img class="pix" src="../../../apps/web/public/arte/soja-oleo.png" alt="" />
+            <div class="tx">
+              <div id="x2r"><b>Rota Norte</b><small>RONDONÓPOLIS · MT</small></div>
+              <div id="x2a"><b>Seu amigo</b><small>FÁBRICA</small></div>
+            </div>
+            <span class="rob" id="x2c">ROBÔ</span>
+          </div>
+          <div
+            class="a"
+            id="xb2"
+            style="
+              left: 526px;
+              top: 870px;
+              width: 8px;
+              height: 54px;
+              background: var(--gold);
+              transform-origin: top;
+            "
+          ></div>
+          <div class="a elo" id="x3" style="top: 924px; --c: #d9615a">
+            <img class="pix" src="../../../apps/web/public/arte/loja.png" alt="" />
+            <div class="tx">
+              <div id="x3r"><b>Planalto</b><small>SÃO PAULO · SP</small></div>
+              <div id="x3a"><b>Sua amiga</b><small>LOJA</small></div>
+            </div>
+            <span class="rob" id="x3c">ROBÔ</span>
+          </div>
+          <div
+            class="a chip"
+            id="xs"
+            style="left: 455px; top: 622px; width: 170px; font-size: 16px; z-index: 7"
+          >
+            SOJA
+          </div>
+          <div
+            class="a chip"
+            id="xo"
+            style="
+              left: 455px;
+              top: 854px;
+              width: 170px;
+              font-size: 16px;
+              z-index: 7;
+              background: var(--gold);
+            "
+          >
+            ÓLEO
+          </div>
+        </section>
 
-  <!-- 4. CHAMADA -->
-  <section class="cena" id="c-cta">
-    <div class="a h" id="z-h" style="top:420px;font-size:128px">Monte a<br><span class="lime">sua cadeia</span></div>
-    <div class="a botao" id="z-bot" style="top:920px">Entre no Discord</div>
-    <div class="a tag" id="z-l" style="top:1110px;left:0;right:0;color:#f2f4ee">Link na bio</div>
-    <div class="a tag mut" id="z-s" style="top:1170px;left:0;right:0">novidades e primeiros testes</div>
-  </section>
+        <!-- 4. CHAMADA -->
+        <section class="cena" id="c-cta">
+          <div class="a h" id="z-h" style="top: 420px; font-size: 128px">
+            Monte a<br /><span class="lime">sua cadeia</span>
+          </div>
+          <div class="a botao" id="z-bot" style="top: 920px">Entre no Discord</div>
+          <div class="a tag" id="z-l" style="top: 1110px; left: 0; right: 0; color: #f2f4ee">
+            Link na bio
+          </div>
+          <div class="a tag mut" id="z-s" style="top: 1170px; left: 0; right: 0">
+            novidades e primeiros testes
+          </div>
+        </section>
 
-  <div id="flash"></div>
-  <div id="fundo-cap"></div>
-  <div id="cap"><p id="cap-p"></p></div>
-</div></div>
+        <div id="flash"></div>
+        <div id="fundo-cap"></div>
+        <div id="cap"><p id="cap-p"></p></div>
+      </div>
+    </div>
 
-<script src="motor.js"></script>
-<script>
-// ---- Rede de empresas-robô (montada uma vez, animada por tempo) ----
-const NS = 'http://www.w3.org/2000/svg';
-const svg = $('rede');
-const ys = (n, y0, passo) => Array.from({ length: n }, (_, i) => y0 + i * passo);
-const FAZ = ys(6, 560, 150).map(y => ({ x: 190, y, img: 'lavoura' }));
-const FAB = ys(4, 640, 235).map(y => ({ x: 540, y, img: 'soja-oleo' }));
-const LOJ = ys(4, 640, 235).map(y => ({ x: 890, y, img: 'loja' }));
-const NOS = [...FAZ, ...FAB, ...LOJ];
-const ARESTAS = [
-  ...[[0,0],[1,0],[2,1],[3,2],[4,3],[5,3],[1,1],[3,3]].map(([a, b]) => ({ de: FAZ[a], para: FAB[b], cor: '#e8bd4f' })),
-  ...[[0,0],[0,1],[1,1],[1,2],[2,2],[2,3],[3,3],[3,0]].map(([a, b]) => ({ de: FAB[a], para: LOJ[b], cor: '#a6e22e' })),
-];
-const COR = { lavoura: '#5c9e5a', 'soja-oleo': '#8a96a0', loja: '#d9615a' };
-ARESTAS.forEach(e => {
-  const p = document.createElementNS(NS, 'path');
-  const x1 = e.de.x + 44, y1 = e.de.y, x2 = e.para.x - 44, y2 = e.para.y;
-  p.setAttribute('d', `M${x1},${y1} C${x1 + 120},${y1} ${x2 - 120},${y2} ${x2},${y2}`);
-  p.setAttribute('fill', 'none'); p.setAttribute('stroke', e.cor); p.setAttribute('stroke-width', '4'); p.setAttribute('stroke-opacity', '.55');
-  svg.append(p); e.p = p;
-  const c = document.createElementNS(NS, 'rect');
-  c.setAttribute('width', '16'); c.setAttribute('height', '16'); c.setAttribute('fill', e.cor);
-  svg.append(c); e.c = c;
-});
-NOS.forEach(n => {
-  const g = document.createElementNS(NS, 'g');
-  const r = document.createElementNS(NS, 'rect');
-  r.setAttribute('x', n.x - 44); r.setAttribute('y', n.y - 44); r.setAttribute('width', 88); r.setAttribute('height', 88);
-  r.setAttribute('fill', '#171b20'); r.setAttribute('stroke', COR[n.img]); r.setAttribute('stroke-width', 5);
-  const im = document.createElementNS(NS, 'image');
-  im.setAttribute('href', `../../../apps/web/public/arte/${n.img}.png`);
-  im.setAttribute('x', n.x - 34); im.setAttribute('y', n.y - 34); im.setAttribute('width', 68); im.setAttribute('height', 68);
-  im.style.imageRendering = 'pixelated';
-  g.append(r, im); svg.append(g); n.g = g;
-});
+    <script src="motor.js"></script>
+    <script>
+      // ---- Rede de empresas-robô (montada uma vez, animada por tempo) ----
+      const NS = 'http://www.w3.org/2000/svg';
+      const svg = $('rede');
+      const ys = (n, y0, passo) => Array.from({ length: n }, (_, i) => y0 + i * passo);
+      const FAZ = ys(6, 560, 150).map((y) => ({ x: 190, y, img: 'lavoura' }));
+      const FAB = ys(4, 640, 235).map((y) => ({ x: 540, y, img: 'soja-oleo' }));
+      const LOJ = ys(4, 640, 235).map((y) => ({ x: 890, y, img: 'loja' }));
+      const NOS = [...FAZ, ...FAB, ...LOJ];
+      const ARESTAS = [
+        ...[
+          [0, 0],
+          [1, 0],
+          [2, 1],
+          [3, 2],
+          [4, 3],
+          [5, 3],
+          [1, 1],
+          [3, 3],
+        ].map(([a, b]) => ({ de: FAZ[a], para: FAB[b], cor: '#e8bd4f' })),
+        ...[
+          [0, 0],
+          [0, 1],
+          [1, 1],
+          [1, 2],
+          [2, 2],
+          [2, 3],
+          [3, 3],
+          [3, 0],
+        ].map(([a, b]) => ({ de: FAB[a], para: LOJ[b], cor: '#a6e22e' })),
+      ];
+      const COR = { lavoura: '#5c9e5a', 'soja-oleo': '#8a96a0', loja: '#d9615a' };
+      ARESTAS.forEach((e) => {
+        const p = document.createElementNS(NS, 'path');
+        const x1 = e.de.x + 44,
+          y1 = e.de.y,
+          x2 = e.para.x - 44,
+          y2 = e.para.y;
+        p.setAttribute('d', `M${x1},${y1} C${x1 + 120},${y1} ${x2 - 120},${y2} ${x2},${y2}`);
+        p.setAttribute('fill', 'none');
+        p.setAttribute('stroke', e.cor);
+        p.setAttribute('stroke-width', '4');
+        p.setAttribute('stroke-opacity', '.55');
+        svg.append(p);
+        e.p = p;
+        const c = document.createElementNS(NS, 'rect');
+        c.setAttribute('width', '16');
+        c.setAttribute('height', '16');
+        c.setAttribute('fill', e.cor);
+        svg.append(c);
+        e.c = c;
+      });
+      NOS.forEach((n) => {
+        const g = document.createElementNS(NS, 'g');
+        const r = document.createElementNS(NS, 'rect');
+        r.setAttribute('x', n.x - 44);
+        r.setAttribute('y', n.y - 44);
+        r.setAttribute('width', 88);
+        r.setAttribute('height', 88);
+        r.setAttribute('fill', '#171b20');
+        r.setAttribute('stroke', COR[n.img]);
+        r.setAttribute('stroke-width', 5);
+        const im = document.createElementNS(NS, 'image');
+        im.setAttribute('href', `../../../apps/web/public/arte/${n.img}.png`);
+        im.setAttribute('x', n.x - 34);
+        im.setAttribute('y', n.y - 34);
+        im.setAttribute('width', 68);
+        im.setAttribute('height', 68);
+        im.style.imageRendering = 'pixelated';
+        g.append(r, im);
+        svg.append(g);
+        n.g = g;
+      });
 
-const CORP = ['#5c9e5a', '#8a96a0', '#d9615a'];
-montar([
-  ['gancho', 3.0, 'Zero jogadores. E a economia funciona.', (u) => {
-    const k = E.out(q(u, -0.3, 0.6));
-    T($('g-n'), { s: 0.85 + 0.15 * k, o: 1 });
-    palavras($('g-t'), u, -0.5, 0.05, 0.3);
-    estala($('g-u'), u, 1.2, 0.45);
-    sacode($('c-gancho'), u, 1.25, 8);
-  }],
-  ['rede', 9.5, [[0, 'No nosso mundo de teste, empresas-robô negociam sozinhas.'], [5.6, 'Elas montam cadeias inteiras.']], (u) => {
-    contar($('r-n'), u, 0.2, 2.6, 0, 550, n => '~' + Math.round(n));
-    NOS.forEach((n, i) => {
-      const p = q(u, 0.2 + i * 0.07, 0.3);
-      n.g.setAttribute('transform', `translate(${n.x},${n.y}) scale(${p <= 0 ? 0 : E.back(p)}) translate(${-n.x},${-n.y})`);
-      n.g.setAttribute('opacity', clamp(p * 5));
-    });
-    ARESTAS.forEach((e, i) => {
-      const k = q(u, 1.4 + i * 0.12, 0.5);
-      tracar(e.p, E.out(k));
-      // moeda que corre pela linha depois de traçada
-      const L = e.p.getTotalLength();
-      const f = ((u * 0.28 + i * 0.137) % 1);
-      const pt = e.p.getPointAtLength(f * L);
-      e.c.setAttribute('x', pt.x - 8); e.c.setAttribute('y', pt.y - 8);
-      e.c.setAttribute('opacity', k >= 1 ? 1 : 0);
-    });
-  }],
-  ['exemplo', 10.0, [[0, 'Do campo em Sinop às lojas de São Paulo.'], [5.8, 'Agora imagine com seus amigos.']], (u) => {
-    // títulos
-    const t1 = E.out(q(u, 0, 0.4)) * (1 - E.io(q(u, 5.6, 0.3)));
-    T($('x-t1'), { y: (1 - E.out(q(u, 0, 0.4))) * 40, o: t1 });
-    palavras($('x-t2'), u, 6.0, 0.1, 0.4);
-    $('x-t2').style.opacity = clamp((u - 5.95) * 6);
-    // cartões entram
-    ['x1', 'x2', 'x3'].forEach((id, i) => {
-      const k = E.out(q(u, 0.1 + i * 0.7, 0.45));
-      T($(id), { x: (1 - k) * 80, o: k });
-    });
-    // troca robô -> amigo
-    const sw = E.io(q(u, 5.9, 0.5));
-    ['1', '2', '3'].forEach((n, i) => {
-      $('x' + n + 'r').style.opacity = 1 - sw;
-      $('x' + n + 'a').style.opacity = sw;
-      $('x' + n + 'c').style.opacity = 1 - sw;
-      const d = Math.max(0, sw - 0.5) * 2;
-      $('x' + n).style.setProperty('--c', sw > 0.5 ? '#a6e22e' : CORP[i]);
-    });
-    // setas
-    $('xb1').style.transform = `scaleY(${E.out(q(u, 0.8, 0.4))})`;
-    $('xb2').style.transform = `scaleY(${E.out(q(u, 1.5, 0.4))})`;
-    // soja desce do 1 para o 2; óleo do 2 para o 3 (e repete na versão com amigos)
-    const ciclo = (a) => trecho(u, [[a, 0], [a + 0.8, 1]]);
-    T($('xs'), { y: 70 * ciclo(2.0), o: clamp((u - 2.0) * 8) * (1 - clamp((u - 2.9) * 8)) + (u > 6.4 ? clamp((u - 6.4) * 8) * (1 - clamp((u - 7.3) * 8)) : 0) });
-    T($('xo'), { y: 70 * ciclo(3.4), o: clamp((u - 3.4) * 8) * (1 - clamp((u - 4.3) * 8)) + (u > 7.6 ? clamp((u - 7.6) * 8) * (1 - clamp((u - 8.5) * 8)) : 0) });
-  }],
-  ['cta', 3.5, 'Monte a sua cadeia. Link na bio.', (u) => {
-    palavras($('z-h'), u, 0, 0.1, 0.4);
-    estala($('z-bot'), u, 0.9, 0.45);
-    entra($('z-l'), u, 1.4, 0.35, 30);
-    entra($('z-s'), u, 1.7, 0.35, 30);
-  }],
-]);
-</script>
-</body>
+      const CORP = ['#5c9e5a', '#8a96a0', '#d9615a'];
+      montar([
+        [
+          'gancho',
+          3.0,
+          'Zero jogadores. E a economia funciona.',
+          (u) => {
+            const k = E.out(q(u, -0.3, 0.6));
+            T($('g-n'), { s: 0.85 + 0.15 * k, o: 1 });
+            palavras($('g-t'), u, -0.5, 0.05, 0.3);
+            estala($('g-u'), u, 1.2, 0.45);
+            sacode($('c-gancho'), u, 1.25, 8);
+          },
+        ],
+        [
+          'rede',
+          9.5,
+          [
+            [0, 'No nosso mundo de teste, empresas-robô negociam sozinhas.'],
+            [5.6, 'Elas montam cadeias inteiras.'],
+          ],
+          (u) => {
+            contar($('r-n'), u, 0.2, 2.6, 0, 550, (n) => '~' + Math.round(n));
+            NOS.forEach((n, i) => {
+              const p = q(u, 0.2 + i * 0.07, 0.3);
+              n.g.setAttribute(
+                'transform',
+                `translate(${n.x},${n.y}) scale(${p <= 0 ? 0 : E.back(p)}) translate(${-n.x},${-n.y})`,
+              );
+              n.g.setAttribute('opacity', clamp(p * 5));
+            });
+            ARESTAS.forEach((e, i) => {
+              const k = q(u, 1.4 + i * 0.12, 0.5);
+              tracar(e.p, E.out(k));
+              // moeda que corre pela linha depois de traçada
+              const L = e.p.getTotalLength();
+              const f = (u * 0.28 + i * 0.137) % 1;
+              const pt = e.p.getPointAtLength(f * L);
+              e.c.setAttribute('x', pt.x - 8);
+              e.c.setAttribute('y', pt.y - 8);
+              e.c.setAttribute('opacity', k >= 1 ? 1 : 0);
+            });
+          },
+        ],
+        [
+          'exemplo',
+          10.0,
+          [
+            [0, 'Do campo em Sinop às lojas de São Paulo.'],
+            [5.8, 'Agora imagine com seus amigos.'],
+          ],
+          (u) => {
+            // títulos
+            const t1 = E.out(q(u, 0, 0.4)) * (1 - E.io(q(u, 5.6, 0.3)));
+            T($('x-t1'), { y: (1 - E.out(q(u, 0, 0.4))) * 40, o: t1 });
+            palavras($('x-t2'), u, 6.0, 0.1, 0.4);
+            $('x-t2').style.opacity = clamp((u - 5.95) * 6);
+            // cartões entram
+            ['x1', 'x2', 'x3'].forEach((id, i) => {
+              const k = E.out(q(u, 0.1 + i * 0.7, 0.45));
+              T($(id), { x: (1 - k) * 80, o: k });
+            });
+            // troca robô -> amigo
+            const sw = E.io(q(u, 5.9, 0.5));
+            ['1', '2', '3'].forEach((n, i) => {
+              $('x' + n + 'r').style.opacity = 1 - sw;
+              $('x' + n + 'a').style.opacity = sw;
+              $('x' + n + 'c').style.opacity = 1 - sw;
+              const d = Math.max(0, sw - 0.5) * 2;
+              $('x' + n).style.setProperty('--c', sw > 0.5 ? '#a6e22e' : CORP[i]);
+            });
+            // setas
+            $('xb1').style.transform = `scaleY(${E.out(q(u, 0.8, 0.4))})`;
+            $('xb2').style.transform = `scaleY(${E.out(q(u, 1.5, 0.4))})`;
+            // soja desce do 1 para o 2; óleo do 2 para o 3 (e repete na versão com amigos)
+            const ciclo = (a) =>
+              trecho(u, [
+                [a, 0],
+                [a + 0.8, 1],
+              ]);
+            T($('xs'), {
+              y: 70 * ciclo(2.0),
+              o:
+                clamp((u - 2.0) * 8) * (1 - clamp((u - 2.9) * 8)) +
+                (u > 6.4 ? clamp((u - 6.4) * 8) * (1 - clamp((u - 7.3) * 8)) : 0),
+            });
+            T($('xo'), {
+              y: 70 * ciclo(3.4),
+              o:
+                clamp((u - 3.4) * 8) * (1 - clamp((u - 4.3) * 8)) +
+                (u > 7.6 ? clamp((u - 7.6) * 8) * (1 - clamp((u - 8.5) * 8)) : 0),
+            });
+          },
+        ],
+        [
+          'cta',
+          3.5,
+          'Monte a sua cadeia. Link na bio.',
+          (u) => {
+            palavras($('z-h'), u, 0, 0.1, 0.4);
+            estala($('z-bot'), u, 0.9, 0.45);
+            entra($('z-l'), u, 1.4, 0.35, 30);
+            entra($('z-s'), u, 1.7, 0.35, 30);
+          },
+        ],
+      ]);
+    </script>
+  </body>
 </html>

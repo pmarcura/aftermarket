@@ -29,20 +29,20 @@ No AFTERMARKET isso já existe: **robôs montam uma cadeia de soja sozinhos e o 
 
 Custo: **B** = baixo (gravação da tela + texto), **M** = médio (edição com cortes e legendas), **A** = alto (animação nova ou roteiro com rosto).
 
-| # | Ideia | Gancho (primeiros 2 s) | Formato | Por que espalha | Custo |
-|---|---|---|---|---|---|
-| 1 | **Robôs quebraram a economia** | "Eles faliram a própria cadeia." | Tela real, 15 s, sem texto longo | Surpresa real, "não acredito" | B |
-| 2 | **Faltou soja** (crise real do jogo) | Tela piscando "SEM SOJA" + "e agora?" | Gravação real + enquete | Pergunta aberta, comentário | B |
-| 3 | **Compra ou espera?** | "Você compra mais caro ou espera 3 dias?" | Dueto/enquete em story | Opinião divide público | B |
-| 4 | **Quanto tempo você aguenta?** | "Eu duro 60 dias sem falir. Você?" | Desafio, pede marcação de amigos | Desafio se replica | B |
-| 5 | **Bastidor de um dia de jogo** | "Dia 47: o caminhão quebrou no meio do caminho." | Tela + voz curta, série | Série cria seguidores | B |
-| 6 | **POV: você é o frete** | "POV: você é o caminhão e tem 300 km pela frente." | Animação simples do caminhão | Humor, fácil de reenviar | M |
-| 7 | **Rival baixou o preço** | "Meu rival acabou de me arruinar." | Tela real, zoom no preço | Drama curto | B |
-| 8 | **Pixel art que mexe** (técnica) | Vídeo mostrando sprite virando cena | Timelapse de criação | Atrai artistas e devs | M |
-| 9 | **Você não ganha em um dia** | "Eu comecei com uma loja vazia. Olha onde chegou." | Antes e depois da tela | Narrativa de evolução | B |
-| 10 | **Feito por paixão** | "O jogo não quer o seu dinheiro." | Rosto do Pedro (se ele topar) | Confiança e autoria | M |
-| 11 | **Os amigos vão ser seus rivais** | "Seu amigo acabou de comprar a fábrica que você queria." | Diálogo curto | Marcação de amigos | M |
-| 12 | **Quem consegue montar a cadeia?** | "Ninguém conseguiu fazer isso em 10 minutos." | Desafio com tempo na tela | Pede para tentar | B |
+| #   | Ideia                                | Gancho (primeiros 2 s)                                   | Formato                          | Por que espalha               | Custo |
+| --- | ------------------------------------ | -------------------------------------------------------- | -------------------------------- | ----------------------------- | ----- |
+| 1   | **Robôs quebraram a economia**       | "Eles faliram a própria cadeia."                         | Tela real, 15 s, sem texto longo | Surpresa real, "não acredito" | B     |
+| 2   | **Faltou soja** (crise real do jogo) | Tela piscando "SEM SOJA" + "e agora?"                    | Gravação real + enquete          | Pergunta aberta, comentário   | B     |
+| 3   | **Compra ou espera?**                | "Você compra mais caro ou espera 3 dias?"                | Dueto/enquete em story           | Opinião divide público        | B     |
+| 4   | **Quanto tempo você aguenta?**       | "Eu duro 60 dias sem falir. Você?"                       | Desafio, pede marcação de amigos | Desafio se replica            | B     |
+| 5   | **Bastidor de um dia de jogo**       | "Dia 47: o caminhão quebrou no meio do caminho."         | Tela + voz curta, série          | Série cria seguidores         | B     |
+| 6   | **POV: você é o frete**              | "POV: você é o caminhão e tem 300 km pela frente."       | Animação simples do caminhão     | Humor, fácil de reenviar      | M     |
+| 7   | **Rival baixou o preço**             | "Meu rival acabou de me arruinar."                       | Tela real, zoom no preço         | Drama curto                   | B     |
+| 8   | **Pixel art que mexe** (técnica)     | Vídeo mostrando sprite virando cena                      | Timelapse de criação             | Atrai artistas e devs         | M     |
+| 9   | **Você não ganha em um dia**         | "Eu comecei com uma loja vazia. Olha onde chegou."       | Antes e depois da tela           | Narrativa de evolução         | B     |
+| 10  | **Feito por paixão**                 | "O jogo não quer o seu dinheiro."                        | Rosto do Pedro (se ele topar)    | Confiança e autoria           | M     |
+| 11  | **Os amigos vão ser seus rivais**    | "Seu amigo acabou de comprar a fábrica que você queria." | Diálogo curto                    | Marcação de amigos            | M     |
+| 12  | **Quem consegue montar a cadeia?**   | "Ninguém conseguiu fazer isso em 10 minutos."            | Desafio com tempo na tela        | Pede para tentar              | B     |
 
 **Recomendação:** comece pelas ideias **1, 2, 3 e 5**. São as de custo baixo, usam o próprio jogo e dão o tipo de resposta que o algoritmo premia (comentário, salvamento, compartilhamento).
 
@@ -54,6 +54,7 @@ Custo: **B** = baixo (gravação da tela + texto), **M** = médio (edição com 
 4. **Final:** CTA leve. "Comenta sua escolha." e depois "link na bio para o Discord".
 
 Regras de edição:
+
 - Legenda sempre (muita gente assiste sem som).
 - Corte a cada 2 a 3 segundos.
 - Nada importante nos 200 px de cima e nos 300 px de baixo (interface do app).
@@ -71,6 +72,7 @@ Frequência: 3 reels por semana. Um post sem resposta não significa fracasso; �
 ## Como saber se está funcionando
 
 Meça por reel (não só visualizações):
+
 - **Taxa de retenção nos primeiros 3 s** (quanto do público passa do gancho).
 - **Comentários** (principal sinal de viral).
 - **Salvamentos e compartilhamentos.**
@@ -81,6 +83,7 @@ Critério simples: se um reel tiver mais que 2× a média de comentários dos ou
 ## Testes A/B (faça sempre)
 
 Para cada ideia, publique duas versões do gancho e mantenha o resto igual. Exemplo:
+
 - A: "Eles faliram a própria cadeia."
 - B: "Robôs montaram uma cadeia sozinhos. E quebraram."
 

@@ -4,13 +4,17 @@
 // u = segundos desde o início da cena; d = duração da cena.
 const FPS = 30;
 const E = {
-  out: x => 1 - Math.pow(1 - x, 3),
-  io: x => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2),
-  back: x => { const c1 = 1.9, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); },
+  out: (x) => 1 - Math.pow(1 - x, 3),
+  io: (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2),
+  back: (x) => {
+    const c1 = 1.9,
+      c3 = c1 + 1;
+    return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2);
+  },
 };
 const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
 const q = (u, a, d) => clamp((u - a) / d);
-const $ = id => document.getElementById(id);
+const $ = (id) => document.getElementById(id);
 
 // Posiciona e transforma um elemento. Valores em px; s = escala; r = graus.
 function T(el, { x = 0, y = 0, s = 1, r = 0, o = 1 } = {}) {
@@ -43,7 +47,8 @@ function legenda(texto, u, d) {
   if (Array.isArray(texto)) {
     let i = 0;
     for (let k = 0; k < texto.length; k++) if (u >= texto[k][0]) i = k;
-    const ini = texto[i][0], fim = i + 1 < texto.length ? texto[i + 1][0] : d;
+    const ini = texto[i][0],
+      fim = i + 1 < texto.length ? texto[i + 1][0] : d;
     return legenda(texto[i][1], u - ini, fim - ini);
   }
   const p = $('cap-p');
@@ -56,17 +61,23 @@ function legenda(texto, u, d) {
 
 // Divide um título em palavras animáveis (cada palavra vira <span class="w">).
 function dividir(el) {
-  const anda = n => [...n.childNodes].forEach(c => {
-    if (c.nodeType === 3) {
-      const f = document.createDocumentFragment();
-      c.textContent.split(/(\s+)/).forEach(p => {
-        if (!p) return;
-        if (/^\s+$/.test(p)) f.append(p);
-        else { const s = document.createElement('span'); s.className = 'w'; s.textContent = p; f.append(s); }
-      });
-      c.replaceWith(f);
-    } else if (c.nodeName !== 'BR') anda(c);
-  });
+  const anda = (n) =>
+    [...n.childNodes].forEach((c) => {
+      if (c.nodeType === 3) {
+        const f = document.createDocumentFragment();
+        c.textContent.split(/(\s+)/).forEach((p) => {
+          if (!p) return;
+          if (/^\s+$/.test(p)) f.append(p);
+          else {
+            const s = document.createElement('span');
+            s.className = 'w';
+            s.textContent = p;
+            f.append(s);
+          }
+        });
+        c.replaceWith(f);
+      } else if (c.nodeName !== 'BR') anda(c);
+    });
   anda(el);
 }
 // Palavras do título entram uma a uma (sobem e aparecem).
@@ -84,7 +95,7 @@ function tracar(p, k) {
   p.style.strokeDashoffset = L * (1 - clamp(k));
 }
 // Contador que sobe de "de" até "ate".
-function contar(el, u, a, d, de, ate, f = n => Math.round(n)) {
+function contar(el, u, a, d, de, ate, f = (n) => Math.round(n)) {
   el.textContent = f(de + (ate - de) * E.out(q(u, a, d)));
 }
 // Tremor aplicado ao próprio elemento (cena inteira, por exemplo).
@@ -96,18 +107,30 @@ function sacode(el, u, a, amp = 12) {
 function trecho(u, pts) {
   if (u <= pts[0][0]) return pts[0][1];
   for (let i = 1; i < pts.length; i++) {
-    if (u <= pts[i][0]) { const [a, va] = pts[i - 1], [b, vb] = pts[i]; return va + (vb - va) * E.io(q(u, a, b - a)); }
+    if (u <= pts[i][0]) {
+      const [a, va] = pts[i - 1],
+        [b, vb] = pts[i];
+      return va + (vb - va) * E.io(q(u, a, b - a));
+    }
   }
   return pts[pts.length - 1][1];
 }
 
-let CENAS = [], DUR = 0, t = 0;
+let CENAS = [],
+  DUR = 0,
+  t = 0;
 // Flash branco curto no corte entre cenas: dá o "pulo" de edição.
-function flash(u) { return clamp(1 - u / 0.14) * 0.85; }
+function flash(u) {
+  return clamp(1 - u / 0.14) * 0.85;
+}
 
 function render() {
   let c = CENAS[CENAS.length - 1];
-  for (const x of CENAS) if (t >= x.a && t < x.a + x.d) { c = x; break; }
+  for (const x of CENAS)
+    if (t >= x.a && t < x.a + x.d) {
+      c = x;
+      break;
+    }
   for (const x of CENAS) x.el.style.visibility = x === c ? 'visible' : 'hidden';
   const u = t - c.a;
   c.fn(u, c.d);
@@ -130,26 +153,47 @@ function montar(lista) {
 }
 
 // Reprodução na página (botões Tocar / Do início).
-let tocando = false, t0 = 0;
+let tocando = false,
+  t0 = 0;
 function loop(ts) {
   if (!tocando) return;
   t = (ts - t0) / 1000;
-  if (t >= DUR) { t = 0; t0 = ts; }
+  if (t >= DUR) {
+    t = 0;
+    t0 = ts;
+  }
   render();
   requestAnimationFrame(loop);
 }
-const btPlay = document.getElementById('play'), btRst = document.getElementById('rst');
-if (btPlay) btPlay.addEventListener('click', () => {
-  tocando = !tocando;
-  btPlay.textContent = tocando ? '❚❚ Pausar' : '▶ Tocar';
-  if (tocando) { t0 = performance.now() - t * 1000; requestAnimationFrame(loop); }
-});
-if (btRst) btRst.addEventListener('click', () => { t = 0; t0 = performance.now(); render(); });
+const btPlay = document.getElementById('play'),
+  btRst = document.getElementById('rst');
+if (btPlay)
+  btPlay.addEventListener('click', () => {
+    tocando = !tocando;
+    btPlay.textContent = tocando ? '❚❚ Pausar' : '▶ Tocar';
+    if (tocando) {
+      t0 = performance.now() - t * 1000;
+      requestAnimationFrame(loop);
+    }
+  });
+if (btRst)
+  btRst.addEventListener('click', () => {
+    t = 0;
+    t0 = performance.now();
+    render();
+  });
 
 // Ganchos usados pelo renderizador (.runtime/video/render.mts).
 window.__fps = FPS;
 window.__pronto = Promise.all([
   document.fonts.ready,
-  ...[...document.images].map(im => im.decode().catch(() => {})),
-]).then(() => { render(); return true; });
-window.__seek = v => { t = Math.min(v, DUR - 1e-6); render(); return true; };
+  ...[...document.images].map((im) => im.decode().catch(() => {})),
+]).then(() => {
+  render();
+  return true;
+});
+window.__seek = (v) => {
+  t = Math.min(v, DUR - 1e-6);
+  render();
+  return true;
+};

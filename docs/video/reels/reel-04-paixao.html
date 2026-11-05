@@ -1,115 +1,314 @@
 <!doctype html>
 <html lang="pt-BR">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Aftermarket · Reel 4 · Paixão</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Archivo:wght@500;700;800;900&display=block">
-<style>
-/* Reel 4 · "O jogo não quer arrancar o seu dinheiro." ~15 s, 9:16.
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Aftermarket · Reel 4 · Paixão</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Archivo:wght@500;700;800;900&display=block"
+    />
+    <style>
+      /* Reel 4 · "O jogo não quer arrancar o seu dinheiro." ~15 s, 9:16.
    Área segura: nada importante acima de 200 px nem abaixo de 1560 px. */
-:root{--bg:#0f1114;--tx:#f2f4ee;--lime:#a6e22e;--gold:#e8bd4f;--brasa:#ef6a4c;--ceu:#5aaee6}
-html,body{margin:0;height:100%;background:#07080a;font-family:Archivo,system-ui,sans-serif;color:var(--tx)}
-#bar{display:flex;gap:10px;align-items:center;justify-content:center;padding:10px;background:#14161a;font:13px Archivo}
-#bar button{background:var(--lime);color:#111;border:0;padding:8px 14px;font:700 13px Archivo;cursor:pointer}
-#wrap{display:flex;justify-content:center;align-items:center;overflow:hidden}
-#stage{position:relative;width:1080px;height:1920px;flex:none;overflow:hidden;background:radial-gradient(ellipse at 50% 40%,#1b2229 0%,var(--bg) 58%,#06070a 100%)}
-#grade{position:absolute;inset:-60px;background-image:linear-gradient(#ffffff08 2px,transparent 2px),linear-gradient(90deg,#ffffff08 2px,transparent 2px);background-size:60px 60px}
-#linhas{position:absolute;inset:0;background:repeating-linear-gradient(0deg,#0000 0 4px,#0000001c 4px 6px);pointer-events:none;z-index:40}
-#vinheta{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,#0000 58%,#000a 100%);pointer-events:none;z-index:39}
-#flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:38}
-#marca{position:absolute;top:210px;left:0;right:0;text-align:center;font:400 20px "Press Start 2P";color:#9aa39b;z-index:32}
-.cena{position:absolute;inset:0;visibility:hidden;z-index:5}
-.a{position:absolute;will-change:transform,opacity}
-.pix{image-rendering:pixelated}
-.h{left:60px;right:60px;text-align:center;font:900 136px/.92 Archivo;text-transform:uppercase;letter-spacing:-4px;text-shadow:0 10px 0 #000a}
-.lime{color:var(--lime)} .brasa{color:var(--brasa)} .gold{color:var(--gold)}
-.tag{font:400 22px/1.5 "Press Start 2P";text-align:center;letter-spacing:1px}
-.botao{left:80px;width:920px;background:var(--lime);color:#0d0f0b;font:900 82px/1 Archivo;text-transform:uppercase;text-align:center;padding:44px 0;box-shadow:0 12px 0 #6f9c16}
-#cap{position:absolute;left:80px;right:80px;bottom:330px;z-index:33;text-align:center}
-#cap p{margin:0;font:900 72px/1.05 Archivo;text-transform:uppercase;letter-spacing:-1px;
-  text-shadow:-5px -5px 0 #000,5px -5px 0 #000,-5px 5px 0 #000,5px 5px 0 #000,0 14px 0 #000a}
-#cap .dita{color:#fff} #cap .agora{color:var(--lime)}
-</style>
-</head>
-<body>
-<div id="bar">
-  <button id="play">▶ Tocar</button>
-  <button id="rst">⟲ Do início</button>
-  <span id="tt">0.0 / 0.0 s</span>
-</div>
-<div id="wrap"><div id="stage">
-  <div id="grade"></div>
-  <div class="a tag" id="marca">AFTERMARKET · EM DESENVOLVIMENTO</div>
+      :root {
+        --bg: #0f1114;
+        --tx: #f2f4ee;
+        --lime: #a6e22e;
+        --gold: #e8bd4f;
+        --brasa: #ef6a4c;
+        --ceu: #5aaee6;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #07080a;
+        font-family: Archivo, system-ui, sans-serif;
+        color: var(--tx);
+      }
+      #bar {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
+        background: #14161a;
+        font: 13px Archivo;
+      }
+      #bar button {
+        background: var(--lime);
+        color: #111;
+        border: 0;
+        padding: 8px 14px;
+        font: 700 13px Archivo;
+        cursor: pointer;
+      }
+      #wrap {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+      }
+      #stage {
+        position: relative;
+        width: 1080px;
+        height: 1920px;
+        flex: none;
+        overflow: hidden;
+        background: radial-gradient(ellipse at 50% 40%, #1b2229 0%, var(--bg) 58%, #06070a 100%);
+      }
+      #grade {
+        position: absolute;
+        inset: -60px;
+        background-image:
+          linear-gradient(#ffffff08 2px, transparent 2px),
+          linear-gradient(90deg, #ffffff08 2px, transparent 2px);
+        background-size: 60px 60px;
+      }
+      #linhas {
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(0deg, #0000 0 4px, #0000001c 4px 6px);
+        pointer-events: none;
+        z-index: 40;
+      }
+      #vinheta {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse at 50% 45%, #0000 58%, #000a 100%);
+        pointer-events: none;
+        z-index: 39;
+      }
+      #flash {
+        position: absolute;
+        inset: 0;
+        background: #fff;
+        opacity: 0;
+        pointer-events: none;
+        z-index: 38;
+      }
+      #marca {
+        position: absolute;
+        top: 210px;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font: 400 20px 'Press Start 2P';
+        color: #9aa39b;
+        z-index: 32;
+      }
+      .cena {
+        position: absolute;
+        inset: 0;
+        visibility: hidden;
+        z-index: 5;
+      }
+      .a {
+        position: absolute;
+        will-change: transform, opacity;
+      }
+      .pix {
+        image-rendering: pixelated;
+      }
+      .h {
+        left: 60px;
+        right: 60px;
+        text-align: center;
+        font: 900 136px/0.92 Archivo;
+        text-transform: uppercase;
+        letter-spacing: -4px;
+        text-shadow: 0 10px 0 #000a;
+      }
+      .lime {
+        color: var(--lime);
+      }
+      .brasa {
+        color: var(--brasa);
+      }
+      .gold {
+        color: var(--gold);
+      }
+      .tag {
+        font: 400 22px/1.5 'Press Start 2P';
+        text-align: center;
+        letter-spacing: 1px;
+      }
+      .botao {
+        left: 80px;
+        width: 920px;
+        background: var(--lime);
+        color: #0d0f0b;
+        font: 900 82px/1 Archivo;
+        text-transform: uppercase;
+        text-align: center;
+        padding: 44px 0;
+        box-shadow: 0 12px 0 #6f9c16;
+      }
+      #cap {
+        position: absolute;
+        left: 80px;
+        right: 80px;
+        bottom: 330px;
+        z-index: 33;
+        text-align: center;
+      }
+      #cap p {
+        margin: 0;
+        font: 900 72px/1.05 Archivo;
+        text-transform: uppercase;
+        letter-spacing: -1px;
+        text-shadow:
+          -5px -5px 0 #000,
+          5px -5px 0 #000,
+          -5px 5px 0 #000,
+          5px 5px 0 #000,
+          0 14px 0 #000a;
+      }
+      #cap .dita {
+        color: #fff;
+      }
+      #cap .agora {
+        color: var(--lime);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="bar">
+      <button id="play">▶ Tocar</button>
+      <button id="rst">⟲ Do início</button>
+      <span id="tt">0.0 / 0.0 s</span>
+    </div>
+    <div id="wrap">
+      <div id="stage">
+        <div id="grade"></div>
+        <div class="a tag" id="marca">AFTERMARKET · EM DESENVOLVIMENTO</div>
 
-  <!-- 1. GANCHO: o compromisso -->
-  <section class="cena" id="c-gancho">
-    <div class="a h" id="g1" style="top:500px;font-size:120px">O jogo não quer</div>
-    <div class="a h lime" id="g2" style="top:720px">arrancar</div>
-    <div class="a h lime" id="g3" style="top:900px">o seu dinheiro.</div>
-  </section>
+        <!-- 1. GANCHO: o compromisso -->
+        <section class="cena" id="c-gancho">
+          <div class="a h" id="g1" style="top: 500px; font-size: 120px">O jogo não quer</div>
+          <div class="a h lime" id="g2" style="top: 720px">arrancar</div>
+          <div class="a h lime" id="g3" style="top: 900px">o seu dinheiro.</div>
+        </section>
 
-  <!-- 2. CORAÇÃO: a razão -->
-  <section class="cena" id="c-coracao">
-    <div class="a" id="c-cor" style="left:0;right:0;top:520px;text-align:center;font:900 420px/1 Archivo;color:var(--brasa);text-shadow:0 14px 0 #000"></div>
-    <div class="a h" id="c-tit" style="top:1080px;font-size:118px">É feito por<br><span class="brasa">vontade</span></div>
-  </section>
+        <!-- 2. CORAÇÃO: a razão -->
+        <section class="cena" id="c-coracao">
+          <div
+            class="a"
+            id="c-cor"
+            style="
+              left: 0;
+              right: 0;
+              top: 520px;
+              text-align: center;
+              font: 900 420px/1 Archivo;
+              color: var(--brasa);
+              text-shadow: 0 14px 0 #000;
+            "
+          ></div>
+          <div class="a h" id="c-tit" style="top: 1080px; font-size: 118px">
+            É feito por<br /><span class="brasa">vontade</span>
+          </div>
+        </section>
 
-  <!-- 3. PAIXÃO -->
-  <section class="cena" id="c-paixao">
-    <div class="a h" id="p-h" style="top:620px;font-size:136px">Feito por<br><span class="brasa">paixão.</span></div>
-  </section>
+        <!-- 3. PAIXÃO -->
+        <section class="cena" id="c-paixao">
+          <div class="a h" id="p-h" style="top: 620px; font-size: 136px">
+            Feito por<br /><span class="brasa">paixão.</span>
+          </div>
+        </section>
 
-  <!-- 4. MUNDO: começamos pelo Brasil -->
-  <section class="cena" id="c-mundo">
-    <img class="a pix" id="w-pl" src="../../../apps/web/public/arte/landing/planet.png" alt="" style="left:170px;top:420px;width:740px;height:740px">
-    <div class="a h" id="w-h" style="top:1200px;font-size:118px">Começamos<br><span class="lime">pelo Brasil</span></div>
-  </section>
+        <!-- 4. MUNDO: começamos pelo Brasil -->
+        <section class="cena" id="c-mundo">
+          <img
+            class="a pix"
+            id="w-pl"
+            src="../../../apps/web/public/arte/landing/planet.png"
+            alt=""
+            style="left: 170px; top: 420px; width: 740px; height: 740px"
+          />
+          <div class="a h" id="w-h" style="top: 1200px; font-size: 118px">
+            Começamos<br /><span class="lime">pelo Brasil</span>
+          </div>
+        </section>
 
-  <!-- 5. CHAMADA -->
-  <section class="cena" id="c-cta">
-    <div class="a h" id="z-h" style="top:520px;font-size:122px">Siga e entre<br><span class="lime">no Discord</span></div>
-    <div class="a botao" id="z-bot" style="top:1010px">Link na bio</div>
-    <div class="a tag" id="z-l" style="top:1200px;left:0;right:0">Novidades e primeiros testes</div>
-  </section>
+        <!-- 5. CHAMADA -->
+        <section class="cena" id="c-cta">
+          <div class="a h" id="z-h" style="top: 520px; font-size: 122px">
+            Siga e entre<br /><span class="lime">no Discord</span>
+          </div>
+          <div class="a botao" id="z-bot" style="top: 1010px">Link na bio</div>
+          <div class="a tag" id="z-l" style="top: 1200px; left: 0; right: 0">
+            Novidades e primeiros testes
+          </div>
+        </section>
 
-  <div id="flash"></div>
-  <div id="linhas"></div>
-  <div id="vinheta"></div>
-  <div id="cap"><p id="cap-p"></p></div>
-</div></div>
+        <div id="flash"></div>
+        <div id="linhas"></div>
+        <div id="vinheta"></div>
+        <div id="cap"><p id="cap-p"></p></div>
+      </div>
+    </div>
 
-<script src="motor.js"></script>
-<script>
-const SHAKE = (el, u, a, amp) => { const [x, y] = treme(u, a, amp, 0.3); el.style.transform = `translate(${x}px,${y}px)`; };
-montar([
-  ['gancho', 2.6, 'O jogo não quer arrancar o seu dinheiro.', (u, d) => {
-    estala($('g1'), u, 0.05, 0.35);
-    estala($('g2'), u, 0.9, 0.35, -3);
-    estala($('g3'), u, 1.5, 0.35, 2);
-  }],
-  ['coracao', 3.0, 'É feito por vontade e paixão.', (u, d) => {
-    const pulso = 1 + 0.08 * Math.sin(Math.min(u, 1.2) * 14) * (u < 1.2 ? 1 : 0);
-    const batida = u < 0.4 ? E.back(q(u, 0, 0.4)) : 1;
-    $('c-cor').textContent = '♥';
-    T($('c-cor'), { s: batida * pulso, o: clamp(u * 8) });
-    estala($('c-tit'), u, 0.4, 0.45);
-  }],
-  ['paixao', 3.4, 'Feito por paixão.', (u, d) => {
-    estala($('p-h'), u, 0.05, 0.4);
-    SHAKE($('c-paixao'), u, 0.3, 8);
-  }],
-  ['mundo', 3.4, 'Começamos pelo Brasil. E queremos levar para o mundo inteiro.', (u, d) => {
-    const k = E.out(q(u, 0, 0.6));
-    T($('w-pl'), { y: (1 - k) * 300, s: 0.8 + 0.2 * k, o: k });
-    estala($('w-h'), u, 0.4, 0.45);
-  }],
-  ['cta', 3.0, 'Siga e entre no Discord. Link na bio.', (u, d) => {
-    estala($('z-h'), u, 0.05, 0.45);
-    estala($('z-bot'), u, 0.8, 0.45);
-    entra($('z-l'), u, 1.4, 0.4, 30);
-  }],
-]);
-</script>
-</body>
+    <script src="motor.js"></script>
+    <script>
+      const SHAKE = (el, u, a, amp) => {
+        const [x, y] = treme(u, a, amp, 0.3);
+        el.style.transform = `translate(${x}px,${y}px)`;
+      };
+      montar([
+        [
+          'gancho',
+          2.6,
+          'O jogo não quer arrancar o seu dinheiro.',
+          (u, d) => {
+            estala($('g1'), u, 0.05, 0.35);
+            estala($('g2'), u, 0.9, 0.35, -3);
+            estala($('g3'), u, 1.5, 0.35, 2);
+          },
+        ],
+        [
+          'coracao',
+          3.0,
+          'É feito por vontade e paixão.',
+          (u, d) => {
+            const pulso = 1 + 0.08 * Math.sin(Math.min(u, 1.2) * 14) * (u < 1.2 ? 1 : 0);
+            const batida = u < 0.4 ? E.back(q(u, 0, 0.4)) : 1;
+            $('c-cor').textContent = '♥';
+            T($('c-cor'), { s: batida * pulso, o: clamp(u * 8) });
+            estala($('c-tit'), u, 0.4, 0.45);
+          },
+        ],
+        [
+          'paixao',
+          3.4,
+          'Feito por paixão.',
+          (u, d) => {
+            estala($('p-h'), u, 0.05, 0.4);
+            SHAKE($('c-paixao'), u, 0.3, 8);
+          },
+        ],
+        [
+          'mundo',
+          3.4,
+          'Começamos pelo Brasil. E queremos levar para o mundo inteiro.',
+          (u, d) => {
+            const k = E.out(q(u, 0, 0.6));
+            T($('w-pl'), { y: (1 - k) * 300, s: 0.8 + 0.2 * k, o: k });
+            estala($('w-h'), u, 0.4, 0.45);
+          },
+        ],
+        [
+          'cta',
+          3.0,
+          'Siga e entre no Discord. Link na bio.',
+          (u, d) => {
+            estala($('z-h'), u, 0.05, 0.45);
+            estala($('z-bot'), u, 0.8, 0.45);
+            entra($('z-l'), u, 1.4, 0.4, 30);
+          },
+        ],
+      ]);
+    </script>
+  </body>
 </html>

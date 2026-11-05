@@ -15,6 +15,7 @@ import {
   seasonProducts,
 } from '../../../../packages/simulation/src/model';
 import { createMapStyle } from '../lib/map-style';
+import { attachPixelTown } from './PixelTown';
 import { positionAlongRoute, routeLengths } from '../../../../packages/simulation/src/geometry';
 import { shipmentRoadPath, shipmentRoute } from '../../../../packages/simulation/src/road-path';
 import { shipmentStatus } from '../../../../packages/simulation/src/shipment';
@@ -24,6 +25,8 @@ maplibregl.setWorkerUrl(workerUrl);
 // - Negócios construídos usam as miniaturas isométricas reais (/arte/*.png) sobre um pedestal
 //   tático chanfrado (com destaque em lavoura/ouro para unidades do próprio jogador).
 // - Terrenos disponíveis usam um marco chanfrado compacto com o ícone da vocação.
+// Resolução do canvas do mapa principal em relação à tela (spec 009: 16-bit = pixels de 2×).
+const PIXEL_RATIO = 0.5;
 const categories = ['farm', 'mine', 'industry', 'retail', 'logistics', 'warehouse'] as const;
 const categorySpriteUrl: Record<(typeof categories)[number], string> = {
   farm: '/arte/lavoura.png',
@@ -240,6 +243,9 @@ export function WorldMap({
   highlightShipmentId,
   economic,
   onRegionSelect,
+  alerts,
+  hoverCard,
+  onCitySelect,
 }: {
   mini?: boolean;
   propertyId?: string;
@@ -258,6 +264,12 @@ export function WorldMap({
     state?: string;
   };
   onRegionSelect?: (id: string) => void;
+  /** Spec 008 R1: estado dos negócios do jogador por imóvel (brasa = precisa de você; ouro = atenção). */
+  alerts?: Record<string, 'brasa' | 'ouro'>;
+  /** Spec 008 R1: texto curto mostrado ao passar o mouse sobre um pino (nome, estado, motivo). */
+  hoverCard?: (propertyId: string) => { titulo: string; linhas: string[] } | null;
+  /** Spec 008 R2: toque na placa da cidade abre o painel dela. */
+  onCitySelect?: (regionId: string) => void;
 }) {
   const { world, actor, selectedId, select, focus, consumeFocus } = useGame();
   const container = useRef<HTMLDivElement>(null),
@@ -265,6 +277,17 @@ export function WorldMap({
   const [ready, setReady] = useState(false),
     [failed, setFailed] = useState(false);
   const callback = useRef(onSelect);
+  const detachTown = useRef<(() => void) | null>(null);
+  const hoverRef = useRef(hoverCard);
+  hoverRef.current = hoverCard;
+  const cityRef = useRef(onCitySelect);
+  cityRef.current = onCitySelect;
+  const [hover, setHover] = useState<{
+    x: number;
+    y: number;
+    titulo: string;
+    linhas: string[];
+  } | null>(null);
   const framedRoute = useRef('');
   const framedEconomy = useRef<string | undefined>(undefined);
   const drawnKey = useRef('');
@@ -318,6 +341,9 @@ export function WorldMap({
       attributionControl: { compact: true },
       interactive: !mini,
       renderWorldCopies: false,
+      // Spec 009: o mapa é desenhado em meia resolução e ampliado sem suavização (CSS
+      // image-rendering: pixelated), o que dá a crocância 16-bit sem custo extra de GPU.
+      pixelRatio: mini ? undefined : PIXEL_RATIO,
     });
     map.current = instance;
     // Inspeção em desenvolvimento (laboratório e testes de navegador); não existe no build final.
@@ -386,40 +412,85 @@ export function WorldMap({
       ctx.fillText(name, 25, Math.round(h / 2) + 1);
       return ctx.getImageData(0, 0, w, h);
     };
-    // Texturas pixel-art nítidas (escala inteira) para água e florestas, sem borrar as estradas.
-    const createWaterPattern = () => {
-      const size = 32;
+    // Texturas 16-bit (spec 009): água com brilho, mata em copas, campo com tufos. Desenhadas em
+    // escala inteira para não borrar; os tiles vetoriais do planeta continuam sendo a geometria.
+    const pixelCanvas = (size: number, draw: (ctx: CanvasRenderingContext2D) => void) => {
       const canvas = document.createElement('canvas');
       canvas.width = canvas.height = size;
       const ctx = canvas.getContext('2d')!;
-      ctx.fillStyle = '#122932';
-      ctx.fillRect(0, 0, size, size);
-      ctx.fillStyle = '#1a3b47';
-      ctx.fillRect(4, 6, 8, 2);
-      ctx.fillRect(2, 8, 4, 2);
-      ctx.fillRect(12, 8, 4, 2);
-      ctx.fillRect(20, 22, 8, 2);
-      ctx.fillRect(18, 24, 4, 2);
-      ctx.fillRect(28, 24, 4, 2);
+      draw(ctx);
       return ctx.getImageData(0, 0, size, size);
     };
-    const createWoodPattern = () => {
-      const size = 24;
-      const canvas = document.createElement('canvas');
-      canvas.width = canvas.height = size;
-      const ctx = canvas.getContext('2d')!;
-      ctx.fillStyle = '#202a19';
-      ctx.fillRect(0, 0, size, size);
-      ctx.fillStyle = '#2a3821';
-      ctx.fillRect(3, 3, 4, 4);
-      ctx.fillRect(5, 1, 2, 2);
-      ctx.fillRect(15, 13, 4, 4);
-      ctx.fillRect(17, 11, 2, 2);
-      ctx.fillStyle = '#192113';
-      ctx.fillRect(3, 7, 4, 2);
-      ctx.fillRect(15, 17, 4, 2);
-      return ctx.getImageData(0, 0, size, size);
-    };
+    const createWaterPattern = () =>
+      pixelCanvas(32, (ctx) => {
+        ctx.fillStyle = '#00a9f8';
+        ctx.fillRect(0, 0, 32, 32);
+        ctx.fillStyle = '#7fd4ff';
+        for (const [x, y, w] of [
+          [4, 6, 6],
+          [14, 9, 4],
+          [22, 20, 6],
+          [6, 24, 4],
+          [26, 4, 3],
+        ])
+          ctx.fillRect(x, y, w, 1);
+        ctx.fillStyle = '#3a9ad8';
+        for (const [x, y, w] of [
+          [9, 14, 5],
+          [19, 27, 5],
+        ])
+          ctx.fillRect(x, y, w, 1);
+      });
+    const createWoodPattern = () =>
+      pixelCanvas(32, (ctx) => {
+        ctx.fillStyle = '#00804c';
+        ctx.fillRect(0, 0, 32, 32);
+        // copas redondas sobrepostas, luz no alto-esquerda, sombra embaixo (como a referência)
+        const copa = (cx: number, cy: number, r: number) => {
+          for (let y = -r; y <= r + 1; y++)
+            for (let x = -r; x <= r; x++) {
+              if (x * x + (y * 1.15) ** 2 > r * r) continue;
+              let c = '#009b72';
+              if (x < 0 && y < 0 && (x + y) % 2 === 0) c = '#38cf73';
+              if (y > r * 0.35) c = '#006c56';
+              ctx.fillStyle = c;
+              ctx.fillRect((((cx + x) % 32) + 32) % 32, (((cy + y) % 32) + 32) % 32, 1, 1);
+            }
+          ctx.fillStyle = '#8a5a32';
+          ctx.fillRect(((cx % 32) + 32) % 32, (((cy + r + 1) % 32) + 32) % 32, 1, 2);
+        };
+        copa(8, 8, 6);
+        copa(22, 6, 5);
+        copa(16, 20, 6);
+        copa(2, 24, 5);
+        copa(28, 24, 5);
+      });
+    const createGrassPattern = () =>
+      pixelCanvas(32, (ctx) => {
+        ctx.fillStyle = '#00c369';
+        ctx.fillRect(0, 0, 32, 32);
+        ctx.fillStyle = '#00a54b';
+        for (const [x, y] of [
+          [3, 5],
+          [19, 3],
+          [11, 14],
+          [26, 17],
+          [6, 25],
+          [21, 27],
+        ]) {
+          ctx.fillRect(x, y + 1, 1, 1);
+          ctx.fillRect(x + 1, y, 1, 1);
+          ctx.fillRect(x + 2, y + 1, 1, 1);
+        }
+        ctx.fillStyle = '#38cf73';
+        for (const [x, y] of [
+          [14, 6],
+          [28, 9],
+          [2, 16],
+          [17, 23],
+        ])
+          ctx.fillRect(x, y, 2, 1);
+      });
     instance.on('load', async () => {
       clearTimeout(timeout);
       setFailed(false);
@@ -427,6 +498,63 @@ export function WorldMap({
         instance.addImage('water-pixel', createWaterPattern(), { pixelRatio: 1 });
       if (!instance.hasImage('wood-pixel'))
         instance.addImage('wood-pixel', createWoodPattern(), { pixelRatio: 1 });
+      if (!instance.hasImage('grass-pixel'))
+        instance.addImage('grass-pixel', createGrassPattern(), { pixelRatio: 1 });
+      if (instance.getLayer('background'))
+        instance.setPaintProperty('background', 'background-pattern', 'grass-pixel');
+      // Peças do pacote (apps/web/public/arte/town, fora do Git): asfalto das ruas e telhado dos
+      // prédios nos zooms próximos. Se o pacote não estiver na máquina, o mapa segue sem elas.
+      const pack = async (id: string, path: string) => {
+        if (instance.hasImage(id)) return true;
+        try {
+          const res = await instance.loadImage(`/arte/town/${path}`);
+          instance.addImage(id, res.data, { pixelRatio: 1 });
+          return true;
+        } catch {
+          return false;
+        }
+      };
+      const [asphalt, roof] = await Promise.all([
+        pack(
+          'town-road',
+          'ROADS and ROAD ELEMENTS (all 16x16)/Roads Type 2 (medium)/Horizontal.png',
+        ),
+        pack(
+          'town-roof',
+          'Grounds (Asphalt and grass) (all 16x16)/Asphalt pavement 01 (GREY)/MAIN GROUND (16x16)/C1.png',
+        ),
+      ]);
+      if (asphalt && !instance.getLayer('roads-pixel'))
+        instance.addLayer(
+          {
+            id: 'roads-pixel',
+            type: 'line',
+            source: 'openmaptiles',
+            'source-layer': 'transportation',
+            minzoom: 15.5,
+            filter: [
+              'all',
+              ['==', ['geometry-type'], 'LineString'],
+              [
+                'match',
+                ['get', 'class'],
+                ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'minor'],
+                true,
+                false,
+              ],
+              ['!=', ['get', 'brunnel'], 'tunnel'],
+            ],
+            layout: { 'line-cap': 'butt', 'line-join': 'round' },
+            paint: {
+              'line-pattern': 'town-road',
+              'line-width': ['interpolate', ['exponential', 1.2], ['zoom'], 15, 10, 17, 24],
+            },
+          },
+          instance.getLayer('highway-surface-spine') ? 'highway-surface-spine' : undefined,
+        );
+      if (roof && instance.getLayer('buildings'))
+        instance.setPaintProperty('buildings', 'fill-pattern', 'town-roof');
+      if (!mini && asphalt) attachPixelTown(instance).then((off) => (detachTown.current = off));
       if (instance.getLayer('water'))
         instance.setPaintProperty('water', 'fill-pattern', 'water-pixel');
       if (instance.getLayer('natural-landcover'))
@@ -637,6 +765,19 @@ export function WorldMap({
           'icon-ignore-placement': true,
         },
       });
+      instance.addLayer({
+        id: 'property-alerts',
+        type: 'circle',
+        source: 'properties',
+        filter: ['all', ['!', ['has', 'point_count']], ['!=', ['get', 'alert'], '']],
+        paint: {
+          'circle-radius': mini ? 5 : 7,
+          'circle-color': ['case', ['==', ['get', 'alert'], 'brasa'], '#e4572e', '#f2bd3c'],
+          'circle-stroke-width': 2,
+          'circle-stroke-color': '#0c0e0a',
+          'circle-translate': mini ? [8, -14] : [13, -24],
+        },
+      });
       if (!mini) {
         const pick = (event: maplibregl.MapLayerMouseEvent) => {
           const id = event.features?.[0]?.properties?.id as string | undefined;
@@ -651,7 +792,7 @@ export function WorldMap({
             instance.getSource('properties') as GeoJSONSource
           ).getClusterExpansionZoom(feature.properties!.cluster_id as number);
           instance.easeTo({
-            center: (feature.geometry as { coordinates: [number, number] }).coordinates,
+            center: (feature.geometry as unknown as { coordinates: [number, number] }).coordinates,
             zoom,
             duration: 500,
           });
@@ -669,6 +810,27 @@ export function WorldMap({
           instance.on('mouseenter', layer, () => (instance.getCanvas().style.cursor = 'pointer'));
           instance.on('mouseleave', layer, () => (instance.getCanvas().style.cursor = ''));
         }
+        // Cartão curto ao passar o mouse sobre um pino (spec 008 R1). No toque não há hover: o
+        // toque seleciona e a gaveta do lote mostra o detalhe.
+        const showCard = (event: maplibregl.MapLayerMouseEvent) => {
+          const id = event.features?.[0]?.properties?.id as string | undefined;
+          const card = id && hoverRef.current ? hoverRef.current(id) : null;
+          setHover(card ? { x: event.point.x, y: event.point.y, ...card } : null);
+        };
+        for (const layer of ['property-dots', 'property-icons']) {
+          instance.on('mousemove', layer, showCard);
+          instance.on('mouseleave', layer, () => setHover(null));
+        }
+        instance.on('click', 'city-labels', (event) => {
+          const id = event.features?.[0]?.properties?.id as string | undefined;
+          if (id) cityRef.current?.(id);
+        });
+        instance.on(
+          'mouseenter',
+          'city-labels',
+          () => (instance.getCanvas().style.cursor = 'pointer'),
+        );
+        instance.on('mouseleave', 'city-labels', () => (instance.getCanvas().style.cursor = ''));
       }
       setReady(true);
     });
@@ -690,6 +852,7 @@ export function WorldMap({
     return () => {
       clearTimeout(timeout);
       observer.disconnect();
+      detachTown.current?.();
       instance.remove();
       map.current = null;
     };
@@ -700,7 +863,7 @@ export function WorldMap({
     const selectedProperty = propertyId ?? selectedId;
     // Só reenvia ao mapa quando algo visível mudou (dono, seleção, filtro), não a cada rodada.
     const key = JSON.stringify([
-      visible.map((p) => [p.id, p.ownerId, p.area]),
+      visible.map((p) => [p.id, p.ownerId, p.area, alerts?.[p.id] ?? '']),
       selectedProperty,
       layers.zoning,
     ]);
@@ -749,10 +912,11 @@ export function WorldMap({
           available: !p.ownerId,
           own: p.ownerId === actor,
           selected: p.id === selectedProperty,
+          alert: alerts?.[p.id] ?? '',
         },
       })),
     });
-  }, [ready, visible, layers.zoning, selectedId, propertyId, actor]);
+  }, [ready, visible, layers.zoning, selectedId, propertyId, actor, alerts]);
   useEffect(() => {
     const m = map.current;
     if (!ready || !m) return;
@@ -1039,6 +1203,15 @@ export function WorldMap({
       <div ref={container} className="map-canvas" />
       {/* Acesso por teclado e leitor de tela: os ícones são desenhados pelo mapa, então cada
           negócio também é um botão que só aparece quando recebe foco. */}
+      {!mini && !economic && onCitySelect && (
+        <div className="map-access-cidades" role="group" aria-label="Cidades no mapa">
+          {regionsOf(world).map((r) => (
+            <button key={r.id} type="button" data-city={r.id} onClick={() => onCitySelect(r.id)}>
+              Cidade de {r.name}
+            </button>
+          ))}
+        </div>
+      )}
       {!mini && !economic && (
         <div className="map-access" role="group" aria-label="Negócios no mapa">
           {visible.map((p) => (
@@ -1047,11 +1220,30 @@ export function WorldMap({
               type="button"
               data-property={p.id}
               data-owner={p.ownerId ?? 'available'}
+              data-alert={alerts?.[p.id] ?? undefined}
               onClick={() => (callback.current ? callback.current(p.id) : select(p.id))}
             >
               {p.name} · {p.city}
               {p.ownerId ? '' : ' · disponível'}
+              {alerts?.[p.id] === 'brasa'
+                ? ' · precisa de você'
+                : alerts?.[p.id] === 'ouro'
+                  ? ' · atenção'
+                  : ''}
             </button>
+          ))}
+        </div>
+      )}
+      {hover && (
+        <div
+          className="map-hover-card"
+          role="tooltip"
+          style={{ left: hover.x, top: hover.y }}
+          data-testid="map-hover-card"
+        >
+          <strong>{hover.titulo}</strong>
+          {hover.linhas.map((l, i) => (
+            <span key={i}>{l}</span>
           ))}
         </div>
       )}

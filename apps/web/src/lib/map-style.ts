@@ -18,12 +18,15 @@ const roadClasses = [
 
 // Every class uses the same continuous zoom curve in all three strata. A bridge
 // or an unnumbered connection must not vanish because its label is unavailable.
+// Spec 009 (calibração de 03/11 com prints reais): vias menores só aparecem de perto e finas,
+// senão a cidade vira um emaranhado de areia no zoom médio.
 const widthStops = [
   { zoom: 4, widths: [1.2, 0.95, 0.65, 0.25, 0, 0, 0, 0] },
   { zoom: 7, widths: [2.1, 1.7, 1.2, 0.65, 0.3, 0, 0, 0] },
-  { zoom: 10, widths: [3.6, 3.0, 2.3, 1.6, 1.05, 0.45, 0, 0] },
-  { zoom: 12, widths: [5.0, 4.2, 3.2, 2.4, 1.75, 1.1, 0.65, 0.7] },
-  { zoom: 14, widths: [7.4, 6.2, 4.8, 3.8, 3.0, 2.1, 1.45, 1.4] },
+  { zoom: 10, widths: [3.6, 3.0, 2.3, 1.4, 0.8, 0, 0, 0] },
+  { zoom: 12, widths: [5.0, 4.2, 3.2, 2.2, 1.3, 0.35, 0.25, 0.25] },
+  { zoom: 13, widths: [6.0, 5.0, 3.8, 2.8, 1.8, 0.8, 0.5, 0.5] },
+  { zoom: 14, widths: [7.4, 6.2, 4.8, 3.8, 2.6, 1.6, 1.0, 0.9] },
   { zoom: 17, widths: [14, 11.8, 9.4, 7.8, 6.4, 4.8, 3.4, 3.1] },
 ];
 
@@ -91,41 +94,38 @@ function roads(kind: 'tunnel' | 'surface' | 'bridge'): LayerSpecification[] {
       ...base,
       id: `roads-${kind}-casing`,
       paint: {
+        // Spec 009: contorno escuro das vias (16-bit), terra para as menores.
         'line-color': [
           'match',
           ['get', 'class'],
-          ['motorway', 'trunk'],
-          '#070906',
-          ['primary', 'secondary'],
-          '#0a0c08',
-          'track',
-          '#0c0e0a',
-          '#0f120c',
+          ['motorway', 'trunk', 'primary'],
+          '#1a2a24',
+          ['secondary', 'tertiary'],
+          '#8a7d62',
+          '#6e6e64',
         ],
         'line-width': roadWidth(true),
-        'line-opacity': kind === 'tunnel' ? 0.55 : 0.95,
+        'line-opacity': kind === 'tunnel' ? 0.55 : 1,
       },
     },
     {
       ...base,
       id: `roads-${kind}`,
       paint: {
+        // Rodovias em ouro, estradas de terra em areia (paleta da referência aprovada).
         'line-color': [
           'match',
           ['get', 'class'],
-          'motorway',
-          '#f2bd3c',
-          'trunk',
-          '#dfa62c',
+          ['motorway', 'trunk'],
+          '#eec156',
           'primary',
-          '#ded2b4',
+          '#d5bb97',
           'secondary',
-          '#989e84',
+          '#cdb796',
           'tertiary',
-          '#6d735d',
-          'track',
-          '#4b4f3e',
-          '#565b49',
+          '#c9b89a',
+          // ruas de bairro: asfalto claro, quase sem contraste com o chão urbano
+          '#9a9a8c',
         ],
         'line-width': roadWidth(),
         'line-opacity': kind === 'tunnel' ? 0.72 : 1,
@@ -150,7 +150,7 @@ function roads(kind: 'tunnel' | 'surface' | 'bridge'): LayerSpecification[] {
         'line-join': 'round' as const,
       },
       paint: {
-        'line-color': '#fff0b8',
+        'line-color': '#fff6c8',
         'line-width': [
           'interpolate',
           ['exponential', 1.2],
@@ -164,13 +164,15 @@ function roads(kind: 'tunnel' | 'surface' | 'bridge'): LayerSpecification[] {
           17,
           3.2,
         ],
-        'line-opacity': kind === 'tunnel' ? 0.35 : 0.65,
+        'line-dasharray': [3, 3],
+        'line-opacity': kind === 'tunnel' ? 0.35 : 0.9,
       },
     },
   ];
 }
 
-/** GPS noturno na paleta grafite da identidade: rodovias em ouro, demais vias em creme apagado.
+/** Mundo 16-bit (spec 009): campo verde vivo, mata em copas, água clara com margem de areia,
+ * rodovias em ouro e estradas de terra. Padrões de pixel entram em WorldMap (addImage).
  * Local, deliberately small basemap. No remote style, labels, sprites or glyphs. */
 export function createMapStyle(): StyleSpecification {
   return {
@@ -187,7 +189,7 @@ export function createMapStyle(): StyleSpecification {
       },
     },
     layers: [
-      { id: 'background', type: 'background', paint: { 'background-color': '#1a1d17' } },
+      { id: 'background', type: 'background', paint: { 'background-color': '#00c369' } },
       {
         id: 'natural-landcover',
         type: 'fill',
@@ -201,12 +203,12 @@ export function createMapStyle(): StyleSpecification {
             'match',
             ['get', 'class'],
             'wood',
-            '#212b1a',
+            '#00804c',
             'sand',
-            '#29291d',
-            '#1f221b',
+            '#d5bb97',
+            '#f3e7cc',
           ],
-          'fill-opacity': 0.65,
+          'fill-opacity': 1,
           'fill-antialias': false,
         },
       },
@@ -216,7 +218,7 @@ export function createMapStyle(): StyleSpecification {
         source: 'openmaptiles',
         'source-layer': 'water',
         filter: ['!=', ['get', 'brunnel'], 'tunnel'],
-        paint: { 'fill-color': '#122932' },
+        paint: { 'fill-color': '#00a9f8', 'fill-antialias': false },
       },
       {
         id: 'water-outline',
@@ -225,9 +227,89 @@ export function createMapStyle(): StyleSpecification {
         'source-layer': 'water',
         filter: ['!=', ['get', 'brunnel'], 'tunnel'],
         paint: {
-          'line-color': '#26586b',
-          'line-width': ['interpolate', ['linear'], ['zoom'], 5, 0.6, 12, 1.3, 16, 2],
-          'line-opacity': 0.75,
+          // Margem de areia, como na referência.
+          'line-color': '#d5bb97',
+          'line-width': ['interpolate', ['linear'], ['zoom'], 5, 1, 12, 2, 16, 3],
+          'line-opacity': 1,
+        },
+      },
+      {
+        // Chão de cidade (spec 009): áreas residenciais/comerciais/industriais do OSM deixam de
+        // ser pasto. Pedra clara com trama leve; parques continuam verdes.
+        id: 'urban-landuse',
+        type: 'fill',
+        source: 'openmaptiles',
+        'source-layer': 'landuse',
+        minzoom: 9,
+        filter: [
+          'match',
+          ['get', 'class'],
+          ['residential', 'commercial', 'industrial', 'retail', 'neighbourhood', 'suburb'],
+          true,
+          false,
+        ],
+        paint: {
+          'fill-color': [
+            'match',
+            ['get', 'class'],
+            'industrial',
+            '#b9b3a4',
+            ['commercial', 'retail'],
+            '#d9cdb3',
+            '#cdc3ad',
+          ],
+          'fill-opacity': ['interpolate', ['linear'], ['zoom'], 9, 0.55, 12, 0.9, 14, 1],
+          'fill-antialias': false,
+        },
+      },
+      {
+        id: 'parks',
+        type: 'fill',
+        source: 'openmaptiles',
+        'source-layer': 'landuse',
+        minzoom: 11,
+        filter: ['match', ['get', 'class'], ['park', 'garden', 'grass', 'cemetery'], true, false],
+        paint: { 'fill-color': '#38cf73', 'fill-antialias': false },
+      },
+      {
+        // Lote em volta de cada prédio real: onde o OSM não marca o uso do solo, as quadras com
+        // casas viram quadras de cidade por si mesmas (calibração de 03/11, prints de Campinas).
+        id: 'building-lots',
+        type: 'line',
+        source: 'openmaptiles',
+        'source-layer': 'building',
+        minzoom: 14,
+        layout: { 'line-join': 'round', 'line-cap': 'round' },
+        paint: {
+          'line-color': '#cdc3ad',
+          'line-width': ['interpolate', ['exponential', 1.4], ['zoom'], 13, 5, 15, 12, 17, 26],
+          'line-opacity': ['interpolate', ['linear'], ['zoom'], 14, 0.6, 15, 1],
+        },
+      },
+      {
+        // Prédios reais do OSM a partir do zoom 13: telhado cinza com contorno escuro (16-bit).
+        // Os telhados do pacote entram aqui como fill-pattern quando o catálogo estiver mapeado.
+        id: 'buildings',
+        type: 'fill',
+        source: 'openmaptiles',
+        'source-layer': 'building',
+        minzoom: 14,
+        paint: {
+          'fill-color': ['interpolate', ['linear'], ['zoom'], 13, '#a79f8e', 15, '#b5ada0'],
+          'fill-outline-color': '#5a5448',
+          'fill-opacity': ['interpolate', ['linear'], ['zoom'], 14, 0.7, 15, 1],
+          'fill-antialias': true,
+        },
+      },
+      {
+        id: 'building-outline',
+        type: 'line',
+        source: 'openmaptiles',
+        'source-layer': 'building',
+        minzoom: 14,
+        paint: {
+          'line-color': '#5a5448',
+          'line-width': ['interpolate', ['linear'], ['zoom'], 13, 0.6, 16, 1.5],
         },
       },
       {
@@ -242,8 +324,8 @@ export function createMapStyle(): StyleSpecification {
         ],
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
-          'line-color': '#2d687d',
-          'line-width': ['interpolate', ['exponential', 1.2], ['zoom'], 5, 0.7, 12, 1.6, 17, 3.6],
+          'line-color': '#00a9f8',
+          'line-width': ['interpolate', ['exponential', 1.2], ['zoom'], 5, 1.2, 12, 2.4, 17, 5],
         },
       },
       {
@@ -253,10 +335,10 @@ export function createMapStyle(): StyleSpecification {
         'source-layer': 'boundary',
         filter: ['all', ['<=', ['get', 'admin_level'], 4], ['!=', ['get', 'maritime'], 1]],
         paint: {
-          'line-color': '#565e47',
+          'line-color': '#006c56',
           'line-width': ['interpolate', ['linear'], ['zoom'], 4, 1, 10, 1.6, 14, 2.2],
           'line-dasharray': [4, 3],
-          'line-opacity': 0.65,
+          'line-opacity': 0.8,
         },
       },
       ...roads('tunnel'),

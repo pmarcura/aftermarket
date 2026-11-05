@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mundo 16-bit · mock</title>
+    <style>
+      :root {
+        --bg: #11130f;
+        --panel: #1f221a;
+        --line: #363930;
+        --text: #f3f0ea;
+        --muted: #b0a795;
+        --gold: #eec156;
+        --green: #76c862;
+        --red: #e4572e;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font:
+          15px/1.45 system-ui,
+          sans-serif;
+      }
+      header {
+        padding: 20px 24px 8px;
+        border-bottom: 1px solid var(--line);
+      }
+      h1 {
+        margin: 0 0 4px;
+        font-size: 22px;
+      }
+      header p {
+        margin: 0;
+        color: var(--muted);
+        max-width: 900px;
+      }
+      main {
+        display: grid;
+        gap: 28px;
+        padding: 20px 24px 60px;
+        max-width: 1320px;
+        margin: 0 auto;
+      }
+      section {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 16px;
+      }
+      h2 {
+        margin: 0 0 6px;
+        font-size: 17px;
+      }
+      .nota {
+        color: var(--muted);
+        margin: 0 0 12px;
+        font-size: 14px;
+      }
+      .tela {
+        position: relative;
+        border: 2px solid #0a0b08;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #000;
+      }
+      canvas {
+        display: block;
+        width: 100%;
+        height: auto;
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+      }
+      .hud {
+        position: absolute;
+        left: 12px;
+        top: 12px;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .hud span,
+      .legenda span {
+        background: #0c0e0a;
+        border: 1px solid var(--line);
+        padding: 4px 9px;
+        border-radius: 7px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .hud span b {
+        color: var(--gold);
+      }
+      .legenda {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+      }
+      .legenda i {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        margin-right: 5px;
+        vertical-align: -1px;
+      }
+      .cartao {
+        position: absolute;
+        right: 12px;
+        bottom: 12px;
+        width: 240px;
+        background: #0c0e0a;
+        border: 1px solid var(--gold);
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-size: 13px;
+      }
+      .cartao b {
+        display: block;
+        color: var(--text);
+        margin-bottom: 2px;
+      }
+      .cartao em {
+        color: var(--red);
+        font-style: normal;
+      }
+      .cartao button {
+        margin-top: 8px;
+        background: var(--green);
+        color: #0c0e0a;
+        border: 0;
+        border-radius: 7px;
+        padding: 6px 10px;
+        font-weight: 700;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 13px;
+      }
+      td,
+      th {
+        border-top: 1px solid var(--line);
+        padding: 6px 8px;
+        text-align: left;
+        vertical-align: top;
+      }
+      th {
+        color: var(--muted);
+        font-weight: 600;
+      }
+      .paleta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .paleta i {
+        width: 34px;
+        height: 34px;
+        border-radius: 6px;
+        border: 1px solid #000;
+      }
+      @media (max-width: 720px) {
+        main {
+          padding: 12px 16px 40px;
+        }
+        .cartao {
+          width: 180px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Mundo 16-bit · mock das duas telas</h1>
+      <p>
+        Peças provisórias desenhadas por código, só para combinar leitura, escala e comportamento. A
+        arte final entra depois, peça a peça, pelo catálogo (spec 009). Nada aqui é a cartografia
+        final: as cidades e estradas estão em posições de exemplo.
+      </p>
+    </header>
+    <main>
+      <section>
+        <h2>1 · Nível mundo (estilo mapa de SNES)</h2>
+        <p class="nota">
+          Geografia real por baixo (as mesmas coordenadas e estradas do motor), pintada em pixel.
+          Cidades crescem com os negócios instalados. Caminhões andam pelas estradas. Clicar numa
+          cidade abre o tabuleiro.
+        </p>
+        <div class="tela">
+          <canvas id="mundo" width="960" height="540"></canvas>
+          <div class="hud">
+            <span>Dia <b>12</b></span
+            ><span>Caixa <b>R$ 1,2 mi</b></span
+            ><span>Procura não atendida: <b>Campinas</b>, <b>Curitiba</b></span>
+          </div>
+          <div class="cartao">
+            <b>Campinas · 1,1 mi hab.</b>
+            Procura atendida 41% · 3 lojas · 2 lotes à venda<br />
+            <em>Falta leite e arroz</em>
+            <button>Abrir a cidade</button>
+          </div>
+        </div>
+        <div class="legenda">
+          <span><i style="background: #6a8f3c"></i>Campo</span
+          ><span><i style="background: #2f5f2a"></i>Mata</span
+          ><span><i style="background: #2b5f7a"></i>Água</span
+          ><span><i style="background: #8c7a5a"></i>Serra</span
+          ><span><i style="background: #e8c35a"></i>Rodovia</span
+          ><span><i style="background: #f3e7cc"></i>Cidade (3 tamanhos)</span
+          ><span><i style="background: #e4572e"></i>Precisa de você</span>
+        </div>
+      </section>
+
+      <section>
+        <h2>2 · Tela da cidade (tabuleiro isométrico)</h2>
+        <p class="nota">
+          Gerado por regras a partir dos lotes que já existem no jogo: cada lote vira uma quadra; o
+          prédio mostra a categoria, o tamanho (linhas instaladas) e o estado. Tocar num lote livre
+          compra; tocar no seu prédio abre o negócio.
+        </p>
+        <div class="tela">
+          <canvas id="cidade" width="480" height="300"></canvas>
+          <div class="hud">
+            <span><b>Campinas</b> · 1,1 mi hab.</span><span>← Voltar ao mundo</span>
+          </div>
+          <div class="cartao">
+            <b>Loja Campinas · sua</b>
+            Precisa de você: <em>leite esgotou</em><br />
+            Vendeu hoje R$ 1.234 · fila na porta
+            <button>Repor</button>
+          </div>
+        </div>
+        <div class="legenda">
+          <span><i style="background: #d6a24a"></i>Loja</span
+          ><span><i style="background: #7d8ea3"></i>Indústria</span
+          ><span><i style="background: #8fbf4a"></i>Fazenda</span
+          ><span><i style="background: #9a6b4a"></i>Mina</span
+          ><span><i style="background: #c9c0a8"></i>Armazém</span
+          ><span><i style="background: #4a4e44"></i>Casario (população)</span
+          ><span><i style="background: #76c862"></i>À venda</span
+          ><span><i style="background: #e4572e"></i>Precisa de você</span>
+        </div>
+      </section>
+
+      <section>
+        <h2>3 · Paleta e catálogo de peças (resumo)</h2>
+        <p class="nota">
+          32 cores no máximo, tile 32 px, isométrico 2:1. Lista completa com prompts em
+          <code>docs/design/PECAS-16BIT.md</code> (fase A).
+        </p>
+        <div class="paleta" id="paleta"></div>
+        <table style="margin-top: 14px">
+          <tr>
+            <th>Grupo</th>
+            <th>Peças</th>
+            <th>Estados</th>
+          </tr>
+          <tr>
+            <td>Terreno (mundo)</td>
+            <td>campo, mata, água, serra, praia, transição ×4 bordas</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td>Estradas (mundo)</td>
+            <td>rodovia, estrada, vicinal; reta, curva, cruzamento</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td>Cidade (mundo)</td>
+            <td>vila, cidade, metrópole</td>
+            <td>normal, com alerta</td>
+          </tr>
+          <tr>
+            <td>Caminhão (mundo e cidade)</td>
+            <td>pesado, leve</td>
+            <td>8 direções; vazio/carregado</td>
+          </tr>
+          <tr>
+            <td>Tabuleiro</td>
+            <td>
+              rua reta/curva/cruzamento, calçada, quadra vazia, placa à venda, casario ×3, árvore,
+              saída para rodovia
+            </td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td>Prédios</td>
+            <td>loja, indústria, fazenda, mina, armazém, transportadora × tamanho P/M/G</td>
+            <td>produzindo, parado, sem insumo, carregando caminhão, fila (loja)</td>
+          </tr>
+        </table>
+      </section>
+    </main>
+    <script>
+      const PAL = {
+        campo: '#6a8f3c',
+        campo2: '#7da047',
+        mata: '#2f5f2a',
+        mata2: '#3b7334',
+        agua: '#2b5f7a',
+        agua2: '#3a7694',
+        serra: '#8c7a5a',
+        serra2: '#a8946e',
+        rodovia: '#e8c35a',
+        estrada: '#c9b48a',
+        cidade: '#f3e7cc',
+        cidade2: '#d9c9a0',
+        sombra: '#0c0e0a',
+        alerta: '#e4572e',
+        atencao: '#f2bd3c',
+        venda: '#76c862',
+        rua: '#3a3d35',
+        calcada: '#6b6e62',
+        casa: '#4a4e44',
+        casa2: '#5a5e52',
+        telhado: '#8a4a3a',
+        loja: '#d6a24a',
+        industria: '#7d8ea3',
+        fazenda: '#8fbf4a',
+        mina: '#9a6b4a',
+        armazem: '#c9c0a8',
+        caminhao: '#e0e0d0',
+        fumaca: '#9a9a90',
+        luz: '#fff2b0',
+      };
+      document.getElementById('paleta').innerHTML = Object.entries(PAL)
+        .map(([k, v]) => `<i title="${k}" style="background:${v}"></i>`)
+        .join('');
+
+      // ---------- Nível mundo ----------
+      (function mundo() {
+        const c = document.getElementById('mundo'),
+          g = c.getContext('2d'),
+          W = c.width,
+          H = c.height,
+          T = 2; // "pixel" de 2 px num quadro de 960×540 (equivale a 16 px por tile no jogo)
+        let seed = 11;
+        const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+        // Ruído suave (soma de senos) para relevo, mata e costa: formas orgânicas, não quadriculado.
+        const n2 = (x, y) =>
+          Math.sin(x * 0.011 + 1.3) * Math.cos(y * 0.015 + 0.4) +
+          0.5 * Math.sin(x * 0.027 - y * 0.019) +
+          0.25 * Math.sin((x + y) * 0.045 + 2.0) +
+          0.12 * Math.sin(x * 0.09) * Math.cos(y * 0.08);
+        const costa = (x) => H * 0.8 + Math.sin(x * 0.012) * 26 + Math.cos(x * 0.031) * 9;
+        const rio = (x) => H * 0.46 + Math.sin(x * 0.009) * 46 + Math.cos(x * 0.023) * 12;
+        const px = (x, y, col) => {
+          g.fillStyle = col;
+          g.fillRect(x, y, T, T);
+        };
+        const dither = (x, y) => ((x / T + y / T) & 1) === 0;
+        for (let y = 0; y < H; y += T)
+          for (let x = 0; x < W; x += T) {
+            const n = n2(x, y),
+              r = rnd();
+            let col = r > 0.93 ? PAL.campo2 : PAL.campo;
+            // trama de pasto
+            if (((x / T) % 7 === 0 && (y / T) % 5 === 0) || r > 0.985) col = PAL.campo2;
+            if (n > 0.55)
+              col = dither(x, y) && n < 0.68 ? PAL.campo2 : r > 0.9 ? PAL.mata2 : PAL.mata;
+            if (n > 1.15)
+              col = dither(x, y) && n < 1.3 ? PAL.mata2 : r > 0.85 ? PAL.serra2 : PAL.serra;
+            if (n > 1.55) col = r > 0.6 ? '#c9b89a' : PAL.serra2; // cume claro
+            const dc = y - costa(x);
+            if (dc > 0)
+              col =
+                dc < T * 2
+                  ? '#d8c48a'
+                  : dc < T * 5 && dither(x, y)
+                    ? PAL.agua2
+                    : r > 0.94
+                      ? PAL.agua2
+                      : PAL.agua;
+            const dr = Math.abs(y - rio(x));
+            if (dr < 7)
+              col = dr < 4 ? (r > 0.9 ? PAL.agua2 : PAL.agua) : dither(x, y) ? PAL.agua2 : col;
+            px(x, y, col);
+          }
+        // sombra das serras (lado sudeste) para dar volume
+        for (let y = T; y < H; y += T)
+          for (let x = T; x < W; x += T)
+            if (n2(x, y) > 1.15 && n2(x - T * 3, y - T * 3) <= 1.15 && dither(x, y))
+              px(x, y, '#5e5240');
+        const cidades = [
+          ['Campinas', 0.5, 0.5, 3, 'alerta'],
+          ['São Paulo', 0.62, 0.62, 3],
+          ['Ribeirão Preto', 0.42, 0.26, 2],
+          ['Curitiba', 0.36, 0.86, 2, 'alerta'],
+          ['Uberlândia', 0.2, 0.16, 2],
+          ['Londrina', 0.14, 0.58, 2],
+          ['Jundiaí', 0.56, 0.57, 1],
+          ['Itabira', 0.86, 0.2, 1],
+          ['Belo Horizonte', 0.8, 0.3, 3],
+          ['Criciúma', 0.3, 0.95, 1],
+          ['Sorocaba', 0.47, 0.6, 1],
+        ];
+        const P = (c) => [Math.round((c[1] * W) / T) * T, Math.round((c[2] * H) / T) * T];
+        // Estrada: curva suave (quadrática) entre as cidades, desenhada pixel a pixel com contorno.
+        const road = (a, b, tipo) => {
+          const [x0, y0] = P(a),
+            [x1, y1] = P(b);
+          const mx = (x0 + x1) / 2 + (y1 - y0) * 0.18,
+            my = (y0 + y1) / 2 - (x1 - x0) * 0.18;
+          const n = Math.hypot(x1 - x0, y1 - y0) / T;
+          const pts = [];
+          for (let i = 0; i <= n; i++) {
+            const t = i / n,
+              x = (1 - t) * (1 - t) * x0 + 2 * (1 - t) * t * mx + t * t * x1,
+              y = (1 - t) * (1 - t) * y0 + 2 * (1 - t) * t * my + t * t * y1;
+            pts.push([Math.round(x / T) * T, Math.round(y / T) * T]);
+          }
+          const w = tipo === 'rodovia' ? 2 : 1;
+          for (const [x, y] of pts)
+            (px(x - T, y - T, PAL.sombra), px(x + w * T, y + w * T, PAL.sombra));
+          for (const [x, y] of pts)
+            for (let i = 0; i < w; i++)
+              for (let j = 0; j < w; j++)
+                px(x + i * T, y + j * T, tipo === 'rodovia' ? PAL.rodovia : PAL.estrada);
+          if (tipo === 'rodovia') pts.forEach(([x, y], i) => i % 6 < 3 && px(x, y, '#fff6c8'));
+        };
+        const liga = [
+          [0, 1, 'rodovia'],
+          [0, 2, 'rodovia'],
+          [0, 6, 'rodovia'],
+          [6, 1, 'rodovia'],
+          [1, 3, 'rodovia'],
+          [3, 9, 'estrada'],
+          [2, 4, 'estrada'],
+          [4, 8, 'rodovia'],
+          [8, 7, 'estrada'],
+          [0, 5, 'estrada'],
+          [1, 8, 'rodovia'],
+          [0, 10, 'estrada'],
+          [10, 1, 'estrada'],
+        ];
+        for (const [a, b, t] of liga) road(cidades[a], cidades[b], t);
+        // Cidade: aglomerado de prédios (quantidade pelo tamanho), telhados, sombra e placa.
+        const predio = (x, y, w, h, cor, telhado) => {
+          for (let i = 0; i < w; i++)
+            for (let j = 0; j < h; j++)
+              px(x + i * T, y - j * T, (i + j) % 3 === 0 ? PAL.cidade2 : cor);
+          for (let i = 0; i < w; i++) px(x + i * T, y - h * T, telhado);
+          px(x + w * T, y - h * T + T, PAL.sombra);
+          for (let j = 0; j < h; j++) px(x + w * T, y - j * T, '#8a7d62');
+          for (let i = 0; i < w; i += 2)
+            for (let j = 1; j < h; j += 2) px(x + i * T, y - j * T, PAL.luz);
+        };
+        for (const cd of cidades) {
+          const [x, y] = P(cd),
+            s = cd[3],
+            n = [6, 11, 18][s - 1],
+            R = 9 + s * 7;
+          // chão urbano
+          for (let dy = -R; dy <= R; dy += T)
+            for (let dx = -R - 4; dx <= R + 4; dx += T)
+              if (dx * dx * 0.6 + dy * dy < R * R)
+                px(x + dx, y + dy, dither(dx, dy) ? '#6e6a5a' : '#7c7868');
+          seed = 100 + cd[0].length * 7;
+          const preds = [];
+          for (let k = 0; k < n; k++)
+            preds.push({
+              x: x - R + Math.floor((rnd() * (2 * R - 6)) / T) * T,
+              y: y - R / 2 + Math.floor((rnd() * R) / T) * T + 6,
+              w: 2 + Math.floor(rnd() * 2),
+              h: 2 + Math.floor(rnd() * (2 + s)),
+            });
+          preds.sort((a, b) => a.y - b.y);
+          for (const p of preds)
+            predio(p.x, p.y, p.w, p.h, PAL.cidade, s === 3 && p.h > 3 ? '#b54a3a' : PAL.telhado);
+          if (s === 3) {
+            // torre marcante na metrópole
+            predio(x + 2, y + 2, 2, 7, '#e8dcc0', '#c8382a');
+          }
+          if (cd[4]) {
+            g.fillStyle = PAL.sombra;
+            g.fillRect(x + R - 2, y - R - 10, 12, 12);
+            g.fillStyle = PAL.alerta;
+            g.fillRect(x + R, y - R - 8, 8, 8);
+            g.fillStyle = PAL.luz;
+            g.fillRect(x + R + 3, y - R - 6, 2, 3);
+            g.fillRect(x + R + 3, y - R - 2, 2, 1);
+          }
+          g.font = 'bold 11px monospace';
+          g.fillStyle = PAL.sombra;
+          for (const [ox, oy] of [
+            [1, 0],
+            [-1, 0],
+            [0, 1],
+            [0, -1],
+            [1, 1],
+          ])
+            g.fillText(cd[0], x - R + ox, y + R + 12 + oy);
+          g.fillStyle = PAL.cidade;
+          g.fillText(cd[0], x - R, y + R + 12);
+        }
+        // caminhões (sprite 10×6 com cabine e carga, sombra)
+        const truck = (fx, fy, dir) => {
+          const [x, y] = P([0, fx, fy]);
+          g.fillStyle = PAL.sombra;
+          g.fillRect(x - 1, y - 1, 14, 9);
+          g.fillStyle = '#cfcfc0';
+          g.fillRect(x, y, 8, 6);
+          g.fillStyle = '#9a9a8a';
+          g.fillRect(x, y + 4, 8, 2);
+          g.fillStyle = dir ? '#d94a2e' : '#3a7ad9';
+          g.fillRect(dir ? x + 8 : x - 4, y + 1, 4, 5);
+          g.fillStyle = PAL.sombra;
+          g.fillRect(x + 1, y + 6, 2, 2);
+          g.fillRect(x + 6, y + 6, 2, 2);
+        };
+        truck(0.545, 0.545, 1);
+        truck(0.455, 0.39, 0);
+        truck(0.705, 0.44, 1);
+        truck(0.33, 0.56, 0);
+      })();
+
+      // ---------- Tabuleiro da cidade ----------
+      (function cidade() {
+        const c = document.getElementById('cidade'),
+          g = c.getContext('2d'),
+          W = c.width,
+          H = c.height,
+          tw = 48,
+          th = 24, // tile isométrico 2:1
+          ox = W / 2,
+          oy = 50;
+        const iso = (i, j) => [ox + (i - j) * (tw / 2), oy + (i + j) * (th / 2)];
+        const losango = (i, j, col, dz = 0) => {
+          const [x, y] = iso(i, j);
+          g.fillStyle = col;
+          g.beginPath();
+          g.moveTo(x, y - dz);
+          g.lineTo(x + tw / 2, y + th / 2 - dz);
+          g.lineTo(x, y + th - dz);
+          g.lineTo(x - tw / 2, y + th / 2 - dz);
+          g.closePath();
+          g.fill();
+        };
+        const bloco = (i, j, h, top, left, right) => {
+          const [x, y] = iso(i, j);
+          g.fillStyle = left;
+          g.beginPath();
+          g.moveTo(x - tw / 2, y + th / 2);
+          g.lineTo(x, y + th);
+          g.lineTo(x, y + th - h);
+          g.lineTo(x - tw / 2, y + th / 2 - h);
+          g.closePath();
+          g.fill();
+          g.fillStyle = right;
+          g.beginPath();
+          g.moveTo(x + tw / 2, y + th / 2);
+          g.lineTo(x, y + th);
+          g.lineTo(x, y + th - h);
+          g.lineTo(x + tw / 2, y + th / 2 - h);
+          g.closePath();
+          g.fill();
+          losango(i, j, top, h);
+        };
+        const shade = (hex, k) => {
+          const n = parseInt(hex.slice(1), 16),
+            r = Math.min(255, ((n >> 16) & 255) * k),
+            gg = Math.min(255, ((n >> 8) & 255) * k),
+            b = Math.min(255, (n & 255) * k);
+          return `rgb(${r | 0},${gg | 0},${b | 0})`;
+        };
+        const N = 9;
+        g.fillStyle = '#0c0e0a';
+        g.fillRect(0, 0, W, H);
+        // chão e ruas
+        for (let i = 0; i < N; i++)
+          for (let j = 0; j < N; j++) {
+            const rua = i === 4 || j === 4 || i === 1 || j === 7;
+            losango(i, j, rua ? PAL.rua : (i + j) % 2 ? PAL.campo : PAL.campo2);
+            if (rua) {
+              const [x, y] = iso(i, j);
+              g.fillStyle = PAL.rodovia;
+              g.fillRect(x - 1, y + th / 2 - 1, 2, 2);
+            }
+          }
+        // lotes: [i, j, tipo, tamanho, estado]
+        const lotes = [
+          [2, 2, 'loja', 1, 'alerta'],
+          [3, 2, 'armazem', 2],
+          [2, 3, 'casa'],
+          [3, 3, 'casa'],
+          [5, 2, 'industria', 3, 'produz'],
+          [6, 2, 'industria', 2, 'parado'],
+          [5, 3, 'casa'],
+          [6, 3, 'venda'],
+          [2, 5, 'fazenda', 2, 'produz'],
+          [3, 5, 'venda'],
+          [2, 6, 'casa'],
+          [3, 6, 'casa'],
+          [5, 5, 'loja', 2, 'fila'],
+          [6, 5, 'casa'],
+          [5, 6, 'mina', 1, 'produz'],
+          [6, 6, 'casa'],
+          [8, 2, 'casa'],
+          [8, 5, 'venda'],
+          [0, 5, 'casa'],
+          [0, 2, 'casa'],
+        ];
+        // desenha de trás para frente
+        lotes.sort((a, b) => a[0] + a[1] - (b[0] + b[1]));
+        for (const [i, j, tipo, tam, estado] of lotes) {
+          if (tipo === 'casa') {
+            bloco(i, j, 8, PAL.telhado, PAL.casa, PAL.casa2);
+            continue;
+          }
+          if (tipo === 'venda') {
+            losango(i, j, shade(PAL.campo2, 1.15));
+            const [x, y] = iso(i, j);
+            g.fillStyle = PAL.sombra;
+            g.fillRect(x - 5, y - 6, 10, 8);
+            g.fillStyle = PAL.venda;
+            g.fillRect(x - 4, y - 5, 8, 6);
+            g.fillStyle = PAL.sombra;
+            g.fillRect(x - 1, y + 2, 2, 6);
+            continue;
+          }
+          const col = PAL[tipo],
+            h = 10 + tam * 6;
+          const escuro = estado === 'parado';
+          bloco(
+            i,
+            j,
+            h,
+            shade(col, escuro ? 0.5 : 1.1),
+            shade(col, escuro ? 0.35 : 0.7),
+            shade(col, escuro ? 0.42 : 0.85),
+          );
+          const [x, y] = iso(i, j);
+          if (estado === 'produz' && tipo !== 'fazenda') {
+            g.fillStyle = PAL.fumaca;
+            g.fillRect(x + 6, y - h - 6, 3, 3);
+            g.fillRect(x + 8, y - h - 11, 4, 4);
+            g.fillRect(x + 11, y - h - 17, 5, 5);
+          }
+          if (estado === 'produz' && tipo === 'fazenda') {
+            g.fillStyle = PAL.luz;
+            for (let k = 0; k < 4; k++) g.fillRect(x - 10 + k * 5, y + 2, 2, 2);
+          }
+          if (estado === 'fila') {
+            g.fillStyle = PAL.luz;
+            for (let k = 0; k < 4; k++) g.fillRect(x + 12 + k * 4, y + 10 - k * 2, 2, 4);
+          }
+          if (estado === 'alerta') {
+            g.fillStyle = PAL.sombra;
+            g.fillRect(x + 8, y - h - 12, 10, 10);
+            g.fillStyle = PAL.alerta;
+            g.fillRect(x + 9, y - h - 11, 8, 8);
+          }
+        }
+        // caminhão na rua principal
+        const [tx, ty] = iso(4, 6);
+        g.fillStyle = PAL.sombra;
+        g.fillRect(tx - 7, ty + 2, 14, 8);
+        g.fillStyle = PAL.caminhao;
+        g.fillRect(tx - 6, ty + 3, 8, 6);
+        g.fillStyle = PAL.alerta;
+        g.fillRect(tx + 2, ty + 4, 4, 5);
+        // saída para a rodovia
+        g.fillStyle = PAL.rodovia;
+        const [sx, sy] = iso(4, N);
+        g.fillRect(sx - 2, sy, 4, 40);
+        g.fillStyle = PAL.cidade;
+        g.font = '8px monospace';
+        g.fillText('→ rodovia SP-330', sx + 8, sy + 24);
+      })();
+    </script>
+  </body>
+</html>

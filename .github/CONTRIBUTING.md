@@ -29,7 +29,7 @@ O servidor de desenvolvimento sobe em `http://localhost:5173` (Vite) com a API E
 | `apps/server`         | API Express + SQLite (persistência, operações financeiras em transação) |
 | `packages/simulation` | Regras puras de simulação (tempo injetável, sem dependência de UI)      |
 | `packages/world`      | Dados geográficos e proveniência                                        |
-| `.planning/`          | Estado do projeto, roadmap, requisitos por fase                         |
+| `.planning/`          | Estado do projeto e roteiro                                             |
 
 ## Workflow de branches
 

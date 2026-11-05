@@ -99,5 +99,4 @@ de fontes remotas durante o uso.
 
 Comando dedicado: `npx playwright test --config=playwright.landing.config.ts`.
 Ele sobe somente Vite em 5187; não inicia servidor econômico nem abre SQLite.
-Resultados e limites ficam na
-[validação da entrega](../../.planning/phases/E-landing/E-LANDING-VALIDATION.md).
+Resultados e limites ficam no histórico do Git.

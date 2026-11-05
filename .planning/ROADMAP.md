@@ -1,62 +1,11 @@
-# Roteiro até o primeiro playtest
+# Roteiro
 
-Definido em **27/10/2026** com o Pedro. Objetivo: jogar no PC com 4–5 amigos e muitos bots, num mundo que dá a sensação de estar vivo. Celular fica para depois.
+Recomeço em **05/11/2026**, com o Pedro liderando. O roteiro novo ainda será definido.
 
-Cada etapa termina em algo que dá para ver ou jogar e tem um critério de "pronto". Uma etapa por vez.
+Ponto de partida a confirmar: o objetivo anterior era jogar no PC com 4–5 amigos e muitos bots, num mundo que dá a sensação de estar vivo, com celular depois.
 
-**30/10/2026:** C avançou (mundo na memória, pacote enxuto, histórico arquivado, mapa leve, Brasil real com ~500 bots). O que falta e a ordem combinada estão em [HANDOFF](HANDOFF.md).
+| Etapa | Resultado | Pronto quando | Quem decide | Estado    |
+| ----- | --------- | ------------- | ----------- | --------- |
+| —     | —         | —             | Pedro       | A definir |
 
-| Etapa                              | Resultado                                                                  | Pronto quando                                                                                                 | Quem decide                                | Estado      |
-| ---------------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ----------- |
-| **A · Arrumar a casa**             | Projeto legível para o Pedro e para o Claude                               | Abrir o projeto e entender onde estamos em 2 minutos                                                          | Pedro aprova                               | Concluída   |
-| **B · Redesenhar a economia**      | Duas cadeias (metal e alimentos) que fecham                                | Nenhuma cadeia dá prejuízo por construção, nada acumula sem fim e os preços se estabilizam em 90 dias de bots | Pedro: design · Claude: contas e simulação | Concluída   |
-| **C · Motor que aguenta**          | Mundo salvo em partes, navegador recebe só o que mudou, histórico resumido | 5 humanos + 60 bots rodam 30 dias de jogo sem travar num PC comum                                             | Claude                                     | Iniciada    |
-| **D · Jogar junto**                | Login simples, um grupo por amigo (D-035), servidor acessível              | 5 pessoas jogam ao mesmo tempo de lugares diferentes                                                          | Pedro: onde hospedar                       | Planejada   |
-| **E · Primeira hora e mundo vivo** | Tutorial jogando, telas enxutas, mural de notícias e ranking               | Amigo novo faz a primeira venda em 15 min sem ajuda                                                           | Pedro: direção de interface                | Iniciada    |
-| Arte                               | Ícones dos produtos e identidade visual                                    | Lista de produtos fechada na etapa B                                                                          | Pedro gera com prompts do Claude           | Depois da E |
-| **F · Playtest 1**                 | Sessão com amigos e lista de ajustes                                       | Sessão feita, 10 maiores dores anotadas                                                                       | Pedro chama os amigos                      | Planejada   |
-
-**03/11 · Carregamento (frente C):** main/spec 005 conferidos; correções locais de
-leitura, compressão, cache, histórico e polling verificadas na spec 012. O novo
-design foi preservado. Ledger incremental e recuperação idempotente de operações implementados; motor isolado e persistência das outras entidades continuam pendentes; ver [validação e prioridades](../specs/012-carregamento-fluido/validation.md).
-
-## Etapa A · Arrumar a casa
-
-- [x] Salvar o trabalho pendente no Git (`266dd32`, `382a4da`).
-- [x] Estado e roteiro em linguagem simples.
-- [x] Um ponto de entrada para os relatórios de economia (`ECONOMIA-HOJE.md` e `npm run economy:report`).
-- [x] Limpar bancos de teste antigos em `.runtime`, sem tocar no mundo principal nem nos backups.
-- [x] Instruções curtas para o Claude (`CLAUDE.md`).
-
-## Etapa B · Redesenhar a economia
-
-1. [x] **No papel, com o Pedro.** Proposta 1 aprovada (D-028, D-029): [`docs/economia-proposta.html`](../docs/economia-proposta.html).
-2. [x] **Números da proposta.** Calculadora `npm run economy:design` e resumo em [ECONOMIA-ALVO](../docs/product/ECONOMIA-ALVO.md); todas as verificações passam.
-3. [x] **Corrigir as fórmulas** que enganam os bots (auditoria M02–M05 e M07), com provas de regressão.
-4. [x] **Levar ao motor** os nove itens, as receitas, o rebanho e o caminhão como mercadoria, num mundo novo, nunca na season salva. Dez fatias em [B-PLAN](phases/B-economia/B-PLAN.md).
-5. [x] **Provar** 90 dias em 3 sementes com `npm run economy:proof`: margem por cadeia, estoque parado, empresas quebradas e concentração por produto. Resultado e desvios explicados na PROVA-V2 de 28/10 (histórico do Git; a prova vigente é a [PROVA](../docs/product/PROVA.md)) e D-033.
-
-## Etapa E · adiantado em 28/10
-
-- [x] Começo enxuto no mundo jogável: loja vazia, 8 funcionários e R$ 1 milhão (D-033).
-- [x] Guia de primeiros passos conferido pelo estado do jogo; primeira venda em poucos minutos no teste do navegador.
-- [x] Mercado mostra o que o destino usa, margem sobre a prateleira e quantidade sugerida; Oportunidades mostra custo e lucro de cada negócio.
-- [ ] Loja com menos abas, mural de notícias e ranking.
-
-## O que já foi feito antes deste roteiro
-
-O trabalho anterior foi organizado em fases numeradas. Os planos e as evidências continuam em `phases/`.
-
-| Fase antiga                                | Situação                                                      | Onde entra agora      |
-| ------------------------------------------ | ------------------------------------------------------------- | --------------------- |
-| 01 · Fundação e fatia jogável              | Entregue                                                      | Base de tudo          |
-| 02 · Economia explicável                   | Entregue                                                      | Base da etapa B       |
-| 03 · Mundo autenticado (login, PostgreSQL) | Não iniciada                                                  | Etapas C e D          |
-| 04 · Rotas rodoviárias                     | Quase toda entregue; falta perfil de caminhão e retorno vazio | Depois do playtest    |
-| 05 · Equilíbrio de recursos                | Parcial: catálogo e auditorias prontos, equilíbrio não        | Etapa B               |
-| 06 · Operação empresarial                  | Grande parte entregue; faltam aluguel e contratos recorrentes | Avaliar depois da B   |
-| 07 · Laboratório de simulação              | Entregue                                                      | Ferramenta da etapa B |
-
-## Fora do escopo
-
-Fusões, construção de cidade, renderização 3D obrigatória, celular antes do playtest. Autenticação forte e PostgreSQL são necessários antes de um mundo público, não antes do playtest entre amigos.
+Cada etapa deve terminar em algo que dá para ver ou jogar, com um critério de "pronto". Uma etapa por vez.

@@ -1,97 +1,27 @@
 # Estado do projeto
 
-Atualizado em **05/11/2026**. Versão **0.4.0**. Uma página: o que é verdade agora e o que vem a seguir. Detalhes e evidências ficam nos documentos de cada fase e no histórico do Git.
+Atualizado em **05/11/2026**. Versão **0.4.0**. Uma página: o que é verdade agora e o que vem a seguir.
 
-## Onde estamos
+## Recomeço
 
-**05/11/2026 · mudança de equipe.** O João (John) parou de atualizar o projeto; o Pedro passa a liderar tudo. Todo o trabalho dele foi juntado ao nosso: specs 001–007 já estavam no `main`; o mapa vivo (spec 008, parado em R2) e o mundo 16-bit (spec 009, parado na fase C) entraram neste fechamento. A cidade de perto usa o pacote MODERN TOWN SET, que fica fora do Git (licença) em `apps/web/public/arte/town`; sem ele o mapa funciona, só sem os prédios desenhados. Build, 307 testes e 34 cenários de navegador passam. Próximo passo: recomeçar o plano a partir daqui.
+O Pedro passou a liderar o projeto em 05/11/2026; o João (John) parou de atualizar. Todo o trabalho dos dois está no `main`, e o estado completo anterior ao recomeço ficou guardado na marca `fim-era-john` do Git (inclui as specs 001–014, as fases antigas e os rascunhos de design).
 
-Etapas **A · Arrumar a casa** e **B · Redesenhar a economia** concluídas; parte da **E** (primeira hora) adiantada a pedido do Pedro. Próximas: **C · Motor que aguenta** e **D · Jogar junto** do [roteiro](ROADMAP.md), que faltam para o playtest com amigos. O panorama visual completo está em [`docs/raio-x.html`](../docs/raio-x.html).
+A pasta foi limpa: sem cópias antigas do mundo, sem processo antigo de specs e fases, sem rascunhos. Ficaram o código do jogo, as regras (`AGENTS.md`), as decisões de produto, os padrões da economia, a identidade visual, a landing, os vídeos e o Discord.
 
-O jogo roda localmente: mapa do Centro-Sul, compra de imóveis, produção, estoque físico, mercado com negociação, frota, finanças com crédito e empresas-bot usando os mesmos comandos dos jogadores. Existe uma única economia (D-042, spec 001). `npm run dev` abre o mundo `playtest`: começo enxuto (loja vazia e R$ 1 milhão) e guia de primeiros passos. Com `AFTERMARKET_WORLD_SCALE=20` o mundo tem cerca de 550 empresas-bot e o frete usa distância estimada identificada; na escala 1 o frete exige rota rodoviária real. Build e 269 testes passam.
+## O que o jogo já tem
 
-## O que funciona
+- Mapa real do Centro-Sul do Brasil, com estilo pixel e cidades clicáveis.
+- Compra de imóveis, produção, estoque físico, mercado com negociação, frota e finanças com crédito.
+- Empresas-bot usando os mesmos comandos dos jogadores; uma única economia (D-042) com começo enxuto (loja vazia e R$ 1 milhão).
+- Telas Início, Loja e Negócios na direção Livro-caixa; diário que grava só o que mudou a cada clique.
+- Landing, vídeos de divulgação e servidor no Discord com bot administrativo.
 
-Carregamento (spec 012, 03/11): ramo do design alinhado ao main e à spec 005 do
-João. Leituras HTTP sem tick, respostas comprimidas e reutilizadas por revisão,
-indicadores sem varredura por produto e histórico do pregão agrupado. Conexão com
-deadline de 15 s e tentativas compartilhadas. Build, 269 testes e dez cenários de
-navegador aprovados, incluindo compra/entrega/produção real. A prévia compilada
-usa a mesma API e o mesmo mundo do design; não cria outra economia.
-Continuação: ledger incremental em transação, rollback sem copiar payloads imutáveis,
-recuperação idempotente e gaveta com quantidade cotada. No mesmo snapshot: 185,5 MB
-→ 36,6 MB regravados; serialização 1,43 s → 243 ms. Motor e snapshot residual ainda podem bloquear a API. A etapa C continua aberta. Evidência, limites
-e prioridades em [validação 012](../specs/012-carregamento-fluido/validation.md).
+## Limites conhecidos
 
-Direção **Livro-caixa** aplicada à interface: Archivo condensada nos títulos e valores,
-IBM Plex Mono nos controles e Caveat Brush nas notas curtas, com fontes locais, papel,
-carimbos e ilustrações pixel. Mapa com filtros e painel de terreno; pedidos e entregas
-unificados; frota em cartões. Ver [IDENTIDADE-JOGO](../docs/design/IDENTIDADE-JOGO.md).
-A revisão de Geist Pixel em [TIPOGRAFIA](../docs/design/TIPOGRAFIA.md) é histórica.
-O coletor geral do laboratório ainda precisa ajustar esperas de títulos e interferência
-do modal de primeiros passos.
-
-Validação de 30/10: build, 230 testes, catálogo de 14 telas, formatação, contraste e
-14 testes de navegador aprovados. Instalação sem área bloqueada antes da cobrança;
-avisos de entrega abrem Concluídos, inclusive com Pedidos já aberto. Escopo, evidências
-e limites em [VALIDAÇÃO DA INTERFACE](../docs/design/VALIDACAO-INTERFACE-2026-10-30.md).
-
-- Mapa, estradas reais (OSRM), caminhões animados sobre a rota.
-- Comprar imóvel, instalar equipamento, contratar equipe, produzir, vender.
-- Pedidos e contrapropostas entre empresas, editais do governo.
-- Frota própria, transferências e conexões fixas de abastecimento.
-- Laboratório `/lab`: roda 30/90/365 dias de bots em 3/10/84 s e compara cenários.
-- Jogo e landing com a mesma identidade (28/10): grafite com quadriculado, lavoura para agir, ouro para dinheiro, títulos em Press Start, mapa noturno e gráfico próprio em pixel (`GraficoPixel`). Regras e ordem das telas em [IDENTIDADE-JOGO](../docs/design/IDENTIDADE-JOGO.md); placar `npm run ui:cores`.
-- Telas redesenhadas (29/10): Início, Loja (prateleira em cartões com trilho de preço, Abastecimento, Equipe, Finanças) e a gaveta **Mandar buscar** para repor. Texto pequeno em Archivo (pixel só a partir de 18 px), cores com papéis e contraste conferido por `npm run ui:contraste`. Próximo projeto: mapa e adaptação da identidade (notas no fim de IDENTIDADE-JOGO).
-- Identidade em pixel (grafite, lavoura, ouro), menu em 4 seções, Comércio com Comprar, Cotações, Pedidos e Contratos, loja em 4 abas com régua de preço.
-- Landing em `/` (jogo em `/jogar`): planeta com mira de GPS, telas reais do jogo (`npm run landing:telas`), selo de projeto em desenvolvimento e assinatura do Pedro. Vitrine animada nativa e novas seções ficam para depois, com a interface mais estável ([LANDING](../docs/design/LANDING.md)).
-
-## Furos conhecidos
-
-| Área        | Problema                                                                                                                            | Onde está o detalhe                                             |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| Economia    | Escala 20: arroz, feijão, utensílios e caminhão leve no vermelho; aço ao governo ~190 de 320 t/dia; procura atendida 51%            | [PROVA](../docs/product/PROVA.md), D-036, D-038, D-039, HANDOFF |
-| Mundo       | Só 12 lotes livres e os dois jogadores de teste começam em Campinas                                                                 | etapa D (uma cidade e lotes por amigo)                          |
-| Mundo salvo | Mundos da economia antiga são recusados ao abrir, sem backup nem alteração; o dono arquiva `.runtime/world.sqlite` e começa um novo | spec 001 (R6)                                                   |
-| Desempenho  | Ledger incremental; demais entidades ainda em snapshot síncrono (~36,6 MB); motor compartilha thread da API                         | etapa C do roteiro                                              |
-| Multiplayer | Servidor só escuta `127.0.0.1`; perfis sem senha                                                                                    | etapa D do roteiro                                              |
-| Interface   | Sem mural de notícias nem ranking; fábricas e fazendas ainda sem o padrão novo da loja                                              | etapa E do roteiro                                              |
+- Roda só no computador local; não há login nem servidor para amigos jogarem juntos.
+- O motor ainda pode travar a API em mundos grandes.
+- A cidade de perto depende do pacote MODERN TOWN SET, fora do Git por licença: copie de `D:\MODERN TOWN SET` para `apps/web/public/arte/town`. Sem ele, o mapa funciona sem os prédios desenhados.
 
 ## Próximo passo
 
-**Spec 006 (03/11, John):** calculadora fecha em todas as receitas; bots abrem com 100% das linhas e lojas-bot cobrem 70% da procura. Na escala 20 as lojas atendem 56% da procura (era 45%). Sobra dívida medida em `specs/006-rebalanceamento/tasks.md` (aço ao governo, caminhão leve, sucata concentrada, tetos de preço dos bots). Próximas: **008 · Mapa vivo** (jogabilidade no mapa) e **007 · Servidor hospedado**.
-
-**Continuação em outra conversa:** tudo o que falta, na ordem combinada com o Pedro, está em [HANDOFF](HANDOFF.md) (calibrar o Brasil real com ~500 bots, modelo de grupo D-035, telas da proposta de UX, laboratório, genética, gado e frigorífico, interação entre jogadores, Claude jogar contra os bots, depois C e D).
-
-Etapa **B** concluída em 28/10: as dez fatias do [B-PLAN](phases/B-economia/B-PLAN.md) e a prova de 90 dias em 3 sementes (PROVA-V2 de 28/10, hoje no histórico do Git; a prova vigente é a [PROVA](../docs/product/PROVA.md), `npm run economy:proof`). O balanceamento da fatia 10 está em D-033: bots miram o preço de referência, empresas antigas alinhadas, bots sem compra de imóveis, lotes livres baratos, editais menores e caminhões com vida útil comprimida.
-
-Para o playtest com amigos faltam: **C** (desempenho do motor e do salvamento) e **D** (login simples, uma empresa e uma cidade por amigo, servidor acessível de fora). Recomendação: fazer C e D juntas no mínimo necessário para 5 pessoas, antes de mais interface.
-
-Decisões do Pedro em 27/10 (D-028, D-029): mundo semanal livre; realismo enxuto com cadeias completas; fechar metal e alimentos antes de crescer; aço vira caminhões e utensílios; sucata já; carne depois do playtest; relógio 1 h real = 6 h de jogo. Desde a spec 004 a velocidade é do mundo (`season.config.clock`): `AFTERMARKET_TIME_SCALE=6` cria o mundo do playtest lento, em que **um dia de jogo dura 4 h reais**; o padrão continua 120× (dia de jogo = 12 min reais) e mundos salvos antes da 004 ficam a 120×. A prova a 120× e a 6× dá a mesma economia pelos mesmos dias de jogo.
-
-Números da economia alvo em [ECONOMIA-ALVO](../docs/product/ECONOMIA-ALVO.md), calculados por `npm run economy:design` e protegidos por `tests/economy-design.test.ts`; valem no motor, que só tem esta economia.
-
-## Como rodar
-
-| Comando                  | O que faz                                                                                                                                                                                                  |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `npm run dev`            | Mundo `playtest` em http://127.0.0.1:5173 (`.runtime/world.sqlite`); escala por `AFTERMARKET_WORLD_SCALE` (padrão 1); velocidade de mundo novo por `AFTERMARKET_TIME_SCALE` (padrão 120; playtest lento 6) |
-| `npm run lab`            | Laboratório de simulação em `/lab`                                                                                                                                                                         |
-| `npm run check`          | Build, testes e verificações de recursos e catálogo de telas                                                                                                                                               |
-| `npm run economy:report` | Regera os três relatórios de economia de uma vez                                                                                                                                                           |
-| `npm run world:backup`   | Backup do mundo principal                                                                                                                                                                                  |
-
-## Regras de segurança
-
-- Nunca apagar `.runtime/world.sqlite` nem `.runtime/backups`. O mundo não é recriável sem perder progresso.
-- Antes de migrar o banco: `npm run world:backup` e migração explícita. Última migração: `designVersion=2`, aditiva, dinheiro conservado (relatório em `.runtime/review/migration-main.json`).
-- Testes e simulações nunca abrem o banco principal.
-- Não rebalancear a season salva ao editar receitas; testar em mundos isolados no `/lab`.
-
-## Onde está o detalhe
-
-- Visão de produto: [GDD 3.0](../docs/product/GDD-v3.0.md) e [PROJECT](PROJECT.md).
-- Requisitos rastreáveis: [REQUIREMENTS](REQUIREMENTS.md).
-- Evidências por fase: `phases/NN-*/NN-VALIDATION.md`. Fases 04, 05 e 07 contêm as medições de rotas, recursos e laboratório.
-- Decisões de design: [DECISIONS](../docs/product/DECISIONS.md).
-- Versões anteriores deste arquivo, com todos os números de migração e simulação: `git log -p .planning/STATE.md`.
+Definir com o Pedro o novo roteiro em `.planning/ROADMAP.md`.

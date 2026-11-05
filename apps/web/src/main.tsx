@@ -17,7 +17,11 @@ const Root =
     ? lazy(() => import('./pages/LandingPage').then((m) => ({ default: m.LandingPage })))
     : path === '/lab'
       ? lazy(() => import('./devlab/LabPage').then((m) => ({ default: m.LabPage })))
-      : lazy(() => import('./App').then((m) => ({ default: m.App })));
+      : path === '/modelos'
+        ? lazy(() =>
+            import('./features/mapa/ModelosPage').then((m) => ({ default: m.ModelosPage })),
+          )
+        : lazy(() => import('./App').then((m) => ({ default: m.App })));
 
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

@@ -94,15 +94,13 @@ function roads(kind: 'tunnel' | 'surface' | 'bridge'): LayerSpecification[] {
       ...base,
       id: `roads-${kind}-casing`,
       paint: {
-        // Spec 009: contorno escuro das vias (16-bit), terra para as menores.
+        // Meio-fio: cinza do asfalto do pacote, mais escuro nas rodovias.
         'line-color': [
           'match',
           ['get', 'class'],
-          ['motorway', 'trunk', 'primary'],
-          '#1a2a24',
-          ['secondary', 'tertiary'],
-          '#8a7d62',
-          '#6e6e64',
+          ['motorway', 'trunk'],
+          PALETA.meioFioRodovia,
+          PALETA.meioFio,
         ],
         'line-width': roadWidth(true),
         'line-opacity': kind === 'tunnel' ? 0.55 : 1,
@@ -112,20 +110,15 @@ function roads(kind: 'tunnel' | 'surface' | 'bridge'): LayerSpecification[] {
       ...base,
       id: `roads-${kind}`,
       paint: {
-        // Rodovias em ouro, estradas de terra em areia (paleta da referência aprovada).
+        // Rodovias em amarelo; avenidas e ruas em asfalto claro; estradas de terra em areia.
         'line-color': [
           'match',
           ['get', 'class'],
           ['motorway', 'trunk'],
-          '#eec156',
-          'primary',
-          '#d5bb97',
-          'secondary',
-          '#cdb796',
-          'tertiary',
-          '#c9b89a',
-          // ruas de bairro: asfalto claro, quase sem contraste com o chão urbano
-          '#9a9a8c',
+          PALETA.rodovia,
+          'track',
+          PALETA.terra,
+          PALETA.rua,
         ],
         'line-width': roadWidth(),
         'line-opacity': kind === 'tunnel' ? 0.72 : 1,
@@ -136,7 +129,7 @@ function roads(kind: 'tunnel' | 'surface' | 'bridge'): LayerSpecification[] {
       id: `highway-${kind}-spine`,
       source: 'openmaptiles',
       'source-layer': 'transportation',
-      minzoom: 7,
+      minzoom: 12,
       filter: [
         'all',
         ['==', ['geometry-type'], 'LineString'],
@@ -150,7 +143,8 @@ function roads(kind: 'tunnel' | 'surface' | 'bridge'): LayerSpecification[] {
         'line-join': 'round' as const,
       },
       paint: {
-        'line-color': '#fff6c8',
+        // Faixa central tracejada, como nas pistas do pacote.
+        'line-color': PALETA.faixa,
         'line-width': [
           'interpolate',
           ['exponential', 1.2],
@@ -171,13 +165,39 @@ function roads(kind: 'tunnel' | 'surface' | 'bridge'): LayerSpecification[] {
   ];
 }
 
-/** Mundo 16-bit (spec 009): campo verde vivo, mata em copas, água clara com margem de areia,
- * rodovias em ouro e estradas de terra. Padrões de pixel entram em WorldMap (addImage).
- * Local, deliberately small basemap. No remote style, labels, sprites or glyphs. */
+/**
+ * Cores do mapa, tiradas do MODERN TOWN SET (referência de estilo escolhida pelo Pedro em
+ * 05/11/2026): grama clara, asfalto cinza com meio-fio, telhados turquesa, concreto e tijolo.
+ */
+export const PALETA = {
+  grama: '#bfe0a0',
+  mata: '#8fcb79',
+  parque: '#a6d98a',
+  areia: '#eadbb9',
+  agua: '#6cc3ea',
+  margem: '#a9d8ee',
+  rio: '#5bb8e2',
+  bairro: '#e6dfcf',
+  comercio: '#f0d2bf',
+  industria: '#cfc6dc',
+  divisa: '#5f8f6a',
+  rua: '#f7f5f0',
+  meioFio: '#a7a39b',
+  meioFioRodovia: '#8d877c',
+  rodovia: '#f6d27a',
+  faixa: '#ffffff',
+  terra: '#d9c49a',
+  predioCidade: '#d9d3c6',
+  contornoCidade: '#bdb5a5',
+} as const;
+
+/** Mapa do jogo: cidade de brinquedo sobre a geografia real (OpenStreetMap).
+ * De longe, campo, mata, água e estradas; de perto, o contorno dos prédios reais.
+ * Estilo local e enxuto: sem estilo remoto, rótulos, sprites ou fontes. */
 export function createMapStyle(): StyleSpecification {
   return {
     version: 8,
-    name: 'AFTERMARKET · Estradas e natureza',
+    name: 'AFTERMARKET · Cidade',
     sources: {
       openmaptiles: {
         type: 'vector',
@@ -189,53 +209,28 @@ export function createMapStyle(): StyleSpecification {
       },
     },
     layers: [
-      { id: 'background', type: 'background', paint: { 'background-color': '#00c369' } },
+      { id: 'background', type: 'background', paint: { 'background-color': PALETA.grama } },
       {
         id: 'natural-landcover',
         type: 'fill',
         source: 'openmaptiles',
         'source-layer': 'landcover',
-        // Grass polygons can trace runways, sports fields and urban landscaping.
-        // A uniform ground color avoids bringing those details back as silhouettes.
+        // Grama do OSM desenha pistas, campos e canteiros; o chão uniforme evita esse ruído.
         filter: ['match', ['get', 'class'], ['wood', 'sand', 'ice'], true, false],
         paint: {
           'fill-color': [
             'match',
             ['get', 'class'],
             'wood',
-            '#00804c',
+            PALETA.mata,
             'sand',
-            '#d5bb97',
-            '#f3e7cc',
+            PALETA.areia,
+            '#f3f1ea',
           ],
-          'fill-opacity': 1,
-          'fill-antialias': false,
         },
       },
       {
-        id: 'water',
-        type: 'fill',
-        source: 'openmaptiles',
-        'source-layer': 'water',
-        filter: ['!=', ['get', 'brunnel'], 'tunnel'],
-        paint: { 'fill-color': '#00a9f8', 'fill-antialias': false },
-      },
-      {
-        id: 'water-outline',
-        type: 'line',
-        source: 'openmaptiles',
-        'source-layer': 'water',
-        filter: ['!=', ['get', 'brunnel'], 'tunnel'],
-        paint: {
-          // Margem de areia, como na referência.
-          'line-color': '#d5bb97',
-          'line-width': ['interpolate', ['linear'], ['zoom'], 5, 1, 12, 2, 16, 3],
-          'line-opacity': 1,
-        },
-      },
-      {
-        // Chão de cidade (spec 009): áreas residenciais/comerciais/industriais do OSM deixam de
-        // ser pasto. Pedra clara com trama leve; parques continuam verdes.
+        // Chão de cidade por zona: bairro, comércio e indústria em tons próprios.
         id: 'urban-landuse',
         type: 'fill',
         source: 'openmaptiles',
@@ -253,13 +248,12 @@ export function createMapStyle(): StyleSpecification {
             'match',
             ['get', 'class'],
             'industrial',
-            '#b9b3a4',
+            PALETA.industria,
             ['commercial', 'retail'],
-            '#d9cdb3',
-            '#cdc3ad',
+            PALETA.comercio,
+            PALETA.bairro,
           ],
-          'fill-opacity': ['interpolate', ['linear'], ['zoom'], 9, 0.55, 12, 0.9, 14, 1],
-          'fill-antialias': false,
+          'fill-opacity': ['interpolate', ['linear'], ['zoom'], 9, 0.5, 12, 0.85, 14, 1],
         },
       },
       {
@@ -269,47 +263,25 @@ export function createMapStyle(): StyleSpecification {
         'source-layer': 'landuse',
         minzoom: 11,
         filter: ['match', ['get', 'class'], ['park', 'garden', 'grass', 'cemetery'], true, false],
-        paint: { 'fill-color': '#38cf73', 'fill-antialias': false },
+        paint: { 'fill-color': PALETA.parque },
       },
       {
-        // Lote em volta de cada prédio real: onde o OSM não marca o uso do solo, as quadras com
-        // casas viram quadras de cidade por si mesmas (calibração de 03/11, prints de Campinas).
-        id: 'building-lots',
-        type: 'line',
-        source: 'openmaptiles',
-        'source-layer': 'building',
-        minzoom: 14,
-        layout: { 'line-join': 'round', 'line-cap': 'round' },
-        paint: {
-          'line-color': '#cdc3ad',
-          'line-width': ['interpolate', ['exponential', 1.4], ['zoom'], 13, 5, 15, 12, 17, 26],
-          'line-opacity': ['interpolate', ['linear'], ['zoom'], 14, 0.6, 15, 1],
-        },
-      },
-      {
-        // Prédios reais do OSM a partir do zoom 13: telhado cinza com contorno escuro (16-bit).
-        // Os telhados do pacote entram aqui como fill-pattern quando o catálogo estiver mapeado.
-        id: 'buildings',
+        id: 'water',
         type: 'fill',
         source: 'openmaptiles',
-        'source-layer': 'building',
-        minzoom: 14,
-        paint: {
-          'fill-color': ['interpolate', ['linear'], ['zoom'], 13, '#a79f8e', 15, '#b5ada0'],
-          'fill-outline-color': '#5a5448',
-          'fill-opacity': ['interpolate', ['linear'], ['zoom'], 14, 0.7, 15, 1],
-          'fill-antialias': true,
-        },
+        'source-layer': 'water',
+        filter: ['!=', ['get', 'brunnel'], 'tunnel'],
+        paint: { 'fill-color': PALETA.agua },
       },
       {
-        id: 'building-outline',
+        id: 'water-outline',
         type: 'line',
         source: 'openmaptiles',
-        'source-layer': 'building',
-        minzoom: 14,
+        'source-layer': 'water',
+        filter: ['!=', ['get', 'brunnel'], 'tunnel'],
         paint: {
-          'line-color': '#5a5448',
-          'line-width': ['interpolate', ['linear'], ['zoom'], 13, 0.6, 16, 1.5],
+          'line-color': PALETA.margem,
+          'line-width': ['interpolate', ['linear'], ['zoom'], 5, 0.6, 12, 1.4, 16, 2.4],
         },
       },
       {
@@ -324,7 +296,7 @@ export function createMapStyle(): StyleSpecification {
         ],
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
-          'line-color': '#00a9f8',
+          'line-color': PALETA.rio,
           'line-width': ['interpolate', ['exponential', 1.2], ['zoom'], 5, 1.2, 12, 2.4, 17, 5],
         },
       },
@@ -335,15 +307,29 @@ export function createMapStyle(): StyleSpecification {
         'source-layer': 'boundary',
         filter: ['all', ['<=', ['get', 'admin_level'], 4], ['!=', ['get', 'maritime'], 1]],
         paint: {
-          'line-color': '#006c56',
+          'line-color': PALETA.divisa,
           'line-width': ['interpolate', ['linear'], ['zoom'], 4, 1, 10, 1.6, 14, 2.2],
           'line-dasharray': [4, 3],
-          'line-opacity': 0.8,
+          'line-opacity': 0.7,
         },
       },
       ...roads('tunnel'),
       ...roads('surface'),
       ...roads('bridge'),
+      {
+        // Prédios reais do OpenStreetMap: contornos planos e discretos, só para dar textura de
+        // cidade. Em 3D ficam apenas os negócios do jogo (camada própria em WorldMap).
+        id: 'buildings',
+        type: 'fill',
+        source: 'openmaptiles',
+        'source-layer': 'building',
+        minzoom: 14,
+        paint: {
+          'fill-color': PALETA.predioCidade,
+          'fill-outline-color': PALETA.contornoCidade,
+          'fill-opacity': ['interpolate', ['linear'], ['zoom'], 14, 0, 15, 0.9],
+        },
+      },
     ],
   };
 }

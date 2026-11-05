@@ -15,7 +15,8 @@ import {
   seasonProducts,
 } from '../../../../packages/simulation/src/model';
 import { createMapStyle } from '../lib/map-style';
-import { attachPixelTown } from './PixelTown';
+import { criarCamada3D, ZOOM_3D } from '../features/mapa/camada3d';
+import { estagioDoNegocio } from '../features/mapa/nivel';
 import { positionAlongRoute, routeLengths } from '../../../../packages/simulation/src/geometry';
 import { shipmentRoadPath, shipmentRoute } from '../../../../packages/simulation/src/road-path';
 import { shipmentStatus } from '../../../../packages/simulation/src/shipment';
@@ -25,8 +26,10 @@ maplibregl.setWorkerUrl(workerUrl);
 // - Negócios construídos usam as miniaturas isométricas reais (/arte/*.png) sobre um pedestal
 //   tático chanfrado (com destaque em lavoura/ouro para unidades do próprio jogador).
 // - Terrenos disponíveis usam um marco chanfrado compacto com o ícone da vocação.
-// Resolução do canvas do mapa principal em relação à tela (spec 009: 16-bit = pixels de 2×).
-const PIXEL_RATIO = 0.5;
+// Faixas da câmera de cidade (zoom) e quanto ela inclina.
+const INCLINA_A_PARTIR = 15;
+const VOLTA_DE_CIMA = 13.5;
+const INCLINACAO = 50;
 const categories = ['farm', 'mine', 'industry', 'retail', 'logistics', 'warehouse'] as const;
 const categorySpriteUrl: Record<(typeof categories)[number], string> = {
   farm: '/arte/lavoura.png',
@@ -273,11 +276,12 @@ export function WorldMap({
 }) {
   const { world, actor, selectedId, select, focus, consumeFocus } = useGame();
   const container = useRef<HTMLDivElement>(null),
-    map = useRef<maplibregl.Map | null>(null);
+    map = useRef<maplibregl.Map | null>(null),
+    // Negócios em 3D (só no mapa principal).
+    tres = useRef<ReturnType<typeof criarCamada3D> | null>(null);
   const [ready, setReady] = useState(false),
     [failed, setFailed] = useState(false);
   const callback = useRef(onSelect);
-  const detachTown = useRef<(() => void) | null>(null);
   const hoverRef = useRef(hoverCard);
   hoverRef.current = hoverCard;
   const cityRef = useRef(onCitySelect);
@@ -337,13 +341,12 @@ export function WorldMap({
       center: initial ?? (!mini ? saved.center : undefined) ?? [-47.31, -22.88],
       zoom: p ? (mini ? 13.3 : 10.65) : !mini ? (saved.zoom ?? 10.05) : 9.5,
       minZoom: 3.5,
-      maxZoom: 17,
+      maxZoom: mini ? 17 : 18,
       attributionControl: { compact: true },
       interactive: !mini,
       renderWorldCopies: false,
-      // Spec 009: o mapa é desenhado em meia resolução e ampliado sem suavização (CSS
-      // image-rendering: pixelated), o que dá a crocância 16-bit sem custo extra de GPU.
-      pixelRatio: mini ? undefined : PIXEL_RATIO,
+      // De perto a câmera inclina e os prédios aparecem em 3D; o mini mapa fica sempre de cima.
+      maxPitch: mini ? 0 : 65,
     });
     map.current = instance;
     // Inspeção em desenvolvimento (laboratório e testes de navegador); não existe no build final.
@@ -412,153 +415,22 @@ export function WorldMap({
       ctx.fillText(name, 25, Math.round(h / 2) + 1);
       return ctx.getImageData(0, 0, w, h);
     };
-    // Texturas 16-bit (spec 009): água com brilho, mata em copas, campo com tufos. Desenhadas em
-    // escala inteira para não borrar; os tiles vetoriais do planeta continuam sendo a geometria.
-    const pixelCanvas = (size: number, draw: (ctx: CanvasRenderingContext2D) => void) => {
-      const canvas = document.createElement('canvas');
-      canvas.width = canvas.height = size;
-      const ctx = canvas.getContext('2d')!;
-      draw(ctx);
-      return ctx.getImageData(0, 0, size, size);
+    // Câmera de cidade: ao chegar perto inclina sozinha (os prédios ganham volume); ao se afastar
+    // volta a ficar de cima, que é como o mapa se lê melhor de longe. O jogador pode girar e
+    // inclinar à vontade (botão direito ou dois dedos); só a passagem de faixa de zoom ajusta.
+    const ajustarCamera = () => {
+      const zoom = instance.getZoom();
+      const pitch = instance.getPitch();
+      if (zoom >= INCLINA_A_PARTIR && pitch < 10)
+        instance.easeTo({ pitch: INCLINACAO, duration: 700 });
+      else if (zoom < VOLTA_DE_CIMA && pitch > 0)
+        instance.easeTo({ pitch: 0, bearing: 0, duration: 700 });
     };
-    const createWaterPattern = () =>
-      pixelCanvas(32, (ctx) => {
-        ctx.fillStyle = '#00a9f8';
-        ctx.fillRect(0, 0, 32, 32);
-        ctx.fillStyle = '#7fd4ff';
-        for (const [x, y, w] of [
-          [4, 6, 6],
-          [14, 9, 4],
-          [22, 20, 6],
-          [6, 24, 4],
-          [26, 4, 3],
-        ])
-          ctx.fillRect(x, y, w, 1);
-        ctx.fillStyle = '#3a9ad8';
-        for (const [x, y, w] of [
-          [9, 14, 5],
-          [19, 27, 5],
-        ])
-          ctx.fillRect(x, y, w, 1);
-      });
-    const createWoodPattern = () =>
-      pixelCanvas(32, (ctx) => {
-        ctx.fillStyle = '#00804c';
-        ctx.fillRect(0, 0, 32, 32);
-        // copas redondas sobrepostas, luz no alto-esquerda, sombra embaixo (como a referência)
-        const copa = (cx: number, cy: number, r: number) => {
-          for (let y = -r; y <= r + 1; y++)
-            for (let x = -r; x <= r; x++) {
-              if (x * x + (y * 1.15) ** 2 > r * r) continue;
-              let c = '#009b72';
-              if (x < 0 && y < 0 && (x + y) % 2 === 0) c = '#38cf73';
-              if (y > r * 0.35) c = '#006c56';
-              ctx.fillStyle = c;
-              ctx.fillRect((((cx + x) % 32) + 32) % 32, (((cy + y) % 32) + 32) % 32, 1, 1);
-            }
-          ctx.fillStyle = '#8a5a32';
-          ctx.fillRect(((cx % 32) + 32) % 32, (((cy + r + 1) % 32) + 32) % 32, 1, 2);
-        };
-        copa(8, 8, 6);
-        copa(22, 6, 5);
-        copa(16, 20, 6);
-        copa(2, 24, 5);
-        copa(28, 24, 5);
-      });
-    const createGrassPattern = () =>
-      pixelCanvas(32, (ctx) => {
-        ctx.fillStyle = '#00c369';
-        ctx.fillRect(0, 0, 32, 32);
-        ctx.fillStyle = '#00a54b';
-        for (const [x, y] of [
-          [3, 5],
-          [19, 3],
-          [11, 14],
-          [26, 17],
-          [6, 25],
-          [21, 27],
-        ]) {
-          ctx.fillRect(x, y + 1, 1, 1);
-          ctx.fillRect(x + 1, y, 1, 1);
-          ctx.fillRect(x + 2, y + 1, 1, 1);
-        }
-        ctx.fillStyle = '#38cf73';
-        for (const [x, y] of [
-          [14, 6],
-          [28, 9],
-          [2, 16],
-          [17, 23],
-        ])
-          ctx.fillRect(x, y, 2, 1);
-      });
+    if (!mini) instance.on('zoomend', ajustarCamera);
     instance.on('load', async () => {
       clearTimeout(timeout);
       setFailed(false);
-      if (!instance.hasImage('water-pixel'))
-        instance.addImage('water-pixel', createWaterPattern(), { pixelRatio: 1 });
-      if (!instance.hasImage('wood-pixel'))
-        instance.addImage('wood-pixel', createWoodPattern(), { pixelRatio: 1 });
-      if (!instance.hasImage('grass-pixel'))
-        instance.addImage('grass-pixel', createGrassPattern(), { pixelRatio: 1 });
-      if (instance.getLayer('background'))
-        instance.setPaintProperty('background', 'background-pattern', 'grass-pixel');
-      // Peças do pacote (apps/web/public/arte/town, fora do Git): asfalto das ruas e telhado dos
-      // prédios nos zooms próximos. Se o pacote não estiver na máquina, o mapa segue sem elas.
-      const pack = async (id: string, path: string) => {
-        if (instance.hasImage(id)) return true;
-        try {
-          const res = await instance.loadImage(`/arte/town/${path}`);
-          instance.addImage(id, res.data, { pixelRatio: 1 });
-          return true;
-        } catch {
-          return false;
-        }
-      };
-      const [asphalt, roof] = await Promise.all([
-        pack(
-          'town-road',
-          'ROADS and ROAD ELEMENTS (all 16x16)/Roads Type 2 (medium)/Horizontal.png',
-        ),
-        pack(
-          'town-roof',
-          'Grounds (Asphalt and grass) (all 16x16)/Asphalt pavement 01 (GREY)/MAIN GROUND (16x16)/C1.png',
-        ),
-      ]);
-      if (asphalt && !instance.getLayer('roads-pixel'))
-        instance.addLayer(
-          {
-            id: 'roads-pixel',
-            type: 'line',
-            source: 'openmaptiles',
-            'source-layer': 'transportation',
-            minzoom: 15.5,
-            filter: [
-              'all',
-              ['==', ['geometry-type'], 'LineString'],
-              [
-                'match',
-                ['get', 'class'],
-                ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'minor'],
-                true,
-                false,
-              ],
-              ['!=', ['get', 'brunnel'], 'tunnel'],
-            ],
-            layout: { 'line-cap': 'butt', 'line-join': 'round' },
-            paint: {
-              'line-pattern': 'town-road',
-              'line-width': ['interpolate', ['exponential', 1.2], ['zoom'], 15, 10, 17, 24],
-            },
-          },
-          instance.getLayer('highway-surface-spine') ? 'highway-surface-spine' : undefined,
-        );
-      if (roof && instance.getLayer('buildings'))
-        instance.setPaintProperty('buildings', 'fill-pattern', 'town-roof');
-      if (!mini && asphalt) attachPixelTown(instance).then((off) => (detachTown.current = off));
-      if (instance.getLayer('water'))
-        instance.setPaintProperty('water', 'fill-pattern', 'water-pixel');
-      if (instance.getLayer('natural-landcover'))
-        instance.setPaintProperty('natural-landcover', 'fill-pattern', 'wood-pixel');
+      if (!mini) ajustarCamera();
       for (const group of await pinImages)
         for (const [id, image] of group)
           if (!instance.hasImage(id)) instance.addImage(id, image, { pixelRatio: 2 });
@@ -764,6 +636,20 @@ export function WorldMap({
           'icon-allow-overlap': true,
           'icon-ignore-placement': true,
         },
+        // De perto, o negócio construído aparece em 3D e o ícone sai de cena.
+        paint: mini
+          ? {}
+          : {
+              'icon-opacity': [
+                'interpolate',
+                ['linear'],
+                ['zoom'],
+                ZOOM_3D,
+                1,
+                ZOOM_3D + 0.6,
+                ['case', ['get', 'built'], 0, 1],
+              ],
+            },
       });
       instance.addLayer({
         id: 'property-alerts',
@@ -778,6 +664,11 @@ export function WorldMap({
           'circle-translate': mini ? [8, -14] : [13, -24],
         },
       });
+      if (!mini) {
+        // Negócios construídos em 3D, por baixo dos halos e ícones de seleção.
+        tres.current = criarCamada3D();
+        instance.addLayer(tres.current.camada, 'property-halo');
+      }
       if (!mini) {
         const pick = (event: maplibregl.MapLayerMouseEvent) => {
           const id = event.features?.[0]?.properties?.id as string | undefined;
@@ -852,7 +743,6 @@ export function WorldMap({
     return () => {
       clearTimeout(timeout);
       observer.disconnect();
-      detachTown.current?.();
       instance.remove();
       map.current = null;
     };
@@ -862,8 +752,12 @@ export function WorldMap({
     if (!ready || !m) return;
     const selectedProperty = propertyId ?? selectedId;
     // Só reenvia ao mapa quando algo visível mudou (dono, seleção, filtro), não a cada rodada.
+    const unidades = new Map(world.establishments.map((e) => [e.propertyId, e]));
     const key = JSON.stringify([
-      visible.map((p) => [p.id, p.ownerId, p.area, alerts?.[p.id] ?? '']),
+      visible.map((p) => {
+        const e = unidades.get(p.id);
+        return [p.id, p.ownerId, p.area, alerts?.[p.id] ?? '', e ? estagioDoNegocio(e) : ''];
+      }),
       selectedProperty,
       layers.zoning,
     ]);
@@ -910,13 +804,30 @@ export function WorldMap({
           category: p.category,
           color: categoryInfo[p.category].color,
           available: !p.ownerId,
+          built: unidades.has(p.id),
           own: p.ownerId === actor,
           selected: p.id === selectedProperty,
           alert: alerts?.[p.id] ?? '',
         },
       })),
     });
-  }, [ready, visible, layers.zoning, selectedId, propertyId, actor, alerts]);
+    tres.current?.atualizar(
+      visible.flatMap((p) => {
+        const e = unidades.get(p.id);
+        return e
+          ? [
+              {
+                id: p.id,
+                categoria: e.category,
+                estagio: estagioDoNegocio(e),
+                coordenadas: p.coordinates,
+                proprio: p.ownerId === actor,
+              },
+            ]
+          : [];
+      }),
+    );
+  }, [ready, visible, world.establishments, layers.zoning, selectedId, propertyId, actor, alerts]);
   useEffect(() => {
     const m = map.current;
     if (!ready || !m) return;

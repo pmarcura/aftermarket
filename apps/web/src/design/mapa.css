@@ -480,9 +480,3 @@
   color: var(--apagado);
   white-space: nowrap;
 }
-
-/* Spec 009: canvas em meia resolução ampliado sem suavização = pixels nítidos de 2×. */
-.main-map .maplibregl-canvas {
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
-}

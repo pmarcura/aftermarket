@@ -1,0 +1,91 @@
+.modelos-pagina {
+  position: relative;
+  min-height: 100vh;
+  background: #bfe0a0;
+  color: #1f2a22;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.modelos-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 1;
+}
+.modelos-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  padding: 24px 28px 8px;
+}
+.modelos-topo h1 {
+  margin: 0 0 4px;
+  font-family: 'Archivo Variable', sans-serif;
+  font-stretch: 75%;
+  font-size: 32px;
+  text-transform: uppercase;
+}
+.modelos-topo p {
+  margin: 0;
+  max-width: 640px;
+  font-size: 13px;
+}
+.modelos-controles {
+  display: flex;
+  gap: 18px;
+  font-size: 13px;
+}
+.modelos-grade {
+  display: grid;
+  grid-template-columns: 120px repeat(5, minmax(160px, 1fr));
+  gap: 8px;
+  padding: 12px 28px 40px;
+}
+.modelos-coluna {
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  text-transform: uppercase;
+}
+.modelos-linha {
+  display: flex;
+  align-items: center;
+  border-left: 6px solid;
+  padding-left: 10px;
+  font-weight: 600;
+  font-size: 13px;
+}
+.modelos-celula {
+  aspect-ratio: 1;
+  background: #b3d793;
+  border: 1px solid #9cc47c;
+  cursor: grab;
+}
+.modelos-foco {
+  position: fixed;
+  inset: 16px;
+  background: #b3d793;
+  border: 2px solid #5f8f6a;
+  cursor: grab;
+}
+.modelos-foco span {
+  position: absolute;
+  left: 16px;
+  bottom: 12px;
+  font-weight: 600;
+  font-size: 14px;
+}
+.modelos-foco button {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  font: inherit;
+  padding: 6px 12px;
+  background: #1f2a22;
+  color: #f3e7cc;
+  border: 0;
+  cursor: pointer;
+  z-index: 2;
+}

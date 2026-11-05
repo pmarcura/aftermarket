@@ -6,6 +6,7 @@ Este repositório reúne código do AFTERMARKET e dependências de terceiros, ca
 | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
 | React / React DOM                                  | MIT · Meta e colaboradores                                                                              |
 | MapLibre GL JS                                     | BSD-3-Clause · comunidade MapLibre                                                                      |
+| three.js                                           | MIT · autores do three.js (modelos 3D dos negócios no mapa)                                             |
 | Lucide React                                       | ISC · comunidade Lucide; observar avisos do acervo                                                      |
 | Archivo                                            | SIL Open Font License 1.1 · Omnibus-Type                                                                |
 | Arte em pixel art (`apps/web/public/arte`)         | Criada para o projeto: prancha original do projeto convertida e peças geradas no PixelLab               |

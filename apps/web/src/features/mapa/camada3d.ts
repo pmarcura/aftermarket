@@ -18,17 +18,22 @@ export interface Negocio3D {
   estagio: Estagio;
   coordenadas: Position;
   proprio: boolean;
+  /** Área do terreno (m²): o modelo só encolhe se não couber nela. */
+  area: number;
+  /** Para onde a frente aponta (radianos, 0 = sul); sem valor, frente para o sul. */
+  giro?: number;
 }
 
 export const CAMADA_3D = 'negocios-3d';
-// A partir deste zoom os modelos aparecem (de longe, os ícones resumem melhor).
-export const ZOOM_3D = 12.5;
+// A partir deste zoom os modelos aparecem; de longe os ícones resumem melhor.
+export const ZOOM_3D = 14.5;
 // Tamanho do pixel da arte no mapa (px de tela), o mesmo dos sprites da identidade.
 export const TAMANHO_PIXEL = 2;
-// Exagero de tamanho: de perto quase o tamanho real; de longe maior, para continuar visível.
-function exagero(zoom: number) {
-  return 3.6 * 2 ** (Math.max(0, 16.5 - zoom) * 0.55);
-}
+// Cada construção tem o tamanho real (escala 1): terreno maior vira pátio e área livre em volta,
+// e o negócio só ganha mais construções quando sobe de nível. Só encolhe se não couber no lote.
+const OCUPACAO = 0.92;
+const ESCALA_MINIMA = 0.45;
+const ESCALA_MAXIMA = 1;
 
 const ORIGEM = maplibregl.MercatorCoordinate.fromLngLat([-47.06, -22.9], 0);
 const METRO = ORIGEM.meterInMercatorCoordinateUnits();
@@ -50,7 +55,7 @@ export function criarCamada3D() {
   let renderer: THREE.WebGLRenderer | null = null;
   let desenho: DesenhoPixel | null = null;
   let mapa: maplibregl.Map | null = null;
-  let escalaAtual = 0;
+  const ladoDoMolde = new Map<string, number>();
 
   const molde = (categoria: Category, estagio: Estagio) => {
     const chave = `${categoria}:${estagio}`;
@@ -58,16 +63,11 @@ export function criarCamada3D() {
     if (!m) {
       m = construirModelo(categoria, estagio);
       moldes.set(chave, m);
+      const t = new THREE.Box3().setFromObject(m).getSize(new THREE.Vector3());
+      ladoDoMolde.set(chave, Math.max(t.x, t.z));
     }
     return m;
   };
-
-  function aplicarEscala(zoom: number) {
-    const e = exagero(zoom);
-    if (Math.abs(e - escalaAtual) < 0.01) return;
-    escalaAtual = e;
-    for (const { obj } of instancias.values()) obj.scale.setScalar(e);
-  }
 
   const camada: maplibregl.CustomLayerInterface = {
     id: CAMADA_3D,
@@ -97,7 +97,6 @@ export function criarCamada3D() {
       const zoom = mapa.getZoom();
       raiz.visible = zoom >= ZOOM_3D;
       if (!raiz.visible || instancias.size === 0) return;
-      aplicarEscala(zoom);
       // Sombra acompanha o que está na tela: o sol mira o centro da vista.
       const centro = paraCena(mapa.getCenter().toArray() as Position);
       const metrosNaTela =
@@ -130,7 +129,8 @@ export function criarCamada3D() {
         cena,
         camera,
         { x: 0, y: 0, largura: gl.drawingBufferWidth, altura: gl.drawingBufferHeight },
-        TAMANHO_PIXEL * window.devicePixelRatio,
+        // o mesmo pixel do mapa: com o mapa em meia resolução, 1 pixel do buffer já vale 2 de tela
+        Math.max(1, Math.round(TAMANHO_PIXEL * mapa.getPixelRatio())),
       );
     },
   };
@@ -140,11 +140,12 @@ export function criarCamada3D() {
     const vistos = new Set<string>();
     for (const n of negocios) {
       vistos.add(n.id);
-      const chave = `${n.categoria}:${n.estagio}:${n.proprio ? 1 : 0}`;
+      const chave = `${n.categoria}:${n.estagio}:${n.proprio ? 1 : 0}:${n.area}:${n.giro ?? 0}`;
       const atual = instancias.get(n.id);
       if (atual?.chave === chave) continue;
       if (atual) raiz.remove(atual.obj);
       const obj = molde(n.categoria, n.estagio).clone();
+      const lado = ladoDoMolde.get(`${n.categoria}:${n.estagio}`) ?? 1;
       if (n.proprio) {
         const b = bandeira('#a6e05a');
         const caixa = new THREE.Box3().setFromObject(obj);
@@ -152,9 +153,10 @@ export function criarCamada3D() {
         obj.add(b);
       }
       obj.position.copy(paraCena(n.coordenadas));
-      // Frente para o sul (para a câmera na vista padrão) até a etapa dos bairros alinhar à rua.
-      obj.rotation.y = 0;
-      obj.scale.setScalar(escalaAtual || 1);
+      obj.rotation.y = n.giro ?? 0;
+      obj.scale.setScalar(
+        Math.min(ESCALA_MAXIMA, Math.max(ESCALA_MINIMA, (Math.sqrt(n.area) * OCUPACAO) / lado)),
+      );
       obj.userData.id = n.id;
       raiz.add(obj);
       instancias.set(n.id, { chave, obj });
@@ -164,7 +166,6 @@ export function criarCamada3D() {
         raiz.remove(obj);
         instancias.delete(id);
       }
-    escalaAtual = 0;
     mapa?.triggerRepaint();
   }
 

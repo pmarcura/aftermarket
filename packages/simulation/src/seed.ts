@@ -1,4 +1,5 @@
 import type { World, Property, Establishment, Category, Position } from './model';
+import { assentarNoMapa } from './assentar';
 import { products, type ProductId } from './model';
 import { createClock, economicInterval } from './clock';
 import { v2SeasonConfig } from './economy-v2';
@@ -371,6 +372,8 @@ export function createWorld(
   placeV2Geography(world);
   openV2Carriers(world, now);
   for (const p of world.properties) normalizeV2Lot(world, p);
+  // Negócios urbanos dentro de quadras reais, na zona certa e virados para a rua.
+  assentarNoMapa(world);
   initializeDesign(world, now);
   recordMarket(world, now);
   world.invariants = { totalMoney: totalMoney(world) };

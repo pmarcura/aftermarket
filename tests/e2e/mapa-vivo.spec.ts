@@ -169,8 +169,8 @@ test('cidade de perto: prédios planos, negócios em 3D e câmera inclinada', as
       contornos: m.queryRenderedFeatures(undefined, { layers: ['buildings'] }).length,
       camada3d: m.getLayer('negocios-3d')?.type,
       inclinacao: m.getPitch(),
-      // O mapa é desenhado na resolução da tela (sem o pixel ampliado da direção antiga).
-      nitido: m.getPixelRatio() === window.devicePixelRatio,
+      // Pixel art: o mapa é desenhado em meia resolução, o mesmo pixel dos modelos 3D.
+      pixelArt: m.getPixelRatio() === window.devicePixelRatio / 2,
     };
   });
   await page.screenshot({ path: 'test-results/mapa-vivo-cidade-perto.png' });
@@ -178,6 +178,6 @@ test('cidade de perto: prédios planos, negócios em 3D e câmera inclinada', as
   expect(estado.contornos).toBeGreaterThan(20);
   expect(estado.camada3d).toBe('custom');
   expect(estado.inclinacao).toBeGreaterThan(30);
-  expect(estado.nitido).toBe(true);
+  expect(estado.pixelArt).toBe(true);
   expect(errors).toEqual([]);
 });

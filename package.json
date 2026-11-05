@@ -16,6 +16,7 @@
     "test:e2e": "playwright test",
     "check": "npm run build && npm test && npm run resources:check",
     "data:sync": "tsx scripts/sync-geography.ts",
+    "lugares:sync": "tsx scripts/lugares-reais.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "world:backup": "tsx scripts/backup-world.ts",
@@ -50,6 +51,7 @@
     "zod": "4.6.7"
   },
   "devDependencies": {
+    "@mapbox/vector-tile": "3.0.0",
     "@playwright/test": "1.64.1",
     "@types/express": "^5.0.6",
     "@types/node": "^26.6.5",
@@ -58,6 +60,7 @@
     "@types/three": "0.187.0",
     "@vitejs/plugin-react": "6.1.2",
     "concurrently": "^10.0.6",
+    "pbf": "5.1.2",
     "prettier": "^3.9.10",
     "tsx": "4.23.15",
     "typescript": "7.0.2",

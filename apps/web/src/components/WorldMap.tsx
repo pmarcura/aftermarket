@@ -15,8 +15,9 @@ import {
   seasonProducts,
 } from '../../../../packages/simulation/src/model';
 import { createMapStyle } from '../lib/map-style';
-import { criarCamada3D, ZOOM_3D } from '../features/mapa/camada3d';
+import { criarCamada3D, TAMANHO_PIXEL, ZOOM_3D } from '../features/mapa/camada3d';
 import { estagioDoNegocio } from '../features/mapa/nivel';
+import { centroDoTerreno, contornoDoTerreno, ladoDoTerreno } from '../features/mapa/terreno';
 import { positionAlongRoute, routeLengths } from '../../../../packages/simulation/src/geometry';
 import { shipmentRoadPath, shipmentRoute } from '../../../../packages/simulation/src/road-path';
 import { shipmentStatus } from '../../../../packages/simulation/src/shipment';
@@ -343,6 +344,9 @@ export function WorldMap({
       minZoom: 3.5,
       maxZoom: mini ? 17 : 18,
       attributionControl: { compact: true },
+      // Pixel art: o mapa é desenhado em meia resolução e ampliado sem suavizar (CSS), e os
+      // modelos 3D usam o mesmo pixel; o mini mapa fica nítido.
+      pixelRatio: mini ? undefined : window.devicePixelRatio / TAMANHO_PIXEL,
       interactive: !mini,
       renderWorldCopies: false,
       // De perto a câmera inclina e os prédios aparecem em 3D; o mini mapa fica sempre de cima.
@@ -590,7 +594,23 @@ export function WorldMap({
             '#f2bd3c',
             '#0c0e0a',
           ],
-          'circle-opacity': ['case', ['get', 'selected'], 0.45, ['get', 'own'], 0.25, 0],
+          // de perto o negócio construído já aparece em 3D com bandeira: só a seleção tem halo
+          'circle-opacity': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            ZOOM_3D,
+            ['case', ['get', 'selected'], 0.45, ['get', 'own'], 0.25, 0],
+            ZOOM_3D + 0.5,
+            [
+              'case',
+              ['get', 'selected'],
+              0.45,
+              ['all', ['get', 'own'], ['!', ['get', 'built']]],
+              0.25,
+              0,
+            ],
+          ],
           'circle-stroke-width': ['case', ['get', 'selected'], 2.5, 0],
           'circle-stroke-color': '#a6e05a',
         },
@@ -766,9 +786,6 @@ export function WorldMap({
     (m.getSource('territories') as GeoJSONSource).setData({
       type: 'FeatureCollection',
       features: visible.map((p) => {
-        const side = Math.sqrt(p.area) / 111320,
-          x = side / Math.cos((p.coordinates[1] * Math.PI) / 180) / 2,
-          y = side / 2;
         return {
           type: 'Feature',
           properties: {
@@ -779,18 +796,8 @@ export function WorldMap({
               : categoryInfo[p.category].color,
             selected: p.id === selectedProperty,
           },
-          geometry: {
-            type: 'Polygon',
-            coordinates: [
-              [
-                [p.coordinates[0] - x, p.coordinates[1] - y],
-                [p.coordinates[0] + x, p.coordinates[1] - y],
-                [p.coordinates[0] + x, p.coordinates[1] + y],
-                [p.coordinates[0] - x, p.coordinates[1] + y],
-                [p.coordinates[0] - x, p.coordinates[1] - y],
-              ],
-            ],
-          },
+          // dentro da quadra e girado para a rua (o servidor guarda a entrada na via à parte)
+          geometry: { type: 'Polygon', coordinates: [contornoDoTerreno(p)] },
         };
       }),
     });
@@ -798,7 +805,7 @@ export function WorldMap({
       type: 'FeatureCollection',
       features: visible.map((p) => ({
         type: 'Feature',
-        geometry: { type: 'Point', coordinates: p.coordinates },
+        geometry: { type: 'Point', coordinates: centroDoTerreno(p) },
         properties: {
           id: p.id,
           category: p.category,
@@ -820,8 +827,10 @@ export function WorldMap({
                 id: p.id,
                 categoria: e.category,
                 estagio: estagioDoNegocio(e),
-                coordenadas: p.coordinates,
+                coordenadas: centroDoTerreno(p),
                 proprio: p.ownerId === actor,
+                area: ladoDoTerreno(p) ** 2,
+                giro: p.site?.facing,
               },
             ]
           : [];

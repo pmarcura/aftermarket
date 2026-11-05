@@ -480,3 +480,8 @@
   color: var(--apagado);
   white-space: nowrap;
 }
+
+/* Pixel art: o canvas do mapa principal é desenhado em meia resolução e ampliado sem suavizar. */
+.main-map .maplibregl-canvas {
+  image-rendering: pixelated;
+}

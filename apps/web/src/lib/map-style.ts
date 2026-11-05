@@ -166,29 +166,30 @@ function roads(kind: 'tunnel' | 'surface' | 'bridge'): LayerSpecification[] {
 }
 
 /**
- * Cores do mapa, tiradas do MODERN TOWN SET (referência de estilo escolhida pelo Pedro em
- * 05/11/2026): grama clara, asfalto cinza com meio-fio, telhados turquesa, concreto e tijolo.
+ * Cores do mapa, na paleta da identidade visual (as mesmas dos modelos 3D e dos sprites):
+ * grama de lavoura, mata escura, água cor de céu, ruas creme com meio-fio escuro e rodovias
+ * em ouro. O mapa é desenhado em meia resolução (pixels de 2×), como os modelos.
  */
 export const PALETA = {
-  grama: '#bfe0a0',
-  mata: '#8fcb79',
-  parque: '#a6d98a',
-  areia: '#eadbb9',
-  agua: '#6cc3ea',
-  margem: '#a9d8ee',
-  rio: '#5bb8e2',
-  bairro: '#e6dfcf',
-  comercio: '#f0d2bf',
-  industria: '#cfc6dc',
-  divisa: '#5f8f6a',
-  rua: '#f7f5f0',
-  meioFio: '#a7a39b',
-  meioFioRodovia: '#8d877c',
-  rodovia: '#f6d27a',
-  faixa: '#ffffff',
-  terra: '#d9c49a',
-  predioCidade: '#d9d3c6',
-  contornoCidade: '#bdb5a5',
+  grama: '#a3cf6a',
+  mata: '#5f9e43',
+  parque: '#8fd14f',
+  areia: '#e6d8b8',
+  agua: '#6cb8e8',
+  margem: '#f3e7cc',
+  rio: '#6cb8e8',
+  bairro: '#e3d6b6',
+  comercio: '#efcfa8',
+  industria: '#cdbfd3',
+  divisa: '#3a5a2a',
+  rua: '#f3e7cc',
+  meioFio: '#6e6553',
+  meioFioRodovia: '#8a5a12',
+  rodovia: '#f2bd3c',
+  faixa: '#f8f1e0',
+  terra: '#c8a066',
+  predioCidade: '#d2c4a2',
+  contornoCidade: '#8a7d62',
 } as const;
 
 /** Mapa do jogo: cidade de brinquedo sobre a geografia real (OpenStreetMap).

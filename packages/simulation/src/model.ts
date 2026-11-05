@@ -64,6 +64,12 @@ export interface Property {
   };
   water: boolean;
   energyConnected?: boolean;
+  /**
+   * Onde o terreno fica na quadra real (só desenho): para onde a frente aponta (radianos,
+   * 0 = sul) e o maior lado que cabe sem cruzar a rua (m). O centro do terreno é a
+   * coordenada original de roadAccess (ou coordinates antes da validação de acesso).
+   */
+  site?: { facing: number; side: number };
 }
 export interface Establishment {
   // Fração líquida de nascimentos menos aposentadorias ainda não formada em unidade (rebanho).

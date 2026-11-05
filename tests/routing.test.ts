@@ -9,12 +9,14 @@ import { shipmentRoute } from '../packages/simulation/src/road-path';
 import type { Position, World } from '../packages/simulation/src/model';
 import { routeMatchesProperties } from '../packages/simulation/src/road-access';
 const NOW = Date.UTC(2026, 9, 27, 4),
-  // Distribuidora Aurora (Americana) → Indústria de Aço (Piracicaba), imóveis que seguem no
-  // mundo da economia 2 (as minas foram para os polos de Minas).
+  // Distribuidora Aurora (Americana) → Indústria de Aço (Piracicaba). As pontas da rota de teste
+  // são os lugares reais onde o mundo assenta esses imóveis (packages/world/data/lugares-reais.json).
+  lugar = (id: string) => createWorld(NOW).properties.find((p) => p.id === id)!.coordinates,
+  [origem, destino] = [lugar('supplier'), lugar('industry')],
   coordinates: Position[] = [
-    [-47.32, -22.731],
-    [-47.45, -22.7],
-    [-47.586, -22.73],
+    origem,
+    [(origem[0] + destino[0]) / 2, (origem[1] + destino[1]) / 2 + 0.03],
+    destino,
   ];
 const response = {
   code: 'Ok',

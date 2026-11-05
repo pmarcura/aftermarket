@@ -108,13 +108,13 @@ for (const viewport of [
       await menu.getByRole('button', { name: 'Negócios', exact: true }).click();
       await expect(page.getByRole('heading', { name: 'Meus negócios', exact: true })).toBeVisible();
       const card = page
-        .locator('article.neg-item')
+        .locator('article.ng-card')
         .filter({ has: page.getByRole('heading', { name: store.name, exact: true }) });
       await card.getByRole('button', { name: /^Abrir/ }).click();
       await expect(
         page.getByRole('heading', { level: 1, name: store.name, exact: true }),
       ).toBeVisible();
-      for (const name of ['Prateleira', 'Abastecimento', 'Equipe', 'Finanças']) {
+      for (const name of ['Prateleira', 'Equipe', 'Resultado']) {
         const tab = page.getByRole('tab', { name, exact: true });
         await tab.focus();
         await page.keyboard.press('Enter');

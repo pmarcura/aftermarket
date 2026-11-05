@@ -1,0 +1,500 @@
+/* Equipe da loja: fila do balcão, curva do lucro por tamanho de equipe e ficha de contratação. */
+.eql {
+  --tinta-suave: #5b5441;
+  --tinta-perde: #a3361c;
+  --tinta-ganha: #3f6a14;
+  display: grid;
+  gap: 22px;
+}
+.eql-cab {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 20px;
+}
+.eql-cab .lv-rotulo {
+  color: var(--ouro);
+}
+.eql-cab h3 {
+  margin: 4px 0 0;
+  font-size: 38px;
+  color: var(--creme);
+}
+.eql-cab .lv-carimbo {
+  font-size: 14px;
+}
+.eql-fichas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+}
+.eql-grade {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(320px, 1fr);
+  gap: 26px;
+  align-items: start;
+}
+.eql-coluna {
+  display: grid;
+  gap: 22px;
+  min-width: 0;
+}
+.eql-bloco {
+  display: grid;
+  gap: 12px;
+  padding: 18px 20px 20px;
+  background: var(--chapa) var(--grao);
+  background-blend-mode: soft-light;
+  box-shadow:
+    inset 0 0 0 2px var(--borda),
+    6px 6px 0 var(--sombra);
+}
+.eql-bloco h4 {
+  margin: 0;
+  font-family: var(--display);
+  font-stretch: 70%;
+  font-weight: 900;
+  font-size: 24px;
+  text-transform: uppercase;
+  color: var(--creme);
+}
+.eql-nota {
+  margin: 0;
+  font-size: 14px;
+  color: var(--apagado);
+}
+
+/* ---------- Balcão: clientes de um lado, atendentes do outro ---------- */
+.eql-balcao {
+  display: grid;
+  gap: 0;
+  padding: 16px 14px 12px;
+  background: linear-gradient(#1f2a22 0 58%, #2b2f25 58%);
+  box-shadow: inset 0 0 0 2px var(--borda);
+}
+.eql-fila,
+.eql-atendentes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 5px;
+  min-height: 30px;
+}
+.eql-fila {
+  padding-bottom: 8px;
+}
+.eql-cliente {
+  display: block;
+  animation: eql-chega 0.4s ease-out both;
+}
+.eql-cliente .c-cabeca {
+  fill: #d9a87a;
+}
+.eql-cliente.atendido .c-corpo {
+  fill: var(--ceu);
+}
+.eql-cliente.atendido .c-sacola {
+  fill: var(--ouro);
+}
+.eql-cliente.perdido {
+  opacity: 0.45;
+}
+.eql-cliente.perdido .c-cabeca,
+.eql-cliente.perdido .c-corpo {
+  fill: var(--brasa);
+}
+.eql-cliente.perdido .c-sacola {
+  fill: transparent;
+}
+@keyframes eql-chega {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+}
+.eql-tampo {
+  height: 14px;
+  margin: 0 -14px 10px;
+  background: #5c4832;
+  box-shadow:
+    inset 0 4px 0 #6f583d,
+    0 4px 0 rgb(0 0 0 / 0.4);
+}
+.eql-lugar {
+  display: grid;
+  place-items: center;
+}
+.eql-lugar .eq-cracha {
+  width: 30px;
+  height: 40px;
+  padding-top: 4px;
+}
+.eql-lugar .eq-cracha svg {
+  width: 18px;
+  height: 22px;
+}
+.eql-lugar.livre {
+  opacity: 0.5;
+}
+.eql-lugar.mini {
+  display: inline-block;
+  width: 12px;
+  height: 14px;
+  background: var(--ouro);
+  vertical-align: -2px;
+}
+.eql-legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+  color: var(--apagado);
+}
+.eql-legenda li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.eql-escala {
+  margin-left: auto;
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+/* ---------- Curva do lucro por tamanho de equipe ---------- */
+.eql-curva {
+  position: relative;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 3px;
+  height: 170px;
+  padding-top: 18px;
+}
+.eql-zero {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--borda-forte);
+  pointer-events: none;
+}
+.eql-barra {
+  position: relative;
+  height: 100%;
+  padding: 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.eql-barra i {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: var(--a);
+  background: var(--lavoura-escura);
+  transition:
+    height 0.5s cubic-bezier(0.2, 0.8, 0.2, 1),
+    background 0.15s;
+}
+.eql-barra.pos i {
+  bottom: calc(100% - var(--zero));
+}
+.eql-barra.neg i {
+  top: var(--zero);
+  background: color-mix(in srgb, var(--brasa) 70%, var(--chapa));
+}
+.eql-barra:hover i,
+.eql-barra:focus-visible i {
+  background: var(--lavoura-clara);
+}
+.eql-barra.melhor i {
+  background: var(--ouro);
+  box-shadow: 0 0 0 2px var(--ouro-escuro);
+}
+.eql-barra.hoje i {
+  box-shadow: inset 0 0 0 3px var(--creme);
+}
+.eql-barra.alvo i {
+  background: var(--lavoura);
+  box-shadow: 0 0 0 3px var(--creme);
+}
+.eql-barra em {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-style: normal;
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--ouro);
+}
+.eql-barra.hoje em {
+  color: var(--creme);
+}
+.eql-eixo {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--apagado);
+}
+.eql-melhor {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 10px;
+  margin: 0;
+  font-size: 16px;
+  color: var(--creme);
+}
+.eql-melhor b.pos {
+  color: var(--lavoura-clara);
+}
+.eql-melhor b.neg {
+  color: #ffb39e;
+}
+
+/* ---------- Ficha de contratação (papel) ---------- */
+.eql-ficha {
+  position: relative;
+  display: grid;
+  gap: 14px;
+  padding: 22px 22px 26px;
+  color: var(--tinta);
+  isolation: isolate;
+  filter: drop-shadow(7px 8px 0 var(--sombra));
+  transform: rotate(0.4deg);
+}
+.eql-ficha::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--papel) var(--grao);
+  background-blend-mode: multiply;
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% 97%,
+    92% 99.6%,
+    80% 97.6%,
+    68% 100%,
+    55% 97.6%,
+    42% 99.6%,
+    30% 97.6%,
+    17% 100%,
+    6% 97.8%,
+    0 99.4%
+  );
+}
+.eql-ficha::after {
+  content: '';
+  position: absolute;
+  top: -12px;
+  left: 40%;
+  width: 90px;
+  height: 24px;
+  background: color-mix(in srgb, var(--ouro) 62%, transparent);
+  transform: rotate(-3deg);
+}
+@media (min-width: 1100px) {
+  .eql-ficha {
+    position: sticky;
+    top: 16px;
+  }
+}
+.eql-ficha header {
+  padding-bottom: 8px;
+  border-bottom: 3px double var(--tinta);
+}
+.eql-ficha header .lv-rotulo {
+  color: var(--ferrugem);
+}
+.eql-ficha header h4 {
+  margin: 2px 0 0;
+  font-size: 32px;
+  color: var(--tinta);
+}
+.eql-passo {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) 52px;
+  gap: 8px;
+}
+.eql-passo button {
+  display: grid;
+  place-items: center;
+  background: var(--tinta);
+  color: var(--papel);
+  border-color: var(--tinta);
+}
+.eql .eql-passo input,
+.eql .eql-passo input:focus {
+  text-align: center;
+  font-family: var(--display);
+  font-stretch: 62%;
+  font-weight: 900;
+  font-size: 40px;
+  color: var(--tinta);
+  background: #fff8e4;
+  border: 3px solid var(--tinta);
+  -webkit-text-fill-color: var(--tinta);
+  opacity: 1;
+}
+.eql-atalhos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.eql-atalho {
+  display: grid;
+  justify-items: start;
+  padding: 6px 12px 8px;
+  background: transparent;
+  color: var(--tinta);
+  border: 2px solid var(--tinta);
+  cursor: pointer;
+}
+.eql-atalho small {
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 11.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--tinta-suave);
+}
+.eql-atalho b {
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-weight: 900;
+  font-size: 22px;
+}
+.eql-atalho.on {
+  background: var(--tinta);
+  color: var(--papel);
+}
+.eql-atalho.on small {
+  color: #d8cba7;
+}
+.eql-bilhete {
+  display: grid;
+  gap: 8px;
+  padding: 14px 16px;
+  border: 2px dashed var(--tinta-suave);
+}
+.eql-bilhete.quieto .lv-mao {
+  margin: 0;
+  font-size: 22px;
+  color: var(--ferrugem);
+}
+.eql-bilhete strong {
+  font-family: var(--display);
+  font-stretch: 70%;
+  font-weight: 900;
+  font-size: 24px;
+  text-transform: uppercase;
+}
+.eql-bilhete dl {
+  display: grid;
+  margin: 0;
+}
+.eql-bilhete dl > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px dashed #b9a77a;
+}
+.eql-bilhete dt {
+  font-size: 15px;
+}
+.eql-bilhete dd {
+  margin: 0;
+  font-family: var(--display);
+  font-stretch: 68%;
+  font-weight: 800;
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
+}
+.eql-bilhete dd.pos {
+  color: var(--tinta-ganha);
+}
+.eql-bilhete dd.neg {
+  color: var(--tinta-perde);
+}
+.eql-bilhete .saldo {
+  border-bottom: 0;
+  border-top: 3px double var(--tinta);
+  margin-top: 4px;
+}
+.eql-bilhete .saldo dt {
+  font-family: var(--display);
+  font-stretch: 70%;
+  font-weight: 900;
+  font-size: 20px;
+  text-transform: uppercase;
+}
+.eql-bilhete .saldo dd {
+  font-size: 34px;
+}
+.eql-bilhete small {
+  font-size: 13px;
+  color: var(--tinta-suave);
+}
+.eql-aplicar {
+  width: 100%;
+  padding-block: 14px;
+  font-size: 15px;
+}
+.eql-salario summary {
+  cursor: pointer;
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--tinta);
+}
+.eql-salario[open] {
+  display: grid;
+  gap: 10px;
+}
+.eql-salario .eql-nota {
+  color: var(--tinta-suave);
+}
+
+@media (max-width: 1000px) {
+  .eql-grade {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .eql-cab h3 {
+    font-size: 30px;
+  }
+  .eql-ficha {
+    transform: none;
+    padding: 20px 16px 24px;
+  }
+  .eql-curva {
+    height: 140px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .eql *,
+  .eql *::before {
+    animation: none !important;
+    transition: none !important;
+  }
+}

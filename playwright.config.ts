@@ -19,7 +19,7 @@ export default defineConfig({
       reuseExistingServer: false,
     },
     {
-      command: 'npm run dev',
+      command: 'npm run dev:api',
       // Mundo de referência inteiro (D-042): os testes que falam com o servidor usam as unidades,
       // ofertas e lotes do `baseline`. O padrão do servidor (`playtest`) é o começo enxuto do jogador.
       env: {
@@ -29,6 +29,13 @@ export default defineConfig({
         AFTERMARKET_WEB_PORT: '5183',
         AFTERMARKET_ROUTER_URL: 'http://127.0.0.1:3014',
       },
+      url: 'http://127.0.0.1:3013/api/health',
+      reuseExistingServer: false,
+      timeout: 30000,
+    },
+    {
+      command: 'npm run dev:web',
+      env: { AFTERMARKET_PORT: '3013', AFTERMARKET_WEB_PORT: '5183' },
       url: 'http://127.0.0.1:5183',
       reuseExistingServer: false,
       timeout: 30000,

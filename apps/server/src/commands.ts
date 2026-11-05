@@ -16,6 +16,7 @@ const supplyPolicy = z
     maxDistanceKm: z.number().min(1).max(6000),
     minQuality: z.number().int().min(0).max(100),
     maxFreightPerUnit: z.number().int().min(0).max(1e9),
+    shelfMargin: z.number().min(0).max(0.9).optional(),
     carrierId: id,
     rules: z
       .array(

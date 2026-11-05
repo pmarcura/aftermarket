@@ -16,8 +16,8 @@ test('frota mostra limite, ajusta quantidade; erro fica no modal e conexão pers
   }
   origin.inventory.iron = 500;
   dest.inventory = {};
-  // Sem regras de abastecimento, minério e carvão ficam em "Repor você mesmo", onde a fábrica
-  // traz material de outra unidade sua.
+  // Sem regras de abastecimento, o insumo aparece sem combinado, e a fábrica pode trazer
+  // material de outra unidade sua.
   dest.supplyPolicy = undefined;
   dest.capacityT = 10000;
   dest.capacityM3 = 10000;
@@ -58,9 +58,7 @@ test('frota mostra limite, ajusta quantidade; erro fica no modal e conexão pers
   await page.goto('/jogar');
   await page.getByRole('tab', { name: 'Abastecimento', exact: true }).click();
   await page
-    .getByRole('region', { name: /^Repor você mesmo/ })
-    .getByRole('article')
-    .filter({ hasText: 'Minério de ferro' })
+    .getByRole('region', { name: 'Abastecer Minério de ferro', exact: true })
     .getByRole('button', { name: 'Trazer de outra unidade', exact: true })
     .click();
   const dialog = page.getByRole('dialog');
@@ -113,20 +111,33 @@ test('frota mostra limite, ajusta quantidade; erro fica no modal e conexão pers
     .getByRole('navigation', { name: 'Menu principal' })
     .getByRole('button', { name: 'Negócios', exact: true })
     .click();
-  const network = page.getByRole('region', { name: 'Rotas entre meus negócios', exact: true });
-  const rota = network.getByRole('listitem').filter({ hasText: 'Minério de ferro' });
-  await expect(rota.getByText('Mineradora Horizonte', { exact: true })).toBeVisible();
-  await expect(rota.getByText('Indústria de Aço', { exact: true })).toBeVisible();
-  await expect(rota).toContainText('ligada');
-  await network.screenshot({ path: 'test-results/design/supply-network.png' });
-  await network.getByRole('button', { name: 'Ligar dois negócios', exact: true }).click();
+  // A ligação aparece no tabuleiro da cadeia: o encaixe de minério da indústria vem da mina.
+  const cadeia = page.getByRole('region', { name: 'Sua cadeia', exact: true });
+  const encaixe = cadeia.getByRole('button', {
+    name: /^Minério de ferro para Indústria de Aço: de Mineradora Horizonte/,
+  });
+  await expect(encaixe).toBeVisible();
+  await cadeia.screenshot({ path: 'test-results/design/supply-network.png' });
+  await encaixe.click();
+  await expect(cadeia.getByRole('button', { name: /^Mercado/ })).toBeVisible();
+  await expect(cadeia.getByRole('button', { name: /^Na mão/ })).toBeVisible();
+
+  // Desencaixar devolve o minério para a mão; arrastar a peça da mina até o encaixe religa.
+  const minerio = () => politica()?.rules.find((r) => r.product === 'iron');
+  await cadeia.getByRole('button', { name: /^Na mão/ }).click();
+  await expect.poll(() => minerio()).toBeUndefined();
+  const peca = cadeia.getByRole('button', { name: /^Minério de ferro de Mineradora Horizonte/ });
+  const alvo = cadeia.getByRole('button', { name: /^Minério de ferro para Indústria de Aço/ });
+  const a = (await peca.boundingBox())!;
+  const b = (await alvo.boundingBox())!;
+  await page.mouse.move(a.x + a.width / 2, a.y + a.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2, { steps: 12 });
+  await page.mouse.up();
+  await expect.poll(() => minerio()?.originId).toBe('e-mine');
   await expect(
-    page.getByRole('dialog').getByLabel('Origem da conexão', { exact: true }),
-  ).toHaveValue('');
-  await expect(
-    page.getByRole('dialog').getByLabel('Destino da conexão', { exact: true }),
-  ).toHaveValue('');
-  await expect(
-    page.getByRole('dialog').getByLabel('Produto da conexão', { exact: true }),
-  ).toHaveValue('');
+    cadeia.getByRole('button', {
+      name: /^Minério de ferro para Indústria de Aço: de Mineradora Horizonte/,
+    }),
+  ).toBeVisible();
 });

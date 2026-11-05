@@ -1,5 +1,6 @@
 import type { World } from './model';
 import { operatingCosts } from './metrics';
+import { newId } from './ids';
 
 export type LabPolicy = 'mixed' | 'regional' | 'quality' | 'value';
 export type LabSeedMode = 'rotation' | 'conditions';
@@ -110,7 +111,7 @@ export function applyLabOpening(
         from.balance -= amount;
         to.balance += amount;
         world.ledger.push({
-          id: crypto.randomUUID(),
+          id: newId(world),
           at: world.createdAt,
           from: from.id,
           to: to.id,

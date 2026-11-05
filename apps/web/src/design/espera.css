@@ -1,0 +1,124 @@
+/* Feedback de espera: barra global no topo, cursor de espera e botão ocupado. */
+.espera-global {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 200;
+  height: 4px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.espera-global.ativa,
+.espera-global.saindo {
+  opacity: 1;
+}
+.espera-global i {
+  animation-play-state: paused;
+  display: block;
+  height: 100%;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--lavoura) 0 14px,
+    var(--lavoura-escura) 14px 18px
+  );
+  background-size: 36px 4px;
+  transform-origin: left;
+  animation: espera-corre 0.7s linear infinite;
+}
+.espera-global.ativa i {
+  animation-play-state: running;
+  width: 100%;
+}
+.espera-global.saindo i {
+  animation: none;
+  width: 100%;
+  background: var(--lavoura);
+}
+.espera-global span {
+  position: fixed;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 16px;
+  background: var(--noite);
+  color: var(--creme);
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  box-shadow:
+    inset 0 0 0 2px var(--lavoura-escura),
+    4px 4px 0 var(--sombra);
+}
+@keyframes espera-corre {
+  to {
+    background-position: 36px 0;
+  }
+}
+html.acao-pendente,
+html.acao-pendente * {
+  cursor: progress !important;
+}
+
+/* Botão ocupado: giro de pixel e fundo estável (não apagado como um botão desabilitado). */
+button.ocupado,
+button.ocupado:disabled,
+button[data-espera],
+button[data-espera]:disabled {
+  position: relative;
+  opacity: 1;
+  filter: none;
+  cursor: progress;
+}
+button.ocupado .giro {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  margin-right: 8px;
+  vertical-align: -2px;
+  border: 3px solid color-mix(in srgb, currentColor 28%, transparent);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: espera-gira 0.7s linear infinite;
+}
+@keyframes espera-gira {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .espera-global i,
+  button.ocupado .giro {
+    animation: none;
+  }
+  .espera-global.ativa i {
+    background: var(--lavoura);
+  }
+}
+
+/* Qualquer botão que iniciou um comando: giro antes do texto e sem poder clicar de novo. */
+button[data-espera] {
+  pointer-events: none;
+}
+button[data-espera]::before {
+  content: '';
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  margin-right: 8px;
+  vertical-align: -2px;
+  border: 3px solid color-mix(in srgb, currentColor 28%, transparent);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: espera-gira 0.7s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  button[data-espera]::before {
+    animation: none;
+  }
+}
+
+button[data-espera] .giro {
+  display: none;
+}

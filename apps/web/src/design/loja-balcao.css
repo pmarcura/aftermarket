@@ -1,0 +1,1030 @@
+/*
+ * Loja · prateleira de balcão (spec 011, tela 2).
+ * Produtos de pé numa tábua de madeira, com a etiqueta de preço pendurada e as caixas que restam;
+ * vagas vazias escuras com a perda por dia; painel do balcão com preço e regra de repor sozinho.
+ */
+.bl {
+  margin-top: 14px;
+  --madeira: #4a3a28;
+  --madeira-clara: #5c4832;
+  display: grid;
+  gap: 26px;
+  --tinta-perde: #a3361c;
+  --tinta-ganha: #3f6a14;
+}
+
+/* ---------- Dica dos melhores preços ---------- */
+.bl-dica {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 18px;
+  padding: 12px 18px;
+  background: var(--chapa);
+  box-shadow:
+    inset 0 0 0 2px var(--borda),
+    inset 6px 0 0 var(--ouro);
+}
+.bl-dica .lv-mao {
+  flex: 1;
+  min-width: 220px;
+  margin: 0;
+  font-size: 24px;
+  color: var(--ouro);
+}
+
+/* ---------- Barra: título e modo de vista ---------- */
+.bl-barra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px 20px;
+}
+.bl-barra h2 {
+  margin: 0;
+  font-size: 34px;
+  color: var(--creme);
+}
+.bl-barra h2 small {
+  margin-left: 12px;
+  font-family: var(--rotulo);
+  font-stretch: 100%;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  color: var(--brasa);
+}
+.bl-vista {
+  display: flex;
+  gap: 8px;
+}
+.bl-vista button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 12px;
+  background: var(--chapa);
+  border: 2px solid var(--borda);
+  color: var(--apagado);
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.bl-vista button.on {
+  background: var(--lavoura);
+  border-color: var(--lavoura-escura);
+  color: var(--noite);
+  box-shadow: 3px 3px 0 var(--sombra);
+}
+
+/* ---------- Cartão do produto ---------- */
+.bl-grade {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.bl-card {
+  --tom: var(--lavoura);
+  --madeira-tampo: #8a6a44;
+  position: relative;
+  display: grid;
+  gap: 14px;
+  align-content: start;
+  padding: 16px 18px 16px;
+  background: var(--chapa-2) var(--grao);
+  background-blend-mode: soft-light;
+  box-shadow:
+    inset 0 0 0 2px var(--borda),
+    inset 0 4px 0 var(--tom),
+    5px 5px 0 var(--sombra);
+  transition: transform 0.18s;
+}
+.bl-card.tom-brasa {
+  --tom: var(--brasa);
+}
+.bl-card.tom-ouro {
+  --tom: var(--ouro);
+}
+.bl-card.tom-ceu {
+  --tom: var(--ceu);
+}
+.bl-card:not(.vazio):hover {
+  transform: translateY(-2px);
+}
+.bl-card.aberto {
+  outline: 3px solid var(--ouro);
+  outline-offset: 3px;
+}
+.bl-card-abrir {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+  width: 100%;
+  padding: 0;
+  text-align: left;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.bl-card-abrir.estatico {
+  cursor: default;
+}
+/* O produto de pé numa tabuinha, como na prateleira de verdade. */
+.bl-palco {
+  position: relative;
+  display: grid;
+  place-items: end center;
+  height: 126px;
+  padding-bottom: 9px;
+}
+/* A tábua: tampo claro onde o produto pisa, frente mais escura e a sombra no chão. */
+.bl-palco::after {
+  content: '';
+  position: absolute;
+  inset: auto -2px 0;
+  height: 14px;
+  background: linear-gradient(
+    var(--madeira-tampo) 0 5px,
+    var(--madeira-clara) 5px 7px,
+    var(--madeira) 7px
+  );
+  box-shadow: 0 4px 0 rgb(0 0 0 / 0.5);
+}
+.bl-sprite {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: end center;
+  transform: rotate(-2deg);
+  transform-origin: bottom center;
+  transition: transform 0.2s;
+}
+/* Escala inteira e sem espremer: pixel art só fica nítida assim. */
+.bl-sprite img {
+  max-width: none;
+  max-height: none;
+  image-rendering: pixelated;
+}
+.bl-card:not(.vazio):hover .bl-sprite {
+  transform: rotate(0deg) translateY(-3px);
+}
+.bl-card.vazio .bl-sprite {
+  filter: grayscale(1) brightness(0.55) contrast(1.15);
+  opacity: 0.6;
+}
+.bl-cabeca {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  min-width: 0;
+}
+.bl-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 9px 3px 8px;
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tom);
+  background: color-mix(in srgb, var(--tom) 14%, var(--chapa));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tom) 55%, transparent);
+}
+.bl-estado::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  background: var(--tom);
+}
+.bl-nome {
+  font-family: var(--display);
+  font-stretch: 68%;
+  font-weight: 900;
+  font-size: 27px;
+  line-height: 0.95;
+  text-transform: uppercase;
+  text-wrap: balance;
+  color: var(--creme);
+}
+.bl-card.vazio .bl-nome {
+  color: var(--apagado);
+}
+.bl-preco {
+  margin-top: 2px;
+  font-size: 24px;
+  transform: rotate(-3deg);
+}
+
+/* ---------- Números: lucro primeiro, depois venda e estoque ---------- */
+.bl-numeros {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 2px;
+  margin: 0;
+}
+.bl-numeros > div {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  min-width: 0;
+  padding: 10px 12px;
+  background: var(--chapa);
+}
+.bl-numeros dt {
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--apagado);
+}
+.bl-numeros dd {
+  margin: 0;
+  font-family: var(--display);
+  font-stretch: 70%;
+  font-weight: 800;
+  font-size: 22px;
+  line-height: 1.05;
+  white-space: nowrap;
+  color: var(--creme);
+}
+.bl-numeros dd small {
+  display: block;
+  margin-top: 3px;
+  font-family: var(--fonte);
+  font-stretch: 100%;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--apagado);
+}
+.bl-numeros > .bl-lucro {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+}
+.bl-lucro dd {
+  font-size: 30px;
+}
+.bl-lucro.pos dd {
+  color: var(--lavoura-clara);
+}
+.bl-lucro.neg {
+  background: color-mix(in srgb, var(--brasa) 12%, var(--chapa));
+}
+.bl-lucro.neg dd {
+  color: #ffb39e;
+}
+.bl-lucro.nada dd {
+  color: var(--apagado);
+}
+.bl-barra-estoque {
+  --cor: var(--lavoura);
+  display: block;
+  height: 6px;
+  margin-top: 2px;
+  background: var(--chapa-3);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.bl-barra-estoque.tom-ouro {
+  --cor: var(--ouro);
+}
+.bl-barra-estoque.tom-brasa {
+  --cor: var(--brasa);
+}
+.bl-barra-estoque i {
+  display: block;
+  height: 100%;
+  background: var(--cor);
+  border-radius: 3px;
+  transform-origin: left;
+  animation: bl-encher 0.5s ease-out both;
+}
+@keyframes bl-encher {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+/* ---------- Pé: a ação principal e a regra de repor sozinho ---------- */
+.bl-card-pe {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 14px;
+}
+.bl-auto {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 4px;
+  font-family: var(--fonte);
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.25;
+  text-align: left;
+  color: var(--apagado);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.bl-auto b {
+  display: block;
+}
+.bl-card-pe > button:not(.bl-auto) {
+  flex: none;
+  white-space: nowrap;
+}
+.bl-auto span {
+  white-space: nowrap;
+}
+.bl-auto:hover {
+  color: var(--creme);
+}
+.bl-auto b {
+  color: var(--apagado);
+}
+.bl-auto.ligada b {
+  color: var(--lavoura);
+}
+.bl-auto.pausada b {
+  color: var(--ouro);
+}
+.bl-auto:not(.ligada) img {
+  filter: grayscale(1);
+  opacity: 0.6;
+}
+.bl-conta {
+  font-size: 13px;
+  color: var(--apagado);
+}
+
+/* ---------- Painel do balcão ---------- */
+.bl-painel {
+  display: grid;
+  gap: 18px;
+  padding: 22px 24px 26px;
+  background: var(--chapa) var(--grao);
+  background-blend-mode: soft-light;
+  box-shadow:
+    inset 0 0 0 2px var(--borda-forte),
+    inset 0 5px 0 var(--ouro),
+    7px 7px 0 var(--sombra);
+  animation: bl-painel 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+}
+@keyframes bl-painel {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+.bl-painel > header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.bl-painel > header .lv-rotulo {
+  color: var(--ouro);
+}
+.bl-painel > header h3 {
+  margin: 2px 0 0;
+  font-size: 34px;
+  color: var(--creme);
+}
+.bl-painel-sprite {
+  display: grid;
+  place-items: center;
+  min-width: 56px;
+  height: 64px;
+  transform: rotate(-5deg);
+}
+.bl-painel-sprite img {
+  max-width: none;
+  max-height: none;
+  image-rendering: pixelated;
+}
+.bl-painel-corpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+/* O cartão de preço antigo, sem a moldura própria, dentro do painel. */
+.bl-painel .item-compacto {
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: 0;
+  box-shadow: none;
+}
+.bl-painel .item-compacto .item-corpo {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+  padding: 0;
+}
+/* No balcão, a ordem é a da decisão: o veredito, o preço e o efeito, e só então o trilho. */
+.bl-painel .item-corpo > .item-veredito {
+  order: -2;
+}
+.bl-painel .item-decisao {
+  order: -1;
+}
+.bl-painel .item-pista {
+  gap: 14px;
+}
+
+/* ---------- Regra de repor sozinho ---------- */
+.bl-regra {
+  display: grid;
+  gap: 14px;
+  padding: 18px 18px 20px;
+  background: var(--chapa-2);
+  box-shadow: inset 0 0 0 2px var(--borda);
+}
+.bl-regra > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.bl-regra > header .lv-rotulo {
+  color: var(--ceu);
+}
+.bl-regra footer.bl-regra-salvar {
+  flex-direction: row-reverse;
+  justify-content: flex-start;
+}
+.bl-regra-passos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px 24px;
+}
+.bl-regra footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.bl-erro {
+  flex: 1;
+  font-size: 14px;
+  color: var(--brasa);
+}
+
+/* ---------- Lista (modo tabela) ---------- */
+.bl-lista {
+  position: relative;
+  padding: 18px 22px 24px;
+  color: var(--tinta);
+  isolation: isolate;
+  overflow-x: auto;
+}
+.bl-lista::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--papel) var(--grao);
+  background-blend-mode: multiply;
+  box-shadow: 7px 8px 0 var(--sombra);
+}
+.bl-lista table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+}
+.bl-lista th {
+  background: transparent;
+  text-align: left;
+  padding: 6px 8px;
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #5b5441;
+  border-bottom: 3px double var(--tinta);
+}
+.bl-lista td,
+.bl-lista .bl-lista-prod {
+  color: var(--tinta);
+}
+.bl-lista td {
+  padding: 10px 8px;
+  vertical-align: middle;
+  border-bottom: 1px dashed #b9a77a;
+}
+.bl-lista tr.falta td {
+  background: rgb(168 52 26 / 0.07);
+}
+.bl-lista tr.aberto td {
+  background: rgb(230 181 74 / 0.18);
+}
+.bl-lista-prod {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--display);
+  font-stretch: 68%;
+  font-weight: 900;
+  font-size: 20px;
+  text-transform: uppercase;
+}
+.bl-lista-prod img {
+  image-rendering: pixelated;
+}
+.bl-lista .num {
+  font-family: var(--display);
+  font-stretch: 64%;
+  font-weight: 900;
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.bl-lista .pos {
+  color: var(--tinta-ganha);
+}
+.bl-lista .neg {
+  color: var(--tinta-perde);
+}
+.bl-lista small {
+  display: block;
+  margin-top: 3px;
+  font-size: 13px;
+  color: #5b5441;
+}
+.bl-lista td.num.pos {
+  color: var(--tinta-ganha);
+}
+.bl-lista td.num.neg {
+  color: var(--tinta-perde);
+}
+.bl-lista td {
+  background: transparent;
+}
+.bl-lista .bl-barra-estoque {
+  width: 130px;
+  margin-bottom: 4px;
+  background: #dccfa6;
+}
+.bl-lista-acoes {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.bl-lista tfoot td {
+  background: transparent;
+  border-top: 3px double var(--tinta);
+  border-bottom: 0;
+  font-family: var(--display);
+  font-stretch: 68%;
+  font-weight: 900;
+  font-size: 20px;
+  text-transform: uppercase;
+}
+.bl-lista .lv-carimbo {
+  padding: 2px 7px;
+  font-size: 12px;
+  border-width: 3px;
+  background: transparent;
+  --tom: var(--tinta-perde) !important;
+}
+
+.bl-vazio-dica,
+.bl-nota-rodape {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--apagado);
+}
+
+/* ---------- Celular ---------- */
+@media (max-width: 1000px) {
+  .bl-painel-corpo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .bl-grade {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .bl-card-abrir {
+    grid-template-columns: 92px minmax(0, 1fr);
+  }
+  .bl-barra h2 {
+    font-size: 28px;
+  }
+  .bl-painel {
+    padding: 18px 14px 22px;
+  }
+  .bl-painel > header h3 {
+    font-size: 28px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bl *,
+  .bl *::before {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ---------- Prateleira à esquerda, painel do balcão ao lado (computador) ---------- */
+.bl-area {
+  display: grid;
+  gap: 26px;
+  align-items: start;
+}
+.bl-prat {
+  display: grid;
+  gap: 0;
+  min-width: 0;
+}
+@media (min-width: 1180px) {
+  .bl-area {
+    grid-template-columns: minmax(0, 1.1fr) minmax(430px, 0.9fr);
+  }
+  /* O painel acompanha a rolagem: dá para escolher outro produto sem perder o painel. */
+  .bl-lado {
+    position: sticky;
+    top: 12px;
+    max-height: calc(100vh - 24px);
+    overflow-y: auto;
+    padding-right: 2px;
+  }
+  .bl-lado .item-corpo {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+  .bl-lado .bl-painel {
+    margin-top: 0;
+  }
+}
+
+/* A etiqueta do preço da moeda não cobre mais a legenda da régua. */
+.bl-painel .pista-escala {
+  margin-top: 30px;
+}
+/* Decisão: o preço inteiro numa linha, o efeito embaixo e o botão por último. */
+.bl-painel .item-botoes {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* "clip" corta como "hidden", mas não vira área de rolagem: o painel do balcão pode acompanhar. */
+.panel.loja-painel {
+  overflow: clip;
+}
+
+/* No cartão, a sombra do adesivo é curta: o produto está apoiado, não flutuando. */
+.bl-sprite.lv-adesivo {
+  filter: none;
+}
+.bl-sprite.lv-adesivo img {
+  filter: drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop-shadow(0 2px 0 #fff)
+    drop-shadow(0 -2px 0 #fff) drop-shadow(3px 2px 0 rgb(0 0 0 / 0.45));
+}
+
+/* Selo de frete alto: o custo da unidade é, em boa parte, a viagem. */
+.bl-frete-alto {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--brasa);
+}
+
+/* ---------- Repor sozinho: o combinado com o gerente da loja ---------- */
+
+/* Primeira vez: como funciona em três passos. */
+.bl-como {
+  display: grid;
+  gap: 14px;
+}
+.bl-como p {
+  margin: 0;
+  font-size: 15px;
+  color: var(--creme);
+}
+.bl-como ol {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: passo;
+}
+.bl-como li {
+  display: grid;
+  grid-template-columns: 26px 32px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  font-size: 15px;
+  line-height: 1.35;
+  counter-increment: passo;
+}
+.bl-como li::before {
+  content: counter(passo);
+  font-family: var(--display);
+  font-stretch: 70%;
+  font-weight: 900;
+  font-size: 26px;
+  color: var(--ouro);
+}
+.bl-como .primary {
+  justify-self: start;
+}
+
+/* O bilhete: papel com fita, frase com lacunas e o carimbo da proteção. */
+/* Camada acima da régua: o menu das lacunas abre por cima dela. */
+.bl-bilhete {
+  z-index: 3;
+  padding: 26px 22px 30px;
+  transform: rotate(-0.6deg);
+}
+.bl-bilhete .lv-mao {
+  margin: 0 0 8px;
+  font-size: 24px;
+}
+.lv-nota.bl-bilhete .bl-frase {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.9;
+}
+.bl-frase b {
+  font-weight: 800;
+}
+.bl-lacuna {
+  position: relative;
+  display: inline-block;
+}
+.bl-lacuna > button {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 0 6px 1px;
+  font: inherit;
+  font-weight: 800;
+  color: var(--tinta);
+  background: color-mix(in srgb, var(--ouro) 38%, transparent);
+  border: 0;
+  border-bottom: 2px dashed var(--tinta);
+  cursor: pointer;
+}
+.bl-lacuna > button:hover,
+.bl-lacuna > button[aria-expanded='true'] {
+  background: color-mix(in srgb, var(--ouro) 70%, transparent);
+}
+.bl-lacuna > button:focus-visible {
+  outline: 3px solid var(--lavoura-escura);
+  outline-offset: 2px;
+}
+.bl-lacuna > button i {
+  font-style: normal;
+  font-size: 12px;
+}
+.bl-lacuna-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 10;
+  display: grid;
+  gap: 4px;
+  width: min(320px, 78vw);
+  padding: 6px;
+  line-height: 1.3;
+  background: var(--chapa);
+  box-shadow:
+    inset 0 0 0 2px var(--borda-forte),
+    5px 5px 0 var(--sombra);
+}
+.bl-lacuna-menu button {
+  display: grid;
+  gap: 2px;
+  padding: 9px 10px;
+  text-align: left;
+  color: var(--creme);
+  background: none;
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+.bl-lacuna-menu button:hover:not(:disabled),
+.bl-lacuna-menu button:focus-visible {
+  background: var(--chapa-2);
+}
+.bl-lacuna-menu button.on {
+  border-color: var(--lavoura);
+}
+.bl-lacuna-menu strong {
+  font-size: 15px;
+}
+.bl-lacuna-menu small {
+  font-size: 13px;
+  color: var(--apagado);
+}
+.bl-bilhete-carimbo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin-top: 14px;
+}
+/* Tinta verde escura: a lavoura clara não aparece no papel. */
+.bl-bilhete-carimbo .lv-carimbo {
+  color: var(--lavoura-escura);
+  border-color: var(--lavoura-escura);
+  background: transparent;
+}
+.lv-nota .bl-bilhete-carimbo small {
+  flex: 1;
+  min-width: 180px;
+  font-size: 13.5px;
+  line-height: 1.35;
+  color: var(--tinta);
+}
+
+/* Régua do estoque: o que há, o que vem e as duas marcas do combinado. */
+.bl-regua {
+  display: grid;
+  gap: 4px;
+  padding: 4px 4px 0;
+}
+.bl-regua-trilho {
+  position: relative;
+  height: 16px;
+  background: var(--chapa);
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 2px var(--borda);
+}
+.bl-regua-trilho i {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  border-radius: 5px;
+}
+.bl-regua-trilho i.atual {
+  background: var(--lavoura);
+}
+.bl-regua-trilho i.atual.baixo {
+  background: var(--ouro);
+}
+.bl-regua-trilho i.estrada {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--ceu) 0 5px,
+    color-mix(in srgb, var(--ceu) 45%, transparent) 5px 10px
+  );
+}
+.bl-regua-trilho .marca {
+  position: absolute;
+  top: -5px;
+  bottom: -5px;
+  width: 3px;
+  margin-left: -1px;
+  background: var(--creme);
+}
+.bl-regua-trilho .marca.pede {
+  background: var(--ouro);
+}
+.bl-regua-rotulos {
+  position: relative;
+  height: 34px;
+}
+.bl-regua-rotulos span {
+  position: absolute;
+  top: 2px;
+  display: grid;
+  justify-items: center;
+  transform: translateX(-50%);
+  font-size: 12.5px;
+  line-height: 1.15;
+  white-space: nowrap;
+  color: var(--apagado);
+}
+.bl-regua-rotulos b {
+  font-size: 13px;
+  color: var(--creme);
+}
+.bl-regua-legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--apagado);
+}
+.bl-regua-legenda span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.bl-regua-legenda b {
+  color: var(--creme);
+}
+.bl-regua-legenda i {
+  display: inline-block;
+  width: 18px;
+  height: 8px;
+  border-radius: 4px;
+}
+.bl-regua-legenda i.atual {
+  background: var(--lavoura);
+}
+.bl-regua-legenda i.estrada {
+  background: var(--ceu);
+}
+
+/* A voz do gerente: o que ele está fazendo agora. */
+.bl-gerente {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  padding: 12px 14px;
+  background: var(--noite-funda);
+  box-shadow: inset 4px 0 0 var(--ceu);
+}
+.bl-gerente p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.45;
+}
+.bl-gerente small {
+  display: block;
+  margin-top: 4px;
+  font-size: 13.5px;
+  color: var(--apagado);
+}
+
+/* Avisos: só aparecem quando algo está dando errado, cada um com a saída. */
+.bl-avisos {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.bl-avisos li {
+  --tom: var(--ouro);
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 8px 10px;
+  align-items: start;
+  padding: 10px 12px;
+  font-size: 14.5px;
+  line-height: 1.4;
+  background: color-mix(in srgb, var(--tom) 12%, var(--chapa));
+  box-shadow: inset 4px 0 0 var(--tom);
+}
+.bl-avisos li.tom-brasa {
+  --tom: var(--brasa);
+}
+.bl-avisos li button {
+  grid-column: 2;
+  justify-self: start;
+}
+
+/* Ajuste fino: números, gasto do dia e a chave da proteção, para quem quer mexer. */
+.bl-ajuste summary {
+  width: max-content;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--apagado);
+  cursor: pointer;
+}
+.bl-ajuste-corpo {
+  display: grid;
+  gap: 14px;
+  margin-top: 12px;
+}
+.bl-ajuste-linha {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--apagado);
+}
+.bl-ajuste-trava {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.bl-ajuste-trava span {
+  flex: 1;
+}

@@ -62,7 +62,16 @@ function Vazio({
  * Pedidos e entregas num só lugar: o que espera resposta sua, o que está na estrada e o que já
  * terminou. Serve a tela de Comércio e as páginas de cada unidade (`unidade`).
  */
-export function Pedidos({ unidade, inicial }: { unidade?: Establishment; inicial?: Aba }) {
+export function Pedidos({
+  unidade,
+  inicial,
+  proporPedido,
+}: {
+  unidade?: Establishment;
+  inicial?: Aba;
+  /** Pedido aberto de outra empresa para já abrir a proposta (vindo do Início). */
+  proporPedido?: string;
+}) {
   const { navigate, world } = useGame();
   const id = useId();
   const d = useDadosPedidos(unidade);
@@ -73,7 +82,12 @@ export function Pedidos({ unidade, inicial }: { unidade?: Establishment; inicial
     inicial ?? (nResponder > 0 ? 'responder' : nCaminho > 0 ? 'caminho' : 'responder'),
   );
   const [aceitar, setAceitar] = useState<{ pedido: PurchaseOrder; proposta?: OrderProposal }>();
-  const [propor, setPropor] = useState<{ pedido: PurchaseOrder; base?: OrderProposal }>();
+  const [propor, setPropor] = useState<{ pedido: PurchaseOrder; base?: OrderProposal } | undefined>(
+    () => {
+      const pedido = world.orders.find((o) => o.id === proporPedido && o.status === 'pending');
+      return pedido ? { pedido } : undefined;
+    },
+  );
   const [publicar, setPublicar] = useState(false);
   const [maisAbertos, setMaisAbertos] = useState(POR_VEZ);
   const [maisFim, setMaisFim] = useState(POR_VEZ);

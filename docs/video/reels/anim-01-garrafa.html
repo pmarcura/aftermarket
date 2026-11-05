@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Aftermarket · Animação 1 · A garrafa de óleo</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Archivo:wght@500;700;800;900&display=block"
+    />
+    <link rel="stylesheet" href="limpo.css" />
+    <style>
+      /* Gatilho: curiosidade. Mostra o caminho de um produto comum até você. */
+      .lucro {
+        width: 170px;
+      }
+      .tile {
+        width: 420px;
+        height: 300px;
+        background: var(--panel);
+        border: 6px solid var(--c);
+        box-sizing: border-box;
+        box-shadow: 0 24px 50px #0009;
+        text-align: center;
+        padding-top: 26px;
+      }
+      .tile img {
+        width: 130px;
+        height: 130px;
+      }
+      .tile b {
+        display: block;
+        font: 900 46px/1 Archivo;
+        text-transform: uppercase;
+        margin-top: 14px;
+      }
+      .tile small {
+        display: block;
+        font: 800 22px Archivo;
+        letter-spacing: 3px;
+        color: var(--mut);
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="bar">
+      <button id="play">▶ Tocar</button><button id="rst">⟲ Do início</button
+      ><span id="tt">0.0 / 0.0 s</span>
+    </div>
+    <div id="wrap">
+      <div id="stage">
+        <div id="grade"></div>
+        <div class="a tag" id="marca">AFTERMARKET · EM DESENVOLVIMENTO</div>
+
+        <!-- 1. GANCHO: a garrafa e o número 4 -->
+        <section class="cena" id="c-gancho">
+          <div class="a h" id="g-t" style="top: 250px; font-size: 104px">
+            Essa garrafa<br />passou por
+          </div>
+          <img
+            class="a pix"
+            id="g-b"
+            src="../../../apps/web/public/arte/produto-oleo.png"
+            alt=""
+            style="left: 100px; top: 640px; width: 380px; height: 380px"
+          />
+          <div
+            class="a"
+            id="g-n"
+            style="
+              left: 520px;
+              width: 460px;
+              top: 560px;
+              text-align: center;
+              font: 900 520px/1 Archivo;
+              color: var(--lime);
+              text-shadow: 0 14px 0 #000a;
+            "
+          >
+            1
+          </div>
+          <div
+            class="a h"
+            id="g-e"
+            style="left: 520px; right: auto; width: 460px; top: 1090px; font-size: 76px"
+          >
+            empresas
+          </div>
+          <div class="a h" id="g-f" style="top: 1290px; font-size: 84px">
+            antes de chegar<br /><span class="lime">em você</span>
+          </div>
+        </section>
+
+        <!-- 2. CADEIA: a garrafa desce por quatro elos e cada um lucra -->
+        <section class="cena" id="c-cadeia">
+          <div class="a h" id="c-t" style="top: 230px; font-size: 80px">
+            O caminho<br />da garrafa
+          </div>
+          <div class="a h" id="c-t2" style="top: 230px; font-size: 80px">
+            Cada elo<br /><span class="lime">precisa lucrar</span>
+          </div>
+          <div
+            class="a"
+            id="c-tr"
+            style="
+              left: 56px;
+              top: 499px;
+              width: 8px;
+              height: 630px;
+              background: #e8bd4f55;
+              transform-origin: top;
+            "
+          ></div>
+          <div class="a elo" id="e1" style="top: 410px; --c: #5c9e5a">
+            <img class="pix" src="../../../apps/web/public/arte/lavoura.png" alt="" />
+            <div><b>Fazenda</b><small>PLANTA A SOJA</small></div>
+          </div>
+          <div class="a elo" id="e2" style="top: 620px; --c: #8a96a0">
+            <img class="pix" src="../../../apps/web/public/arte/soja-oleo.png" alt="" />
+            <div><b>Fábrica</b><small>FAZ O ÓLEO</small></div>
+          </div>
+          <div class="a elo" id="e3" style="top: 830px; --c: #e8bd4f">
+            <img class="pix" src="../../../apps/web/public/arte/caminhao.png" alt="" />
+            <div><b>Transporte</b><small>LEVA ATÉ A LOJA</small></div>
+          </div>
+          <div class="a elo" id="e4" style="top: 1040px; --c: #d9615a">
+            <img class="pix" src="../../../apps/web/public/arte/loja.png" alt="" />
+            <div><b>Loja</b><small>VENDE PARA VOCÊ</small></div>
+          </div>
+          <div class="a chip lucro" id="l1" style="left: 780px; top: 480px">+ LUCRO</div>
+          <div class="a chip lucro" id="l2" style="left: 780px; top: 690px">+ LUCRO</div>
+          <div class="a chip lucro" id="l3" style="left: 780px; top: 900px">+ LUCRO</div>
+          <div class="a chip lucro" id="l4" style="left: 780px; top: 1110px">+ LUCRO</div>
+          <img
+            class="a pix"
+            id="c-f"
+            src="../../../apps/web/public/arte/produto-oleo.png"
+            alt=""
+            style="left: 20px; top: 457px; width: 84px; height: 84px; z-index: 7"
+          />
+          <div class="a h" id="c-v" style="top: 1280px; font-size: 64px">
+            Você compra<br /><span class="lime">a garrafa pronta</span>
+          </div>
+        </section>
+
+        <!-- 3. JOGO: cada elo pode ser um jogador -->
+        <section class="cena" id="c-jogo">
+          <div class="a h" id="j-t" style="top: 250px; font-size: 96px">
+            Cada elo pode<br />ser um <span class="lime">jogador</span>
+          </div>
+          <div class="a tile" id="j1" style="left: 90px; top: 640px; --c: #5c9e5a">
+            <img class="pix" src="../../../apps/web/public/arte/lavoura.png" alt="" /><b>Você</b
+            ><small>FAZENDA</small>
+          </div>
+          <div class="a tile" id="j2" style="left: 570px; top: 640px; --c: #8a96a0">
+            <img class="pix" src="../../../apps/web/public/arte/soja-oleo.png" alt="" /><b
+              >Seu amigo</b
+            ><small>FÁBRICA</small>
+          </div>
+          <div class="a tile" id="j3" style="left: 90px; top: 980px; --c: #e8bd4f">
+            <img class="pix" src="../../../apps/web/public/arte/caminhao.png" alt="" /><b
+              >Seu primo</b
+            ><small>TRANSPORTE</small>
+          </div>
+          <div class="a tile" id="j4" style="left: 570px; top: 980px; --c: #d9615a">
+            <img class="pix" src="../../../apps/web/public/arte/loja.png" alt="" /><b>Seu rival</b
+            ><small>LOJA</small>
+          </div>
+        </section>
+
+        <!-- 4. CHAMADA -->
+        <section class="cena" id="c-cta">
+          <div class="a h" id="z-h" style="top: 420px; font-size: 128px">
+            Qual elo<br /><span class="lime">você seria?</span>
+          </div>
+          <div class="a botao" id="z-bot" style="top: 920px">Entre no Discord</div>
+          <div class="a tag" id="z-l" style="top: 1110px; left: 0; right: 0; color: #f2f4ee">
+            Link na bio
+          </div>
+          <div class="a tag mut" id="z-s" style="top: 1170px; left: 0; right: 0">
+            novidades e primeiros testes
+          </div>
+        </section>
+
+        <div id="flash"></div>
+        <div id="fundo-cap"></div>
+        <div id="cap"><p id="cap-p"></p></div>
+      </div>
+    </div>
+
+    <script src="motor.js"></script>
+    <script>
+      const CENT = [499, 709, 919, 1129]; // centro de cada cartão (para a ficha descer)
+      montar([
+        [
+          'gancho',
+          3.0,
+          'Essa garrafa de óleo passou por 4 empresas antes de chegar em você.',
+          (u) => {
+            // já aparece cheio no primeiro quadro (miniatura do vídeo)
+            const k = E.out(q(u, -0.3, 0.7));
+            T($('g-b'), { y: (1 - k) * 40, s: 0.9 + 0.1 * k });
+            palavras($('g-t'), u, -0.2, 0.08, 0.35);
+            contar($('g-n'), u, 0.15, 1.3, 1, 4);
+            estala($('g-e'), u, 1.4, 0.35);
+            estala($('g-f'), u, 1.8, 0.4);
+            sacode($('c-gancho'), u, 1.45, 8);
+          },
+        ],
+        [
+          'cadeia',
+          9.5,
+          [
+            [0, 'Fazenda, fábrica, transporte e loja.'],
+            [5.7, 'Cada elo precisa lucrar.'],
+          ],
+          (u) => {
+            const h = (id) => $(id);
+            // título 1 sai, título 2 entra
+            const dentro = E.out(q(u, 0, 0.4)),
+              sai = E.io(q(u, 5.7, 0.35));
+            T(h('c-t'), { y: (1 - dentro) * 40 - sai * 40, o: dentro * (1 - sai) });
+            palavras(h('c-t2'), u, 6.0, 0.1, 0.4);
+            h('c-t2').style.opacity = clamp((u - 5.95) * 6);
+            // cartões
+            ['e1', 'e2', 'e3', 'e4'].forEach((id, i) => {
+              const k = E.out(q(u, 0.1 + i * 0.8, 0.45));
+              T(h(id), { x: (1 - k) * 80, o: k });
+            });
+            // trilho e ficha descendo
+            h('c-tr').style.transform = `scaleY(${E.out(q(u, 0.6, 3.4))})`;
+            const y = trecho(u, [
+              [0.5, CENT[0]],
+              [1.3, CENT[0]],
+              [1.8, CENT[1]],
+              [2.4, CENT[1]],
+              [2.9, CENT[2]],
+              [3.3, CENT[2]],
+              [3.8, CENT[3]],
+              [4.4, CENT[3]],
+              [5.1, 1370],
+            ]);
+            const fo = clamp((u - 0.3) * 6) * (1 - clamp((u - 5.1) * 8));
+            T(h('c-f'), { y: y - 499, o: fo });
+            // chips de lucro
+            [0.7, 1.9, 3.0, 3.9].forEach((a, i) => {
+              const p = q(u, a, 0.35);
+              const pulso = u > 6.4 ? 1 + 0.06 * Math.sin((u - 6.4) * 7 + i) : 1;
+              T(h('l' + (i + 1)), { s: (p <= 0 ? 0 : E.back(p)) * pulso, o: clamp(p * 6) });
+            });
+            // "você compra"
+            estala(h('c-v'), u, 5.0, 0.45);
+          },
+        ],
+        [
+          'jogo',
+          5.0,
+          'No AFTERMARKET, cada elo pode ser um jogador.',
+          (u) => {
+            palavras($('j-t'), u, 0, 0.1, 0.4);
+            ['j1', 'j2', 'j3', 'j4'].forEach((id, i) => estala($(id), u, 0.9 + i * 0.5, 0.4, 0));
+          },
+        ],
+        [
+          'cta',
+          4.0,
+          'Qual elo você seria? Entre no Discord. Link na bio.',
+          (u) => {
+            palavras($('z-h'), u, 0, 0.1, 0.4);
+            estala($('z-bot'), u, 0.9, 0.45);
+            entra($('z-l'), u, 1.5, 0.35, 30);
+            entra($('z-s'), u, 1.8, 0.35, 30);
+          },
+        ],
+      ]);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,1282 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Inventário das telas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..100,400..900&family=IBM+Plex+Mono:wght@500;600&family=Caveat+Brush&display=swap"
+    />
+    <style>
+      /* Mesma língua do jogo (Livro-caixa): grafite, papel creme, lavoura age, ouro é dinheiro, brasa alerta, céu informa */
+      :root {
+        --noite: #12140f;
+        --chapa: #1b1e17;
+        --chapa-2: #23271f;
+        --linha: #343a2e;
+        --papel: #f1e6c8;
+        --tinta: #1d1a14;
+        --ferrugem: #8a3b12;
+        --texto: #e8e6dc;
+        --suave: #a9ad9c;
+        --lavoura: #8fd14f;
+        --ouro: #e6b54a;
+        --brasa: #f07a55;
+        --ceu: #6fb7e6;
+        --display: 'Archivo', 'Arial Narrow', system-ui, sans-serif;
+        --mono: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
+        --mao: 'Caveat Brush', cursive;
+        color-scheme: dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--noite);
+        color: var(--texto);
+        font: 400 16px/1.6 var(--display);
+        background-image:
+          linear-gradient(var(--chapa) 1px, transparent 1px),
+          linear-gradient(90deg, var(--chapa) 1px, transparent 1px);
+        background-size: 48px 48px;
+      }
+      .wrap {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 48px 16px 96px;
+        display: grid;
+        gap: 56px;
+      }
+      h1,
+      h2,
+      h3 {
+        font-stretch: 68%;
+        font-weight: 900;
+        line-height: 1;
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.01em;
+      }
+      h1 {
+        font-size: clamp(2.6rem, 7vw, 4.4rem);
+      }
+      h2 {
+        font-size: clamp(1.8rem, 4vw, 2.4rem);
+      }
+      h3 {
+        font-size: 1.5rem;
+      }
+      p {
+        margin: 0;
+      }
+      .rotulo {
+        font: 600 0.78rem/1.2 var(--mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--ouro);
+      }
+      .mao {
+        font-family: var(--mao);
+        font-size: 1.45rem;
+        color: var(--lavoura);
+        line-height: 1.2;
+      }
+      .suave {
+        color: var(--suave);
+      }
+      .ler {
+        max-width: 70ch;
+        display: grid;
+        gap: 12px;
+      }
+      section {
+        display: grid;
+        gap: 22px;
+      }
+
+      .placa {
+        background: var(--chapa-2);
+        border: 2px solid var(--linha);
+        padding: 28px 32px;
+        transform: rotate(-0.6deg);
+        box-shadow: 6px 6px 0 #0006;
+        display: grid;
+        gap: 14px;
+        position: relative;
+      }
+      .placa::before {
+        content: '';
+        position: absolute;
+        top: -12px;
+        left: 40px;
+        width: 110px;
+        height: 24px;
+        background: #b8933a;
+        opacity: 0.85;
+        transform: rotate(-3deg);
+      }
+      .numeros {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 12px;
+      }
+      .peca {
+        background: var(--chapa);
+        border: 2px solid var(--linha);
+        border-top: 4px solid var(--ouro);
+        padding: 14px 16px;
+        display: grid;
+        gap: 4px;
+      }
+      .peca b {
+        font: 900 2.2rem/1 var(--display);
+        font-stretch: 68%;
+        font-variant-numeric: tabular-nums;
+      }
+      .peca span {
+        font-size: 0.9rem;
+        color: var(--suave);
+        line-height: 1.35;
+      }
+
+      .achados {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 16px;
+      }
+      .nota {
+        background: var(--papel);
+        color: var(--tinta);
+        padding: 20px 22px 24px;
+        display: grid;
+        gap: 10px;
+        align-content: start;
+        clip-path: polygon(
+          0 0,
+          100% 0,
+          100% calc(100% - 8px),
+          94% 100%,
+          86% calc(100% - 6px),
+          74% 100%,
+          62% calc(100% - 7px),
+          48% 100%,
+          36% calc(100% - 6px),
+          22% 100%,
+          10% calc(100% - 7px),
+          0 100%
+        );
+      }
+      .nota h3 {
+        font-size: 1.35rem;
+      }
+      .nota .mao {
+        color: var(--ferrugem);
+        font-size: 1.3rem;
+      }
+      .nota ul {
+        margin: 0;
+        padding-left: 18px;
+        display: grid;
+        gap: 4px;
+      }
+      .carimbo {
+        justify-self: start;
+        font: 600 0.72rem/1 var(--mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 5px 8px;
+        border: 2px solid currentColor;
+        transform: rotate(-2deg);
+      }
+      .c-brasa {
+        color: #b2401c;
+      }
+      .c-ouro {
+        color: #8a6312;
+      }
+      .c-ceu {
+        color: #1f6c9c;
+      }
+      .c-lavoura {
+        color: #3f7a17;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.95rem;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--linha);
+        vertical-align: top;
+      }
+      th {
+        font: 600 0.75rem/1.2 var(--mono);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--suave);
+      }
+      td b {
+        font-variant-numeric: tabular-nums;
+      }
+      .tabela {
+        background: var(--chapa);
+        border: 2px solid var(--linha);
+        overflow-x: auto;
+      }
+      .qtd {
+        font: 900 1.6rem/1 var(--display);
+        font-stretch: 68%;
+        color: var(--brasa);
+      }
+
+      .telas {
+        display: grid;
+        gap: 18px;
+      }
+      .tela {
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        gap: 22px;
+        background: var(--chapa);
+        border: 2px solid var(--linha);
+        padding: 18px;
+      }
+      .tela a.foto {
+        display: block;
+        align-self: start;
+        border: 2px solid var(--linha);
+        max-height: 380px;
+        overflow: hidden;
+        background: #000;
+      }
+      .tela a.foto img {
+        width: 100%;
+        display: block;
+      }
+      .tela a.foto:focus-visible,
+      a:focus-visible {
+        outline: 3px solid var(--lavoura);
+        outline-offset: 2px;
+      }
+      .tela .corpo {
+        display: grid;
+        gap: 10px;
+        align-content: start;
+      }
+      .tela .topo {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 14px;
+        align-items: baseline;
+      }
+      .etiqueta {
+        font: 600 0.72rem/1 var(--mono);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 5px 8px;
+        background: var(--chapa-2);
+        border: 1px solid var(--linha);
+        color: var(--ceu);
+      }
+      .pergunta {
+        font-family: var(--mao);
+        font-size: 1.35rem;
+        color: var(--ouro);
+        line-height: 1.2;
+      }
+      .duas {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+      }
+      .duas h4 {
+        margin: 0 0 4px;
+        font: 600 0.72rem/1.2 var(--mono);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--suave);
+      }
+      .duas ul,
+      .problemas {
+        margin: 0;
+        padding-left: 18px;
+        display: grid;
+        gap: 3px;
+        font-size: 0.95rem;
+      }
+      .problemas li::marker {
+        color: var(--brasa);
+      }
+      .veredito {
+        font: 600 0.8rem/1.3 var(--mono);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--lavoura);
+      }
+
+      .antes-depois {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      .coluna {
+        background: var(--chapa);
+        border: 2px solid var(--linha);
+        padding: 18px 20px;
+        display: grid;
+        gap: 12px;
+        align-content: start;
+      }
+      .coluna.nova {
+        border-color: var(--lavoura);
+      }
+      .coluna ol {
+        margin: 0;
+        padding-left: 22px;
+        display: grid;
+        gap: 8px;
+      }
+      .coluna li b {
+        font-weight: 800;
+      }
+      .coluna li span {
+        display: block;
+        color: var(--suave);
+        font-size: 0.92rem;
+        line-height: 1.4;
+      }
+
+      .passos {
+        counter-reset: p;
+        display: grid;
+        gap: 10px;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+      }
+      .passos li {
+        counter-increment: p;
+        display: grid;
+        grid-template-columns: 44px 1fr;
+        gap: 12px;
+        align-items: start;
+      }
+      .passos li::before {
+        content: counter(p);
+        font: 900 1.9rem/1 var(--display);
+        font-stretch: 68%;
+        color: var(--lavoura);
+      }
+      footer {
+        color: var(--suave);
+        font-size: 0.85rem;
+      }
+      code {
+        font: 500 0.88em var(--mono);
+        background: var(--chapa);
+        border: 1px solid var(--linha);
+        padding: 1px 5px;
+      }
+      .nota code {
+        background: #e4d6b0;
+        border-color: #cdbd93;
+      }
+
+      @media (max-width: 760px) {
+        .tela,
+        .antes-depois,
+        .duas {
+          grid-template-columns: 1fr;
+        }
+        .tela a.foto {
+          max-height: 260px;
+        }
+        .placa {
+          padding: 22px 18px;
+          transform: none;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          scroll-behavior: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="placa">
+        <span class="rotulo">Design · etapa 0 · 03/11/2026</span>
+        <h1>Inventário das telas</h1>
+        <p style="max-width: 70ch">
+          Antes de redesenhar qualquer tela, passei por todas como um jogador no primeiro dia: o que
+          cada uma mostra, que botões tem, o que se repete e o que está errado. Base: a versão atual
+          do seu irmão (<code>main</code>, entrega #7), num mundo de teste separado. O mundo salvo
+          não foi tocado. O mapa 3D está no ramo <code>pedro/mapa-3d</code> e ainda não aparece
+          aqui.
+        </p>
+        <p class="mao">Clique numa foto para ver a tela inteira.</p>
+      </header>
+
+      <section>
+        <div class="numeros">
+          <div class="peca"><b>12</b><span>telas e 9 abas internas visitadas</span></div>
+          <div class="peca">
+            <b>7</b><span>botões diferentes que levam a comprar mercadoria</span>
+          </div>
+          <div class="peca"><b>6</b><span>lugares que mostram as vendas de hoje</span></div>
+          <div class="peca">
+            <b>6.000 px</b
+            ><span>a aba mais comprida (Abastecimento), cerca de 7 telas de rolagem</span>
+          </div>
+          <div class="peca" style="border-top-color: var(--brasa)">
+            <b>3</b><span>números diferentes para "quanto leite a loja vende por dia"</span>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="ler">
+          <span class="rotulo">O que mais pesa</span>
+          <h2>Cinco achados</h2>
+        </div>
+        <div class="achados">
+          <article class="nota">
+            <span class="carimbo c-brasa">Engana o jogador</span>
+            <h3>O jogo diz "tudo em dia" quando não está</h3>
+            <p>
+              Início ("Tudo em dia por aqui") e Meus negócios ("Tudo certo por aqui") dizem que nada
+              precisa de atenção. Ao mesmo tempo:
+            </p>
+            <ul>
+              <li>a Equipe diz que faltam 8 pessoas (3 de 11) e que a loja perde vendas;</li>
+              <li>arroz, feijão e açúcar estão esgotados no Abastecimento;</li>
+              <li>as Finanças mostram procura sem atender.</li>
+            </ul>
+            <p class="mao">É o pior tipo de erro: a tela mais vista mente.</p>
+          </article>
+          <article class="nota">
+            <span class="carimbo c-ouro">Repetição</span>
+            <h3>O mesmo número em muitos lugares</h3>
+            <p>
+              Vendas de hoje aparecem 6 vezes, o caixa livre 5, o custo fixo 3. O bloco "Para onde
+              foi o dinheiro" existe igual na Loja e na Empresa. Os cartões dos negócios ficam no
+              Início e em Meus negócios.
+            </p>
+            <p class="mao">Cada repetição é espaço que podia mostrar algo novo.</p>
+          </article>
+          <article class="nota">
+            <span class="carimbo c-brasa">Contradição</span>
+            <h3>O mesmo dado com valores diferentes</h3>
+            <p>
+              Venda de leite por dia: <b>~5.772</b> na Prateleira, <b>300</b> no Abastecimento e
+              <b>396</b> nas Finanças. Provavelmente são três contas diferentes (estimativa no preço
+              testado, regra antiga, média real), mas a tela não diz qual é qual.
+            </p>
+          </article>
+          <article class="nota">
+            <span class="carimbo c-ceu">Caminhos</span>
+            <h3>Muitas portas para a mesma ação</h3>
+            <ul>
+              <li>
+                <b>Comprar mercadoria:</b> 7 botões em 6 telas. O da Loja tira o jogador da loja e o
+                leva ao Comércio.
+              </li>
+              <li>
+                <b>Abrir negócio:</b> 5 entradas, e a lista de "Negócios para abrir" mora em
+                Comércio, longe do Mapa.
+              </li>
+              <li><b>Vender para alguém:</b> está dividido entre Pedidos e Contratos.</li>
+            </ul>
+          </article>
+          <article class="nota">
+            <span class="carimbo c-ouro">Rolagem</span>
+            <h3>Listas que não acabam</h3>
+            <p>
+              Abastecimento tem 6.000 px, Cotações 5.200, Contratos 4.700 e Pedidos 3.900. Boa parte
+              são cartões iguais:
+            </p>
+            <ul>
+              <li>
+                14 empresas pedindo o mesmo óleo, até 65 mil garrafas, para uma loja com 2,4 mil;
+              </li>
+              <li>11 prefeituras pedindo as mesmas 12 t de aço;</li>
+              <li>o mesmo aviso "Pausado" repetido em cada produto.</li>
+            </ul>
+          </article>
+          <article class="nota">
+            <span class="carimbo c-lavoura">Para o seu irmão</span>
+            <h3>Três erros de dados (engenharia)</h3>
+            <ul>
+              <li>
+                <b>Capital inicial vira gasto.</b> Para começar com R$ 1 milhão, o jogo tira R$ 1,85
+                mi do jogador e registra isso como despesa. Resultado: no 1º dia o Início mostra "R$
+                1.850.625 em gastos" e a Empresa diz que o caixa caiu R$ 1,9 mi, 95% em "Energia,
+                manutenção e outros".
+              </li>
+              <li>
+                <b>Código à mostra.</b> Em Contratos aparecem textos como "#7773cc", e "Encerra em
+                1:26" não tem unidade.
+              </li>
+              <li>
+                <b>Contradição.</b> Em Oportunidades, o mesmo cartão diz "Acima do seu caixa" e "Seu
+                caixa cobre 100%".
+              </li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <div class="ler">
+          <span class="rotulo">Repetição</span>
+          <h2>Onde cada coisa aparece</h2>
+          <p class="suave">
+            Um dado deveria ter uma casa só. Nos outros lugares, no máximo um atalho para ela.
+          </p>
+        </div>
+        <div class="tabela">
+          <table>
+            <thead>
+              <tr>
+                <th>Dado ou ação</th>
+                <th>Vezes</th>
+                <th>Onde aparece hoje</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Comprar mercadoria</td>
+                <td class="qtd">7</td>
+                <td>
+                  Loja (botão do topo), Prateleira e Abastecimento (Mandar buscar), Comprar,
+                  Cotações (um botão por produto), Pedidos (Pedir mercadoria), Contratos (Comprar
+                  aço)
+                </td>
+              </tr>
+              <tr>
+                <td>Vendas de hoje</td>
+                <td class="qtd">6</td>
+                <td>
+                  Barra do topo, Início (Hoje), cartão da loja no Início, resumo de Meus negócios,
+                  cartão de Meus negócios, Finanças da Loja (Hoje cobriu)
+                </td>
+              </tr>
+              <tr>
+                <td>Caixa livre</td>
+                <td class="qtd">5</td>
+                <td>
+                  Barra do topo, Comprar, Oportunidades, Empresa (topo), Empresa (Crédito e custos);
+                  a Empresa ainda tem "Dinheiro em caixa"
+                </td>
+              </tr>
+              <tr>
+                <td>Abrir negócio</td>
+                <td class="qtd">5</td>
+                <td>
+                  Início, Meus negócios, Oportunidades, Mapa (Terrenos à venda), Primeiros passos
+                </td>
+              </tr>
+              <tr>
+                <td>Custo fixo por dia</td>
+                <td class="qtd">3</td>
+                <td>Topo da Loja, Finanças da Loja, Empresa</td>
+              </tr>
+              <tr>
+                <td>Venda por dia de cada produto</td>
+                <td class="qtd">3</td>
+                <td>
+                  Prateleira (~5.772), Abastecimento (300), Finanças (396), com valores diferentes
+                </td>
+              </tr>
+              <tr>
+                <td>Para onde foi o dinheiro</td>
+                <td class="qtd">2</td>
+                <td>Finanças da Loja e Empresa, com o mesmo bloco</td>
+              </tr>
+              <tr>
+                <td>Cartões dos negócios</td>
+                <td class="qtd">2</td>
+                <td>Início (Seus negócios) e Meus negócios (Unidades)</td>
+              </tr>
+              <tr>
+                <td>Quem quer comprar de você</td>
+                <td class="qtd">2</td>
+                <td>Pedidos (Procuram o que você tem) e Contratos públicos</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section>
+        <div class="ler">
+          <span class="rotulo">Tela por tela</span>
+          <h2>As 12 telas, na ordem da jornada</h2>
+          <p class="suave">
+            Para cada uma: o momento do jogador, a pergunta que ela deveria responder, o que tem
+            hoje e o que não funciona. A última linha é a minha recomendação; a decisão é sua.
+          </p>
+        </div>
+        <div class="telas">
+          <article class="tela">
+            <a class="foto" href="inventario/inicio.webp"
+              ><img src="inventario/inicio.webp" alt="Tela Início" loading="lazy"
+            /></a>
+            <div class="corpo">
+              <div class="topo">
+                <h3>Início</h3>
+                <span class="etiqueta">2 · Se orientar</span>
+              </div>
+              <p class="pergunta">"O que eu preciso fazer agora?"</p>
+              <div class="duas">
+                <div>
+                  <h4>Mostra</h4>
+                  <ul>
+                    <li>Vendas e gastos de hoje</li>
+                    <li>Precisa de você</li>
+                    <li>Cartões dos negócios</li>
+                    <li>Primeiros passos (3 de 5)</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4>Ações</h4>
+                  <ul>
+                    <li>Ver cotações</li>
+                    <li>Abrir a loja</li>
+                    <li>Abrir negócio</li>
+                    <li>Passo do guia</li>
+                  </ul>
+                </div>
+              </div>
+              <ul class="problemas">
+                <li>"Tudo em dia" enquanto falta gente e há 3 produtos esgotados.</li>
+                <li>R$ 1,85 mi "em gastos" no 1º dia (capital inicial).</li>
+                <li>Vendas de hoje repetem a barra do topo; os cartões repetem Meus negócios.</li>
+              </ul>
+              <p class="veredito">
+                Manter · virar a mesa do dono: só o que pede decisão, com alertas verdadeiros
+              </p>
+            </div>
+          </article>
+
+          <article class="tela">
+            <a class="foto" href="inventario/map.webp"
+              ><img src="inventario/map.webp" alt="Tela Mapa" loading="lazy"
+            /></a>
+            <div class="corpo">
+              <div class="topo">
+                <h3>Mapa</h3>
+                <span class="etiqueta">2 · Se orientar</span
+                ><span class="etiqueta">5 · Crescer</span>
+              </div>
+              <p class="pergunta">"Onde estou e onde posso crescer?"</p>
+              <div class="duas">
+                <div>
+                  <h4>Mostra</h4>
+                  <ul>
+                    <li>Estradas e cidades reais</li>
+                    <li>Negócios de todas as empresas</li>
+                    <li>Legenda por setor</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4>Ações</h4>
+                  <ul>
+                    <li>Tudo, Meus negócios, Terrenos à venda, Outras empresas</li>
+                    <li>Camadas</li>
+                    <li>Zoom e localizar</li>
+                  </ul>
+                </div>
+              </div>
+              <ul class="problemas">
+                <li>Seus negócios e os das outras empresas têm o mesmo peso visual.</li>
+                <li>"Negócios para abrir" mora em Comércio, mas o caminho termina aqui.</li>
+                <li>O mapa 3D ainda está só no ramo <code>pedro/mapa-3d</code>.</li>
+              </ul>
+              <p class="veredito">Manter · trazer Negócios para abrir como painel do mapa</p>
+            </div>
+          </article>
+
+          <article class="tela">
+            <a class="foto" href="inventario/retail.webp"
+              ><img src="inventario/retail.webp" alt="Loja, aba Prateleira" loading="lazy"
+            /></a>
+            <div class="corpo">
+              <div class="topo">
+                <h3>Loja · Prateleira</h3>
+                <span class="etiqueta">3 · Primeira venda</span>
+              </div>
+              <p class="pergunta">"Meu preço está bom? O que está acabando?"</p>
+              <div class="duas">
+                <div>
+                  <h4>Mostra</h4>
+                  <ul>
+                    <li>Margem do dia (nota de papel)</li>
+                    <li>Custo fixo e sobra por dia</li>
+                    <li>"Para empatar, venda também"</li>
+                    <li>Cada produto com régua de preço</li>
+                    <li>Últimas vendas</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4>Ações</h4>
+                  <ul>
+                    <li>Comprar mercadorias (sai da loja)</li>
+                    <li>Usar os melhores preços</li>
+                    <li>Mandar buscar</li>
+                    <li>Testar preço, − e +</li>
+                  </ul>
+                </div>
+              </div>
+              <ul class="problemas">
+                <li>
+                  Só 2 produtos na prateleira enquanto 3 estão esgotados, e os esgotados não
+                  aparecem.
+                </li>
+                <li>O botão do topo leva ao Comércio e o jogador perde o contexto.</li>
+                <li>Venda por dia diferente das outras abas.</li>
+              </ul>
+              <p class="veredito">
+                Manter · é o coração da primeira hora; mostrar esgotados e repor sem sair
+              </p>
+            </div>
+          </article>
+
+          <article class="tela">
+            <a class="foto" href="inventario/retail--abastecimento.webp"
+              ><img
+                src="inventario/retail--abastecimento.webp"
+                alt="Loja, aba Abastecimento"
+                loading="lazy"
+            /></a>
+            <div class="corpo">
+              <div class="topo">
+                <h3>Loja · Abastecimento</h3>
+                <span class="etiqueta">6 · Gerir</span>
+              </div>
+              <p class="pergunta">"O que repor, quando e de quem?"</p>
+              <div class="duas">
+                <div>
+                  <h4>Mostra</h4>
+                  <ul>
+                    <li>Automático ligado ou desligado</li>
+                    <li>Gasto do dia e armazém ocupado</li>
+                    <li>Barra por produto com a regra</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4>Ações</h4>
+                  <ul>
+                    <li>Ligar o automático</li>
+                    <li>Mandar buscar</li>
+                    <li>Repor quando, encher até, de onde</li>
+                    <li>Parar de automatizar</li>
+                  </ul>
+                </div>
+              </div>
+              <ul class="problemas">
+                <li>6.000 px de rolagem: cada produto abre todos os controles de uma vez.</li>
+                <li>O mesmo aviso "Pausado…" repetido em cada produto.</li>
+                <li>Os esgotados estão aqui, não na Prateleira.</li>
+              </ul>
+              <p class="veredito">
+                Fundir com a Prateleira: o estoque de cada produto num lugar só, com a regra
+                recolhida
+              </p>
+            </div>
+          </article>
+
+          <article class="tela">
+            <a class="foto" href="inventario/retail--equipe.webp"
+              ><img src="inventario/retail--equipe.webp" alt="Loja, aba Equipe" loading="lazy"
+            /></a>
+            <div class="corpo">
+              <div class="topo">
+                <h3>Loja · Equipe</h3>
+                <span class="etiqueta">6 · Gerir</span>
+              </div>
+              <p class="pergunta">"Tenho gente suficiente?"</p>
+              <div class="duas">
+                <div>
+                  <h4>Mostra</h4>
+                  <ul>
+                    <li>Falta gente: 3 de 11</li>
+                    <li>Atende 150, procura 532</li>
+                    <li>Salário e folha</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4>Ações</h4>
+                  <ul>
+                    <li>Usar a equipe ideal</li>
+                    <li>Aplicar equipe</li>
+                  </ul>
+                </div>
+              </div>
+              <ul class="problemas">
+                <li>O diagnóstico é bom, mas não chega ao Início nem a Meus negócios.</li>
+              </ul>
+              <p class="veredito">Manter · ligar o alerta ao "Precisa de você"</p>
+            </div>
+          </article>
+
+          <article class="tela">
+            <a class="foto" href="inventario/retail--financas.webp"
+              ><img src="inventario/retail--financas.webp" alt="Loja, aba Finanças" loading="lazy"
+            /></a>
+            <div class="corpo">
+              <div class="topo">
+                <h3>Loja · Finanças</h3>
+                <span class="etiqueta">6 · Gerir</span>
+              </div>
+              <p class="pergunta">"Esta loja dá lucro?"</p>
+              <div class="duas">
+                <div>
+                  <h4>Mostra</h4>
+                  <ul>
+                    <li>Entrou, saiu, caixa caiu</li>
+                    <li>Gráfico por dia</li>
+                    <li>Para onde foi o dinheiro</li>
+                    <li>Quem compra de você e dias da semana</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4>Ações</h4>
+                  <ul>
+                    <li>7 ou 30 dias</li>
+                    <li>Escolher produto</li>
+                    <li>Ver valores</li>
+                  </ul>
+                </div>
+              </div>
+              <ul class="problemas">
+                <li>"Para onde foi o dinheiro" é o mesmo bloco da Empresa.</li>
+                <li>"Quem compra de você" é sobre procura e preço; ajudaria mais na Prateleira.</li>
+              </ul>
+              <p class="veredito">Enxugar · ficar só com o resultado da unidade</p>
+            </div>
+          </article>
+
+          <article class="tela">
+            <a class="foto" href="inventario/businesses.webp"
+              ><img src="inventario/businesses.webp" alt="Meus negócios, Unidades" loading="lazy"
+            /></a>
+            <div class="corpo">
+              <div class="topo">
+                <h3>Meus negócios · Unidades</h3>
+                <span class="etiqueta">6 · Gerir</span>
+              </div>
+              <p class="pergunta">"Como vão minhas unidades?"</p>
+              <div class="duas">
+                <div>
+                  <h4>Mostra</h4>
+                  <ul>
+                    <li>Quantos negócios, vendas de hoje</li>
+                    <li>Um cartão por negócio</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4>Ações</h4>
+                  <ul>
+                    <li>Abrir</li>
+                    <li>Abrir um negócio</li>
+                  </ul>
+                </div>
+              </div>
+              <ul class="problemas">
+                <li>Repete o Início quase inteiro na primeira hora.</li>
+                <li>"Tudo certo por aqui" enquanto falta gente.</li>
+              </ul>
+              <p class="veredito">
+                Manter como a única casa dos cartões; o Início mostra só os que precisam de você
+              </p>
+            </div>
+          </article>
+
+          <article class="tela">
+            <a class="foto" href="inventario/carrier.webp"
+              ><img src="inventario/carrier.webp" alt="Meus negócios, Frota" loading="lazy"
+            /></a>
+            <div class="corpo">
+              <div class="topo">
+                <h3>Meus negócios · Frota</h3>
+                <span class="etiqueta">7 · Negociar</span>
+              </div>
+              <p class="pergunta">"Vale ter caminhão próprio?"</p>
+              <div class="duas">
+                <div>
+                  <h4>Mostra</h4>
+                  <ul>
+                    <li>Caminhões livres, capacidade, cargas, fretes</li>
+                    <li>Estado vazio</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4>Ações</h4>
+                  <ul>
+                    <li>Comprar caminhão</li>
+                  </ul>
+                </div>
+              </div>
+              <ul class="problemas">
+                <li>Na primeira hora, uma aba inteira com quatro zeros.</li>
+                <li>Não responde à pergunta: quanto eu economizaria com um caminhão.</li>
+              </ul>
+              <p class="veredito">
+                Manter para o meio do jogo · o estado vazio deve dizer quanto você gasta hoje em
+                frete
+              </p>
+            </div>
+          </article>
+
+          <article class="tela">
+            <a class="foto" href="inventario/market.webp"
+              ><img src="inventario/market.webp" alt="Comércio, Comprar" loading="lazy"
+            /></a>
+            <div class="corpo">
+              <div class="topo">
+                <h3>Comércio · Comprar</h3>
+                <span class="etiqueta">3 · Primeira venda</span>
+              </div>
+              <p class="pergunta">"O que compro e de quem?"</p>
+              <div class="duas">
+                <div>
+                  <h4>Mostra</h4>
+                  <ul>
+                    <li>Para onde vai a carga</li>
+                    <li>Caixa livre</li>
+                    <li>Cartão por produto: preço na porta, frete, lucro, margem</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4>Ações</h4>
+                  <ul>
+                    <li>Mostrar todos os produtos</li>
+                    <li>Mandar buscar</li>
+                  </ul>
+                </div>
+              </div>
+              <ul class="problemas">
+                <li>Faz o mesmo que a gaveta Mandar buscar da Loja.</li>
+                <li>Os produtos repetem Cotações, com outro desenho.</li>
+              </ul>
+              <p class="veredito">
+                Fundir com Cotações num "Mercado" só; comprar acontece sempre pela gaveta
+              </p>
+            </div>
+          </article>
+
+          <article class="tela">
+            <a class="foto" href="inventario/quotes.webp"
+              ><img src="inventario/quotes.webp" alt="Comércio, Cotações" loading="lazy"
+            /></a>
+            <div class="corpo">
+              <div class="topo">
+                <h3>Comércio · Cotações</h3>
+                <span class="etiqueta">7 · Negociar</span>
+              </div>
+              <p class="pergunta">"Quanto vale cada coisa agora?"</p>
+              <div class="duas">
+                <div>
+                  <h4>Mostra</h4>
+                  <ul>
+                    <li>20 produtos com preço, oferta e comparação com o preço justo</li>
+                    <li>Movimento do mercado</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4>Ações</h4>
+                  <ul>
+                    <li>Filtro por categoria</li>
+                    <li>Comprar em cada cartão</li>
+                  </ul>
+                </div>
+              </div>
+              <ul class="problemas">
+                <li>5.200 px; "Sem histórico de um dia" repetido em todos os cartões.</li>
+                <li>Cartão grande demais para comparar 20 preços: aqui uma tabela lê melhor.</li>
+              </ul>
+              <p class="veredito">Fundir com Comprar · lista densa de preços que abre a gaveta</p>
+            </div>
+          </article>
+
+          <article class="tela">
+            <a class="foto" href="inventario/opportunities.webp"
+              ><img
+                src="inventario/opportunities.webp"
+                alt="Comércio, Negócios para abrir"
+                loading="lazy"
+            /></a>
+            <div class="corpo">
+              <div class="topo">
+                <h3>Negócios para abrir</h3>
+                <span class="etiqueta">5 · Crescer</span>
+              </div>
+              <p class="pergunta">"Que negócio eu abro depois da loja?"</p>
+              <div class="duas">
+                <div>
+                  <h4>Mostra</h4>
+                  <ul>
+                    <li>Investimento, lucro por dia, retorno</li>
+                    <li>Equipe, cidade, o que produz</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4>Ações</h4>
+                  <ul>
+                    <li>Todos, cabem no caixa, falta no mercado</li>
+                    <li>Ver imóvel no mapa</li>
+                  </ul>
+                </div>
+              </div>
+              <ul class="problemas">
+                <li>"Acima do seu caixa" e "Seu caixa cobre 100%" no mesmo cartão.</li>
+                <li>Fica escondido dentro de Cotações, numa seção sobre compras.</li>
+              </ul>
+              <p class="veredito">Mudar de casa · painel do Mapa, junto de Terrenos à venda</p>
+            </div>
+          </article>
+
+          <article class="tela">
+            <a class="foto" href="inventario/orders.webp"
+              ><img src="inventario/orders.webp" alt="Comércio, Pedidos e entregas" loading="lazy"
+            /></a>
+            <div class="corpo">
+              <div class="topo">
+                <h3>Comércio · Pedidos e entregas</h3>
+                <span class="etiqueta">4 · Esperar</span><span class="etiqueta">7 · Negociar</span>
+              </div>
+              <p class="pergunta">"O que está chegando? Quem quer comprar de mim?"</p>
+              <div class="duas">
+                <div>
+                  <h4>Mostra</h4>
+                  <ul>
+                    <li>Responder, a caminho, concluídos</li>
+                    <li>Procuram o que você tem (14)</li>
+                    <li>Entregas com frete</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4>Ações</h4>
+                  <ul>
+                    <li>Pedir mercadoria</li>
+                    <li>Fazer uma proposta</li>
+                    <li>Ver no mapa</li>
+                  </ul>
+                </div>
+              </div>
+              <ul class="problemas">
+                <li>Mistura duas perguntas: o que eu pedi e quem quer comprar de mim.</li>
+                <li>14 cartões do mesmo óleo, com quantidades fora do alcance de uma loja.</li>
+              </ul>
+              <p class="veredito">
+                Separar · "Minhas entregas" fica; "quem quer comprar" vai para Vender, com Contratos
+              </p>
+            </div>
+          </article>
+
+          <article class="tela">
+            <a class="foto" href="inventario/contracts.webp"
+              ><img
+                src="inventario/contracts.webp"
+                alt="Comércio, Contratos públicos"
+                loading="lazy"
+            /></a>
+            <div class="corpo">
+              <div class="topo">
+                <h3>Comércio · Contratos públicos</h3>
+                <span class="etiqueta">7 · Negociar</span>
+              </div>
+              <p class="pergunta">"Que licitação eu consigo ganhar?"</p>
+              <div class="duas">
+                <div>
+                  <h4>Mostra</h4>
+                  <ul>
+                    <li>Dinheiro das prefeituras</li>
+                    <li>Como se ganha (pesos)</li>
+                    <li>Cartões por prefeitura com pódio</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4>Ações</h4>
+                  <ul>
+                    <li>Filtro por estado e situação</li>
+                    <li>Participar da disputa</li>
+                    <li>Comprar o produto</li>
+                    <li>Ver no mapa</li>
+                  </ul>
+                </div>
+              </div>
+              <ul class="problemas">
+                <li>Código "#7773cc" à mostra; "Encerra em 1:26" sem unidade.</li>
+                <li>11 cartões iguais e pódios vazios; nada filtra pelo que você tem.</li>
+              </ul>
+              <p class="veredito">
+                Juntar com "quem quer comprar" numa tela Vender, começando pelo que você pode
+                atender
+              </p>
+            </div>
+          </article>
+
+          <article class="tela">
+            <a class="foto" href="inventario/company.webp"
+              ><img src="inventario/company.webp" alt="Minha empresa" loading="lazy"
+            /></a>
+            <div class="corpo">
+              <div class="topo">
+                <h3>Empresa</h3>
+                <span class="etiqueta">6 · Gerir</span>
+              </div>
+              <p class="pergunta">"Quanto vale minha empresa e para onde vai o dinheiro?"</p>
+              <div class="duas">
+                <div>
+                  <h4>Mostra</h4>
+                  <ul>
+                    <li>Patrimônio e porte</li>
+                    <li>Gráfico do caixa</li>
+                    <li>Para onde foi, o que tem, crédito</li>
+                    <li>Economia do mundo, extrato</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4>Ações</h4>
+                  <ul>
+                    <li>7 dias</li>
+                    <li>Ver valores</li>
+                    <li>Baixar extrato</li>
+                    <li>Balanço completo</li>
+                  </ul>
+                </div>
+              </div>
+              <ul class="problemas">
+                <li>"O caixa caiu −R$ 1,9 mi" por causa do capital inicial.</li>
+                <li>Caixa livre aparece 2 vezes; "Economia do mundo" não é sobre a empresa.</li>
+              </ul>
+              <p class="veredito">Manter · única casa de "para onde foi o dinheiro"</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <div class="ler">
+          <span class="rotulo">Proposta para discutir</span>
+          <h2>Menos lugares, cada coisa na sua casa</h2>
+          <p class="suave">
+            É uma recomendação de estrutura, não um desenho. Os nomes podem mudar. O objetivo: o
+            jogador nunca procura a mesma coisa em dois lugares.
+          </p>
+        </div>
+        <div class="antes-depois">
+          <div class="coluna">
+            <span class="rotulo">Hoje · 5 menus, 6 abas, 4 abas na loja</span>
+            <ol>
+              <li><b>Início</b><span>resumo, alertas, cartões, guia</span></li>
+              <li><b>Mapa</b></li>
+              <li>
+                <b>Negócios</b
+                ><span>Unidades · Frota · Loja (Prateleira, Abastecimento, Equipe, Finanças)</span>
+              </li>
+              <li>
+                <b>Comércio</b
+                ><span
+                  >Comprar · Cotações (com Negócios para abrir) · Pedidos (com entregas) ·
+                  Contratos</span
+                >
+              </li>
+              <li><b>Empresa</b></li>
+            </ol>
+          </div>
+          <div class="coluna nova">
+            <span class="rotulo" style="color: var(--lavoura)"
+              >Proposta · 5 menus, 2 abas no Mercado, 3 abas na loja</span
+            >
+            <ol>
+              <li>
+                <b>Início</b
+                ><span
+                  >a mesa do dono: hoje, o que precisa de você (alertas verdadeiros) e o próximo
+                  passo</span
+                >
+              </li>
+              <li>
+                <b>Mapa</b
+                ><span
+                  >com o painel "Onde abrir", que reúne Terrenos à venda e Negócios para abrir</span
+                >
+              </li>
+              <li>
+                <b>Negócios</b
+                ><span
+                  >cartões de todas as unidades · Frota · Loja com Prateleira (estoque e repor
+                  juntos), Equipe e Resultado</span
+                >
+              </li>
+              <li>
+                <b>Mercado</b
+                ><span
+                  >Comprar (preços de tudo, e comprar sempre pela gaveta) · Vender (quem quer
+                  comprar de você e contratos públicos)</span
+                >
+              </li>
+              <li>
+                <b>Empresa</b
+                ><span
+                  >dinheiro, patrimônio, crédito; a única casa de "para onde foi o dinheiro"</span
+                >
+              </li>
+            </ol>
+            <p class="suave">
+              Minhas entregas vira um painel que abre da barra do topo (o caminhão andando), sem
+              ocupar uma aba.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="ler">
+          <span class="rotulo">Próximos passos</span>
+          <h2>Como seguimos</h2>
+        </div>
+        <ol class="passos">
+          <li>
+            <p>
+              <b>Você decide a estrutura.</b> Aprovar, mudar ou recusar a proposta acima. É ela que
+              define quais telas existem antes de desenhar qualquer uma.
+            </p>
+          </li>
+          <li>
+            <p>
+              <b>Erros de dados para o seu irmão.</b> Capital inicial contado como gasto, código à
+              mostra em Contratos, a contradição de Oportunidades e as três vendas por dia. Posso
+              escrever isso como uma nota para ele.
+            </p>
+          </li>
+          <li>
+            <p>
+              <b>Primeira tela: Início.</b> Entender, inventário fino, 2 ou 3 esboços para você
+              escolher, construir, testar no computador e no celular, revisão independente e sua
+              aprovação.
+            </p>
+          </li>
+        </ol>
+      </section>
+
+      <footer>
+        Coletado em 03/11/2026 no computador (1440 × 900), mundo de teste
+        <code>.runtime/design.sqlite</code>, escala 20, primeiro dia de jogo. Fotos originais em
+        <code>.runtime/design/inventario</code>; o texto de cada tela está em
+        <code>inventario/telas.json</code>. O celular entra na etapa de cada tela.
+      </footer>
+    </div>
+  </body>
+</html>

@@ -8,6 +8,7 @@ import {
 } from './model';
 import { companyOf, establishmentOf, propertyOf, regionsOf } from './metrics';
 import { defaultSpecialization } from './operations';
+import { newId } from './ids';
 import { HOUR_MS, gameDay, gameToReal } from './clock';
 import { householdItems } from './channels';
 
@@ -120,7 +121,7 @@ export function openingTransfer(
   if (a.balance < amount) throw new Error('Capital de abertura indisponível.');
   a.balance -= amount;
   b.balance += amount;
-  w.ledger.push({ id: crypto.randomUUID(), at, from, to, amount, description, kind: 'budget' });
+  w.ledger.push({ id: newId(w), at, from, to, amount, description, kind: 'budget' });
 }
 export function defaultSupplyPolicy(w: World, e: Establishment): SupplyPolicy {
   const recipe = w.season.config.recipes.find((r) => r.id === e.specialization);

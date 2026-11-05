@@ -1,0 +1,1067 @@
+<title>Raio-x do frete</title>
+<meta name="claude:viewport-fit-sides" content="cover" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@500;600&display=swap"
+/>
+<style>
+  /* Layout: uma coluna de leitura, como o livro-caixa do jogo; números grandes só onde são a notícia. */
+  :root {
+    --noite: #121410;
+    --chapa: #1a1d17;
+    --chapa-2: #242820;
+    --borda: #3a3f31;
+    --creme: #f3e7cc;
+    --apagado: #aaa48f;
+    --lavoura: #a6e05a;
+    --ouro: #f2bd3c;
+    --brasa: #f47a5e;
+    --ceu: #6cb8e8;
+    --madeira: #8a6a44;
+    --display: 'Archivo', 'Archivo Narrow', 'Arial Narrow', sans-serif;
+    --texto: 'Archivo', 'Segoe UI', system-ui, sans-serif;
+    --mono: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
+    color-scheme: dark;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    background: var(--noite);
+    color: var(--creme);
+    font: 400 17px/1.55 var(--texto);
+    background-image:
+      linear-gradient(var(--chapa) 1px, transparent 1px),
+      linear-gradient(90deg, var(--chapa) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+  main {
+    max-width: 920px;
+    margin: 0 auto;
+    padding-block: 40px 80px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    display: grid;
+    gap: 56px;
+  }
+  h1,
+  h2,
+  h3 {
+    margin: 0;
+    font-family: var(--display);
+    font-stretch: 68%;
+    font-weight: 900;
+    text-transform: uppercase;
+    line-height: 0.95;
+    text-wrap: balance;
+  }
+  h1 {
+    font-size: clamp(38px, 7vw, 68px);
+  }
+  h2 {
+    font-size: clamp(28px, 4.5vw, 40px);
+  }
+  h3 {
+    font-size: 22px;
+  }
+  p {
+    margin: 0;
+    max-width: 64ch;
+  }
+  .rotulo {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 12.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ouro);
+  }
+  section {
+    display: grid;
+    gap: 18px;
+  }
+  .apagado {
+    color: var(--apagado);
+  }
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+  b.brasa,
+  .brasa {
+    color: var(--brasa);
+  }
+  b.lavoura,
+  .lavoura {
+    color: var(--lavoura);
+  }
+  b.ouro,
+  .ouro {
+    color: var(--ouro);
+  }
+
+  /* Abertura: a conta do frete como uma nota de papel. */
+  .nota {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2px;
+    background: var(--borda);
+    border: 2px solid var(--borda);
+  }
+  .nota > div {
+    background: var(--chapa);
+    padding: 18px 18px 16px;
+    display: grid;
+    gap: 4px;
+  }
+  .nota big {
+    font-family: var(--display);
+    font-stretch: 66%;
+    font-weight: 900;
+    font-size: clamp(32px, 5vw, 46px);
+    line-height: 1;
+  }
+  .nota small {
+    font-size: 14px;
+    color: var(--apagado);
+  }
+
+  /* Caminhão: a carga real dentro da caçamba. */
+  .caminhoes {
+    display: grid;
+    gap: 16px;
+  }
+  .cam {
+    display: grid;
+    grid-template-columns: 150px minmax(0, 1fr) 140px;
+    gap: 14px;
+    align-items: center;
+  }
+  .cam-nome {
+    font-weight: 700;
+  }
+  .cam-nome small {
+    display: block;
+    font-weight: 400;
+    font-size: 13.5px;
+    color: var(--apagado);
+  }
+  .cacamba {
+    position: relative;
+    height: 34px;
+    background: var(--chapa-2);
+    box-shadow: inset 0 0 0 2px var(--borda);
+  }
+  .cacamba i {
+    position: absolute;
+    inset: 4px auto 4px 4px;
+    background: var(--ouro);
+    min-width: 3px;
+  }
+  .cacamba.cheia i {
+    background: var(--lavoura);
+  }
+  .cacamba span {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--apagado);
+  }
+  .cam-frete {
+    text-align: right;
+    font-family: var(--display);
+    font-stretch: 70%;
+    font-weight: 800;
+    font-size: 24px;
+  }
+  .cam-frete small {
+    display: block;
+    font-family: var(--texto);
+    font-stretch: 100%;
+    font-weight: 400;
+    font-size: 12.5px;
+    color: var(--apagado);
+  }
+
+  /* Tabela por produto. */
+  .tabela {
+    overflow-x: auto;
+    border: 2px solid var(--borda);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+    min-width: 620px;
+  }
+  th,
+  td {
+    padding: 10px 14px;
+    text-align: right;
+    border-bottom: 1px solid var(--borda);
+  }
+  th:first-child,
+  td:first-child {
+    text-align: left;
+  }
+  th {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--apagado);
+    background: var(--chapa);
+  }
+  td {
+    background: var(--chapa-2);
+    font-variant-numeric: tabular-nums;
+  }
+  tr.bom td {
+    background: color-mix(in srgb, var(--lavoura) 9%, var(--chapa-2));
+  }
+
+  /* Gráfico: frete por unidade pela quantidade da viagem. */
+  .grafico {
+    background: var(--chapa);
+    border: 2px solid var(--borda);
+    padding: 16px 16px 10px;
+  }
+  .grafico svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .grafico svg text {
+    font-family: var(--mono);
+    font-size: 11px;
+    fill: var(--apagado);
+  }
+  .grafico svg .forte {
+    fill: var(--creme);
+    font-family: var(--texto);
+    font-weight: 700;
+    font-size: 12.5px;
+  }
+
+  /* Espiral: quatro passos que se alimentam. */
+  .espiral {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    counter-reset: passo;
+  }
+  .espiral li {
+    list-style: none;
+    position: relative;
+    padding: 14px 14px 16px;
+    background: var(--chapa);
+    border: 2px solid var(--borda);
+    font-size: 15px;
+  }
+  .espiral li b {
+    display: block;
+    font-family: var(--display);
+    font-stretch: 70%;
+    font-weight: 800;
+    font-size: 20px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .espiral li::after {
+    content: '→';
+    position: absolute;
+    right: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--brasa);
+    font-weight: 700;
+    z-index: 1;
+  }
+  .espiral li:last-child::after {
+    content: '↺';
+    right: 8px;
+    top: 12px;
+    transform: none;
+  }
+  .espiral {
+    padding: 0;
+    margin: 0;
+  }
+
+  /* Lacunas e propostas: fichas com faixa de gravidade. */
+  .fichas {
+    display: grid;
+    gap: 10px;
+  }
+  .ficha {
+    display: grid;
+    grid-template-columns: 112px minmax(0, 1fr);
+    gap: 16px;
+    padding: 16px 18px;
+    background: var(--chapa);
+    border: 2px solid var(--borda);
+    border-left: 6px solid var(--tom, var(--borda));
+  }
+  .ficha.alta {
+    --tom: var(--brasa);
+  }
+  .ficha.media {
+    --tom: var(--ouro);
+  }
+  .ficha.baixa {
+    --tom: var(--ceu);
+  }
+  .ficha .selo {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--tom);
+  }
+  .ficha h3 {
+    margin-bottom: 6px;
+  }
+  .ficha p + p {
+    margin-top: 6px;
+  }
+  .ficha .quem {
+    font-size: 14px;
+    color: var(--apagado);
+  }
+
+  /* Esboços de tela: pedaços do jogo desenhados como no app. */
+  .telas {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+  .tela {
+    background: var(--chapa);
+    border: 2px solid var(--borda);
+    padding: 16px;
+    display: grid;
+    gap: 12px;
+    align-content: start;
+  }
+  .tela h3 {
+    font-size: 20px;
+  }
+  .mock {
+    background: var(--noite);
+    border: 2px solid var(--borda);
+    padding: 12px;
+    display: grid;
+    gap: 10px;
+    font-size: 14px;
+  }
+  .linha {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    font-variant-numeric: tabular-nums;
+  }
+  .barra-split {
+    display: flex;
+    height: 14px;
+  }
+  .barra-split i {
+    display: block;
+    height: 100%;
+  }
+  .chip {
+    display: inline-block;
+    padding: 2px 8px;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: 1px solid currentColor;
+  }
+  .opcoes {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .opcoes div {
+    border: 2px solid var(--borda);
+    padding: 8px;
+    display: grid;
+    gap: 2px;
+    font-size: 13px;
+  }
+  .opcoes div.on {
+    border-color: var(--lavoura);
+  }
+  .opcoes big {
+    font-family: var(--display);
+    font-stretch: 70%;
+    font-weight: 800;
+    font-size: 20px;
+  }
+  .degraus {
+    display: grid;
+    gap: 4px;
+  }
+  .degraus div {
+    display: grid;
+    grid-template-columns: 110px minmax(0, 1fr) 80px;
+    gap: 8px;
+    align-items: center;
+    font-size: 13px;
+  }
+  .degraus i {
+    display: block;
+    height: 12px;
+  }
+
+  .ordem {
+    display: grid;
+    gap: 8px;
+    padding: 0;
+    margin: 0;
+    counter-reset: o;
+  }
+  .ordem li {
+    list-style: none;
+    counter-increment: o;
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: 12px;
+    align-items: baseline;
+  }
+  .ordem li::before {
+    content: counter(o);
+    font-family: var(--display);
+    font-stretch: 70%;
+    font-weight: 900;
+    font-size: 30px;
+    color: var(--ouro);
+  }
+  footer {
+    font-size: 14px;
+    color: var(--apagado);
+  }
+
+  @media (max-width: 720px) {
+    .nota,
+    .espiral,
+    .telas {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .espiral li::after {
+      content: '↓';
+      right: 50%;
+      top: auto;
+      bottom: -16px;
+      transform: translateX(50%);
+    }
+    .espiral li:last-child::after {
+      content: '↺';
+      right: 8px;
+      bottom: auto;
+      top: 12px;
+      transform: none;
+    }
+    .cam {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 6px;
+    }
+    .cam-frete {
+      text-align: left;
+    }
+    .ficha {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 6px;
+    }
+    .opcoes {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+</style>
+
+<main>
+  <header style="display: grid; gap: 16px">
+    <span class="rotulo">Aftermarket · mundo de teste com ~550 bots · 04/11/2026</span>
+    <h1>O frete custou quase o dobro da mercadoria</h1>
+    <p class="apagado">
+      Raio-x da loja Campinas: o que o repor sozinho pagou para trazer mercadoria, por que isso
+      acontece no motor do jogo, e o que mudar nas regras e nas telas.
+    </p>
+    <div class="nota">
+      <div>
+        <span class="rotulo">Mercadoria comprada</span><big class="num">R$ 206 mil</big
+        ><small>680 viagens até a loja</small>
+      </div>
+      <div>
+        <span class="rotulo">Frete pago</span><big class="num brasa">R$ 398 mil</big
+        ><small>193% da mercadoria</small>
+      </div>
+      <div>
+        <span class="rotulo">De cada R$ 100 vendidos</span><big class="num brasa">R$ 67</big
+        ><small>foram para o frete (extrato da loja)</small>
+      </div>
+    </div>
+  </header>
+
+  <section>
+    <span class="rotulo">O que aconteceu</span>
+    <h2>Caminhão de 30 toneladas levando 8 sacos de arroz</h2>
+    <p>
+      Cada viagem cobra o caminhão inteiro: diesel, motorista, pedágio, manuseio e a ida do caminhão
+      vazio até o vendedor. Isso dá cerca de <b class="ouro">R$ 700 por viagem</b> perto de
+      Campinas, leve o caminhão 8 sacos ou 300. A loja fez 168 viagens de arroz com 8 sacos em
+      média. Na mediana, cada caminhão saiu com <b class="brasa">0,1%</b> da capacidade ocupada.
+    </p>
+    <div class="caminhoes" aria-label="Ocupação do caminhão em três viagens">
+      <div class="cam">
+        <span class="cam-nome">Arroz, como foi<small>8 sacos de 5 kg = 40 kg</small></span>
+        <span class="cacamba"><i style="width: 0.6%"></i><span>0,1% do caminhão</span></span>
+        <span class="cam-frete brasa num">R$ 88,27<small>de frete por saco</small></span>
+      </div>
+      <div class="cam">
+        <span class="cam-nome">Arroz, se levasse 300<small>1,5 t, mesmo vendedor</small></span>
+        <span class="cacamba cheia"><i style="width: 5%"></i><span>5% do caminhão</span></span>
+        <span class="cam-frete lavoura num">R$ 2,34<small>de frete por saco</small></span>
+      </div>
+      <div class="cam">
+        <span class="cam-nome">Feijão, viagem única<small>400 pacotes de 1 kg, 443 km</small></span>
+        <span class="cacamba cheia"><i style="width: 1.4%"></i><span>400 kg</span></span>
+        <span class="cam-frete lavoura num">R$ 6,60<small>de frete por pacote</small></span>
+      </div>
+    </div>
+    <p class="apagado">
+      A cotação de 300 sacos foi feita agora, no mesmo mundo, com os mesmos vendedores. O feijão
+      veio de 5 vezes mais longe e mesmo assim saiu 13 vezes mais barato por unidade, porque veio
+      numa carga só.
+    </p>
+  </section>
+
+  <section>
+    <span class="rotulo">Por produto · loja Campinas</span>
+    <div class="tabela">
+      <table>
+        <thead>
+          <tr>
+            <th>Produto</th>
+            <th>Viagens</th>
+            <th>Por viagem</th>
+            <th>Mercadoria / un</th>
+            <th>Frete / un</th>
+            <th>Frete ÷ mercadoria</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Arroz 5 kg</td>
+            <td>168</td>
+            <td>8 sacos</td>
+            <td>R$ 22,39</td>
+            <td class="brasa">R$ 88,27</td>
+            <td class="brasa">394%</td>
+          </tr>
+          <tr>
+            <td>Açúcar 5 kg</td>
+            <td>168</td>
+            <td>4 pacotes</td>
+            <td>R$ 18,58</td>
+            <td class="brasa">R$ 75,95</td>
+            <td class="brasa">409%</td>
+          </tr>
+          <tr>
+            <td>Utensílios (kit)</td>
+            <td>169</td>
+            <td>9 kits</td>
+            <td>R$ 68,75</td>
+            <td class="brasa">R$ 55,17</td>
+            <td class="brasa">80%</td>
+          </tr>
+          <tr>
+            <td>Leite 1 L</td>
+            <td>174</td>
+            <td>49 caixas</td>
+            <td>R$ 6,07</td>
+            <td class="brasa">R$ 16,34</td>
+            <td class="brasa">269%</td>
+          </tr>
+          <tr class="bom">
+            <td>Feijão 1 kg</td>
+            <td>1</td>
+            <td>400 pacotes</td>
+            <td>R$ 7,03</td>
+            <td class="lavoura">R$ 6,60</td>
+            <td class="lavoura">94%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="apagado">
+      As lojas-bot pagam 13% de frete sobre a mercadoria, porque compram quase sempre na mesma
+      cidade (6 km na mediana). Mesmo assim, 62% das viagens delas levam menos de 5% do caminhão: o
+      desperdício existe no mundo todo, só que mais barato para elas.
+    </p>
+  </section>
+
+  <section>
+    <span class="rotulo">A conta que o jogador não vê</span>
+    <h2>Quanto mais leva, menos paga por unidade</h2>
+    <p>
+      Arroz comprado a R$ 20,56 de um atacado a 91 km. A linha mostra o frete por saco conforme a
+      quantidade da viagem. Abaixo da linha dourada, o saco ainda dá lucro vendido a R$ 65,90;
+      abaixo da verde, o frete fica em até 10% da mercadoria.
+    </p>
+    <div class="grafico">
+      <svg
+        id="curva"
+        viewBox="0 0 640 260"
+        role="img"
+        aria-label="Frete por saco de arroz conforme a quantidade levada na viagem: R$ 88 com 8 sacos, R$ 7 com 100, R$ 2,34 com 300."
+      ></svg>
+    </div>
+  </section>
+
+  <section>
+    <span class="rotulo">Por que o repor sozinho fez isso</span>
+    <h2>Uma espiral que se alimenta</h2>
+    <ol class="espiral">
+      <li>
+        <b>Caixa apertado</b>O orçamento do dia e a reserva de caixa limitam o que a regra pode
+        gastar.
+      </li>
+      <li>
+        <b>Compra picada</b>Em vez de esperar, a regra corta a quantidade para caber no dinheiro: 4
+        a 9 unidades.
+      </li>
+      <li><b>Viagem cheia</b>Cada compra picada paga um caminhão inteiro, cerca de R$ 700.</li>
+      <li>
+        <b>Lucro some</b>O custo da unidade passa do preço de venda e o caixa aperta ainda mais.
+      </li>
+    </ol>
+    <p class="apagado">
+      No código, a regra recalcula a compra com “o que dá para pagar” e não confere se o frete por
+      unidade ainda faz sentido. A trava “Só comprar com lucro”, que entrou nesta semana, já
+      bloqueia o pior caso (a unidade chegar mais cara do que a venda). Ela não resolve o resto da
+      espiral.
+    </p>
+  </section>
+
+  <section>
+    <span class="rotulo">Lacunas no motor</span>
+    <h2>Oito furos, do mais caro ao mais leve</h2>
+    <div class="fichas">
+      <article class="ficha alta">
+        <span class="selo">Alta</span>
+        <div>
+          <h3>A compra encolhe para caber no caixa</h3>
+          <p>
+            Sem dinheiro para a carga inteira, a regra compra o que dá e paga a viagem cheia. O
+            certo seria esperar ou comprar uma carga que valha a viagem.
+          </p>
+          <p class="quem">Afeta jogador e bots · supply.ts</p>
+        </div>
+      </article>
+      <article class="ficha alta">
+        <span class="selo">Alta</span>
+        <div>
+          <h3>Um produto por caminhão</h3>
+          <p>
+            Arroz e açúcar do mesmo atacado, no mesmo dia, viajam em dois caminhões. A loja com seis
+            produtos paga seis viagens. No mundo real, o atacado manda tudo junto.
+          </p>
+          <p class="quem">Afeta jogador e bots · cotação e reposição</p>
+        </div>
+      </article>
+      <article class="ficha media">
+        <span class="selo">Média</span>
+        <div>
+          <h3>Caminhão grande para carga pequena</h3>
+          <p>
+            A cotação usa o caminhão livre mais perto, sem olhar o tamanho. Oito sacos vão num
+            pesado de 30 t quando um leve de 8 t sairia mais barato.
+          </p>
+          <p class="quem">Afeta todos · engine.ts, cotação</p>
+        </div>
+      </article>
+      <article class="ficha media">
+        <span class="selo">Média</span>
+        <div>
+          <h3>Não existe carga fracionada</h3>
+          <p>
+            No Brasil, carga pequena viaja por transportadoras de fracionado, que cobram por quilo e
+            juntam encomendas de vários clientes. No jogo, toda remessa é um caminhão fretado só
+            para ela.
+          </p>
+          <p class="quem">Decisão de realismo · Pedro</p>
+        </div>
+      </article>
+      <article class="ficha media">
+        <span class="selo">Média</span>
+        <div>
+          <h3>O frete ruim fica preso no custo médio</h3>
+          <p>
+            O custo da mercadoria na loja mistura todas as compras. Depois de uma fase ruim, o “seu
+            custo” fica errado por semanas e o painel de preço recomenda preços altos demais
+            (açúcar: custo médio R$ 98,35, última compra R$ 28,91).
+          </p>
+          <p class="quem">Afeta a leitura do jogador · cálculo de custo e telas</p>
+        </div>
+      </article>
+      <article class="ficha alta">
+        <span class="selo">Alta</span>
+        <div>
+          <h3>Transportadora de jogador não pode ser contratada</h3>
+          <p>
+            O motor só aceita frete de empresa-bot ou da própria frota do comprador. Um amigo que
+            monte uma transportadora nunca recebe carga dos outros, nem pela compra manual nem pelo
+            repor sozinho. Os R$ 398 mil da loja Campinas foram para cerca de 100 empresas-bot.
+          </p>
+          <p class="quem">Para o João · engine.ts (regra do transportador) e supply.ts</p>
+        </div>
+      </article>
+      <article class="ficha media">
+        <span class="selo">Média</span>
+        <div>
+          <h3>A transportadora não decide o próprio preço</h3>
+          <p>
+            O preço do frete é o custo da viagem mais uma margem fixa no código (15%, 20% ou 30%,
+            conforme a empresa). Quem tem caminhão não escolhe cobrar mais caro, mais barato, nem
+            oferecer carga pequena por quilo.
+          </p>
+          <p class="quem">Para o João e o Pedro · cotação</p>
+        </div>
+      </article>
+      <article class="ficha baixa">
+        <span class="selo">Baixa</span>
+        <div>
+          <h3>Nenhuma tela separa o frete</h3>
+          <p>
+            O frete aparece somado ao preço (“cada, já com frete”) ou escondido no custo médio. O
+            Resultado da loja não tem uma linha de frete. Foi preciso uma investigação para
+            descobrir que ele levou dois terços das vendas.
+          </p>
+          <p class="quem">Interface · Pedro e Claude</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section>
+    <span class="rotulo">Propostas nas regras</span>
+    <h2>O que recomendo mudar no motor</h2>
+    <p>
+      O frete não some do jogo: é a receita de uma transportadora, que pode ser de um bot ou de
+      outro jogador. Então nenhuma proposta barateia a viagem por mágica. Cada uma faz o caminhão
+      andar mais cheio, e quem leva a carga continua ganhando pelo serviço.
+    </p>
+    <div class="fichas">
+      <article class="ficha alta">
+        <span class="selo">Primeiro</span>
+        <div>
+          <h3>Lote mínimo que vale a viagem</h3>
+          <p>
+            O repor sozinho só compra quando o frete fica em até 15% da mercadoria. Se o caixa não
+            paga essa carga, espera e avisa, em vez de picar a compra. Para a loja, é a mesma ideia
+            que a indústria já usa (“meia carga de caminhão”), com um limite pensado para varejo.
+          </p>
+          <p class="quem">
+            Para o João · precisa da prova da economia (5 sementes), porque muda os bots
+          </p>
+        </div>
+      </article>
+      <article class="ficha alta">
+        <span class="selo">Segundo</span>
+        <div>
+          <h3>Carga com vários produtos</h3>
+          <p>
+            Compras do mesmo vendedor para o mesmo destino, na mesma rodada, viajam juntas e dividem
+            a viagem pelo peso. Atacados passam a valer muito para lojas pequenas, o que é o papel
+            deles na vida real.
+          </p>
+          <p class="quem">Para o João · mexe na cotação, nas remessas e nos pedidos</p>
+        </div>
+      </article>
+      <article class="ficha media">
+        <span class="selo">Terceiro</span>
+        <div>
+          <h3>Escolher o caminhão pelo tamanho da carga</h3>
+          <p>
+            A cotação tenta primeiro o menor caminhão em que a carga cabe. Mudança pequena, ganho
+            imediato em todas as viagens curtas.
+          </p>
+          <p class="quem">Para o João · engine.ts</p>
+        </div>
+      </article>
+      <article class="ficha media">
+        <span class="selo">Quarto</span>
+        <div>
+          <h3>Abrir o frete para transportadoras de jogadores</h3>
+          <p>
+            Quem tem uma transportadora publica uma tabela: preço por km, mínimo por viagem e até
+            que distância atende. A cotação passa a considerar essas tabelas junto com as dos bots,
+            e o repor sozinho escolhe a mais barata. O dono não precisa aprovar cada viagem:
+            publicar a tabela é aceitar as cargas dentro dela. Bots usam a tabela padrão de hoje.
+          </p>
+          <p class="quem">Para o João · regra do transportador, cotação e reposição</p>
+        </div>
+      </article>
+      <article class="ficha baixa">
+        <span class="selo">Para decidir</span>
+        <div>
+          <h3>Carga fracionada como serviço</h3>
+          <p>
+            Uma transportadora (bot ou jogador) pode oferecer, na mesma tabela, carga fracionada:
+            preço por quilo, saída uma vez por dia e várias encomendas no mesmo caminhão. A loja
+            pequena paga pelo que manda, e a transportadora lucra enchendo o caminhão com clientes
+            diferentes. Vira um negócio novo para quem quiser montar uma transportadora.
+          </p>
+          <p class="quem">Decisão de design · Pedro</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section>
+    <span class="rotulo">Telas · feito em 04/11</span>
+    <h2>Mostrar o frete onde a decisão acontece</h2>
+    <p>
+      Estas quatro mudanças já estão no jogo. Elas só mostram o frete: não mudam nenhuma regra da
+      economia. Na gaveta, a lista de fornecedores também passou a ser escolhida pelo custo já
+      entregue. Antes ela cortava pelo preço da mercadoria e sugeria arroz do Rio Grande do Sul, a
+      1.537 km, sem nem considerar o atacado de São Paulo, a 91 km.
+    </p>
+    <div class="telas">
+      <div class="tela">
+        <h3>Gaveta “Mandar buscar”</h3>
+        <p class="apagado">
+          Mostrar mercadoria e frete separados, e o que acontece com o frete por unidade em cada
+          tamanho de carga.
+        </p>
+        <div class="mock">
+          <div class="opcoes">
+            <div>
+              <span class="apagado">8 sacos</span><big class="brasa">R$ 88</big
+              ><span class="apagado">frete por saco</span>
+            </div>
+            <div>
+              <span class="apagado">100 sacos</span><big class="ouro">R$ 7</big
+              ><span class="apagado">frete por saco</span>
+            </div>
+            <div class="on">
+              <span class="apagado">300 sacos</span><big class="lavoura">R$ 2,34</big
+              ><span class="apagado">frete por saco</span>
+            </div>
+          </div>
+          <div class="barra-split" aria-hidden="true">
+            <i style="width: 31%; background: var(--ceu)"></i
+            ><i style="width: 4%; background: var(--ouro)"></i
+            ><i style="width: 65%; background: var(--lavoura)"></i>
+          </div>
+          <div class="linha apagado">
+            <span>mercadoria R$ 20,56</span><span>frete R$ 2,34</span><span>sobra R$ 43</span>
+          </div>
+        </div>
+      </div>
+      <div class="tela">
+        <h3>Resultado da loja</h3>
+        <p class="apagado">
+          Frete vira um degrau próprio na cascata do lucro, com a porcentagem das vendas e um alerta
+          quando passar de 15%.
+        </p>
+        <div class="mock">
+          <div class="degraus">
+            <div>
+              <span>Vendas</span><i style="background: var(--lavoura); width: 100%"></i
+              ><span class="num">R$ 579 mil</span>
+            </div>
+            <div>
+              <span>Mercadoria</span><i style="background: var(--ceu); width: 35%"></i
+              ><span class="num">−R$ 205 mil</span>
+            </div>
+            <div>
+              <span class="brasa">Frete · 67%</span
+              ><i style="background: var(--brasa); width: 67%"></i
+              ><span class="num brasa">−R$ 389 mil</span>
+            </div>
+            <div>
+              <span>Equipe</span><i style="background: var(--apagado); width: 2%"></i
+              ><span class="num">−R$ 13 mil</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tela">
+        <h3>Cartão da prateleira</h3>
+        <p class="apagado">
+          Quando o frete passa de 30% do custo das últimas cargas, o cartão ganha um selo. No jogo,
+          o selo mostra só a porcentagem; a conta completa fica no Resultado.
+        </p>
+        <div class="mock">
+          <div><span class="chip brasa">Frete alto · 394%</span></div>
+          <div class="linha"><span>Chega a</span><b class="num">R$ 110,66</b></div>
+          <div class="linha apagado"><span>mercadoria R$ 22,39 + frete R$ 88,27</span></div>
+        </div>
+      </div>
+      <div class="tela">
+        <h3>Regra de repor sozinho</h3>
+        <p class="apagado">
+          Feito: a próxima reposição mostra o frete por unidade e quem leva. Depende do lote mínimo
+          (motor): dizer a carga mínima e por que está esperando, como no esboço.
+        </p>
+        <div class="mock">
+          <div class="linha"><span>Carga mínima</span><b>300 sacos</b></div>
+          <div class="linha apagado">
+            <span>Frete ficaria em</span><span>R$ 2,34 por saco (11%)</span>
+          </div>
+          <div class="linha"><span class="ouro">Esperando caixa para a carga mínima</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <span class="rotulo">Ordem sugerida</span>
+    <ol class="ordem">
+      <li>
+        <span><b>Telas que mostram o frete</b> (gaveta, Resultado, cartão, regra). Feito.</span>
+      </li>
+      <li>
+        <span
+          ><b>Lote mínimo no repor sozinho</b>, com o João e a prova da economia. É o que interrompe
+          a espiral.</span
+        >
+      </li>
+      <li>
+        <span
+          ><b>Caminhão do tamanho da carga</b> e <b>carga com vários produtos</b>, também com o
+          João.</span
+        >
+      </li>
+      <li>
+        <span
+          ><b>Tabela de frete das transportadoras</b>, abrindo o frete para empresas de jogadores. É
+          a base para o fracionado.</span
+        >
+      </li>
+      <li>
+        <span
+          ><b>Fracionado como serviço</b>, se você decidir que o jogo deve ter essa mecânica.</span
+        >
+      </li>
+    </ol>
+  </section>
+
+  <footer>
+    Dados lidos do mundo salvo de teste (.runtime/design-b.sqlite) em 04/11/2026: 25.093 remessas e
+    611 mil lançamentos. Cotações de 300 unidades feitas no mesmo mundo pelo motor do jogo. Custo da
+    viagem conforme a cotação do motor: diesel, manutenção, motorista, pedágio, manuseio (R$ 180 +
+    R$ 5 por tonelada), deslocamento do caminhão vazio e mínimo de R$ 280 por viagem com terceiros.
+  </footer>
+</main>
+
+<script>
+  (function () {
+    var svg = document.getElementById('curva');
+    var ns = 'http://www.w3.org/2000/svg';
+    var W = 640,
+      H = 260,
+      x0 = 54,
+      x1 = 616,
+      y0 = 20,
+      y1 = 214;
+    var viagem = 702,
+      merc = 20.56,
+      venda = 65.9;
+    var qMin = 4,
+      qMax = 400,
+      fMax = 100;
+    var lx = function (q) {
+      return x0 + ((Math.log(q) - Math.log(qMin)) / (Math.log(qMax) - Math.log(qMin))) * (x1 - x0);
+    };
+    var ly = function (f) {
+      return y1 - (Math.min(f, fMax) / fMax) * (y1 - y0);
+    };
+    function el(tag, attrs, text) {
+      var e = document.createElementNS(ns, tag);
+      for (var k in attrs) e.setAttribute(k, attrs[k]);
+      if (text) e.textContent = text;
+      svg.appendChild(e);
+      return e;
+    }
+    [0, 25, 50, 75, 100].forEach(function (f) {
+      el('line', {
+        x1: x0,
+        x2: x1,
+        y1: ly(f),
+        y2: ly(f),
+        stroke: 'var(--borda)',
+        'stroke-width': 1,
+      });
+      el('text', { x: x0 - 8, y: ly(f) + 4, 'text-anchor': 'end' }, 'R$ ' + f);
+    });
+    [4, 8, 20, 50, 100, 300].forEach(function (q) {
+      el('text', { x: lx(q), y: y1 + 18, 'text-anchor': 'middle' }, String(q));
+    });
+    el(
+      'text',
+      { x: (x0 + x1) / 2, y: H - 6, 'text-anchor': 'middle' },
+      'sacos na mesma viagem (escala que dobra)',
+    );
+    var lucro = venda - merc,
+      dez = merc * 0.1;
+    el('line', {
+      x1: x0,
+      x2: x1,
+      y1: ly(lucro),
+      y2: ly(lucro),
+      stroke: 'var(--ouro)',
+      'stroke-width': 2,
+      'stroke-dasharray': '6 5',
+    });
+    el(
+      'text',
+      { x: x1, y: ly(lucro) - 6, 'text-anchor': 'end', fill: 'var(--ouro)' },
+      'acima disso, vende no prejuízo (R$ 45)',
+    );
+    el('line', {
+      x1: x0,
+      x2: x1,
+      y1: ly(dez),
+      y2: ly(dez),
+      stroke: 'var(--lavoura)',
+      'stroke-width': 2,
+      'stroke-dasharray': '6 5',
+    });
+    el(
+      'text',
+      { x: x1, y: ly(dez) - 6, 'text-anchor': 'end', fill: 'var(--lavoura)' },
+      'frete em 10% da mercadoria',
+    );
+    var d = '';
+    for (var i = 0; i <= 120; i++) {
+      var q = Math.exp(Math.log(qMin) + ((Math.log(qMax) - Math.log(qMin)) * i) / 120);
+      d += (i ? 'L' : 'M') + lx(q).toFixed(1) + ' ' + ly(viagem / q).toFixed(1);
+    }
+    el('path', { d: d, fill: 'none', stroke: 'var(--creme)', 'stroke-width': 3 });
+    [
+      [8, 'var(--brasa)', 'como foi: R$ 88'],
+      [100, 'var(--ouro)', '100 sacos: R$ 7'],
+      [300, 'var(--lavoura)', '300 sacos: R$ 2,34'],
+    ].forEach(function (p) {
+      var px = lx(p[0]),
+        py = ly(viagem / p[0]);
+      el('rect', { x: px - 5, y: py - 5, width: 10, height: 10, fill: p[1] });
+      el('text', { x: px + 10, y: py - 10, class: 'forte' }, p[2]);
+    });
+  })();
+</script>

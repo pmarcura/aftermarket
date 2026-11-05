@@ -550,3 +550,10 @@
     padding: 4px 14px 16px;
   }
 }
+
+/* Ilustração do produto num quadrado pequeno (listas, talões, botões). */
+.produto-mini {
+  flex: none;
+  object-fit: contain;
+  image-rendering: pixelated;
+}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   ChevronDown,
   ChevronUp,
@@ -42,6 +42,9 @@ import {
 } from '../../../../packages/simulation/src/metrics';
 import { InfrastructureDetails } from '../components/InfrastructureDetails';
 import '../design/mapa.css';
+import { usePendencias } from '../features/inicio/pendencias';
+import { estadoDoNegocio } from '../features/business/BusinessCards';
+import { CidadePainel } from '../features/mapa/CidadePainel';
 
 const spritePorCategoria: Record<Category, Sprite> = {
   retail: 'loja',
@@ -78,7 +81,8 @@ export function MapPage() {
   const [layers, setLayers] = useState<Layers>(defaultLayers),
     [expanded, setExpanded] = useState(false);
   const [ownership, setOwnership] = useState<'' | 'mine' | 'others' | 'available'>(''),
-    [details, setDetails] = useState(false);
+    [details, setDetails] = useState(false),
+    [cidade, setCidade] = useState<string | null>(null);
   const p = world.properties.find((x) => x.id === selectedId),
     e = world.establishments.find((x) => x.propertyId === selectedId);
   const owner = world.companies.find((c) => c.id === p?.ownerId);
@@ -86,6 +90,45 @@ export function MapPage() {
   const labor = p ? laborMarket(world, p) : null,
     logistics = p ? logisticsQuality(world, p) : null,
     tariff = p ? utilityTariff(world, p) : null;
+  // Spec 008 R1: a mesma lista de pendências do Início e do sino, projetada nos pinos do mapa.
+  const pendencias = usePendencias();
+  const { alerts, motivos } = useMemo(() => {
+    const alerts: Record<string, 'brasa' | 'ouro'> = {},
+      motivos: Record<string, string[]> = {};
+    for (const x of pendencias) {
+      if (!x.negocioId) continue;
+      const unidade = world.establishments.find((u) => u.id === x.negocioId);
+      if (!unidade) continue;
+      const id = unidade.propertyId;
+      if (x.tom === 'brasa' || !alerts[id]) alerts[id] = x.tom;
+      (motivos[id] ??= []).push(x.titulo);
+    }
+    return { alerts, motivos };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendencias, world.revision]);
+  const hoverCard = (id: string) => {
+    const lote = world.properties.find((x) => x.id === id);
+    if (!lote) return null;
+    const unidade = world.establishments.find((x) => x.propertyId === id);
+    const dono = world.companies.find((c) => c.id === lote.ownerId);
+    if (!unidade || !dono)
+      return { titulo: lote.name, linhas: [`${lote.city} · à venda · ${cr(lote.price)}`] };
+    const receita = world.season.config.recipes.find((r) => r.id === unidade.specialization);
+    const linhas = [
+      `${dono.id === actor ? 'Seu negócio' : dono.name} · ${receita?.name ?? categoryInfo[unidade.category].label}`,
+    ];
+    if (dono.id === actor) {
+      linhas.push(estadoDoNegocio(world, unidade).texto);
+      for (const m of motivos[id] ?? []) linhas.push(m);
+    } else {
+      const vende = world.offers
+        .filter((o) => o.establishmentId === unidade.id && (unidade.inventory[o.product] ?? 0) > 0)
+        .map((o) => products[o.product].name);
+      if (vende.length)
+        linhas.push(`Vende ${vende.slice(0, 3).join(', ')}${vende.length > 3 ? '…' : ''}`);
+    }
+    return { titulo: unidade.name, linhas };
+  };
   const layerList: { key: keyof Layers; label: string; icon: typeof Building2 }[] = [
     { key: 'companies', label: 'Empresas construídas', icon: Building2 },
     { key: 'available', label: 'Terrenos à venda', icon: MapPin },
@@ -109,7 +152,17 @@ export function MapPage() {
   return (
     <div className="map-page">
       <div className="main-map">
-        <WorldMap layers={layers} onSelect={select} ownership={ownership} />
+        <WorldMap
+          layers={layers}
+          onSelect={select}
+          ownership={ownership}
+          alerts={alerts}
+          hoverCard={hoverCard}
+          onCitySelect={(id) => {
+            select(null);
+            setCidade(id);
+          }}
+        />
         <div className="map-hud-top">
           <div className="map-filter-bar" role="group" aria-label="Filtrar mapa">
             {filtros.map(([id, rotulo]) => (
@@ -168,9 +221,18 @@ export function MapPage() {
             <i className="livre" />
             Terreno livre
           </span>
+          <span>
+            <i className="alerta-brasa" />
+            Precisa de você
+          </span>
+          <span>
+            <i className="alerta-ouro" />
+            Atenção
+          </span>
         </div>
       </div>
 
+      {cidade && !p && <CidadePainel regionId={cidade} onClose={() => setCidade(null)} />}
       {p && sprite && (
         <aside
           className="lote-gaveta"

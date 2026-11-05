@@ -1,0 +1,35 @@
+import type { Command } from '../../../../packages/simulation/src/model';
+
+/** Nome curto de cada comando, para a fila de envio ("Enviando: Novo preço"). */
+const ROTULOS: Record<Command['type'], string> = {
+  acceptOrder: 'Aceitar pedido',
+  acceptProposal: 'Aceitar proposta',
+  bidInfrastructure: 'Lance em licitação',
+  buyProperty: 'Compra de imóvel',
+  buyVehicle: 'Compra de caminhão',
+  configureProduction: 'Plano de produção',
+  configureSupply: 'Regra de reposição',
+  createPurchaseRequest: 'Pedido de compra',
+  extract: 'Extração',
+  fulfillInfrastructure: 'Entrega ao governo',
+  installBusiness: 'Montar negócio',
+  mothball: 'Pausar unidade',
+  payObligations: 'Pagar contas',
+  produce: 'Produção',
+  proposeOrder: 'Proposta de pedido',
+  publishOffer: 'Oferta no pregão',
+  rejectOrder: 'Recusar pedido',
+  repayLoan: 'Pagar crédito',
+  requestOrder: 'Pedido',
+  scrapVehicle: 'Desmonte de caminhão',
+  sellVehicle: 'Venda de caminhão',
+  setAutomation: 'Automação',
+  setPrice: 'Novo preço',
+  setWorkforce: 'Equipe',
+  takeRecoveryLoan: 'Crédito de recuperação',
+  toggleOperation: 'Ligar ou pausar operação',
+  trade: 'Compra no pregão',
+  trainWorkforce: 'Treinamento',
+  transferStock: 'Transferência de estoque',
+};
+export const rotuloDoComando = (command: Command) => ROTULOS[command.type] ?? 'Operação';

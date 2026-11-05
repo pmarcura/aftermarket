@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Aftermarket · Animação 2 · Um elo quebra</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Archivo:wght@500;700;800;900&display=block"
+    />
+    <link rel="stylesheet" href="limpo.css" />
+    <style>
+      /* Gatilho: perda e escassez. Mostra como um problema se espalha pela cadeia. */
+      .estado {
+        width: 190px;
+      }
+      .estado.ruim {
+        background: var(--brasa);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="bar">
+      <button id="play">▶ Tocar</button><button id="rst">⟲ Do início</button
+      ><span id="tt">0.0 / 0.0 s</span>
+    </div>
+    <div id="wrap">
+      <div id="stage">
+        <div id="grade"></div>
+        <div class="a tag" id="marca">AFTERMARKET · EM DESENVOLVIMENTO</div>
+
+        <!-- 1. GANCHO: alerta -->
+        <section class="cena" id="c-gancho">
+          <div
+            class="a"
+            id="g-al"
+            style="
+              left: 0;
+              top: 0;
+              width: 1080px;
+              height: 1920px;
+              background: radial-gradient(ellipse at 50% 46%, #ef6a4c66, #0000 68%);
+            "
+          ></div>
+          <div
+            class="a tag brasa"
+            id="g-tag"
+            style="top: 330px; left: 0; right: 0; font-size: 28px"
+          >
+            ALERTA DE MERCADO
+          </div>
+          <div class="a h" id="g-h" style="top: 440px; font-size: 250px; line-height: 0.9">
+            Sem<br /><span class="brasa">soja</span>
+          </div>
+          <img
+            class="a pix"
+            id="g-i"
+            src="../../../apps/web/public/arte/soja-oleo.png"
+            alt=""
+            style="left: 360px; top: 1040px; width: 360px; height: 360px; opacity: 0.5"
+          />
+        </section>
+
+        <!-- 2. CADEIA: tudo funciona, depois um elo quebra e o problema desce -->
+        <section class="cena" id="c-cadeia">
+          <div class="a h" id="t1" style="top: 230px; font-size: 84px">
+            Normalmente,<br />tudo funciona
+          </div>
+          <div class="a h" id="t2" style="top: 230px; font-size: 84px">
+            Aí um elo<br /><span class="brasa">quebra</span>
+          </div>
+          <div class="a h" id="t3" style="top: 230px; font-size: 84px">
+            E todo mundo<br /><span class="brasa">sente</span>
+          </div>
+
+          <div
+            class="a"
+            id="b1"
+            style="left: 526px; top: 608px; width: 8px; height: 42px; background: var(--lime)"
+          ></div>
+          <div
+            class="a"
+            id="b2"
+            style="left: 526px; top: 828px; width: 8px; height: 42px; background: var(--lime)"
+          ></div>
+          <div
+            class="a"
+            id="b3"
+            style="left: 526px; top: 1048px; width: 8px; height: 42px; background: var(--lime)"
+          ></div>
+
+          <div class="a elo" id="a1" style="top: 430px; --c: #5c9e5a">
+            <img class="pix" src="../../../apps/web/public/arte/lavoura.png" alt="" />
+            <div><b>Fazenda</b><small>PLANTA A SOJA</small></div>
+          </div>
+          <div class="a elo" id="a2" style="top: 650px; --c: #8a96a0">
+            <img class="pix" src="../../../apps/web/public/arte/soja-oleo.png" alt="" />
+            <div><b>Fábrica</b><small>FAZ O ÓLEO</small></div>
+          </div>
+          <div class="a elo" id="a3" style="top: 870px; --c: #5aaee6">
+            <img class="pix" src="../../../apps/web/public/arte/loja.png" alt="" />
+            <div><b>Loja</b><small>VENDE O ÓLEO</small></div>
+          </div>
+          <div class="a elo" id="a4" style="top: 1090px; --c: #e8bd4f">
+            <img class="pix" src="../../../apps/web/public/arte/produto-arroz.png" alt="" />
+            <div><b>Famílias</b><small>COMPRAM</small></div>
+          </div>
+
+          <div class="a chip estado" id="ok1" style="left: 760px; top: 496px">OK</div>
+          <div class="a chip estado" id="ok2" style="left: 760px; top: 716px">OK</div>
+          <div class="a chip estado" id="ok3" style="left: 760px; top: 936px">OK</div>
+          <div class="a chip estado" id="ok4" style="left: 760px; top: 1156px">OK</div>
+          <div class="a chip estado ruim" id="ru1" style="left: 760px; top: 496px">SEM SOJA</div>
+          <div class="a chip estado ruim" id="ru2" style="left: 760px; top: 716px">PARADA</div>
+          <div class="a chip estado ruim" id="ru3" style="left: 760px; top: 936px">VAZIA</div>
+          <div class="a chip estado ruim" id="ru4" style="left: 760px; top: 1156px">PREÇO ↑</div>
+        </section>
+
+        <!-- 3. PERGUNTA: e se fosse você? -->
+        <section class="cena" id="c-pergunta">
+          <div class="a h" id="p-t" style="top: 420px; font-size: 120px">
+            E se esse elo<br /><span class="lime">fosse você?</span>
+          </div>
+          <img
+            class="a pix"
+            id="p-i"
+            src="../../../apps/web/public/arte/lavoura.png"
+            alt=""
+            style="left: 310px; top: 900px; width: 460px; height: 460px"
+          />
+          <div
+            class="a chip"
+            id="p-c"
+            style="left: 440px; top: 1370px; width: 200px; font-size: 26px; padding: 16px 0"
+          >
+            VOCÊ
+          </div>
+        </section>
+
+        <!-- 4. CHAMADA -->
+        <section class="cena" id="c-cta">
+          <div class="a h" id="z-h" style="top: 420px; font-size: 124px">
+            Como você<br /><span class="lime">resolveria?</span>
+          </div>
+          <div class="a botao" id="z-bot" style="top: 920px">Entre no Discord</div>
+          <div class="a tag" id="z-l" style="top: 1110px; left: 0; right: 0; color: #f2f4ee">
+            Link na bio
+          </div>
+          <div class="a tag mut" id="z-s" style="top: 1170px; left: 0; right: 0">
+            novidades e primeiros testes
+          </div>
+        </section>
+
+        <div id="flash"></div>
+        <div id="fundo-cap"></div>
+        <div id="cap"><p id="cap-p"></p></div>
+      </div>
+    </div>
+
+    <script src="motor.js"></script>
+    <script>
+      const COR_OK = ['#5c9e5a', '#8a96a0', '#5aaee6', '#e8bd4f'];
+      const QUEBRA = [3.6, 4.8, 6.0, 7.2]; // quando cada elo quebra
+      montar([
+        [
+          'gancho',
+          2.8,
+          'Faltou soja.',
+          (u) => {
+            // piscada de alerta; já aparece cheio no primeiro quadro
+            $('g-al').style.opacity = 0.55 + 0.45 * Math.abs(Math.sin(u * 7));
+            estala($('g-h'), u, -0.3, 0.55);
+            T($('g-tag'), { o: Math.abs(Math.sin(u * 9)) > 0.2 ? 1 : 0.2 });
+            T($('g-i'), { y: Math.sin(u * 4) * 8, o: 0.5 });
+            sacode($('c-gancho'), u, 0.3, 14);
+          },
+        ],
+        [
+          'cadeia',
+          11.0,
+          [
+            [0, 'Normalmente, tudo funciona.'],
+            [3.5, 'Um elo quebra e o resto sente.'],
+            [8.4, 'Todo mundo sente.'],
+          ],
+          (u) => {
+            // títulos
+            const sw = (id, a, b) => {
+              const k = E.out(q(u, a, 0.35)) * (1 - E.io(q(u, b, 0.3)));
+              T($(id), { y: (1 - E.out(q(u, a, 0.35))) * 40, o: k });
+            };
+            sw('t1', 0, 3.4);
+            sw('t2', 3.5, 8.3);
+            sw('t3', 8.4, 99);
+            // cartões e estados
+            for (let i = 0; i < 4; i++) {
+              const card = $('a' + (i + 1));
+              const k = E.out(q(u, 0.1 + i * 0.4, 0.4));
+              const quebra = E.io(q(u, QUEBRA[i], 0.25));
+              const [sx, sy] = treme(u, QUEBRA[i], 12, 0.3);
+              T(card, { x: (1 - k) * 80 + sx, y: sy, o: k });
+              card.style.setProperty('--c', quebra > 0.5 ? '#ef6a4c' : COR_OK[i]);
+              const pop = q(u, 0.5 + i * 0.4, 0.3);
+              T($('ok' + (i + 1)), {
+                s: (pop <= 0 ? 0 : E.back(pop)) * (1 - quebra),
+                o: clamp(pop * 6) * (1 - quebra),
+              });
+              T($('ru' + (i + 1)), { s: quebra <= 0 ? 0 : E.back(quebra), o: quebra });
+            }
+            // barras entre os elos: verde vira vermelho quando o problema desce
+            for (let i = 0; i < 3; i++) {
+              const b = $('b' + (i + 1));
+              const k = E.out(q(u, 0.4 + i * 0.4, 0.3));
+              const quebra = q(u, QUEBRA[i] + 0.25, 0.4);
+              b.style.opacity = k;
+              b.style.background = quebra > 0 ? '#ef6a4c' : '#a6e22e';
+              b.style.transform = `scaleY(${k})`;
+            }
+          },
+        ],
+        [
+          'pergunta',
+          4.0,
+          'E se esse elo fosse você?',
+          (u) => {
+            palavras($('p-t'), u, 0, 0.1, 0.4);
+            estala($('p-i'), u, 0.5, 0.5);
+            if (u > 1.0) $('p-i').style.transform += ` translateY(${Math.sin(u * 5) * 10}px)`;
+            estala($('p-c'), u, 1.0, 0.4);
+          },
+        ],
+        [
+          'cta',
+          3.5,
+          'Como você resolveria? Link na bio.',
+          (u) => {
+            palavras($('z-h'), u, 0, 0.1, 0.4);
+            estala($('z-bot'), u, 0.9, 0.45);
+            entra($('z-l'), u, 1.4, 0.35, 30);
+            entra($('z-s'), u, 1.7, 0.35, 30);
+          },
+        ],
+      ]);
+    </script>
+  </body>
+</html>

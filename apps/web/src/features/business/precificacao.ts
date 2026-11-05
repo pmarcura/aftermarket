@@ -7,7 +7,11 @@ import {
   regionFor,
   seasonPrice,
 } from '../../../../../packages/simulation/src/metrics';
-import { gameCalendar, inventoryQuality } from '../../../../../packages/simulation/src/operations';
+import {
+  gameCalendar,
+  inventoryQuality,
+  retailCapacity,
+} from '../../../../../packages/simulation/src/operations';
 import { economicInterval } from '../../../../../packages/simulation/src/clock';
 
 export interface Concorrente {
@@ -116,4 +120,28 @@ export function contaDaPrateleira(world: World, loja: Establishment) {
     melhor: itens.reduce((n, x) => n + x.lucroMelhor, 0),
     ajustar,
   };
+}
+
+/** Rodadas econômicas de 2 h num dia de jogo; mesma conta da aba Equipe. */
+const RODADAS_POR_DIA = 12;
+
+/**
+ * Equipe da loja contra a procura da cidade, pela mesma conta da aba Equipe: quantas unidades a
+ * equipe atende por rodada, quantas a cidade procura e o lucro que fica sem atender.
+ */
+export function equipeDaLoja(world: World, loja: Establishment) {
+  const conta = contaDaPrateleira(world, loja);
+  const ops = world.season.config.operations;
+  const area = world.properties.find((p) => p.id === loja.propertyId)?.area ?? 0;
+  const procura = conta.itens.reduce((n, x) => n + x.vende, 0) / RODADAS_POR_DIA;
+  const atende = retailCapacity(world, loja);
+  const ideal =
+    procura > 0
+      ? Math.max(
+          1,
+          Math.ceil(Math.min(procura, area * ops.retailUnitsPerM2) / ops.retailUnitsPerWorker),
+        )
+      : loja.employees;
+  const parte = procura > 0 ? Math.min(1, atende / procura) : 1;
+  return { procura, atende, ideal, perdaDia: Math.round(conta.agora * (1 - parte)) };
 }

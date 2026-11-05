@@ -10,6 +10,7 @@ import { CargaCaminho } from '../../components/CargaCaminho';
 import { FleetPicker } from '../../components/FleetPicker';
 import { ProdutoArte } from '../economy/Vitrine';
 import { TransferStock } from './TransferStock';
+import { RegraInsumo } from './producao/RegraInsumo';
 import { contaDaPrateleira } from './precificacao';
 import {
   products,
@@ -22,12 +23,13 @@ import {
 import { defaultSupplyPolicy } from '../../../../../packages/simulation/src/competition';
 import { dailyNeed, supplyForecast } from '../../../../../packages/simulation/src/supply';
 import { loadOf } from '../../../../../packages/simulation/src/engine';
+import '../../design/item.css';
 import '../../design/abastecimento.css';
 
 type Linha = ReturnType<typeof supplyForecast>['rows'][number];
 
 /** Campo numérico com − e +, para ajustar sem digitar. Aceita centavos com casas={2}. */
-function Passo({
+export function Passo({
   rotulo,
   valor,
   onChange,
@@ -91,16 +93,19 @@ function Passo({
 }
 
 /** Interruptor de pixel: o estado aparece em texto, não só na cor. */
-function Interruptor({
+export function Interruptor({
   ligado,
   onChange,
   rotulo,
   desabilitado,
+  ocupado,
 }: {
   ligado: boolean;
   onChange: () => void;
   rotulo: string;
   desabilitado?: boolean;
+  /** O servidor ainda não confirmou: mostra "Salvando…" em vez do estado antigo. */
+  ocupado?: boolean;
 }) {
   return (
     <button
@@ -109,11 +114,12 @@ function Interruptor({
       aria-checked={ligado}
       aria-label={rotulo}
       disabled={desabilitado}
-      className={`abs-chave ${ligado ? 'ligado' : ''}`}
+      aria-busy={ocupado}
+      className={`abs-chave ${ligado ? 'ligado' : ''} ${ocupado ? 'ocupado' : ''}`}
       onClick={onChange}
     >
       <i aria-hidden="true" />
-      <span>{ligado ? 'Ligado' : 'Desligado'}</span>
+      <span>{ocupado ? 'Salvando…' : ligado ? 'Ligado' : 'Desligado'}</span>
     </button>
   );
 }
@@ -343,13 +349,24 @@ export function Abastecimento({ establishment: e }: { establishment: Establishme
     );
   const emRegra = new Set(politica.rules.map((r) => r.product));
   const receita = world.season.config.recipes.find((r) => r.id === e.specialization);
+  // Produção: os insumos da receita ganham o combinado com o gerente no topo da aba.
+  const producao = e.category !== 'retail';
+  const insumos = producao
+    ? ([
+        ...Object.keys(receita?.input ?? {}),
+        ...Object.keys(receita?.requires ?? {}),
+      ] as ProductId[])
+    : [];
+  const extras = politica.rules.filter((r) => !insumos.includes(r.product));
   const manuais = [
     ...new Set([
       ...(e.category === 'retail' ? (Object.keys(e.inventory) as ProductId[]) : []),
       ...((Object.keys(receita?.input ?? {}) as ProductId[]) ?? []),
     ]),
-  ].filter((id) => !emRegra.has(id));
-  const outros = seasonProducts(world).filter((id) => !emRegra.has(id) && !manuais.includes(id));
+  ].filter((id) => !emRegra.has(id) && !insumos.includes(id));
+  const outros = seasonProducts(world).filter(
+    (id) => !emRegra.has(id) && !manuais.includes(id) && !insumos.includes(id),
+  );
 
   const cargas = world.shipments
     .filter((s) => s.destinationId === e.id && !s.delivered)
@@ -375,121 +392,176 @@ export function Abastecimento({ establishment: e }: { establishment: Establishme
 
   return (
     <div className="abs">
-      <section className="abs-topo" aria-labelledby="abs-titulo">
-        <div className="abs-topo-chave">
-          <div>
-            <h2 id="abs-titulo">Abastecimento automático</h2>
-            <p>
-              {politica.enabled
-                ? (e.supplyStatus ??
-                  'Ligado. As regras abaixo repõem o estoque sozinhas a cada rodada.')
-                : 'Desligado. Nada é comprado sozinho; repor é com você.'}
-            </p>
-          </div>
-          <Interruptor
-            ligado={politica.enabled}
-            rotulo="Abastecimento automático"
-            desabilitado={pending || (!politica.enabled && politica.rules.length === 0)}
-            onChange={() =>
-              salvar(
-                { ...politica, enabled: !politica.enabled },
-                politica.enabled
-                  ? 'Abastecimento automático desligado.'
-                  : 'Abastecimento automático ligado.',
-              )
-            }
-          />
-        </div>
-        {!politica.enabled && politica.rules.length === 0 && (
-          <p className="abs-dica">
-            Escolha um produto em &ldquo;Repor você mesmo&rdquo; e toque em Automatizar para
-            começar.
-          </p>
-        )}
-        <dl className="abs-numeros">
-          <div>
-            <dt>Gasto hoje</dt>
-            <dd>
-              {cr(gasto, 0)} <small>de {cr(orcamento, 0)}</small>
-            </dd>
-            <span
-              className="abs-medidor"
-              role="img"
-              aria-label={`${Math.round((gasto / Math.max(1, orcamento)) * 100)}% do orçamento do dia`}
-            >
-              {Array.from({ length: 20 }, (_, i) => (
-                <i key={i} className={i < blocosGasto ? (blocosGasto > 17 ? 'alto' : 'ok') : ''} />
-              ))}
-            </span>
-          </div>
-          <div>
-            <dt>Reposição indicada agora</dt>
-            <dd>{cr(previsao.cashNeeded, 0)}</dd>
-          </div>
-          <div>
-            <dt>Armazém ocupado</dt>
-            <dd>{Math.round(ocupacao * 100)}%</dd>
-            <span
-              className="abs-medidor"
-              role="img"
-              aria-label={`Armazém ${Math.round(ocupacao * 100)}% cheio`}
-            >
-              {Array.from({ length: 20 }, (_, i) => (
-                <i
-                  key={i}
-                  className={i < Math.round(ocupacao * 20) ? (ocupacao > 0.9 ? 'alto' : 'ok') : ''}
+      {producao && (
+        <section className="abs-bloco" aria-labelledby="abs-insumos">
+          <header className="pi-topo">
+            <h2 id="abs-insumos">O que a linha precisa</h2>
+            <Interruptor
+              ligado={politica.enabled}
+              rotulo="Abastecimento automático"
+              desabilitado={pending || (!politica.enabled && politica.rules.length === 0)}
+              onChange={() =>
+                salvar(
+                  { ...politica, enabled: !politica.enabled },
+                  politica.enabled
+                    ? 'Abastecimento automático desligado.'
+                    : 'Abastecimento automático ligado.',
+                )
+              }
+            />
+          </header>
+          {insumos.length ? (
+            <div className="pi-lista">
+              {insumos.map((id) => (
+                <RegraInsumo
+                  key={id}
+                  unidade={e}
+                  product={id}
+                  onTrazer={
+                    world.establishments.some(
+                      (x) =>
+                        x.companyId === e.companyId && x.id !== e.id && (x.inventory[id] ?? 0) > 0,
+                    )
+                      ? () => setMover(id)
+                      : undefined
+                  }
                 />
               ))}
-            </span>
+            </div>
+          ) : (
+            <p className="abs-vazio">Esta unidade não usa insumos: produz sem comprar nada.</p>
+          )}
+        </section>
+      )}
+      {!producao && (
+        <section className="abs-topo" aria-labelledby="abs-titulo">
+          <div className="abs-topo-chave">
+            <div>
+              <h2 id="abs-titulo">Abastecimento automático</h2>
+              <p>
+                {politica.enabled
+                  ? (e.supplyStatus ??
+                    'Ligado. As regras abaixo repõem o estoque sozinhas a cada rodada.')
+                  : 'Desligado. Nada é comprado sozinho; repor é com você.'}
+              </p>
+            </div>
+            <Interruptor
+              ligado={politica.enabled}
+              rotulo="Abastecimento automático"
+              desabilitado={pending || (!politica.enabled && politica.rules.length === 0)}
+              onChange={() =>
+                salvar(
+                  { ...politica, enabled: !politica.enabled },
+                  politica.enabled
+                    ? 'Abastecimento automático desligado.'
+                    : 'Abastecimento automático ligado.',
+                )
+              }
+            />
           </div>
-        </dl>
-      </section>
+          {!politica.enabled && politica.rules.length === 0 && (
+            <p className="abs-dica">
+              Escolha um produto em &ldquo;Repor você mesmo&rdquo; e toque em Automatizar para
+              começar.
+            </p>
+          )}
+          <dl className="abs-numeros">
+            <div>
+              <dt>Gasto hoje</dt>
+              <dd>
+                {cr(gasto, 0)} <small>de {cr(orcamento, 0)}</small>
+              </dd>
+              <span
+                className="abs-medidor"
+                role="img"
+                aria-label={`${Math.round((gasto / Math.max(1, orcamento)) * 100)}% do orçamento do dia`}
+              >
+                {Array.from({ length: 20 }, (_, i) => (
+                  <i
+                    key={i}
+                    className={i < blocosGasto ? (blocosGasto > 17 ? 'alto' : 'ok') : ''}
+                  />
+                ))}
+              </span>
+            </div>
+            <div>
+              <dt>Reposição indicada agora</dt>
+              <dd>{cr(previsao.cashNeeded, 0)}</dd>
+            </div>
+            <div>
+              <dt>Armazém ocupado</dt>
+              <dd>{Math.round(ocupacao * 100)}%</dd>
+              <span
+                className="abs-medidor"
+                role="img"
+                aria-label={`Armazém ${Math.round(ocupacao * 100)}% cheio`}
+              >
+                {Array.from({ length: 20 }, (_, i) => (
+                  <i
+                    key={i}
+                    className={
+                      i < Math.round(ocupacao * 20) ? (ocupacao > 0.9 ? 'alto' : 'ok') : ''
+                    }
+                  />
+                ))}
+              </span>
+            </div>
+          </dl>
+        </section>
+      )}
 
-      <section className="abs-bloco" aria-labelledby="abs-auto">
-        <h2 id="abs-auto">
-          Repostos sozinhos <span className="abs-conta">{politica.rules.length}</span>
-        </h2>
-        {politica.rules.length > 0 && <ChaveEstoque />}
-        {politica.rules.length === 0 ? (
-          <p className="abs-vazio">Nenhum produto automático ainda.</p>
-        ) : (
-          <div className="abs-cartoes">
-            {politica.rules.map((rule, i) => (
-              <CartaoAutomatico
-                key={`${rule.product}-${rule.minimum}-${rule.target}-${rule.maxBuy}-${rule.maxPrice}-${rule.originId ?? ''}`}
-                ativo={politica.enabled}
-                onRepor={() => openRepor({ destinationId: e.id, product: rule.product })}
-                e={e}
-                rule={rule}
-                linha={previsao.rows[i]}
-                dias={dias(rule.product)}
-                pendente={previsao.rows[i].incoming + previsao.rows[i].promised > 0}
-                onSalvar={(nova, msg) =>
-                  salvar(
-                    { ...politica, rules: politica.rules.map((x, n) => (n === i ? nova : x)) },
-                    msg,
-                  )
-                }
-                onRemover={() =>
-                  salvar(
-                    {
-                      ...politica,
-                      enabled: politica.enabled && politica.rules.length > 1,
-                      rules: politica.rules.filter((_, n) => n !== i),
-                    },
-                    `${products[rule.product].name} voltou para o modo manual.`,
-                  )
-                }
-              />
-            ))}
-          </div>
-        )}
-      </section>
+      {(!producao || extras.length > 0) && (
+        <section className="abs-bloco" aria-labelledby="abs-auto">
+          <h2 id="abs-auto">
+            {producao ? 'Outros repostos sozinhos' : 'Repostos sozinhos'}{' '}
+            <span className="abs-conta">{producao ? extras.length : politica.rules.length}</span>
+          </h2>
+          {politica.rules.length > 0 && <ChaveEstoque />}
+          {politica.rules.length === 0 ? (
+            <p className="abs-vazio">Nenhum produto automático ainda.</p>
+          ) : (
+            <div className="abs-cartoes">
+              {politica.rules.map((rule, i) =>
+                insumos.includes(rule.product) ? null : (
+                  <CartaoAutomatico
+                    key={`${rule.product}-${rule.minimum}-${rule.target}-${rule.maxBuy}-${rule.maxPrice}-${rule.originId ?? ''}`}
+                    ativo={politica.enabled}
+                    onRepor={() => openRepor({ destinationId: e.id, product: rule.product })}
+                    e={e}
+                    rule={rule}
+                    linha={previsao.rows[i]}
+                    dias={dias(rule.product)}
+                    pendente={previsao.rows[i].incoming + previsao.rows[i].promised > 0}
+                    onSalvar={(nova, msg) =>
+                      salvar(
+                        { ...politica, rules: politica.rules.map((x, n) => (n === i ? nova : x)) },
+                        msg,
+                      )
+                    }
+                    onRemover={() =>
+                      salvar(
+                        {
+                          ...politica,
+                          enabled: politica.enabled && politica.rules.length > 1,
+                          rules: politica.rules.filter((_, n) => n !== i),
+                        },
+                        `${products[rule.product].name} voltou para o modo manual.`,
+                      )
+                    }
+                  />
+                ),
+              )}
+            </div>
+          )}
+        </section>
+      )}
 
       <section className="abs-bloco" aria-labelledby="abs-manual">
-        <h2 id="abs-manual">
-          Repor você mesmo <span className="abs-conta">{manuais.length}</span>
-        </h2>
+        {(!producao || manuais.length > 0) && (
+          <h2 id="abs-manual">
+            Repor você mesmo <span className="abs-conta">{manuais.length}</span>
+          </h2>
+        )}
         {manuais.length > 0 && (
           <ul className="abs-manuais">
             {manuais.map((id) => {
@@ -554,8 +626,13 @@ export function Abastecimento({ establishment: e }: { establishment: Establishme
           </ul>
         )}
         {outros.length > 0 && (
-          <div className="abs-outros">
-            <h3>Quer repor mais algum produto?</h3>
+          // Na produção, os outros produtos ficam recolhidos: a decisão do dia é o insumo.
+          <details className="abs-outros abs-mais" open={!producao}>
+            <summary>
+              {producao
+                ? `Abastecer outros produtos (${outros.length})`
+                : 'Quer repor mais algum produto?'}
+            </summary>
             <ul>
               {outros.map((id) => (
                 <li key={id}>
@@ -569,7 +646,7 @@ export function Abastecimento({ establishment: e }: { establishment: Establishme
                 </li>
               ))}
             </ul>
-          </div>
+          </details>
         )}
       </section>
 

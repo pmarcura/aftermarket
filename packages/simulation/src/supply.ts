@@ -60,7 +60,9 @@ export function validateSupplyPolicy(policy: SupplyPolicy) {
     policy.maxDistanceKm < 1 ||
     policy.maxDistanceKm > 6000 ||
     !int(policy.minQuality, 0, 100) ||
-    !int(policy.maxFreightPerUnit)
+    !int(policy.maxFreightPerUnit) ||
+    (policy.shelfMargin !== undefined &&
+      !(Number.isFinite(policy.shelfMargin) && policy.shelfMargin >= 0 && policy.shelfMargin < 1))
   )
     throw new RuleError('Revise orçamento, reserva, distância, qualidade e teto de frete.');
   if (
@@ -102,6 +104,17 @@ export function supplySpent(w: World, e: Establishment, at: number) {
     .filter((o) => o.sellerId || o.proposals?.length)
     .reduce((n, o) => n + o.quantity * o.unitPrice + o.maxFreight, 0);
   return { executed, promised, total: executed + promised };
+}
+/** Custo entregue máximo por unidade que a reposição da loja aceita; 0 quando não há trava. */
+export function retailCeiling(
+  w: World,
+  e: Establishment,
+  product: ProductId,
+  policy: SupplyPolicy,
+) {
+  if (e.category !== 'retail' || policy.shelfMargin === undefined) return 0;
+  const shelf = e.prices[product] ?? w.season.config.basePrices[product];
+  return Math.max(1, Math.floor(shelf * (1 - policy.shelfMargin)));
 }
 export function supplyCandidates(
   w: World,
@@ -201,6 +214,16 @@ export function supplyCandidates(
     return [e.companyId, ...shared];
   };
   const room = storageQuantity(w, e, product);
+  // Loja com trava de margem só repõe o que chega abaixo do preço de venda menos a margem. Sem
+  // ela, a loja do jogador pagou R$ 719 de frete por uma garrafa de óleo vendida a R$ 73,
+  // trazendo de 1 a 8 unidades por viagem com o caminhão inteiro na conta. Bots não usam a trava:
+  // ligada para todas as lojas, a prova (5 sementes) deu +47% ao varejo e tirou venda de
+  // fábricas de utensílios e atacados; decisão de economia pendente.
+  const shelfCeiling = retailCeiling(w, e, product, policy);
+  // Custo da mercadoria na conta da trava: preço da oferta, ou o custo do estoque na unidade de
+  // origem quando a loja se abastece de outra unidade própria (como em supplyForecast).
+  const goodsCost = (o: (typeof options)[number]) =>
+    o.internal ? (o.origin.unitCosts[product] ?? 0) : o.price;
   // Teto de frete do produto: o da regra, se houver; senão o da política inteira.
   const freightCap =
     policy.rules.find((r) => r.product === product)?.maxFreightPerUnit ?? policy.maxFreightPerUnit;
@@ -273,7 +296,8 @@ export function supplyCandidates(
             q.compatible &&
             q.distanceKm <= policy.maxDistanceKm &&
             quantity > 0 &&
-            (!freightCap || q.price / quantity <= freightCap);
+            (!freightCap || q.price / quantity <= freightCap) &&
+            (!shelfCeiling || goodsCost(o) + q.price / quantity <= shelfCeiling);
           if (!eligible && tracing) {
             if (q.routeRequired)
               trace(
@@ -291,6 +315,16 @@ export function supplyCandidates(
               trace(
                 'distance-limit',
                 'A distância cotada excedeu o máximo da política.',
+                o.origin.id,
+              );
+            else if (
+              shelfCeiling &&
+              quantity > 0 &&
+              goodsCost(o) + q.price / quantity > shelfCeiling
+            )
+              trace(
+                'landed-above-shelf',
+                'Mercadoria e frete por unidade passariam do preço de venda menos a margem mínima.',
                 o.origin.id,
               );
             else if (quantity <= 0)

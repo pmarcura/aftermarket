@@ -10,6 +10,9 @@ import {
 import { trainingQuote } from '../../../../../packages/simulation/src/competition';
 import { useClock } from '../../lib/clock';
 import { Installation } from './Installation';
+import { Ficha } from '../inicio/pecas';
+import '../../design/inicio-ajustes.css';
+import '../../design/equipe-livro.css';
 import { contaDaPrateleira } from './precificacao';
 import {
   Cracha,
@@ -207,6 +210,16 @@ export function Workforce({ establishment: e }: { establishment: Establishment }
       : null;
   const ajustarPara = (n: number) => setEmployees(String(Math.min(1000, Math.max(0, n))));
   const reguaMax = Math.max(40, (ideal ?? 0) * 2, e.employees * 2);
+  // Quanto da procura a equipe atende hoje e depois da mudança, e o que isso vale em vendas por dia.
+  const lucroLoja = useMemo(
+    () => (varejo ? contaDaPrateleira(world, e).agora : 0),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [world.revision, e.id, varejo],
+  );
+  const parte = (cap: number) => (procuraRodada > 0 ? Math.min(1, cap / procuraRodada) : 1);
+  const vendasDia = varejo ? Math.round(lucroLoja * (parte(capDepois) - parte(capAgora))) : 0;
+  const perdaHoje = varejo ? Math.round(lucroLoja * (1 - parte(capAgora))) : 0;
+  const falta = varejo && ideal !== null && e.employees < ideal;
 
   return (
     <div className="eq">
@@ -219,6 +232,20 @@ export function Workforce({ establishment: e }: { establishment: Establishment }
           {rotuloDoVeredito[veredito]}
         </span>
       </header>
+      {varejo && ideal !== null && (
+        <div className="eq-fichas" aria-label="Diagnóstico da equipe">
+          <Ficha
+            rotulo="Equipe"
+            tom={falta ? 'brasa' : 'lavoura'}
+            valor={`${num(e.employees)} de ${num(ideal)}`}
+          />
+          <Ficha rotulo="Atende" tom="ceu" valor={`${num(capAgora)} / rodada`} />
+          <Ficha rotulo="Procura" tom="ouro" valor={`${num(procuraRodada)} / rodada`} />
+          {perdaHoje > 0 && (
+            <Ficha rotulo="Deixa de ganhar" tom="brasa" valor={`−${cr(perdaHoje, 0)} / dia`} />
+          )}
+        </div>
+      )}
 
       <div className="eq-grade">
         <div className="eq-coluna">
@@ -252,7 +279,9 @@ export function Workforce({ establishment: e }: { establishment: Establishment }
               <p className="eq-nota">{rodapeMedidor}</p>
             </section>
           )}
+        </div>
 
+        <div className="eq-coluna eq-decisao">
           <section className="eq-bloco eq-ajuste" aria-labelledby="eq-ajuste">
             <h4 id="eq-ajuste">Quantas pessoas?</h4>
             <div className="eq-passo">
@@ -322,6 +351,12 @@ export function Workforce({ establishment: e }: { establishment: Establishment }
                       {cr(Math.abs(deltaDia), 0)} por dia
                     </li>
                     {efeito && <li>{efeito}</li>}
+                    {varejo && vendasDia !== 0 && (
+                      <li className={vendasDia > 0 ? 'economia' : 'custo'}>
+                        {vendasDia > 0 ? '+' : '−'}
+                        {cr(Math.abs(vendasDia), 0)} por dia em vendas (estimativa)
+                      </li>
+                    )}
                   </ul>
                 </>
               )}
@@ -350,9 +385,6 @@ export function Workforce({ establishment: e }: { establishment: Establishment }
               </p>
             )}
           </section>
-        </div>
-
-        <div className="eq-coluna">
           <section className="eq-bloco eq-custos" aria-labelledby="eq-custos">
             <h4 id="eq-custos">Quanto custa</h4>
             <dl>

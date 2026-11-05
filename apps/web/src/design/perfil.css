@@ -1,0 +1,113 @@
+/*
+ * Perfil da empresa como ficha cadastral em papel: tinta sobre papel creme, linhas tracejadas,
+ * o selo da empresa como carimbo e os números ainda em fichas escuras (mesma peça do caderno).
+ */
+dialog.perfil.ficha-cadastral {
+  color: var(--tinta);
+  background: var(--papel) var(--grao);
+  background-blend-mode: multiply;
+  box-shadow:
+    inset 0 0 0 2px #cdbd93,
+    inset 0 0 0 10px var(--papel),
+    inset 0 0 0 11px #b9a77a,
+    12px 12px 0 var(--sombra);
+}
+.ficha-cadastral .perfil-cab {
+  border-bottom: 3px double var(--tinta);
+}
+.ficha-cadastral .perfil-cab h2 {
+  color: var(--tinta);
+}
+.ficha-cadastral .perfil-cab .lv-rotulo {
+  color: var(--ferrugem);
+}
+/* O selo da empresa vira carimbo: tinta dupla, torto. */
+.ficha-cadastral .selo-empresa.grande {
+  background: transparent;
+  color: hsl(var(--h, 120) 55% 30%);
+  border: 4px double hsl(var(--h, 120) 55% 32%);
+  box-shadow: none;
+  transform: rotate(-8deg);
+  font-family: var(--display);
+  font-stretch: 70%;
+  font-weight: 900;
+  font-size: 26px;
+}
+.ficha-cadastral .perfil-fechar {
+  background: transparent;
+  border-color: var(--tinta);
+  color: var(--tinta);
+}
+.ficha-cadastral .perfil-fechar:hover {
+  background: var(--tinta);
+  color: var(--papel);
+}
+.ficha-cadastral h3 {
+  color: var(--ferrugem) !important;
+  padding-bottom: 6px;
+  border-bottom: 2px dashed #b9a77a;
+}
+.ficha-cadastral .perfil-negocios li,
+.ficha-cadastral .perfil-trocas li,
+.ficha-cadastral .perfil-atividade li,
+.ficha-cadastral .perfil-vazio {
+  background: transparent;
+  box-shadow: none;
+  border-bottom: 1px dashed #b9a77a;
+}
+.ficha-cadastral .perfil-negocios b,
+.ficha-cadastral .perfil-trocas p b,
+.ficha-cadastral .perfil-barras b {
+  color: var(--tinta);
+}
+.ficha-cadastral .perfil-negocios small,
+.ficha-cadastral .perfil-atividade small,
+.ficha-cadastral .perfil-trocas p,
+.ficha-cadastral .perfil-vazio,
+.ficha-cadastral .mural-quando small {
+  color: var(--tinta-suave);
+}
+.ficha-cadastral .mural-quando b {
+  color: var(--ferrugem);
+}
+.ficha-cadastral .perfil-pessoa {
+  color: var(--tinta);
+  border-bottom-color: #b9a77a;
+}
+.ficha-cadastral .perfil-pessoa:hover,
+.ficha-cadastral .perfil-pessoa:focus-visible {
+  color: var(--tinta-ganha);
+  border-bottom-color: var(--tinta-ganha);
+}
+.ficha-cadastral .perfil-barra-trilho {
+  background: #e4d6b0;
+  box-shadow: inset 0 0 0 2px #b9a77a;
+}
+.ficha-cadastral .perfil-barra-nome {
+  color: var(--tinta);
+}
+.ficha-cadastral .ini-link {
+  color: var(--tinta-suave);
+  border-bottom-color: #b9a77a;
+}
+.ficha-cadastral .ini-link:hover,
+.ficha-cadastral .ini-link:focus-visible {
+  color: var(--tinta-ganha);
+  border-bottom-color: var(--tinta-ganha);
+}
+.ficha-cadastral .mural-filtros button:not(.on) {
+  background: transparent;
+  border-color: #b9a77a;
+  color: var(--tinta);
+}
+.ficha-cadastral .mural-produto-filtro select {
+  color-scheme: light;
+  background: var(--papel);
+  border-color: #b9a77a;
+  color: var(--tinta);
+}
+.ficha-cadastral .mural-produto-filtro select:focus-visible,
+.mural-produto-filtro select:focus-visible {
+  outline: 3px solid var(--lavoura);
+  outline-offset: 2px;
+}

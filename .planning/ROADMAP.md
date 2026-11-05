@@ -16,6 +16,10 @@ Cada etapa termina em algo que dá para ver ou jogar e tem um critério de "pron
 | Arte                               | Ícones dos produtos e identidade visual                                    | Lista de produtos fechada na etapa B                                                                          | Pedro gera com prompts do Claude           | Depois da E |
 | **F · Playtest 1**                 | Sessão com amigos e lista de ajustes                                       | Sessão feita, 10 maiores dores anotadas                                                                       | Pedro chama os amigos                      | Planejada   |
 
+**03/11 · Carregamento (frente C):** main/spec 005 conferidos; correções locais de
+leitura, compressão, cache, histórico e polling verificadas na spec 012. O novo
+design foi preservado. Ledger incremental e recuperação idempotente de operações implementados; motor isolado e persistência das outras entidades continuam pendentes; ver [validação e prioridades](../specs/012-carregamento-fluido/validation.md).
+
 ## Etapa A · Arrumar a casa
 
 - [x] Salvar o trabalho pendente no Git (`266dd32`, `382a4da`).

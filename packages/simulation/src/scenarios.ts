@@ -3,6 +3,7 @@ import { defaultSupplyPolicy } from './competition';
 import { operatingCosts } from './metrics';
 import { normalizeV2Lot } from './opening-v2';
 import type { World } from './model';
+import { newId } from './ids';
 
 // Começo enxuto do mundo jogável (D-033): cada jogador começa com uma loja vazia,
 // equipe de uma loja de referência e R$ 1 milhão livre. Os outros negócios do jogador voltam ao
@@ -94,7 +95,7 @@ function leanStart(w: World, at: number) {
     from.balance -= Math.abs(extra);
     to.balance += Math.abs(extra);
     w.ledger.push({
-      id: crypto.randomUUID(),
+      id: newId(w),
       at,
       from: from.id,
       to: to.id,

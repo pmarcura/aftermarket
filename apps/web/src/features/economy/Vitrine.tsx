@@ -71,6 +71,25 @@ export function ProdutoArte({ product, escala = 2 }: { product: ProductId; escal
   );
 }
 
+/** A mesma ilustração cabendo num quadrado pequeno, para linhas de lista e talões. */
+export function ProdutoMini({ product, tamanho = 28 }: { product: ProductId; tamanho?: number }) {
+  const nome = arteDoProduto[product];
+  const [falhou, setFalhou] = useState(false);
+  if (!nome || falhou) return <ProductIcon product={product} size={Math.round(tamanho * 0.7)} />;
+  return (
+    <img
+      className="pixel-art produto-mini"
+      src={`/arte/${nome}.png`}
+      alt=""
+      draggable={false}
+      width={tamanho}
+      height={tamanho}
+      style={{ width: tamanho, height: tamanho }}
+      onError={() => setFalhou(true)}
+    />
+  );
+}
+
 interface Item {
   product: ProductId;
   melhor?: Offer;

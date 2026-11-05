@@ -35,6 +35,11 @@ for (const initialPage of ['inicio', 'orders'] as const) {
         await route.fulfill({ json: world });
         return;
       }
+      // O pregão do Início lê o histórico de preços (spec 011); aqui ele chega vazio.
+      if (new URL(route.request().url()).pathname === '/api/market-history') {
+        await route.fulfill({ json: { samples: [], trades: [] } });
+        return;
+      }
       unexpectedApi.push(route.request().url());
       await route.fulfill({ status: 503, json: { error: 'API não prevista na fixture.' } });
     });

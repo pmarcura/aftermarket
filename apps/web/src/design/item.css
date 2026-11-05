@@ -487,3 +487,95 @@
     font-size: 36px;
   }
 }
+
+/* Marcos próximos ficam lado a lado numa plaquinha sobre uma haste só. */
+.pista-marcos {
+  height: 52px;
+}
+.pista-grupo {
+  position: absolute;
+  bottom: 12px;
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  transform: translateX(-50%);
+  background: var(--chapa);
+  box-shadow:
+    inset 0 0 0 2px var(--borda-forte),
+    2px 3px 0 var(--sombra);
+}
+.pista-grupo::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  width: 2px;
+  height: 12px;
+  background: var(--creme);
+  opacity: 0.55;
+}
+.pista-grupo .pista-marco {
+  position: static;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  transform: none;
+  filter: none;
+}
+.pista-grupo .pista-marco::after {
+  display: none;
+}
+.item-corpo > .item-veredito {
+  grid-column: 1 / -1;
+}
+
+/* Referências como linhas de um caderno: figura, nome, valor e "por quê?". */
+.marcos-lista {
+  display: grid;
+  gap: 0;
+  border-top: 1px solid var(--borda);
+}
+.marcos-lista li {
+  padding: 0;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--borda);
+}
+.marcos-lista .marco-botao {
+  padding: 8px 4px;
+}
+.marcos-lista .marco-botao > span {
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.marcos-lista .marco-botao small {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--creme);
+}
+.marcos-lista .marco-botao em {
+  border-bottom-width: 1px;
+}
+.marcos-lista .marco-botao:hover,
+.marcos-lista .marco-botao:focus-visible,
+.marcos-lista .marco-botao.aberto {
+  transform: none;
+  background: var(--chapa-2);
+}
+
+/* Preço igual ao da prateleira: um aviso calmo no lugar de um botão apagado. */
+.item-salvo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--apagado);
+  box-shadow: inset 0 0 0 2px var(--borda);
+}

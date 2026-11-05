@@ -1,5 +1,4 @@
 import express from 'express';
-import { regionsOf } from '../../../packages/simulation/src/metrics';
 import { z } from 'zod';
 import { resolve } from 'node:path';
 import { createStore } from './store';
@@ -8,9 +7,10 @@ import { createRoadAccessService, createRoadFetcher } from './road-access';
 import type { ScenarioName } from '../../../packages/simulation/src/scenarios';
 import { RuleError } from '../../../packages/simulation/src/engine';
 import { commandSchema, product } from './commands';
-import { worldView } from './view';
-import { gzipSync } from 'node:zlib';
+import { gzip } from 'node:zlib';
 import { createClock } from '../../../packages/simulation/src/clock';
+import { createWorldPacketCache, type WorldPacket } from './world-packet';
+import { marketHistories } from './market-history';
 
 const app = express();
 const port = Number(process.env.AFTERMARKET_PORT ?? 3001);
@@ -27,7 +27,17 @@ if (!Number.isFinite(scale) || scale < 1) throw new Error('AFTERMARKET_WORLD_SCA
 const timeScale = process.env.AFTERMARKET_TIME_SCALE
   ? createClock(Number(process.env.AFTERMARKET_TIME_SCALE)).timeScale
   : undefined;
-const store = createStore(resolve(process.env.AFTERMARKET_DB_FILE ?? '.runtime/world.sqlite'), {
+// Mundos de teste e design param quando ninguém joga (spec 013): sem isso, um mundo esquecido
+// ligado no relógio rápido crescia ~1,6 GB por dia. O mundo principal (.runtime/world.sqlite)
+// continua andando; AFTERMARKET_IDLE_PAUSE=0 ou =1 força o comportamento.
+const dbFile = resolve(process.env.AFTERMARKET_DB_FILE ?? '.runtime/world.sqlite');
+const IDLE_PAUSE_MS = 3 * 60_000;
+const pauseWhenIdle =
+  process.env.AFTERMARKET_IDLE_PAUSE !== undefined
+    ? process.env.AFTERMARKET_IDLE_PAUSE === '1'
+    : dbFile !== resolve('.runtime/world.sqlite');
+const store = createStore(dbFile, {
+  pauseWhenIdleMs: pauseWhenIdle ? IDLE_PAUSE_MS : undefined,
   // Todo mundo jogável valida o acesso dos imóveis e desenha rotas reais. O frete exige rota
   // confirmada só na escala 1; com ~500 bots segue a distância estimada (D-034, D-036): esperar
   // o serviço público de rotas (1 pedido a cada 1,2 s) travaria a economia.
@@ -52,10 +62,14 @@ const allowedOrigins = new Set([
   'http://localhost:5173',
   `http://127.0.0.1:${process.env.AFTERMARKET_WEB_PORT ?? 5173}`,
   `http://localhost:${process.env.AFTERMARKET_WEB_PORT ?? 5173}`,
+  `http://127.0.0.1:${process.env.AFTERMARKET_PREVIEW_PORT ?? 4173}`,
+  `http://localhost:${process.env.AFTERMARKET_PREVIEW_PORT ?? 4173}`,
 ]);
 app.use(express.json({ limit: '16kb' }));
-app.use('/api', (_req, res, next) => {
+app.use('/api', (req, res, next) => {
   res.setHeader('Cache-Control', 'no-store');
+  // Qualquer pedido do navegador conta como alguém jogando (a tela aberta consulta o mundo).
+  if (req.path !== '/health') store.atividade();
   next();
 });
 app.get('/api/health', (_req, res) =>
@@ -71,50 +85,82 @@ function sendJson(req: express.Request, res: express.Response, body: unknown) {
   const json = Buffer.from(JSON.stringify(body));
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
   res.setHeader('Vary', 'Accept-Encoding, x-company-id');
-  if (json.length > 2048 && /gzip/.test(req.get('accept-encoding') ?? '')) {
-    res.setHeader('Content-Encoding', 'gzip');
-    res.end(gzipSync(json, { level: 6 }));
+  if (json.length > 2048 && /\bgzip\b/.test(req.get('accept-encoding') ?? '')) {
+    gzip(json, { level: 6 }, (error, encoded) => {
+      if (res.destroyed) return;
+      if (error) {
+        res.status(500).json({ error: 'Não foi possível preparar a resposta.' });
+        return;
+      }
+      res.setHeader('Content-Encoding', 'gzip');
+      res.end(encoded);
+    });
   } else res.end(json);
 }
-app.get('/api/world', (req, res) => {
-  const w = store.tick();
-  routing.prepare(w);
-  const actor = actorOf(req);
-  if (Number(req.query.since) === w.revision && req.query.actor === actor)
-    return res.status(204).end();
-  sendJson(req, res, worldView(w, actor));
+const worldPacket = createWorldPacketCache();
+async function sendPacket(req: express.Request, res: express.Response, packet: WorldPacket) {
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('Vary', 'Accept-Encoding, x-company-id');
+  if (packet.json.length > 2048 && /\bgzip\b/.test(req.get('accept-encoding') ?? '')) {
+    const encoded = await packet.gzip;
+    if (res.destroyed) return;
+    res.setHeader('Content-Encoding', 'gzip');
+    res.end(encoded);
+  } else res.end(packet.json);
+}
+app.get('/api/world', async (req, res, next) => {
+  try {
+    // Reads never run offline catch-up; the background tick owns progression.
+    const w = store.read();
+    const actor = actorOf(req);
+    if (Number(req.query.since) === w.revision && req.query.actor === actor)
+      return res.status(204).end();
+    const inicio = performance.now();
+    const packet = worldPacket(w, actor);
+    res.setHeader('Server-Timing', `pacote;dur=${(performance.now() - inicio).toFixed(1)}`);
+    await sendPacket(req, res, packet);
+  } catch (error) {
+    next(error);
+  }
 });
 app.get('/api/routing-status', (_req, res) =>
   res.json({ ...routing.status(), access: roadAccess.status() }),
 );
 app.get('/api/market-history', (req, res) => {
-  const parsed = product.safeParse(req.query.product);
+  const multiple = typeof req.query.products === 'string';
+  const parsed = z
+    .array(product)
+    .min(1)
+    .max(20)
+    .safeParse(multiple ? String(req.query.products).split(',') : [req.query.product]);
   if (!parsed.success)
     return res.status(400).json({ error: 'Escolha uma mercadoria para consultar o histórico.' });
   const w = store.read(),
     regionId = typeof req.query.region === 'string' ? req.query.region : '';
-  return res.json({
-    product: parsed.data,
-    regionId,
-    startedAt: w.economyStartedAt,
-    seasonId: w.season.id,
-    samples: w.marketHistory
-      .filter((s) => s.product === parsed.data && s.regionId === regionId)
-      .slice(-1000),
-    trades: w.ledger
-      .filter(
-        (e) =>
-          e.product === parsed.data &&
-          e.channel === 'wholesale' &&
-          (!regionId ||
-            (regionId.startsWith('state:')
-              ? regionsOf(w).find((r) => r.id === e.regionId)?.state === regionId.slice(6)
-              : e.regionId === regionId)),
-      )
-      .slice(-2000),
-  });
+  const histories = marketHistories(w, parsed.data, regionId);
+  if (multiple) {
+    // The board and company cards consume these six fields, not the full ledger.
+    const board = Object.fromEntries(
+      Object.entries(histories).map(([id, value]) => [
+        id,
+        {
+          ...value,
+          trades: value.trades.map(({ at, from, to, product, quantity, unitPrice }) => ({
+            at,
+            from,
+            to,
+            product,
+            quantity,
+            unitPrice,
+          })),
+        },
+      ]),
+    );
+    return sendJson(req, res, board);
+  }
+  return sendJson(req, res, histories[parsed.data[0]]);
 });
-app.post('/api/commands', (req, res, next) => {
+app.post('/api/commands', async (req, res, next) => {
   try {
     const origin = req.get('origin');
     if (origin && !allowedOrigins.has(origin))
@@ -123,7 +169,33 @@ app.post('/api/commands', (req, res, next) => {
     if (actor !== 'player' && actor !== 'player2')
       return res.status(403).json({ error: 'Escolha uma empresa de teste válida.' });
     const key = z.uuid().parse(req.get('idempotency-key'));
-    sendJson(req, res, worldView(store.command(actor, commandSchema.parse(req.body), key), actor));
+    const inicio = performance.now();
+    const parsed = commandSchema.parse(req.body);
+    const mundo = store.command(actor, parsed, key);
+    const antesDaVista = performance.now();
+    // Mesmo pacote (por revisão e empresa) que a leitura seguinte do navegador vai pedir: a
+    // resposta do clique e o próximo /api/world montam e comprimem o mundo uma vez só.
+    const packet = worldPacket(mundo, actor);
+    const fim = performance.now();
+    // Tempo de cada etapa visível no navegador (aba Rede → Timing) e no log quando passa de 500 ms.
+    const etapas = {
+      ...(store.ultimoClique() ?? {}),
+      vista: fim - antesDaVista,
+      total: fim - inicio,
+    };
+    res.setHeader(
+      'Server-Timing',
+      Object.entries(etapas)
+        .map(([nome, ms]) => `${nome};dur=${ms.toFixed(1)}`)
+        .join(', '),
+    );
+    if (etapas.total > 500)
+      console.warn(
+        `Clique lento (${parsed.type}): ${Object.entries(etapas)
+          .map(([nome, ms]) => `${nome} ${Math.round(ms)} ms`)
+          .join(' · ')}`,
+      );
+    await sendPacket(req, res, packet);
   } catch (error) {
     next(error);
   }
@@ -176,7 +248,9 @@ const tick = setInterval(() => {
   }
 }, 2000);
 const server = app.listen(port, '127.0.0.1', () =>
-  console.log(`AFTERMARKET API · http://127.0.0.1:${port} · SQLite persistente`),
+  console.log(
+    `AFTERMARKET API · http://127.0.0.1:${port} · SQLite persistente${pauseWhenIdle ? ' · para quando ninguém joga' : ''}`,
+  ),
 );
 function stop() {
   clearInterval(tick);

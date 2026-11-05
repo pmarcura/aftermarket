@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useGame, cr } from '../../lib/game';
 import { products, type ProductId } from '../../../../../packages/simulation/src/model';
 import { arrears } from '../../../../../packages/simulation/src/design';
-import { contaDaPrateleira } from '../business/precificacao';
+import { contaDaPrateleira, equipeDaLoja } from '../business/precificacao';
 
 /** Algo que só o jogador resolve. Toda pendência traz a ação que a resolve. */
 export interface Pendencia {
@@ -14,6 +14,12 @@ export interface Pendencia {
   produto?: ProductId;
   titulo: string;
   detalhe: string;
+  /** Dinheiro por dia em jogo (centavos, estimativa): quanto se perde sem agir, ou se ganha agindo. */
+  porDia?: { valor: number; sinal: 'perde' | 'ganha' };
+  /** Números que importam, mostrados como fichas em vez de perdidos no texto. */
+  fichas?: { rotulo: string; valor: string; tom?: 'ouro' | 'brasa' | 'lavoura' | 'ceu' }[];
+  /** Quanto se cumpre de algo: a equipe que atende a procura, por exemplo. */
+  medida?: { parte: number; rotulo: string };
   acao: { rotulo: string; executar: () => void };
 }
 
@@ -79,10 +85,64 @@ export function usePendencias(): Pendencia[] {
         continue;
       }
       if (e.category === 'retail') {
+        const conta = contaDaPrateleira(world, e);
+        // Equipe curta: a cidade procura mais do que a loja consegue atender.
+        const equipe = equipeDaLoja(world, e);
+        if (equipe.ideal > e.employees && equipe.perdaDia > 0)
+          itens.push({
+            id: `equipe-${e.id}`,
+            negocioId: e.id,
+            tom: 'brasa',
+            titulo: `Falta gente na ${e.name}`,
+            detalhe: `${e.employees} ${e.employees === 1 ? 'pessoa atende' : 'pessoas atendem'} cerca de ${Math.round(equipe.atende)} de ${Math.round(equipe.procura)} clientes por rodada. O ideal agora é ${equipe.ideal}.`,
+            porDia: { valor: equipe.perdaDia, sinal: 'perde' },
+            fichas: [
+              { rotulo: 'Equipe', valor: `${e.employees} de ${equipe.ideal}`, tom: 'brasa' },
+              { rotulo: 'Atende', valor: `${Math.round(equipe.atende)} por rodada` },
+              { rotulo: 'Procura', valor: `${Math.round(equipe.procura)} por rodada`, tom: 'ouro' },
+            ],
+            medida: {
+              parte: equipe.procura > 0 ? equipe.atende / equipe.procura : 1,
+              rotulo: `atende ${Math.round((equipe.atende / Math.max(1, equipe.procura)) * 100)}% da procura`,
+            },
+            acao: { rotulo: 'Ver equipe', executar: () => openBusiness(e.id, 'Equipe') },
+          });
+        // Preço longe do ponto de maior lucro, pela mesma conta da prateleira.
+        const ganho = conta.melhor - conta.agora;
+        if (conta.ajustar.length && ganho > 0)
+          itens.push({
+            id: `preco-${e.id}`,
+            produto: conta.ajustar[0].id,
+            negocioId: e.id,
+            tom: 'ouro',
+            titulo: `${conta.ajustar.length === 1 ? 'Um preço rende' : `${conta.ajustar.length} preços rendem`} mais na ${e.name}`,
+            detalhe: `${lista(conta.ajustar.map((x) => products[x.id].name))} ${conta.ajustar.length === 1 ? 'está longe' : 'estão longe'} do ponto de maior lucro.`,
+            porDia: { valor: Math.round(ganho), sinal: 'ganha' },
+            fichas: [
+              { rotulo: 'Hoje', valor: `${cr(conta.agora, 0)} por dia` },
+              {
+                rotulo: 'Com os melhores preços',
+                valor: `${cr(conta.melhor, 0)} por dia`,
+                tom: 'lavoura',
+              },
+            ],
+            acao: { rotulo: 'Ajustar preços', executar: () => openBusiness(e.id, 'Prateleira') },
+          });
         // Acabando: menos de um dia de vendas ao preço atual, pela mesma conta da prateleira.
-        const acabando = contaDaPrateleira(world, e)
-          .itens.map((x) => ({ id: x.id, dias: x.dias, porDia: x.vende * x.preco }))
-          .filter((x) => x.dias < 1);
+        // Carga já na estrada para esta loja conta como estoque: não pede para repor de novo.
+        const naEstrada = (id: ProductId) =>
+          world.shipments
+            .filter((c) => !c.delivered && c.destinationId === e.id && c.product === id)
+            .reduce((n, c) => n + c.quantity, 0);
+        const acabando = conta.itens
+          .map((x) => ({
+            id: x.id,
+            dias: x.dias,
+            porDia: x.vende * x.preco,
+            vende: x.vende,
+            estoque: x.estoque,
+          }))
+          .filter((x) => x.dias < 1 && (x.estoque + naEstrada(x.id)) / Math.max(0.01, x.vende) < 1);
         if (acabando.length) {
           const esgotados = acabando.filter((x) => x.dias === 0);
           const perda = acabando.reduce((n, x) => n + x.porDia, 0);
@@ -96,6 +156,12 @@ export function usePendencias(): Pendencia[] {
               ? `${nomes(esgotados)} ${esgotados.length === 1 ? 'esgotou' : 'esgotaram'}`
               : `${nomes(acabando)} ${acabando.length === 1 ? 'acaba' : 'acabam'} em ~${Math.max(1, Math.round(acabando[0].dias * 24))} h`,
             detalhe: `${e.name}: sem repor, deixa de vender cerca de ${cr(perda, 0)} por dia.`,
+            porDia: { valor: Math.round(perda), sinal: 'perde' },
+            fichas: acabando.slice(0, 3).map((x) => ({
+              rotulo: products[x.id].name,
+              valor: x.dias === 0 ? 'esgotado' : `dura ~${Math.max(1, Math.round(x.dias * 24))} h`,
+              tom: x.dias === 0 ? ('brasa' as const) : ('ouro' as const),
+            })),
             acao: {
               rotulo: 'Repor',
               executar: () => openRepor({ destinationId: e.id, product: acabando[0].id }),
@@ -124,7 +190,12 @@ export function usePendencias(): Pendencia[] {
           },
         });
     }
-    return itens.sort((a, b) => (a.tom === b.tom ? 0 : a.tom === 'brasa' ? -1 : 1));
+    // Urgente antes de atenção; dentro de cada tom, o que mexe com mais dinheiro primeiro.
+    return itens.sort(
+      (a, b) =>
+        (a.tom === b.tom ? 0 : a.tom === 'brasa' ? -1 : 1) ||
+        (b.porDia?.valor ?? 0) - (a.porDia?.valor ?? 0),
+    );
     // O mundo muda por revisão; as ações dependem só da empresa.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [world.revision, actor]);

@@ -14,7 +14,7 @@ import {
 } from '../../../../../packages/simulation/src/model';
 import '../../design/cotacoes.css';
 
-const spriteDaCategoria: Record<Category, Sprite> = {
+export const spriteDaCategoria: Record<Category, Sprite> = {
   retail: 'loja',
   farm: 'lavoura',
   industry: 'siderurgica',

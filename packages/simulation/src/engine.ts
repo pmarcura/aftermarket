@@ -1,4 +1,12 @@
-import { HOUR_MS, MINUTE_MS, economicInterval, gameDay, gameToReal } from './clock';
+import {
+  DAY_MS,
+  HOUR_MS,
+  MINUTE_MS,
+  economicInterval,
+  gameDay,
+  gameToReal,
+  realToGame,
+} from './clock';
 import {
   products,
   type World,
@@ -76,7 +84,8 @@ import {
   wholesaleReference,
 } from './metrics';
 export { distanceKm } from './geometry';
-const randomUUID = () => globalThis.crypto.randomUUID();
+export { newId } from './ids';
+import { newId } from './ids';
 
 export class RuleError extends Error {
   constructor(message: string) {
@@ -135,7 +144,7 @@ function transfer(
   sender.balance -= amount;
   receiver.balance += amount;
   w.ledger.push({
-    id: randomUUID(),
+    id: newId(w),
     at,
     from,
     to,
@@ -145,6 +154,87 @@ function transfer(
     establishmentId,
     ...metadata,
   });
+}
+/**
+ * Livro do dia (spec 013): o dinheiro anda a cada rodada, mas o extrato tem uma linha por
+ * estabelecimento, natureza (e produto) e dia de jogo, somando as rodadas. Vale para custos fixos
+ * (eram 48 linhas por estabelecimento por dia, 73% do extrato) e para as vendas ao consumidor das
+ * lojas de bots. Lojas de jogadores mantêm uma linha por rodada: é a fita da loja.
+ *
+ * Duas viradas cortam a linha do dia:
+ * - A virada da temporada (início + N dias de jogo), usada pelo reajuste semanal de salários e pela
+ *   prova econômica. A rodada exatamente nela fica numa linha própria, como antes; a linha do dia
+ *   soma as outras rodadas e leva o instante da primeira delas. Toda régua que recorta o extrato a
+ *   partir dessa virada conta exatamente o mesmo que contava com uma linha por rodada.
+ * - A meia-noite do calendário do jogo, usada pelas telas ("hoje", resultado por dia). O calendário
+ *   começa na hora em que o mundo nasceu, então as duas viradas só coincidem se ele nasceu à
+ *   meia-noite. A rodada da meia-noite abre a linha do dia novo, e nenhuma linha atravessa a
+ *   meia-noite.
+ *
+ * A linha do dia é trocada por um objeto novo, nunca alterada: a cópia de desfazer
+ * (`rollbackSnapshot`) guarda os lançamentos por referência, e o gravador regrava o que mudou.
+ */
+function dailyBook(w: World, at: number) {
+  const day = gameDay(w),
+    start = w.season.startedAt + Math.floor((at - w.season.startedAt) / day) * day;
+  // Dia do calendário do jogo (mesma conta de `gameCalendar` e das telas).
+  const calendarDay = (x: number) =>
+    Math.floor((w.season.startedAt + realToGame(w, x - w.season.startedAt)) / DAY_MS);
+  const today = calendarDay(at);
+  const open = new Map<string, number>();
+  for (let i = w.ledger.length - 1; i >= 0; i--) {
+    const l = w.ledger[i];
+    if (l.at <= start || calendarDay(l.at) !== today) break;
+    if (l.daily && l.establishmentId) open.set(bookKey(l), i);
+  }
+  return { start, boundary: at === start, open };
+}
+const bookKey = (l: Pick<Entry, 'establishmentId' | 'kind' | 'from' | 'to' | 'product'>) =>
+  `${l.establishmentId}|${l.kind}|${l.from}|${l.to}|${l.product ?? ''}`;
+function accrue(
+  w: World,
+  book: ReturnType<typeof dailyBook>,
+  from: string,
+  to: string,
+  amount: number,
+  description: string,
+  kind: Entry['kind'],
+  at: number,
+  establishmentId: string,
+  metadata: Partial<
+    Pick<Entry, 'product' | 'quantity' | 'unitPrice' | 'regionId' | 'channel'>
+  > = {},
+) {
+  if (to === 'treasury') to = treasuryId(actorState(w, from, establishmentId));
+  // Rodada da virada: linha própria (ver dailyBook).
+  if (book.boundary) {
+    transfer(w, from, to, amount, description, kind, at, establishmentId, metadata);
+    return;
+  }
+  const key = bookKey({ establishmentId, kind, from, to, product: metadata.product }),
+    index = book.open.get(key);
+  if (index === undefined) {
+    transfer(w, from, to, amount, description, kind, at, establishmentId, metadata);
+    w.ledger[w.ledger.length - 1].daily = true;
+    book.open.set(key, w.ledger.length - 1);
+    return;
+  }
+  ensure(Number.isSafeInteger(amount) && amount >= 0, 'Valor financeiro inválido.');
+  ensure(
+    freeCash(w, from) >= amount,
+    'Saldo insuficiente ou vinculado a pedidos. Libere a reserva ou reduza a operação.',
+  );
+  company(w, from).balance -= amount;
+  company(w, to).balance += amount;
+  const prior = w.ledger[index];
+  ensure(prior.at > book.start, 'Lançamento do dia fora de ordem.');
+  const next: Entry = { ...prior, amount: prior.amount + amount, description };
+  if (metadata.quantity !== undefined) {
+    next.quantity = (prior.quantity ?? 0) + metadata.quantity;
+    // Preço médio do dia, ponderado pela quantidade.
+    next.unitPrice = next.quantity ? Math.round(next.amount / next.quantity) : metadata.unitPrice;
+  }
+  w.ledger[index] = next;
 }
 export function loadOf(inventory: Partial<Record<ProductId, number>>) {
   let mass = 0,
@@ -403,7 +493,7 @@ function dispatch(
     origin.revenue += cost;
     origin.expenses += Math.round((origin.unitCosts[product] ?? 0) * quantity);
   }
-  const batchId = randomUUID();
+  const batchId = newId(w);
   const routeKey = w.requireRoadRoutes
     ? `${origin.propertyId}:${dest.propertyId}@${w.routes[`${origin.propertyId}:${dest.propertyId}`]?.fetchedAt ?? 'frozen'}`
     : undefined;
@@ -422,7 +512,7 @@ function dispatch(
     vehicle.status = 'route';
     vehicle.odometerKm = (vehicle.odometerKm ?? 0) + part.km;
     w.shipments.push({
-      id: randomUUID(),
+      id: newId(w),
       batchId,
       buyerId,
       sellerId: origin.companyId,
@@ -562,7 +652,7 @@ function executeCommand(w: World, actor: string, command: Command, now: number):
       );
       company(w, actor).financingExpense = (company(w, actor).financingExpense ?? 0) + q.fee;
       w.loans!.push({
-        id: randomUUID(),
+        id: newId(w),
         companyId: actor,
         treasuryId: q.lender,
         principal: command.amount,
@@ -834,7 +924,7 @@ function executeCommand(w: World, actor: string, command: Command, now: number):
         }),
       );
       w.jobs.push({
-        id: randomUUID(),
+        id: newId(w),
         establishmentId: e.id,
         recipeId: recipe.id,
         cycles: command.cycles,
@@ -884,7 +974,7 @@ function executeCommand(w: World, actor: string, command: Command, now: number):
       if (existing) existing.price = command.price;
       else
         w.offers.push({
-          id: randomUUID(),
+          id: newId(w),
           establishmentId: e.id,
           product: command.product,
           price: command.price,
@@ -990,7 +1080,7 @@ function executeCommand(w: World, actor: string, command: Command, now: number):
       );
       capacity(w, dest, { [offer.product]: command.quantity });
       w.orders.push({
-        id: randomUUID(),
+        id: newId(w),
         buyerId: actor,
         sellerId: origin.companyId,
         originId: origin.id,
@@ -1135,7 +1225,7 @@ function executeCommand(w: World, actor: string, command: Command, now: number):
       );
       capacity(w, dest, { [command.product]: command.quantity });
       w.orders.push({
-        id: randomUUID(),
+        id: newId(w),
         buyerId: actor,
         sellerId: '',
         originId: '',
@@ -1192,7 +1282,7 @@ function executeCommand(w: World, actor: string, command: Command, now: number):
       );
       o.proposals ??= [];
       o.proposals.push({
-        id: randomUUID(),
+        id: newId(w),
         proposedBy: actor,
         sellerId: origin.companyId,
         originId: origin.id,
@@ -1295,7 +1385,7 @@ function executeCommand(w: World, actor: string, command: Command, now: number):
       c.bids ??= [];
       c.bids = c.bids.filter((b) => b.supplierId !== actor);
       c.bids.push({
-        id: randomUUID(),
+        id: newId(w),
         supplierId: actor,
         originId: e.id,
         carrierId: command.carrierId,
@@ -1336,7 +1426,7 @@ function executeCommand(w: World, actor: string, command: Command, now: number):
       );
       e.expenses += t.cost;
       w.training!.push({
-        id: randomUUID(),
+        id: newId(w),
         establishmentId: e.id,
         cost: t.cost,
         targetLevel: t.targetLevel,
@@ -1398,7 +1488,7 @@ function executeCommand(w: World, actor: string, command: Command, now: number):
         );
       }
       w.vehicles.push({
-        id: randomUUID(),
+        id: newId(w),
         companyId: actor,
         name: `${model === 'truckHeavy' ? 'TRK' : 'LEV'}-${String(w.vehicles.length + 100)}`,
         capacityT: spec.capacityT,
@@ -1482,6 +1572,7 @@ function economicTick(w: World, at: number) {
     }
   // Auditoria M05: sem capacidade para tudo, cada produto recebe parte proporcional à procura.
   const service = new Map<string, number>();
+  const book = dailyBook(w, at);
   for (const e of retail) {
     const rows = wanted.filter((x) => x.e === e && x.desired > 0);
     const asked = rows.reduce((n, x) => n + Math.min(x.desired, x.e.inventory[x.product]!), 0);
@@ -1519,23 +1610,39 @@ function economicTick(w: World, at: number) {
     });
     if (!quantity) continue;
     const amount = quantity * e.prices[product]!;
-    transfer(
-      w,
-      'consumers',
-      e.companyId,
-      amount,
-      `Varejo · ${e.name} · ${quantity} ${products[product].unit} de ${products[product].name}`,
-      'retail',
-      at,
-      e.id,
-      {
-        product,
-        quantity,
-        unitPrice: e.prices[product]!,
-        regionId,
-        channel: 'retail',
-      },
-    );
+    const sale = {
+      product,
+      quantity,
+      unitPrice: e.prices[product]!,
+      regionId,
+      channel: 'retail' as const,
+    };
+    // Loja de bot: uma linha por produto e dia. Loja de jogador: uma por rodada (a fita da loja).
+    if (company(w, e.companyId).bot)
+      accrue(
+        w,
+        book,
+        'consumers',
+        e.companyId,
+        amount,
+        `Varejo · ${e.name} · vendas do dia de ${products[product].name}`,
+        'retail',
+        at,
+        e.id,
+        sale,
+      );
+    else
+      transfer(
+        w,
+        'consumers',
+        e.companyId,
+        amount,
+        `Varejo · ${e.name} · ${quantity} ${products[product].unit} de ${products[product].name}`,
+        'retail',
+        at,
+        e.id,
+        sale,
+      );
     e.inventory[product]! -= quantity;
     e.revenue += amount;
     e.expenses += Math.round((e.unitCosts[product] ?? 0) * quantity);
@@ -1552,30 +1659,41 @@ function economicTick(w: World, at: number) {
     if (institutional(e.companyId)) continue;
     const costs = operatingCosts(w, e);
     e.dailyCost = costs.total;
-    const parts: { kind: Entry['kind']; amount: number; to: string; description: string }[] = [
+    // `daily` é o texto da linha do dia no extrato; `description`, o da obrigação em atraso.
+    const parts: {
+      kind: Entry['kind'];
+      amount: number;
+      to: string;
+      description: string;
+      daily: string;
+    }[] = [
       {
         kind: 'payroll',
         amount: Math.round(costs.payroll / 12),
         to: 'consumers',
         description: 'Salários e encargos do cenário',
+        daily: 'Salários e encargos do dia',
       },
       {
         kind: 'maintenance',
         amount: Math.round(costs.maintenance / 12),
         to: 'treasury',
         description: 'Manutenção da instalação',
+        daily: 'Manutenção da instalação no dia',
       },
       {
         kind: 'energy',
         amount: Math.round(costs.energy / 12),
         to: 'treasury',
         description: `Energia da instalação · ${(costs.energyKwh / 12).toFixed(2)} kWh`,
+        daily: 'Energia da instalação no dia',
       },
       {
         kind: 'water',
         amount: Math.round(costs.water / 12),
         to: 'treasury',
         description: `Água e esgoto · ${(costs.waterM3 / 12).toFixed(2)} m³`,
+        daily: 'Água e esgoto no dia',
       },
     ];
     const total = parts.reduce((n, p) => n + p.amount, 0);
@@ -1603,12 +1721,13 @@ function economicTick(w: World, at: number) {
       continue;
     }
     for (const part of parts)
-      transfer(
+      accrue(
         w,
+        book,
         e.companyId,
         part.to,
         part.amount,
-        `${part.description} · ${e.name}`,
+        `${part.daily} · ${e.name}`,
         part.kind,
         at,
         e.id,
@@ -1801,7 +1920,7 @@ function openInfrastructure(w: World, at: number) {
       reserved = unitPrice * quantity + maxFreight;
     if (available < reserved) continue;
     w.infrastructure.push({
-      id: randomUUID(),
+      id: newId(w),
       title: program.name,
       program: program.name,
       product: program.product,
@@ -2159,7 +2278,7 @@ function runAutomations(w: World, at: number) {
               );
         const offer = w.offers.find((o) => o.establishmentId === e.id && o.product === id);
         if (offer) offer.price = price;
-        else w.offers.push({ id: randomUUID(), establishmentId: e.id, product: id, price });
+        else w.offers.push({ id: newId(w), establishmentId: e.id, product: id, price });
       }
     } catch (error) {
       recordBotError(w, at, e.companyId, `preços de ${e.id}`, error);

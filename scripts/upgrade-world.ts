@@ -1,4 +1,5 @@
 import { DatabaseSync } from 'node:sqlite';
+import { readWorldSnapshot } from '../apps/server/src/world-storage';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import assert from 'node:assert/strict';
@@ -12,9 +13,7 @@ const comparison = process.argv
   .find((a) => a.startsWith('--verify-from='))
   ?.slice('--verify-from='.length);
 const beforeDb = new DatabaseSync(comparison ? resolve(comparison) : path, { readOnly: true });
-const before = JSON.parse(
-  (beforeDb.prepare('SELECT state FROM worlds WHERE id=1').get() as { state: string }).state,
-) as World;
+const before = readWorldSnapshot(beforeDb);
 const receipts = beforeDb.prepare('SELECT * FROM receipts ORDER BY id').all();
 beforeDb.close();
 

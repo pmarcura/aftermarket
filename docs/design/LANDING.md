@@ -25,8 +25,8 @@ desenvolvimento e a assinatura dele.
   saíram). Mensagens vêm dos princípios do GDD: um só mundo para todos, nada surge do
   nada, distância custa dinheiro, quem joga faz o preço, muitos caminhos para crescer,
   mesmas regras, recursos finitos, sem vitória única.
-- **Projeto em construção** com a assinatura “Um jogo de Pedro Marçura · Criação e
-  design” e rodapé “© 2026 Pedro Marçura · Projeto em desenvolvimento”, com o crédito do
+- **Projeto em construção** com a assinatura “Um projeto Aftermarket · Em desenvolvimento”
+  e rodapé “© 2026 AFTERMARKET · Projeto em desenvolvimento”, com o crédito do
   mapa (OpenStreetMap, OpenMapTiles, OpenFreeMap).
 - Com movimento reduzido: planeta, telas e aparelhos ficam parados na primeira cena.
 

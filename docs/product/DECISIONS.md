@@ -238,3 +238,7 @@ O projeto passa a ser desenvolvido pelo John e equipe, com lançamento de um pla
 - **Processo spec-driven:** toda mudança não trivial nasce em `specs/NNN-slug/{spec,plan,tasks}.md`, sob `specs/CONSTITUTION.md`. O fluxo Game-GSD de `docs/DEVELOPMENT.md` fica como histórico.
 - **Fora de janeiro:** genética, gado/frigorífico, leilões, contratos recorrentes, frete por jogador, modelo de grupo completo (D-035 além do limite de 40%), metas/medalhas persistidas, celular, Postgres/Supabase, perfil de caminhão, arte final.
 - **Pedido do John para depois do playtest:** mapa pixelado construído sobre o mapa atual (locais pixelados), junto com a identidade visual já definida.
+
+### D-043 · Estrutura das telas e design em paralelo (Pedro, 03/11/2026)
+
+O John cuida da engenharia (specs 006 e 007); o Pedro e o Claude cuidam da interface, uma tela por vez, em paralelo e no ramo `design/estrutura-telas`, que chega ao John como PR. O inventário de 03/11 ([`docs/design/inventario.html`](../design/inventario.html)) mostrou alertas falsos de "tudo em dia", dados repetidos em até seis lugares e sete caminhos para comprar. Estrutura aprovada: Início, Mapa (com Onde abrir), Negócios (Loja com Prateleira, Equipe e Resultado), Mercado (Comprar e Vender) e Empresa; cada dado numa casa só. Detalhes e requisitos na [spec 011](../../specs/011-estrutura-telas/spec.md). O mapa 3D do Pedro fica no ramo `pedro/mapa-3d` até a integração.

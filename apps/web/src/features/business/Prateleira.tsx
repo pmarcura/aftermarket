@@ -70,7 +70,7 @@ export function Prateleira({ loja }: { loja: Establishment }) {
 }
 
 /** As últimas vendas às famílias, como a fita de uma caixa registradora. */
-function Caixa({ loja }: { loja: Establishment }) {
+export function Caixa({ loja }: { loja: Establishment }) {
   const { world } = useGame();
   const vendas = world.ledger
     .filter((l) => l.establishmentId === loja.id && l.kind === 'retail')

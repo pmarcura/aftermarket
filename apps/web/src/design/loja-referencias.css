@@ -1,0 +1,388 @@
+/*
+ * Nota de detalhe das referências do painel de preço (custo, cidade, mapa, preço justo).
+ * Papel creme com tinta, como uma anotação do dono do armazém presa ao painel.
+ */
+.ref {
+  --tinta-suave: #5b5441;
+  --tinta-perde: #a3361c;
+  --tinta-ganha: #3f6a14;
+  position: relative;
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+  padding: 22px 24px 28px;
+  color: var(--tinta);
+  isolation: isolate;
+  transform: rotate(-0.25deg);
+  filter: drop-shadow(6px 7px 0 var(--sombra));
+  animation: ref-entra 0.28s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+}
+.ref::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--papel) var(--grao);
+  background-blend-mode: multiply;
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% 97%,
+    94% 99.5%,
+    86% 97.5%,
+    76% 100%,
+    64% 97.5%,
+    52% 99.6%,
+    40% 97.4%,
+    28% 99.6%,
+    16% 97.6%,
+    6% 99.8%,
+    0 97.4%
+  );
+}
+@keyframes ref-entra {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+.ref > header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 3px double var(--tinta);
+}
+.ref > header h4 {
+  flex: 1;
+  margin: 0;
+  font-size: 28px;
+  color: var(--tinta);
+}
+.ref .lv-carimbo {
+  --tom: var(--ferrugem) !important;
+  padding: 3px 8px;
+  font-size: 12px;
+  border-width: 3px;
+  background: transparent;
+}
+.ref-fechar {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  background: transparent;
+  color: var(--tinta);
+  border: 2px solid var(--tinta);
+  cursor: pointer;
+}
+.ref-fechar:hover {
+  background: var(--tinta);
+  color: var(--papel);
+}
+.ref-resumo {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.45;
+}
+.ref-resumo b,
+.ref-dica b {
+  font-weight: 800;
+}
+.ref h4.lv-rotulo {
+  margin: 0 0 8px;
+  font-size: 12.5px;
+  color: var(--ferrugem);
+}
+.ref section {
+  display: grid;
+  gap: 10px;
+}
+.ref-dica {
+  margin: 0;
+  padding: 10px 12px;
+  font-size: 15px;
+  line-height: 1.4;
+  background: rgb(138 59 18 / 0.1);
+  box-shadow: inset 4px 0 0 var(--ferrugem);
+}
+
+/* Barra de composição: mercadoria e frete, ou a sua fatia. */
+.ref-barra {
+  display: flex;
+  min-height: 34px;
+  background: #e4d6b0;
+  box-shadow: inset 0 0 0 2px #b9a77a;
+}
+.ref-barra i {
+  display: grid;
+  align-items: center;
+  padding: 0 10px;
+  overflow: hidden;
+  white-space: nowrap;
+  font-style: normal;
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  min-width: 0;
+  transition: width 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.ref-barra .merc {
+  background: var(--tinta);
+  color: var(--papel);
+}
+.ref-barra .frete {
+  background: var(--ouro);
+  color: var(--tinta);
+}
+.ref-fatia {
+  display: grid;
+  gap: 8px;
+}
+.ref-fatia small {
+  font-size: 14px;
+  color: var(--tinta-suave);
+}
+
+/* Cargas recentes */
+.ref-lista {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ref-lista li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 4px 14px;
+  align-items: baseline;
+  padding: 8px 0;
+  border-bottom: 1px dashed #b9a77a;
+  font-size: 15px;
+}
+.ref-lista b {
+  font-family: var(--display);
+  font-stretch: 68%;
+  font-weight: 800;
+  font-size: 19px;
+}
+.ref-lista small,
+.ref-vend small {
+  color: var(--tinta-suave);
+  font-size: 13.5px;
+}
+
+/* Vendedores */
+.ref-vendedores {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ref-vend {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 10px;
+  border-bottom: 1px dashed #b9a77a;
+}
+.ref-vend.menor {
+  background: rgb(63 106 20 / 0.12);
+  box-shadow: inset 4px 0 0 var(--tinta-ganha);
+}
+.ref-vend-nome {
+  display: grid;
+  min-width: 0;
+}
+.ref-vend-nome b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 700;
+}
+.ref-preco {
+  font-family: var(--display);
+  font-stretch: 64%;
+  font-weight: 900;
+  font-size: 24px;
+  white-space: nowrap;
+}
+.ref-vend.menor .ref-preco {
+  color: var(--tinta-ganha);
+}
+
+/* Tabela do preço justo */
+.ref-tabela {
+  width: 100%;
+  border-collapse: collapse;
+}
+.ref-tabela caption {
+  text-align: left;
+  padding-bottom: 6px;
+  color: var(--ferrugem);
+}
+.ref-tabela th,
+.ref-tabela td {
+  padding: 8px 8px;
+  text-align: left;
+  border-bottom: 1px dashed #b9a77a;
+  background: transparent;
+  color: var(--tinta);
+  font-family: var(--display);
+  font-stretch: 70%;
+  font-weight: 800;
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
+}
+.ref-tabela thead th {
+  font-family: var(--rotulo);
+  font-stretch: 100%;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tinta-suave);
+  border-bottom: 3px double var(--tinta);
+}
+.ref-tabela small {
+  font-family: var(--fonte);
+  font-stretch: 100%;
+  font-weight: 500;
+  font-size: 13.5px;
+  color: var(--tinta-suave);
+}
+.ref-tabela tr.justo th,
+.ref-tabela tr.justo td {
+  background: rgb(230 181 74 / 0.22);
+}
+.ref-tabela .pos {
+  color: var(--tinta-ganha);
+}
+.ref-tabela .neg {
+  color: var(--tinta-perde);
+}
+
+.ref .primary {
+  justify-self: start;
+}
+
+@media (max-width: 640px) {
+  .ref {
+    padding: 18px 14px 24px;
+    transform: none;
+  }
+  .ref > header {
+    flex-wrap: wrap;
+  }
+  .ref > header h4 {
+    font-size: 24px;
+    min-width: 60%;
+  }
+  .ref-lista li {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .ref-lista li > b {
+    grid-column: 1 / -1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ref,
+  .ref-barra i {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* Referências clicáveis do painel de preço: lista e ícones da régua. */
+.marcos-lista li {
+  padding: 0;
+}
+.marco-botao {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: inherit;
+  text-align: left;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+.marco-botao > span {
+  display: grid;
+}
+.marco-botao em {
+  margin-left: 6px;
+  font-style: normal;
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ouro);
+  border-bottom: 2px dashed var(--ouro);
+}
+.marco-botao:hover,
+.marco-botao:focus-visible,
+.marco-botao.aberto {
+  transform: translateY(-2px);
+}
+.marco-botao.aberto {
+  outline: 2px solid var(--ouro);
+  outline-offset: 2px;
+}
+button.pista-marco {
+  padding: 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+button.pista-marco:hover,
+button.pista-marco:focus-visible,
+button.pista-marco.aberto {
+  filter: drop-shadow(0 0 0 var(--ouro)) brightness(1.25);
+  z-index: 3;
+}
+
+.ref-legenda {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+  margin: 0;
+  font-size: 15px;
+}
+.ref-legenda span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.ref-legenda span::before {
+  content: '';
+  width: 14px;
+  height: 14px;
+  background: var(--tinta);
+}
+.ref-legenda span.frete::before {
+  background: var(--ouro);
+  box-shadow: inset 0 0 0 1px var(--tinta);
+}
+.ref-legenda small {
+  color: var(--tinta-suave);
+  font-size: 13.5px;
+}
+.ref .selo-empresa {
+  color: var(--creme);
+}

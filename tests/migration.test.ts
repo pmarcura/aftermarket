@@ -26,6 +26,17 @@ const stored = (path: string) => {
   }
 };
 
+const tabelas = (path: string) => {
+  const db = new DatabaseSync(path, { readOnly: true });
+  try {
+    return (
+      db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all() as { name: string }[]
+    ).map((t) => t.name);
+  } finally {
+    db.close();
+  }
+};
+
 describe('migração do banco', () => {
   it('recusa um mundo da economia 1 sem criar backup nem alterar o arquivo (A5)', () => {
     const world = createWorld();
@@ -40,6 +51,8 @@ describe('migração do banco', () => {
     expect(() => createStore(path)).toThrow('Mundo da economia 1 não é mais suportado');
     expect(existsSync(resolve(dir, 'backups'))).toBe(false);
     expect(stored(path)).toBe(legacy);
+    // Nem a tabela do diário (spec 014) nasce num mundo recusado.
+    expect(tabelas(path)).not.toContain('world_journal');
   });
 
   it('completa um snapshot intermediário da economia 2 com backup e preserva recibos idempotentes', () => {

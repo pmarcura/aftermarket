@@ -16,7 +16,7 @@ export const agoraDoMundo = (w: World) =>
   Math.max(w.updatedAt, w.nextEconomicAt - economicInterval(w));
 
 /** Converte um instante real em data do jogo, pelo relógio deste mundo (season.config.clock). */
-const dataDoJogo = (w: World, real: number) =>
+export const dataDoJogo = (w: World, real: number) =>
   w.season.startedAt + realToGame(w, real - w.season.startedAt);
 const realDoJogo = (w: World, jogo: number) =>
   w.season.startedAt + gameToReal(w, jogo - w.season.startedAt);
@@ -51,6 +51,8 @@ export function resumoDoCaixa(w: World, empresa: string, desde: number) {
     vendas: 0,
     gastos: 0,
     mercadoria: 0,
+    /** Imóveis, instalação e caminhões: viram patrimônio, não custo. */
+    investimento: 0,
     vendasHoje: 0,
     porDia: [0, 0, 0, 0, 0, 0, 0],
     porNegocioHoje: new Map<string, number>(),
@@ -69,9 +71,11 @@ export function resumoDoCaixa(w: World, empresa: string, desde: number) {
             (r.porNegocioHoje.get(l.establishmentId) ?? 0) + l.amount,
           );
       }
-    } else if (l.from === empresa && l.at >= desde) {
+    } else if (l.from === empresa && l.at >= desde && l.kind !== 'budget') {
+      // 'budget' do jogador é o ajuste do capital inicial do cenário, não um gasto da empresa.
       r.gastos += l.amount;
       if (l.kind === 'trade') r.mercadoria += l.amount;
+      if (l.kind === 'property' || l.kind === 'vehicle') r.investimento += l.amount;
     }
   }
   return r;
@@ -87,6 +91,7 @@ export function useResumoDoCaixa(desde: number) {
 const chaveDaVisita = (w: World, empresa: string) => `aftermarket.visto.${w.season.id}.${empresa}`;
 
 // Lida uma vez por carga da página: trocar de tela não apaga o resumo da ausência.
+const chegadas = new Map<string, number>();
 const primeiraLeitura = new Map<string, number | null>();
 function lerVisita(chave: string) {
   if (!primeiraLeitura.has(chave)) {
@@ -120,8 +125,11 @@ export function useMarcarVisita() {
 /** Desde quando o jogador está fora, pela visita anterior a esta sessão. */
 export function useAusencia() {
   const { world, actor } = useGame();
-  const desde = lerVisita(chaveDaVisita(world, actor));
-  const agora = agoraDoMundo(world);
+  const chave = chaveDaVisita(world, actor);
+  const desde = lerVisita(chave);
+  // A ausência termina quando o jogador chega: jogar mais não aumenta o tempo que ele ficou fora.
+  if (!chegadas.has(chave)) chegadas.set(chave, agoraDoMundo(world));
+  const agora = chegadas.get(chave)!;
   // Ausência curta (ou primeira visita) vira "hoje", o mesmo período da barra de cima e dos negócios.
   const fora = desde !== null && agora - desde >= gameDay(world) / 6 ? desde : null;
   return { desde: fora ?? comecoDoDia(world), ausente: fora !== null, agora };

@@ -1,499 +1,1093 @@
-/* Início: o que aconteceu, o que precisa de você e como estão os negócios. */
+/*
+ * Início · Caderno do dia (spec 011, tela 1).
+ * A lista do dono em papel, o recibo da ausência, a régua de porte, o guia, as oportunidades,
+ * o pregão ao vivo e o mural dos empresários. Toda animação some com "reduzir movimento".
+ */
 .inicio {
+  /* Tintas sobre papel, conferidas contra --papel (>= 4,5:1). */
+  --tinta-suave: #5b5441;
+  --tinta-perde: #a3361c;
+  --tinta-ganha: #3f6a14;
   display: grid;
-  gap: 24px;
+  gap: 30px;
   max-width: 1320px;
   margin: 0 auto;
-  padding: 28px 32px 48px;
+  padding: 28px 32px 56px;
 }
-
-/* Títulos de bloco: pixel, sem caixa alta, com contador quadrado. */
 .inicio h2 {
+  margin: 0;
+}
+
+/* ---------- Cabeçalho comum dos blocos ---------- */
+.ini-cabeca {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 0 0 14px;
-  font-family: var(--fonte);
-  font-size: 17px;
-  font-weight: 600;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 16px;
+  margin-bottom: 16px;
+}
+.ini-cabeca h2 {
+  font-size: 38px;
   color: var(--creme);
 }
-.ini-conta {
-  display: inline-grid;
-  place-items: center;
-  min-width: 24px;
-  height: 24px;
-  padding: 0 6px;
-  background: var(--brasa);
-  color: var(--noite);
-  font-size: 13px;
-  box-shadow: 2px 2px 0 var(--sombra);
-}
-
-/* Relatório da ausência: a faixa que abre a tela. */
-.ini-fora {
-  position: relative;
-  padding: 18px 22px 22px;
-  background: var(--chapa);
-  border: 2px solid var(--borda);
-  box-shadow: 6px 6px 0 var(--lavoura-escura);
-}
-.ini-fora ul {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.ini-fora li {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  align-items: center;
-  gap: 4px 12px;
-  padding: 4px 18px;
-}
-.ini-fora li + li {
-  border-left: 2px dashed var(--borda);
-}
-.ini-fora li > i {
-  grid-row: span 2;
-  display: grid;
-  place-items: center;
-  width: 38px;
-  height: 38px;
-  color: var(--noite);
-  background: var(--tom);
-  box-shadow:
-    inset -3px -3px 0 color-mix(in srgb, var(--sombra) 30%, transparent),
-    3px 3px 0 var(--sombra);
-}
-.ini-fora b {
-  font-family: var(--display);
-  font-stretch: 66%;
-  font-size: 31px;
-  font-weight: 800;
-  line-height: 1.1;
-  color: var(--creme);
-  white-space: nowrap;
-}
-.ini-fora li.tom-brasa b {
-  color: var(--brasa);
-}
-.ini-fora li span {
-  font-size: 13px;
-  color: var(--apagado);
-}
-
-.ini-grade {
-  display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
-  gap: 24px;
-  align-items: start;
-}
-.ini-coluna {
-  display: grid;
-  gap: 24px;
-}
-.ini-bloco {
-  padding: 18px 20px 20px;
-  background: var(--chapa);
-  border: 2px solid var(--borda);
-  box-shadow: 4px 4px 0 var(--sombra);
-}
-
-/* Pendências: cada uma é um cartão com a imagem do produto, a consequência e o botão que resolve. */
-.ini-pendencias {
-  display: grid;
-  gap: 14px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.pend {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 20px;
-  padding: 14px 20px 14px 12px;
-  background:
-    radial-gradient(
-      circle at 7% 45%,
-      color-mix(in srgb, var(--tom) 30%, transparent),
-      transparent 52%
-    ),
-    linear-gradient(100deg, color-mix(in srgb, var(--tom) 10%, var(--chapa-2)), var(--chapa) 85%);
-  border: 2px solid var(--borda);
-  border-left: 8px solid var(--tom, var(--lavoura));
-  box-shadow: 4px 4px 0 var(--sombra);
-}
-.pend-arte {
-  display: grid;
-  place-items: center;
-  min-width: 86px;
-  filter: drop-shadow(3px 4px 0 var(--sombra));
-}
-.pend-arte .vit-arte {
-  max-height: none;
-  max-width: none;
-}
-.pend-texto {
-  display: grid;
-  gap: 4px;
-  min-width: 0;
-}
-.pend-nivel {
-  justify-self: start;
-  padding: 1px 10px;
-  background: var(--tom, var(--lavoura));
-  color: var(--noite);
-  font-size: 13px;
-  font-weight: 600;
-}
-.pend-texto strong {
-  font-family: var(--display);
-  font-stretch: 66%;
+.ini-cabeca .lv-mao {
   font-size: 24px;
-  font-weight: 800;
-  line-height: 1.3;
-  color: var(--creme);
-}
-.pend-texto small {
-  font-size: 14px;
-  line-height: 1.45;
-  color: var(--apagado);
-}
-.pend-acao {
-  min-width: 118px;
-  min-height: 50px;
-  font-size: 16px;
-}
-.ini-em-dia {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 16px 18px;
-  background: linear-gradient(
-    100deg,
-    color-mix(in srgb, var(--lavoura) 14%, var(--chapa-2)),
-    var(--chapa)
-  );
-  border: 2px solid var(--borda);
-  border-left: 8px solid var(--lavoura);
-}
-.ini-em-dia > i {
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  flex: none;
-  background: var(--lavoura);
-  color: var(--noite);
-  border-radius: 50%;
-  box-shadow: 3px 3px 0 var(--sombra);
-}
-.ini-em-dia > div {
-  display: grid;
-  gap: 3px;
-  flex: 1;
-}
-.ini-em-dia strong {
-  font-family: var(--display);
-  font-stretch: 66%;
-  font-size: 21px;
-  font-weight: 800;
-}
-.ini-em-dia small {
-  font-size: 14px;
-  color: var(--apagado);
-}
-
-/* Primeiros passos em blocos, como uma barra de vida. */
-.ini-passos h3 {
-  margin: 16px 0 6px;
-  font-family: var(--fonte);
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--lavoura);
-}
-.ini-passos p {
-  margin: 0 0 14px;
-  font-size: 14px;
-  line-height: 1.55;
-  color: var(--creme);
-  max-width: 60ch;
-}
-.ini-blocos {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-.ini-blocos i {
-  width: 34px;
-  height: 14px;
-  background: var(--chapa-3);
-  box-shadow: inset 0 0 0 2px var(--borda);
-}
-.ini-blocos i.feito {
-  background: var(--lavoura);
-  box-shadow: inset 0 -3px 0 var(--lavoura-escura);
-}
-.ini-blocos i.agora {
-  background: var(--chapa-3);
-  box-shadow: inset 0 0 0 2px var(--lavoura);
-  animation: ini-piscar 1s steps(2) infinite;
-}
-@keyframes ini-piscar {
-  50% {
-    box-shadow: inset 0 0 0 2px var(--lavoura-escura);
-  }
-}
-.ini-blocos span {
-  margin-left: 10px;
-  font-family: var(--fonte);
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--apagado);
-}
-
-/* Negócios: um cartão por unidade, com a cena grande e uma palavra de estado. */
-.ini-negocios ul {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 16px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.neg {
-  display: grid;
-  justify-items: center;
-  gap: 8px;
-  width: 100%;
-  height: 100%;
-  padding: 0 0 16px;
-  background: var(--chapa-2);
-  border: 2px solid var(--borda);
-  box-shadow: 4px 4px 0 var(--sombra);
-  color: var(--creme);
-  text-align: center;
-  cursor: pointer;
-  overflow: hidden;
-}
-.neg:hover {
-  border-color: var(--borda-forte);
-  transform: translateY(-2px);
-}
-.neg:focus-visible {
-  outline: 3px solid var(--lavoura);
-  outline-offset: 3px;
-}
-.neg:active {
-  transform: translate(2px, 2px);
-}
-.neg-cena {
-  display: grid;
-  place-items: center;
-  align-self: stretch;
-  min-height: 150px;
-  padding: 14px;
-  background:
-    radial-gradient(circle at 50% 45%, hsl(var(--h, 40) 55% 34%), transparent 70%),
-    linear-gradient(180deg, hsl(var(--h, 40) 32% 17%), var(--chapa));
-  filter: drop-shadow(0 4px 0 var(--sombra));
-}
-.neg strong {
-  padding: 0 12px;
-  font-family: var(--display);
-  font-stretch: 66%;
-  font-size: 24px;
-  font-weight: 800;
-  line-height: 1.25;
-}
-.neg-estado {
-  padding: 3px 12px;
-  background: var(--tom, var(--lavoura));
-  color: var(--noite);
-  font-size: 14px;
-  font-weight: 600;
-  box-shadow: 2px 2px 0 var(--sombra);
-}
-.neg small {
-  padding: 0 12px;
-  font-size: 14px;
-  color: var(--apagado);
-}
-.neg-novo {
-  align-content: center;
-  min-height: 250px;
-  background: transparent;
-  border: 3px dashed var(--borda-forte);
-  box-shadow: none;
-  color: var(--lavoura);
-}
-.neg-mais {
-  display: grid;
-  place-items: center;
-  width: 68px;
-  height: 68px;
-  border: 3px dashed var(--lavoura);
-  border-radius: 50%;
-}
-.neg-novo strong {
-  color: var(--lavoura);
-}
-
-@media (max-width: 1100px) {
-  .ini-fora ul {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    row-gap: 16px;
-  }
-  .ini-fora li:nth-child(3) {
-    border-left: 0;
-  }
-  .ini-grade {
-    grid-template-columns: 1fr;
-  }
-}
-@media (max-width: 600px) {
-  .inicio {
-    padding: 20px 16px 96px;
-    gap: 18px;
-  }
-  .ini-cab h1 {
-    font-size: 20px;
-  }
-  .ini-fora {
-    padding: 14px;
-  }
-  .ini-fora li {
-    padding: 4px 8px;
-    gap: 2px 10px;
-  }
-  .ini-fora li > i {
-    width: 30px;
-    height: 30px;
-  }
-  .ini-fora b {
-    font-size: 18px;
-  }
-  .pend {
-    grid-template-columns: auto 1fr;
-  }
-  .pend-acao {
-    grid-column: 1 / -1;
-    width: 100%;
-  }
-  .ini-negocios ul {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .ini-blocos i.agora {
-    animation: none;
-  }
-}
-
-.ini-motivo.tom-brasa {
-  color: var(--brasa);
-}
-.ini-motivo.tom-ouro {
   color: var(--ouro);
-}
-
-/* ===== Livro-caixa no Início ===== */
-.ini-cab {
-  padding: 6px 0 10px;
-}
-.ini-cab .lv-placa h1 {
-  font-size: clamp(40px, 4.6vw, 64px);
-}
-.pend-nivel {
-  background: none;
-  padding: 0;
-}
-.pend-nivel .lv-carimbo {
-  font-size: 13px;
-  padding: 2px 10px;
-  border-width: 3px;
-}
-.pend-texto strong {
-  font-family: var(--display);
-  font-stretch: 66%;
-  font-weight: 900;
-  font-size: 30px;
-  line-height: 1;
-  text-transform: uppercase;
-}
-.neg strong {
-  font-family: var(--display);
-  font-stretch: 66%;
-  font-weight: 900;
-  font-size: 32px;
-  line-height: 1;
-  text-transform: uppercase;
-}
-.neg-estado {
-  background: none;
-  color: var(--tom, var(--lavoura));
-  border: 3px double var(--tom, var(--lavoura));
-  box-shadow: none;
-  font-family: var(--rotulo);
-  font-size: 13px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
   transform: rotate(-2deg);
 }
-.ini-fora b {
+.ini-link {
+  margin-left: auto;
+  padding: 6px 2px;
+  background: none;
+  border: 0;
+  border-bottom: 2px dashed var(--borda-forte);
+  color: var(--apagado);
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.ini-link:hover,
+.ini-link:focus-visible {
+  color: var(--lavoura);
+  border-bottom-color: var(--lavoura);
+}
+
+/* ---------- Grades ---------- */
+.ini-topo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 28px;
+  align-items: start;
+}
+.ini-principal,
+.ini-lado {
+  display: grid;
+  gap: 24px;
+}
+.ini-principal {
+  gap: 30px;
+}
+.ini-mercado {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+/* ---------- Número vivo: corre e pisca ao mudar ---------- */
+.vivo {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+  border-radius: 0;
+}
+.vivo-sobe {
+  animation: ini-pisca-sobe 1.3s ease-out;
+}
+.vivo-desce {
+  animation: ini-pisca-desce 1.3s ease-out;
+}
+@keyframes ini-pisca-sobe {
+  0% {
+    background: color-mix(in srgb, var(--lavoura) 45%, transparent);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--lavoura) 45%, transparent);
+  }
+  100% {
+    background: transparent;
+    box-shadow: 0 0 0 4px transparent;
+  }
+}
+@keyframes ini-pisca-desce {
+  0% {
+    background: color-mix(in srgb, var(--brasa) 45%, transparent);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--brasa) 45%, transparent);
+  }
+  100% {
+    background: transparent;
+    box-shadow: 0 0 0 4px transparent;
+  }
+}
+
+/* ---------- Caderno do dia ---------- */
+.cad {
+  position: relative;
+  padding: 30px 30px 44px;
+  color: var(--tinta);
+  isolation: isolate;
+  transform: rotate(-0.35deg);
+  filter: drop-shadow(8px 10px 0 var(--sombra));
+}
+.cad::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--papel) var(--grao);
+  background-blend-mode: multiply;
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% 97%,
+    95% 99.4%,
+    88% 97.4%,
+    80% 100%,
+    71% 97.6%,
+    62% 99.6%,
+    53% 97.2%,
+    44% 99.8%,
+    35% 97.4%,
+    26% 99.6%,
+    17% 97.6%,
+    8% 99.8%,
+    0 97.2%
+  );
+}
+/* Margem vermelha do caderno e a fita que o prende. */
+.cad::after {
+  content: '';
+  position: absolute;
+  top: -12px;
+  left: 54px;
+  width: 112px;
+  height: 26px;
+  background: color-mix(in srgb, var(--ouro) 62%, transparent);
+  transform: rotate(-3deg);
+  clip-path: polygon(0 10%, 5% 0, 100% 0, 96% 50%, 100% 100%, 5% 100%, 0 90%, 3% 50%);
+}
+.cad-cab {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 18px;
+  padding-bottom: 12px;
+  border-bottom: 3px solid var(--tinta);
+}
+.cad-cab h2 {
+  font-size: 42px;
+  color: var(--tinta);
+}
+.cad-resumo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+}
+.cad-resumo .lv-mao {
+  font-size: 24px;
+  color: var(--ferrugem);
+  transform: rotate(-1.5deg);
+}
+.cad-conta {
+  display: inline-grid;
+  place-items: center;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 8px;
+  background: var(--tinta);
+  color: var(--papel);
   font-family: var(--display);
   font-stretch: 62%;
   font-weight: 900;
-  font-size: 44px;
+  font-size: 24px;
+  transform: rotate(-4deg);
 }
-.ini-bloco,
-.ini-fora {
-  background-image: var(--grao);
-  background-blend-mode: soft-light;
+.cad-lista {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
-
-@media (max-width: 700px) {
-  .ini-fora b {
-    font-size: 30px;
+.cad-item {
+  display: grid;
+  grid-template-columns: 26px 76px minmax(0, 1fr) auto;
+  grid-template-areas:
+    'caixa arte texto valor'
+    'caixa arte texto acao';
+  column-gap: 16px;
+  row-gap: 8px;
+  align-items: center;
+  padding: 18px 6px;
+  border-bottom: 2px dashed #b9a77a;
+  animation: ini-entra 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+  transition: background 0.18s;
+}
+.cad-item:nth-child(2) {
+  animation-delay: 0.07s;
+}
+.cad-item:nth-child(3) {
+  animation-delay: 0.14s;
+}
+.cad-item:nth-child(4) {
+  animation-delay: 0.21s;
+}
+.cad-item:nth-child(5) {
+  animation-delay: 0.28s;
+}
+.cad-item:last-child {
+  border-bottom: 0;
+}
+.cad-item:hover {
+  background: rgb(120 90 30 / 0.07);
+}
+@keyframes ini-entra {
+  from {
+    opacity: 0;
+    transform: translateX(-14px);
   }
-  .pend-texto strong,
-  .neg strong {
-    font-size: 24px;
+}
+.cad-caixa {
+  grid-area: caixa;
+  position: relative;
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--tinta);
+  background: rgb(255 255 255 / 0.35);
+}
+.cad-item.feito .cad-caixa i {
+  position: absolute;
+  left: 5px;
+  top: -6px;
+  width: 9px;
+  height: 20px;
+  border: solid var(--tinta-ganha);
+  border-width: 0 5px 5px 0;
+  transform: rotate(40deg);
+  animation: ini-marca 0.4s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+@keyframes ini-marca {
+  from {
+    transform: rotate(40deg) scale(0);
   }
 }
-
-/* A grade do Início nunca passa da largura da tela. */
-.inicio {
-  grid-template-columns: minmax(0, 1fr);
+.cad-arte {
+  grid-area: arte;
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 68px;
+  transition: transform 0.2s;
 }
-.ini-grade > *,
-.ini-coluna,
-.ini-fora li,
-.pend-texto {
+.cad-arte img,
+.cad-arte svg {
+  max-width: 76px;
+  max-height: 68px;
+}
+.cad-item:hover .cad-arte {
+  transform: translateY(-3px) rotate(-2deg);
+}
+.cad-texto {
+  grid-area: texto;
+  display: grid;
+  gap: 4px;
+  justify-items: start;
   min-width: 0;
 }
-.ini-fora ul {
-  grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+.cad-texto .lv-carimbo {
+  margin-bottom: 4px;
+  padding: 3px 9px;
+  font-size: 13px;
+  border-width: 3px;
+  background: transparent;
+  animation: ini-carimbo 0.5s cubic-bezier(0.2, 1.6, 0.4, 1) both 0.25s;
+}
+@keyframes ini-carimbo {
+  from {
+    opacity: 0;
+    transform: rotate(var(--giro)) scale(1.9);
+  }
+}
+.cad-item.tom-brasa .lv-carimbo {
+  --tom: var(--tinta-perde) !important;
+}
+.cad-item.tom-ouro .lv-carimbo {
+  --tom: var(--ferrugem) !important;
+}
+.cad-item.feito .lv-carimbo {
+  --tom: var(--tinta-ganha) !important;
+}
+.cad-texto strong {
+  font-family: var(--display);
+  font-stretch: 75%;
+  font-weight: 800;
+  font-size: 21px;
+  line-height: 1.12;
+}
+.cad-texto small {
+  color: var(--tinta-suave);
+  font-size: 15px;
+  line-height: 1.35;
+}
+.cad-valor {
+  grid-area: valor;
+  justify-self: end;
+  align-self: end;
+  display: grid;
+  justify-items: end;
+}
+.cad-valor b {
+  font-family: var(--display);
+  font-stretch: 62%;
+  font-weight: 900;
+  font-size: 32px;
+  line-height: 0.95;
+  white-space: nowrap;
+}
+.cad-valor.perde b {
+  color: var(--tinta-perde);
+}
+.cad-valor.ganha b {
+  color: var(--tinta-ganha);
+}
+.cad-valor > span {
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--tinta-suave);
+}
+.cad-acao {
+  grid-area: acao;
+  justify-self: end;
+  align-self: start;
+  white-space: nowrap;
+}
+.cad .cad-acao.secondary {
+  background: var(--tinta);
+  color: var(--papel);
+  border-color: var(--tinta);
+}
+.cad-item.feito {
+  animation: ini-feito 2.6s ease-in forwards;
+}
+.cad-item.feito strong {
+  text-decoration: line-through 3px var(--ferrugem);
+}
+@keyframes ini-feito {
+  0%,
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.25;
+  }
+}
+.cad-mais {
+  margin-top: 10px;
+  padding: 8px 0;
+  background: none;
+  border: 0;
+  border-bottom: 2px dashed var(--tinta-suave);
+  color: var(--tinta);
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.cad-vazio {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 44px 16px 22px;
+  text-align: center;
+}
+.cad-vazio .lv-carimbo {
+  --tom: var(--tinta-ganha) !important;
+  font-size: 26px;
+  padding: 8px 22px;
+  background: transparent;
+  animation: ini-carimbo 0.55s cubic-bezier(0.2, 1.6, 0.4, 1) both;
+}
+.cad-vazio .lv-mao {
+  font-size: 30px;
+  color: var(--ferrugem);
+}
+.cad-vazio p {
+  margin: 0;
+  color: var(--tinta-suave);
 }
 
+/* ---------- Recibo da ausência ---------- */
+.recibo {
+  padding: 26px 30px 24px;
+}
+.recibo h2 {
+  color: var(--tinta-suave);
+  font-size: 13px;
+}
+.recibo dl {
+  display: grid;
+  margin: 12px 0 0;
+}
+.recibo dl > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 7px 0;
+  border-bottom: 1px dashed #b9a77a;
+}
+.recibo dt {
+  font-size: 15px;
+}
+.recibo dd {
+  margin: 0;
+  font-family: var(--display);
+  font-stretch: 70%;
+  font-weight: 800;
+  font-size: 19px;
+  font-variant-numeric: tabular-nums;
+}
+.recibo dd.entra {
+  color: var(--tinta-ganha);
+}
+.recibo dd.sai {
+  color: var(--tinta-perde);
+}
+.recibo .total {
+  border-bottom: 0;
+  border-top: 3px double var(--tinta);
+  margin-top: 6px;
+  padding-top: 10px;
+}
+.recibo .total dt {
+  font-family: var(--display);
+  font-stretch: 70%;
+  font-weight: 900;
+  font-size: 20px;
+  text-transform: uppercase;
+}
+.recibo .total dd {
+  font-size: 30px;
+}
+
+/* ---------- Porte da empresa ---------- */
+.porte {
+  display: grid;
+  gap: 10px;
+}
+.porte h2 {
+  color: var(--ouro);
+}
+.porte-valor {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+  font-family: var(--display);
+  font-stretch: 62%;
+  font-weight: 900;
+  font-size: 40px;
+  line-height: 1;
+  color: var(--creme);
+}
+.porte-valor small {
+  font-family: var(--fonte);
+  font-stretch: 100%;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--apagado);
+}
+.porte-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  margin: 0;
+  font-size: 15px;
+  color: var(--apagado);
+}
+.porte-meta b {
+  color: var(--ouro);
+  font-family: var(--display);
+  font-stretch: 70%;
+  font-weight: 900;
+  font-size: 19px;
+  text-transform: uppercase;
+}
+.porte .ini-link {
+  justify-self: start;
+  margin-left: 0;
+}
+
+/* ---------- A caminho ---------- */
+.a-caminho {
+  display: grid;
+  gap: 10px;
+}
+.a-caminho h2 {
+  color: var(--ceu);
+}
+
+/* ---------- Próximo passo ---------- */
+.passo {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 18px 24px;
+  align-items: center;
+  padding: 18px 24px;
+  background: var(--chapa) var(--grao);
+  background-blend-mode: soft-light;
+  box-shadow:
+    inset 0 0 0 2px var(--borda),
+    inset 6px 0 0 var(--lavoura),
+    6px 6px 0 var(--sombra);
+}
+.passo-pips {
+  display: flex;
+  gap: 6px;
+}
+.passo-pips i {
+  width: 18px;
+  height: 18px;
+  background: var(--chapa-3);
+  box-shadow: inset 0 0 0 2px var(--borda-forte);
+}
+.passo-pips i.feito {
+  background: var(--lavoura);
+  box-shadow: inset 0 0 0 2px var(--lavoura-escura);
+}
+.passo-pips i.agora {
+  box-shadow: inset 0 0 0 2px var(--lavoura);
+  background: color-mix(in srgb, var(--lavoura) 30%, var(--chapa-3));
+}
+.passo-texto {
+  display: grid;
+  gap: 2px;
+}
+.passo-texto .lv-rotulo {
+  color: var(--lavoura);
+}
+.passo-texto h2 {
+  font-family: var(--display);
+  font-stretch: 75%;
+  font-weight: 800;
+  font-size: 22px;
+  color: var(--creme);
+}
+.passo-texto p {
+  margin: 0;
+  color: var(--apagado);
+  font-size: 15px;
+}
+
+/* ---------- Pregão ---------- */
+.ao-vivo {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--brasa);
+}
+.ao-vivo i {
+  width: 10px;
+  height: 10px;
+  background: var(--brasa);
+  animation: ini-ao-vivo 1.6s ease-in-out infinite;
+}
+@keyframes ini-ao-vivo {
+  50% {
+    opacity: 0.25;
+  }
+}
+.preg-destaques {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  margin: -6px 0 14px;
+  font-size: 15px;
+  color: var(--apagado);
+}
+.preg-destaques b {
+  color: var(--creme);
+}
+.preg-destaques .sobe::before,
+.preg-destaques .desce::before {
+  content: '▲ ';
+  color: var(--lavoura);
+}
+.preg-destaques .desce::before {
+  content: '▼ ';
+  color: var(--brasa);
+}
+.preg-quadro {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: var(--chapa) var(--grao);
+  background-blend-mode: soft-light;
+  box-shadow:
+    inset 0 0 0 2px var(--borda),
+    6px 6px 0 var(--sombra);
+}
+.preg-quadro li {
+  animation: ini-entra 0.4s ease-out both;
+  animation-delay: calc(var(--i, 0) * 45ms);
+}
+.preg-quadro li + li {
+  border-top: 1px solid var(--borda);
+}
+.preg .abre-produto.preg-linha {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) 120px 112px 82px;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 10px 18px;
+  text-align: left;
+  color: var(--creme);
+  justify-items: stretch;
+  transition: background 0.15s;
+}
+.preg .abre-produto.preg-linha:hover,
+.preg .abre-produto.preg-linha:focus-visible {
+  background: var(--chapa-2);
+  outline-offset: -3px;
+}
+.preg-arte {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 40px;
+}
+.preg-arte img {
+  max-width: 46px;
+  max-height: 40px;
+}
+.preg-nome {
+  display: grid;
+  min-width: 0;
+}
+.preg-nome b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 700;
+  font-size: 16px;
+}
+.preg-nome small {
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--apagado);
+}
+.preg-faisca .faisca {
+  display: block;
+  width: 120px;
+  height: 34px;
+  overflow: visible;
+}
+.preg .faisca.sobe {
+  color: var(--lavoura);
+}
+.preg .faisca.desce {
+  color: var(--brasa);
+}
+.preg .faisca path:last-child {
+  stroke-dasharray: 600;
+  stroke-dashoffset: 600;
+  animation: ini-desenha 1.3s ease-out forwards;
+  animation-delay: calc(0.2s + var(--i, 0) * 60ms);
+}
+@keyframes ini-desenha {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.preg-preco {
+  display: grid;
+  justify-items: end;
+}
+.preg-preco .vivo {
+  padding: 0 3px;
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-weight: 900;
+  font-size: 23px;
+  line-height: 1.05;
+}
+.preg-preco small {
+  font-size: 13px;
+  color: var(--apagado);
+}
+.preg-var {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  justify-self: end;
+  min-width: 74px;
+  padding: 5px 7px;
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--apagado);
+  background: var(--chapa-3);
+  box-shadow: 2px 2px 0 var(--sombra);
+}
+.preg-var.sobe {
+  color: var(--noite);
+  background: var(--lavoura);
+}
+.preg-var.desce {
+  color: var(--noite);
+  background: var(--brasa);
+}
+.preg-var.novo {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ---------- Mural ---------- */
+.selo-empresa {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  background: hsl(var(--h, 120) 38% 34%);
+  color: var(--creme);
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  box-shadow:
+    inset 0 0 0 2px hsl(var(--h, 120) 40% 48%),
+    2px 2px 0 var(--sombra);
+}
+.selo-empresa.voce {
+  box-shadow:
+    inset 0 0 0 2px var(--ouro),
+    2px 2px 0 var(--sombra);
+}
+.placar {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 18px;
+  padding: 0;
+  list-style: none;
+}
+.placar li {
+  display: grid;
+  grid-template-columns: 34px 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--chapa);
+  box-shadow:
+    inset 0 0 0 2px var(--borda),
+    4px 4px 0 var(--sombra);
+}
+.placar li.voce {
+  box-shadow:
+    inset 0 0 0 2px var(--ouro),
+    4px 4px 0 var(--sombra);
+}
+.placar-pos {
+  font-family: var(--display);
+  font-stretch: 62%;
+  font-weight: 900;
+  font-size: 26px;
+  color: var(--apagado);
+}
+.placar li:first-child .placar-pos {
+  color: var(--ouro);
+}
+.placar-nome {
+  display: grid;
+  min-width: 0;
+}
+.placar-nome b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--creme);
+}
+.placar-nome small {
+  font-size: 13px;
+  color: var(--apagado);
+}
+.placar-valor .vivo {
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-weight: 900;
+  font-size: 22px;
+  color: var(--creme);
+}
+.manchete {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'rotulo arte'
+    'texto arte'
+    'valor arte'
+    'quando arte';
+  gap: 4px 16px;
+  margin-bottom: 18px;
+  padding: 18px 20px 22px;
+  color: var(--tinta);
+  isolation: isolate;
+  transform: rotate(0.6deg);
+  filter: drop-shadow(6px 7px 0 var(--sombra));
+  animation: ini-sobe 0.5s ease-out both;
+}
+.manchete::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--papel) var(--grao);
+  background-blend-mode: multiply;
+  border-top: 5px double var(--tinta);
+}
+.manchete .lv-rotulo {
+  grid-area: rotulo;
+  color: var(--ferrugem);
+}
+.manchete p {
+  grid-area: texto;
+  margin: 0;
+  font-family: var(--display);
+  font-stretch: 72%;
+  font-weight: 800;
+  font-size: 21px;
+  line-height: 1.12;
+}
+.manchete-valor {
+  grid-area: valor;
+  font-family: var(--display);
+  font-stretch: 62%;
+  font-weight: 900;
+  font-size: 34px;
+  line-height: 1;
+  color: var(--tinta-perde);
+}
+.manchete small {
+  grid-area: quando;
+  color: var(--tinta-suave);
+  font-size: 13px;
+}
+.manchete .manchete-arte {
+  grid-area: arte;
+  align-self: center;
+}
+.mural-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.mural-filtros button {
+  padding: 7px 12px;
+  background: var(--chapa);
+  border: 2px solid var(--borda);
+  color: var(--apagado);
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    transform 0.12s,
+    background 0.12s;
+}
+.mural-filtros button:hover {
+  transform: rotate(-1.5deg);
+}
+.mural-filtros button.on {
+  background: var(--lavoura);
+  border-color: var(--lavoura-escura);
+  color: var(--noite);
+  transform: rotate(-1.5deg);
+  box-shadow: 3px 3px 0 var(--sombra);
+}
+.mural-lista {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.mural-lista li {
+  display: grid;
+  grid-template-columns: 34px 24px minmax(0, 1fr) 36px auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--chapa);
+  box-shadow: inset 0 0 0 1px var(--borda);
+  animation: ini-chega 0.6s ease-out both;
+}
+.mural-lista li.humano {
+  box-shadow:
+    inset 0 0 0 1px var(--borda),
+    inset 4px 0 0 var(--ouro);
+}
+@keyframes ini-chega {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+    background: color-mix(in srgb, var(--lavoura) 18%, var(--chapa));
+  }
+}
+.mural-lista p {
+  margin: 0;
+  min-width: 0;
+  font-size: 15px;
+  line-height: 1.3;
+  color: var(--apagado);
+}
+.mural-lista p b {
+  color: var(--creme);
+  font-weight: 700;
+}
+.mural-produto {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 32px;
+}
+.mural-produto img {
+  max-width: 36px;
+  max-height: 32px;
+}
+.mural-quando {
+  display: grid;
+  justify-items: end;
+  white-space: nowrap;
+}
+.mural-quando b {
+  font-family: var(--display);
+  font-stretch: 66%;
+  font-weight: 900;
+  font-size: 18px;
+  color: var(--ouro);
+}
+.mural-quando small {
+  font-size: 13px;
+  color: var(--apagado);
+}
+.mural-vazio {
+  margin: 0;
+  padding: 16px;
+  color: var(--apagado);
+  background: var(--chapa);
+  box-shadow: inset 0 0 0 1px var(--borda);
+}
+
+/* ---------- Telas menores ---------- */
+@media (max-width: 1120px) {
+  .ini-topo,
+  .ini-mercado {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ini-lado {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    align-items: start;
+  }
+}
 @media (max-width: 700px) {
-  .pend {
-    grid-template-columns: auto minmax(0, 1fr);
-    padding-right: 14px;
+  .inicio {
+    gap: 26px;
+    padding: 20px 14px 40px;
   }
-  .pend-acao {
-    grid-column: 1 / -1;
-    width: 100%;
+  .ini-cabeca h2 {
+    font-size: 32px;
   }
-  .pend-texto strong,
-  .neg strong,
-  .cam-topo strong {
-    overflow-wrap: anywhere;
+  .cad {
+    padding: 26px 16px 38px;
+    transform: none;
   }
-  .pend-arte {
-    min-width: 64px;
+  .cad-cab h2 {
+    font-size: 34px;
+  }
+  .cad-item {
+    grid-template-columns: 22px 56px minmax(0, 1fr);
+    grid-template-areas:
+      'caixa arte texto'
+      '. valor valor'
+      '. acao acao';
+    column-gap: 12px;
+  }
+  .cad-arte {
+    width: 56px;
+    height: 52px;
+  }
+  .cad-arte img,
+  .cad-arte svg {
+    max-width: 56px;
+    max-height: 52px;
+  }
+  .cad-valor,
+  .cad-acao {
+    justify-self: start;
+  }
+  .cad-valor {
+    justify-items: start;
+  }
+  .passo {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 16px 18px;
+  }
+  .passo .primary {
+    justify-self: start;
+  }
+  .preg .abre-produto.preg-linha {
+    grid-template-columns: 34px minmax(0, 1fr) auto;
+    grid-template-areas:
+      'arte nome var'
+      'arte nome preco';
+    gap: 2px 10px;
+    padding: 10px 12px;
+  }
+  .preg-arte {
+    grid-area: arte;
+    width: 34px;
+  }
+  .preg-nome {
+    grid-area: nome;
+  }
+  .preg-nome b {
+    white-space: normal;
+  }
+  .preg-preco {
+    grid-area: preco;
+  }
+  .preg-var {
+    grid-area: var;
+    min-width: 0;
+  }
+  .preg-faisca {
+    display: none;
+  }
+  .mural-lista li {
+    grid-template-columns: 34px minmax(0, 1fr) auto;
+  }
+  .mural-icone,
+  .mural-produto {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inicio *,
+  .inicio *::before,
+  .inicio *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .preg .faisca path:last-child {
+    stroke-dashoffset: 0;
   }
 }

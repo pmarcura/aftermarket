@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Aftermarket · Reel 3 · Robôs</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Archivo:wght@500;700;800;900&display=block"
+    />
+    <style>
+      /* Reel 3 · "Isso aconteceu sozinho." ~25 s, 9:16.
+   Área segura: nada importante acima de 200 px nem abaixo de 1560 px. */
+      :root {
+        --bg: #0f1114;
+        --tx: #f2f4ee;
+        --lime: #a6e22e;
+        --gold: #e8bd4f;
+        --brasa: #ef6a4c;
+        --ceu: #5aaee6;
+        --panel: #171b20;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #07080a;
+        font-family: Archivo, system-ui, sans-serif;
+        color: var(--tx);
+      }
+      #bar {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
+        background: #14161a;
+        font: 13px Archivo;
+      }
+      #bar button {
+        background: var(--lime);
+        color: #111;
+        border: 0;
+        padding: 8px 14px;
+        font: 700 13px Archivo;
+        cursor: pointer;
+      }
+      #wrap {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+      }
+      #stage {
+        position: relative;
+        width: 1080px;
+        height: 1920px;
+        flex: none;
+        overflow: hidden;
+        background: radial-gradient(ellipse at 50% 40%, #1b2229 0%, var(--bg) 58%, #06070a 100%);
+      }
+      #grade {
+        position: absolute;
+        inset: -60px;
+        background-image:
+          linear-gradient(#ffffff08 2px, transparent 2px),
+          linear-gradient(90deg, #ffffff08 2px, transparent 2px);
+        background-size: 60px 60px;
+      }
+      #linhas {
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(0deg, #0000 0 4px, #0000001c 4px 6px);
+        pointer-events: none;
+        z-index: 40;
+      }
+      #vinheta {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse at 50% 45%, #0000 58%, #000a 100%);
+        pointer-events: none;
+        z-index: 39;
+      }
+      #flash {
+        position: absolute;
+        inset: 0;
+        background: #fff;
+        opacity: 0;
+        pointer-events: none;
+        z-index: 38;
+      }
+      #marca {
+        position: absolute;
+        top: 210px;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font: 400 20px 'Press Start 2P';
+        color: #9aa39b;
+        z-index: 32;
+      }
+      .cena {
+        position: absolute;
+        inset: 0;
+        visibility: hidden;
+        z-index: 5;
+      }
+      .a {
+        position: absolute;
+        will-change: transform, opacity;
+      }
+      .pix {
+        image-rendering: pixelated;
+      }
+      .h {
+        left: 60px;
+        right: 60px;
+        text-align: center;
+        font: 900 130px/0.92 Archivo;
+        text-transform: uppercase;
+        letter-spacing: -4px;
+        text-shadow: 0 10px 0 #000a;
+      }
+      .lime {
+        color: var(--lime);
+      }
+      .gold {
+        color: var(--gold);
+      }
+      .ceu {
+        color: var(--ceu);
+      }
+      .tag {
+        font: 400 22px/1.5 'Press Start 2P';
+        text-align: center;
+        letter-spacing: 1px;
+      }
+      .robo {
+        left: 100px;
+        width: 860px;
+        display: flex;
+        align-items: center;
+        gap: 30px;
+        background: var(--panel);
+        border: 8px solid var(--c);
+        padding: 26px 34px;
+        box-shadow: 0 30px 70px #000c;
+      }
+      .robo img {
+        width: 130px;
+        height: 130px;
+        flex: none;
+      }
+      .robo b {
+        display: block;
+        font: 900 58px/1 Archivo;
+        text-transform: uppercase;
+      }
+      .robo span {
+        display: inline-block;
+        margin-top: 12px;
+        background: var(--ceu);
+        color: #0d0f0b;
+        font: 400 18px 'Press Start 2P';
+        padding: 8px 10px;
+      }
+      .robo small {
+        display: block;
+        font: 800 26px Archivo;
+        letter-spacing: 3px;
+        color: #d6dbd2;
+        margin-top: 10px;
+      }
+      .seta {
+        left: 520px;
+        width: 14px;
+        height: 120px;
+        background: var(--gold);
+      }
+      .ficha {
+        width: 120px;
+        height: 56px;
+        margin: -28px -60px;
+        background: var(--gold);
+        border: 5px solid #0f1114;
+        font: 400 16px 'Press Start 2P';
+        color: #0d0f0b;
+        display: grid;
+        place-items: center;
+        z-index: 7;
+      }
+      .ficha.lime {
+        background: var(--lime);
+      }
+      .moeda {
+        width: 60px;
+        height: 60px;
+        margin: -30px;
+        border-radius: 50%;
+        background: var(--lime);
+        border: 6px solid #0f1114;
+        color: #0d0f0b;
+        font: 900 24px/48px Archivo;
+        text-align: center;
+        z-index: 7;
+        box-shadow: 0 0 24px #a6e22e88;
+      }
+      .botao {
+        left: 80px;
+        width: 920px;
+        background: var(--lime);
+        color: #0d0f0b;
+        font: 900 82px/1 Archivo;
+        text-transform: uppercase;
+        text-align: center;
+        padding: 44px 0;
+        box-shadow: 0 12px 0 #6f9c16;
+      }
+      .dot {
+        width: 14px;
+        height: 14px;
+        background: #a6e22e44;
+      }
+      #cap {
+        position: absolute;
+        left: 80px;
+        right: 80px;
+        bottom: 330px;
+        z-index: 33;
+        text-align: center;
+      }
+      #cap p {
+        margin: 0;
+        font: 900 72px/1.05 Archivo;
+        text-transform: uppercase;
+        letter-spacing: -1px;
+        text-shadow:
+          -5px -5px 0 #000,
+          5px -5px 0 #000,
+          -5px 5px 0 #000,
+          5px 5px 0 #000,
+          0 14px 0 #000a;
+      }
+      #cap .dita {
+        color: #fff;
+      }
+      #cap .agora {
+        color: var(--lime);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="bar">
+      <button id="play">▶ Tocar</button>
+      <button id="rst">⟲ Do início</button>
+      <span id="tt">0.0 / 0.0 s</span>
+    </div>
+    <div id="wrap">
+      <div id="stage">
+        <div id="grade"></div>
+        <div class="a tag" id="marca">AFTERMARKET · EM DESENVOLVIMENTO</div>
+
+        <!-- 1. GANCHO -->
+        <section class="cena" id="c-gancho">
+          <div class="a h" id="g1" style="top: 560px">Isso aconteceu</div>
+          <div class="a h lime" id="g2" style="top: 760px">sozinho.</div>
+        </section>
+
+        <!-- 2. MUNDO DE TESTE: a marcação de exemplo real -->
+        <section class="cena" id="c-mundo">
+          <div class="a tag ceu" id="m-tag" style="top: 330px; left: 0; right: 0">
+            EXEMPLO REAL · MUNDO DE TESTE
+          </div>
+          <div class="a h" id="m-h" style="top: 420px; font-size: 116px">
+            Robôs montaram<br /><span class="lime">uma cadeia</span>
+          </div>
+        </section>
+
+        <!-- 3. CADEIA: três empresas-robô, a soja desce -->
+        <section class="cena" id="c-cadeia">
+          <div class="a robo" id="n1" style="top: 300px; --c: #5c9e5a">
+            <img class="pix" src="../../../apps/web/public/arte/lavoura.png" alt="" />
+            <div><b>União Agro</b><span>ROBÔ</span><small>SINOP · MT</small></div>
+          </div>
+          <div class="a seta" id="s1" style="top: 575px"></div>
+          <div class="a robo" id="n2" style="top: 680px; --c: #8a96a0">
+            <img class="pix" src="../../../apps/web/public/arte/soja-oleo.png" alt="" />
+            <div><b>Rota Norte</b><span>ROBÔ</span><small>RONDONÓPOLIS · MT</small></div>
+          </div>
+          <div class="a seta" id="s2" style="top: 955px"></div>
+          <div class="a robo" id="n3" style="top: 1060px; --c: #d9615a">
+            <img class="pix" src="../../../apps/web/public/arte/loja.png" alt="" />
+            <div><b>Planalto</b><span>ROBÔ</span><small>SÃO PAULO · SP</small></div>
+          </div>
+          <div class="a ficha" id="f1" style="left: 520px; top: 580px">SOJA</div>
+          <div class="a ficha lime" id="f2" style="left: 520px; top: 955px">ÓLEO</div>
+        </section>
+
+        <!-- 4. DINHEIRO: volta pelo mesmo caminho -->
+        <section class="cena" id="c-dinheiro">
+          <div class="a h" id="d-h" style="top: 300px; font-size: 118px">
+            E o dinheiro<br /><span class="lime">volta</span>
+          </div>
+          <div class="a moeda" id="d-m1" style="left: 520px; top: 1200px">R$</div>
+          <div class="a moeda" id="d-m2" style="left: 520px; top: 1200px">R$</div>
+          <div class="a moeda" id="d-m3" style="left: 520px; top: 1200px">R$</div>
+          <div
+            class="a seta"
+            style="left: 520px; top: 700px; background: #a6e22e55; height: 500px"
+          ></div>
+        </section>
+
+        <!-- 5. AMIGOS: a pergunta do convite -->
+        <section class="cena" id="c-amigos">
+          <div class="a h" id="a-h" style="top: 520px; font-size: 120px">
+            E se fossem<br /><span class="lime">você e seus amigos?</span>
+          </div>
+        </section>
+
+        <!-- 6. CHAMADA -->
+        <section class="cena" id="c-cta">
+          <div class="a h" id="z-h" style="top: 520px; font-size: 124px">
+            Monte a sua<br /><span class="lime">cadeia</span>
+          </div>
+          <div class="a botao" id="z-bot" style="top: 1000px">Entre no Discord</div>
+          <div class="a tag" id="z-l" style="top: 1190px; left: 0; right: 0">
+            Link na bio · novidades e primeiros testes
+          </div>
+        </section>
+
+        <div id="flash"></div>
+        <div id="linhas"></div>
+        <div id="vinheta"></div>
+        <div id="cap"><p id="cap-p"></p></div>
+      </div>
+    </div>
+
+    <script src="motor.js"></script>
+    <script>
+      const SHAKE = (el, u, a, amp) => {
+        const [x, y] = treme(u, a, amp, 0.3);
+        el.style.transform = `translate(${x}px,${y}px)`;
+      };
+      // Fichas que descem pela seta (u0 a u1) e somem no fim.
+      const DESCE = (el, u, a, b, y0, y1) => {
+        const k = E.io(q(u, a, b - a));
+        T(el, { y: y0 + (y1 - y0) * k, o: clamp((u - a) * 8) * (1 - clamp((u - b) * 8)) });
+      };
+      montar([
+        [
+          'gancho',
+          2.4,
+          'Isso aconteceu sozinho.',
+          (u, d) => {
+            estala($('g1'), u, 0.05, 0.35);
+            estala($('g2'), u, 0.25, 0.35, -3);
+            SHAKE($('c-gancho'), u, 0.3, 14);
+          },
+        ],
+        [
+          'mundo',
+          3.0,
+          'No nosso mundo de teste, robôs montaram uma cadeia.',
+          (u, d) => {
+            entra($('m-tag'), u, 0, 0.3, 40);
+            estala($('m-h'), u, 0.3, 0.45);
+          },
+        ],
+        [
+          'cadeia',
+          6.6,
+          'Do campo em Sinop às lojas de São Paulo.',
+          (u, d) => {
+            entra($('n1'), u, 0.1, 0.4, 60);
+            entra($('n2'), u, 1.6, 0.4, 60);
+            entra($('n3'), u, 3.1, 0.4, 60);
+            // as setas crescem quando o próximo robô chega
+            T($('s1'), { s: 1 });
+            $('s1').style.transform = `scaleY(${E.out(q(u, 1.5, 0.4))})`;
+            $('s1').style.transformOrigin = 'top';
+            $('s2').style.transform = `scaleY(${E.out(q(u, 3.0, 0.4))})`;
+            $('s2').style.transformOrigin = 'top';
+            // soja e óleo descendo pelas setas
+            DESCE($('f1'), u, 1.9, 3.0, 0, 100);
+            DESCE($('f2'), u, 3.5, 5.0, 0, 100);
+          },
+        ],
+        [
+          'dinheiro',
+          4.0,
+          'E o dinheiro volta pelo mesmo caminho.',
+          (u, d) => {
+            estala($('d-h'), u, 0.05, 0.4);
+            ['d-m1', 'd-m2', 'd-m3'].forEach((id, i) => {
+              const a = 0.6 + i * 0.35;
+              const k = E.io(q(u, a, 1.6));
+              T($(id), { y: -k * 500, o: clamp((u - a) * 6) * (1 - clamp((u - a - 1.6) * 6)) });
+            });
+          },
+        ],
+        [
+          'amigos',
+          4.0,
+          'Imagine com seus amigos.',
+          (u, d) => {
+            estala($('a-h'), u, 0.1, 0.5);
+            SHAKE($('c-amigos'), u, 0.6, 6);
+          },
+        ],
+        [
+          'cta',
+          4.6,
+          'Entre no Discord. Link na bio.',
+          (u, d) => {
+            estala($('z-h'), u, 0.05, 0.45);
+            estala($('z-bot'), u, 0.9, 0.45);
+            entra($('z-l'), u, 1.5, 0.4, 30);
+          },
+        ],
+      ]);
+    </script>
+  </body>
+</html>

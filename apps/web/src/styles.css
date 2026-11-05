@@ -386,6 +386,19 @@ button.text-button:hover {
   border-radius: 0;
   color: #d3cdc1;
 }
+.notification-button > .notification-entregas {
+  position: absolute;
+  right: 16px;
+  bottom: 15px;
+  min-width: 15px;
+  padding: 0 3px;
+  background: var(--ceu);
+  color: var(--noite);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 15px;
+  border: 1px solid #181b14;
+}
 .notification-button > i {
   position: absolute;
   right: 16px;
@@ -3183,6 +3196,10 @@ td .primary {
     top: 11px;
     right: 4px;
   }
+  .notification-button > .notification-entregas {
+    bottom: 9px;
+    right: 4px;
+  }
   .profile-button {
     padding: 0 10px;
   }
@@ -3921,12 +3938,15 @@ td .primary {
 }
 
 /* Botões de acesso aos negócios do mapa: invisíveis até receberem foco do teclado. */
+/* Cidades no mapa (spec 008 R2): mesmo comportamento invisível-até-o-foco. */
+.map-access-cidades,
 .map-access {
   position: absolute;
   top: 12px;
   left: 12px;
   z-index: 6;
 }
+.map-access-cidades button,
 .map-access button {
   position: absolute;
   width: 1px;
@@ -3936,6 +3956,7 @@ td .primary {
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+.map-access-cidades button:focus-visible,
 .map-access button:focus-visible {
   width: auto;
   height: auto;
@@ -3945,4 +3966,37 @@ td .primary {
   color: #f3f0ea;
   border: 1px solid #efc35d;
   border-radius: 10px;
+}
+
+/* Spec 008 R1: cartão curto ao passar o mouse sobre um pino do mapa. */
+.map-hover-card {
+  position: absolute;
+  z-index: 7;
+  transform: translate(14px, -100%);
+  display: grid;
+  gap: 2px;
+  max-width: 260px;
+  padding: 8px 12px;
+  background: var(--panel-deep);
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.3;
+  pointer-events: none;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+.map-hover-card strong {
+  color: #f3f0ea;
+}
+.map-hover-card span[data-tom='brasa'] {
+  color: var(--red);
+}
+.map-legend-bar i.alerta-brasa {
+  background: #e4572e;
+  border-radius: 50%;
+}
+.map-legend-bar i.alerta-ouro {
+  background: #f2bd3c;
+  border-radius: 50%;
 }

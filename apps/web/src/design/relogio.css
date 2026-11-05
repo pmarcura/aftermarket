@@ -1,0 +1,340 @@
+/*
+ * Relógio do jogo: a folhinha de papel com o dia e quanto ele vende, a janela com o céu em pixel
+ * (cor pela hora, sol ou lua em arco, janelas acesas à noite) e o bilhete picotado da rodada.
+ */
+.relogio {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  align-items: stretch;
+  gap: 0;
+  filter: drop-shadow(7px 8px 0 var(--sombra));
+}
+
+/* ---------- Folhinha ---------- */
+.rel-folhinha {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 2px;
+  margin: -10px -14px 10px 0;
+  padding: 26px 12px 16px;
+  color: var(--tinta);
+  background: var(--papel) var(--grao);
+  background-blend-mode: multiply;
+  transform: rotate(-3deg);
+  box-shadow: 4px 5px 0 rgb(0 0 0 / 0.45);
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% 96%,
+    92% 99%,
+    80% 96.5%,
+    68% 100%,
+    55% 96.5%,
+    42% 99.5%,
+    30% 96.5%,
+    17% 100%,
+    6% 97%,
+    0 99%
+  );
+}
+.rel-folhinha::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 18px;
+  background: var(--brasa);
+}
+.rel-argolas {
+  position: absolute;
+  top: 4px;
+  inset-inline: 0;
+  display: flex;
+  justify-content: center;
+  gap: 56px;
+}
+.rel-argolas i {
+  width: 10px;
+  height: 10px;
+  background: var(--noite);
+  border-radius: 50%;
+  box-shadow: inset 0 2px 0 rgb(255 255 255 / 0.2);
+}
+.rel-dia-rotulo {
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--tinta-suave);
+}
+.rel-dia-numero {
+  font-family: var(--display);
+  font-stretch: 62%;
+  font-weight: 900;
+  font-size: 84px;
+  line-height: 0.82;
+  font-variant-numeric: tabular-nums;
+}
+.rel-semana-nome {
+  font-family: var(--display);
+  font-stretch: 72%;
+  font-weight: 800;
+  font-size: 19px;
+  text-transform: uppercase;
+}
+.rel-folhinha .lv-carimbo {
+  margin: 8px 0 10px;
+  padding: 3px 8px;
+  font-size: 12px;
+  border-width: 3px;
+  background: transparent;
+  white-space: nowrap;
+}
+.rel-efeito .lv-carimbo {
+  --tom: var(--ferrugem) !important;
+}
+.rel-efeito.perde .lv-carimbo {
+  --tom: var(--tinta-perde) !important;
+}
+.rel-efeito.ganha .lv-carimbo {
+  --tom: var(--tinta-ganha) !important;
+}
+.rel-letras {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.rel-letras li {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+}
+/* A bolinha cresce com o quanto o dia vende. */
+.rel-letras i {
+  display: block;
+  width: calc(6px + (var(--p) - 0.8) * 22px);
+  height: calc(6px + (var(--p) - 0.8) * 22px);
+  margin-top: auto;
+  background: var(--tinta-suave);
+}
+.rel-letras span {
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 12px;
+}
+.rel-letras li.hoje i {
+  background: var(--ferrugem);
+}
+.rel-letras li.hoje span {
+  color: var(--ferrugem);
+}
+/* Círculo à mão em volta do dia de hoje. */
+.rel-letras li.hoje::after {
+  content: '';
+  position: absolute;
+  inset: -4px -5px -3px;
+  border: 2.5px solid var(--ferrugem);
+  border-radius: 48% 52% 44% 56% / 55% 45% 55% 45%;
+  transform: rotate(-8deg);
+}
+
+/* ---------- Painel: janela, hora e bilhete ---------- */
+.rel-painel {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto auto;
+  background: var(--chapa) var(--grao);
+  background-blend-mode: soft-light;
+  box-shadow: inset 0 0 0 2px var(--borda);
+}
+.rel-janela {
+  position: relative;
+  height: 132px;
+  margin: 10px 10px 0 26px;
+  overflow: hidden;
+  background: linear-gradient(var(--alto), var(--horizonte));
+  box-shadow:
+    inset 0 0 0 3px var(--noite),
+    inset 0 0 0 5px var(--borda-forte);
+  transition: background 2s;
+}
+.rel-estrela {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  background: var(--creme);
+  opacity: 0.85;
+}
+.rel-astro {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+  transition:
+    left 1s linear,
+    top 1s linear;
+}
+.rel-astro.sol {
+  background: #ffd25e;
+  box-shadow:
+    0 0 0 3px #f2a93b,
+    0 0 0 9px rgb(255 210 94 / 0.25),
+    0 0 26px 10px rgb(255 190 80 / 0.35);
+}
+.rel-astro.lua {
+  background: var(--creme);
+  border-radius: 50%;
+  box-shadow:
+    inset -6px -3px 0 #c9bf9f,
+    0 0 18px 6px rgb(243 231 204 / 0.18);
+}
+.rel-cidade {
+  position: absolute;
+  inset: auto 0 0;
+  width: 100%;
+  height: 58%;
+  shape-rendering: crispEdges;
+}
+.rel-cidade rect {
+  fill: #12160f;
+}
+.rel-janela:not(.noite) .rel-cidade rect {
+  fill: #1f2a22;
+}
+.rel-cidade rect.luz {
+  fill: var(--ouro);
+}
+.rel-hora {
+  position: absolute;
+  top: 16px;
+  left: 40px;
+  margin: 0;
+  font-family: var(--display);
+  font-stretch: 62%;
+  font-weight: 900;
+  font-size: 58px;
+  line-height: 0.95;
+  color: var(--creme);
+  font-variant-numeric: tabular-nums;
+  text-shadow:
+    3px 3px 0 var(--noite),
+    0 0 14px rgb(0 0 0 / 0.45);
+}
+.rel-hora i {
+  display: inline-block;
+  font-style: normal;
+  margin: 0 1px;
+  color: var(--ouro);
+  animation: rel-dois-pontos 1s steps(1) infinite;
+}
+@keyframes rel-dois-pontos {
+  50% {
+    opacity: 0.2;
+  }
+}
+
+/* Bilhete da rodada: cada picote é um pedaço de 10 minutos de jogo; os passados saem. */
+.rel-bilhete {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px 14px 30px;
+}
+.rel-bilhete-texto {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+.rel-bilhete-texto small {
+  font-family: var(--rotulo);
+  font-weight: 600;
+  font-size: 12.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ceu);
+}
+.rel-bilhete-texto b {
+  font-family: var(--display);
+  font-stretch: 62%;
+  font-weight: 900;
+  font-size: 30px;
+  line-height: 1;
+  color: var(--creme);
+  font-variant-numeric: tabular-nums;
+}
+.rel-bilhete-texto b.calculando {
+  font-family: var(--rotulo);
+  font-stretch: 100%;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--apagado);
+}
+.rel-picotes {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 0;
+}
+.rel-picotes i {
+  height: 18px;
+  background: var(--papel);
+  border-right: 2px dashed var(--chapa);
+  transition:
+    transform 0.5s,
+    opacity 0.5s;
+}
+.rel-picotes i:last-child {
+  border-right: 0;
+}
+.rel-picotes i.ido {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--borda-forte);
+  border-right-color: var(--borda-forte);
+}
+.rel-picotes i.agora {
+  background: var(--ouro);
+}
+.rel-ritmo {
+  font-size: 13px;
+  color: var(--apagado);
+}
+
+@media (max-width: 700px) {
+  .relogio {
+    grid-template-columns: 118px minmax(0, 1fr);
+  }
+  .rel-folhinha {
+    padding: 24px 8px 14px;
+  }
+  .rel-dia-numero {
+    font-size: 64px;
+  }
+  .rel-semana-nome {
+    font-size: 15px;
+  }
+  .rel-argolas {
+    gap: 40px;
+  }
+  .rel-hora {
+    font-size: 44px;
+    left: 18px;
+  }
+  .rel-janela {
+    height: 112px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .relogio *,
+  .relogio *::before {
+    animation: none !important;
+    transition: none !important;
+  }
+}

@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
 import { Lightbulb } from 'lucide-react';
-import { useGame, cr, num, ProductIcon } from '../../lib/game';
+import { useGame, cr, num } from '../../lib/game';
+import { ProdutoMini } from '../economy/Vitrine';
 import { Empty } from '../../components/ui';
 import { GraficoPixel } from '../../components/GraficoPixel';
-import { BarraEmpilhada, BarrasPixel, type ParteEmpilhada } from '../../components/BarrasPixel';
+import { BarrasPixel, type ParteEmpilhada } from '../../components/BarrasPixel';
 import { comecoDoDia } from '../inicio/tempo';
 import {
   products,
@@ -121,14 +122,6 @@ export function BusinessFinance({ establishment: e }: { establishment: Establish
         ? r.dataDoDia(i).label.slice(0, 3).toLocaleLowerCase('pt-BR')
         : `${dia2(r.dataDoDia(i).date.getUTCDate())}/${dia2(r.dataDoDia(i).date.getUTCMonth() + 1)}`,
   );
-  const partes: ParteEmpilhada[] = (Object.keys(GRUPOS) as Grupo[]).map((g) => ({
-    id: g,
-    rotulo: GRUPOS[g].rotulo,
-    valor: r.porGrupo[g],
-    cor: GRUPOS[g].cor,
-    forma: GRUPOS[g].forma,
-    ajuda: r.porGrupo[g] > 0 ? GRUPOS[g].ajuda : undefined,
-  }));
   const estoque = Object.entries(e.inventory).reduce(
     (n, [id, q]) => n + q! * (e.unitCosts[id as ProductId] ?? 0),
     0,
@@ -225,18 +218,6 @@ export function BusinessFinance({ establishment: e }: { establishment: Establish
       </section>
 
       <section className="fin-bloco">
-        <Cabecalho
-          titulo="Para onde foi o dinheiro"
-          texto="Tudo o que saiu, separado por assunto."
-        />
-        <BarraEmpilhada
-          titulo="Saídas do período por assunto"
-          partes={partes}
-          formato={(v) => cr(v, 0)}
-        />
-      </section>
-
-      <section className="fin-bloco">
         <Cabecalho titulo="Resultado e capital" />
         <div className="fin-tiles">
           <div className="fin-tile">
@@ -311,14 +292,18 @@ export function Consumption({ establishment: e }: { establishment: Establishment
     return `${dia2(d.getUTCDate())}/${dia2(d.getUTCMonth() + 1)} ${dia2(d.getUTCHours())}h`;
   });
   const estoque = e.inventory[product] ?? 0;
+  // Fatia da procura de uma loja típica da cidade que chega até esta loja.
+  const fatia = porDia !== null && procuraPorLoja > 0 ? porDia / procuraPorLoja : null;
   const conselho =
     estoque === 0
       ? 'Reponha este produto: a procura das famílias não vira venda sem estoque.'
-      : procurado > vendido
-        ? 'Faltou atender parte da procura. Confira o estoque e a equipe antes de comprar mais.'
-        : inventoryQuality(e, product) < 65
-          ? 'Compare a qualidade dos fornecedores: material melhor atrai mais famílias.'
-          : 'Compare o preço de venda com o custo e acompanhe a margem antes de crescer.';
+      : fatia !== null && fatia < 0.25
+        ? `Só ${num(fatia * 100)}% do que uma loja típica vende chega até você. Preço alto ou qualidade baixa afastam as famílias: compare na Prateleira.`
+        : procurado > vendido
+          ? 'Faltou atender parte da procura. Confira o estoque e a equipe antes de comprar mais.'
+          : inventoryQuality(e, product) < 65
+            ? 'Compare a qualidade dos fornecedores: material melhor atrai mais famílias.'
+            : 'Compare o preço de venda com o custo e acompanhe a margem antes de crescer.';
   return (
     <div className="fin">
       <Cabecalho
@@ -334,7 +319,7 @@ export function Consumption({ establishment: e }: { establishment: Establishment
             className={id === product ? 'on' : ''}
             onClick={() => setEscolhido(id)}
           >
-            <ProductIcon product={id} size={16} />
+            <ProdutoMini product={id} tamanho={24} />
             {products[id].name}
           </button>
         ))}
@@ -349,9 +334,13 @@ export function Consumption({ establishment: e }: { establishment: Establishment
           </small>
         </div>
         <div className="fin-tile">
-          <span>Procura da cidade por loja</span>
+          <span>Uma loja típica da cidade vende</span>
           <b>{num(procuraPorLoja, 1)} un/dia</b>
-          <small>estimativa, dividida entre as lojas</small>
+          <small>
+            {fatia === null
+              ? 'estimativa: procura da cidade dividida entre as lojas'
+              : `você pega ${num(fatia * 100)}% disso`}
+          </small>
         </div>
         <div className={`fin-tile ${procurado > vendido ? 'alerta' : ''}`}>
           <span>Procura que ficou sem atender</span>
@@ -368,16 +357,21 @@ export function Consumption({ establishment: e }: { establishment: Establishment
       <section className="fin-bloco">
         <Cabecalho
           titulo="Procurado e vendido"
-          texto="Cada ponto é uma rodada de 2 horas de jogo."
+          texto="Cada par de barras é uma rodada de 2 horas de jogo, nos últimos 2 dias. Barras iguais: você atendeu todo mundo que veio."
         />
         {rodadas.length ? (
           <GraficoPixel
             titulo={`Procura das famílias e unidades vendidas de ${products[product].name} por rodada`}
+            tipo="barras"
             altura={240}
-            rotulos={rotulosRodada}
+            rotulos={rotulosRodada.slice(-24)}
             series={[
-              { nome: 'Famílias queriam', valores: rodadas.map((s) => s.desired), cor: 3 },
-              { nome: 'Você vendeu', valores: rodadas.map((s) => s.sold), cor: 1 },
+              {
+                nome: 'Famílias queriam',
+                valores: rodadas.slice(-24).map((s) => s.desired),
+                cor: 3,
+              },
+              { nome: 'Você vendeu', valores: rodadas.slice(-24).map((s) => s.sold), cor: 1 },
             ]}
             formato={(v) => `${num(v, 1)} un`}
             formatoEixo={(v) => num(v, 1)}

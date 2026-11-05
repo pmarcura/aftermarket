@@ -1,14 +1,27 @@
 # Estado do projeto
 
-Atualizado em **30/10/2026**. Versão **0.4.0**. Uma página: o que é verdade agora e o que vem a seguir. Detalhes e evidências ficam nos documentos de cada fase e no histórico do Git.
+Atualizado em **05/11/2026**. Versão **0.4.0**. Uma página: o que é verdade agora e o que vem a seguir. Detalhes e evidências ficam nos documentos de cada fase e no histórico do Git.
 
 ## Onde estamos
 
+**05/11/2026 · mudança de equipe.** O João (John) parou de atualizar o projeto; o Pedro passa a liderar tudo. Todo o trabalho dele foi juntado ao nosso: specs 001–007 já estavam no `main`; o mapa vivo (spec 008, parado em R2) e o mundo 16-bit (spec 009, parado na fase C) entraram neste fechamento. A cidade de perto usa o pacote MODERN TOWN SET, que fica fora do Git (licença) em `apps/web/public/arte/town`; sem ele o mapa funciona, só sem os prédios desenhados. Build, 307 testes e 34 cenários de navegador passam. Próximo passo: recomeçar o plano a partir daqui.
+
 Etapas **A · Arrumar a casa** e **B · Redesenhar a economia** concluídas; parte da **E** (primeira hora) adiantada a pedido do Pedro. Próximas: **C · Motor que aguenta** e **D · Jogar junto** do [roteiro](ROADMAP.md), que faltam para o playtest com amigos. O panorama visual completo está em [`docs/raio-x.html`](../docs/raio-x.html).
 
-O jogo roda localmente: mapa do Centro-Sul, compra de imóveis, produção, estoque físico, mercado com negociação, frota, finanças com crédito e empresas-bot usando os mesmos comandos dos jogadores. Existe uma única economia (D-042, spec 001). `npm run dev` abre o mundo `playtest`: começo enxuto (loja vazia e R$ 1 milhão) e guia de primeiros passos. Com `AFTERMARKET_WORLD_SCALE=20` o mundo tem cerca de 550 empresas-bot e o frete usa distância estimada identificada; na escala 1 o frete exige rota rodoviária real. Build e 242 testes passam.
+O jogo roda localmente: mapa do Centro-Sul, compra de imóveis, produção, estoque físico, mercado com negociação, frota, finanças com crédito e empresas-bot usando os mesmos comandos dos jogadores. Existe uma única economia (D-042, spec 001). `npm run dev` abre o mundo `playtest`: começo enxuto (loja vazia e R$ 1 milhão) e guia de primeiros passos. Com `AFTERMARKET_WORLD_SCALE=20` o mundo tem cerca de 550 empresas-bot e o frete usa distância estimada identificada; na escala 1 o frete exige rota rodoviária real. Build e 269 testes passam.
 
 ## O que funciona
+
+Carregamento (spec 012, 03/11): ramo do design alinhado ao main e à spec 005 do
+João. Leituras HTTP sem tick, respostas comprimidas e reutilizadas por revisão,
+indicadores sem varredura por produto e histórico do pregão agrupado. Conexão com
+deadline de 15 s e tentativas compartilhadas. Build, 269 testes e dez cenários de
+navegador aprovados, incluindo compra/entrega/produção real. A prévia compilada
+usa a mesma API e o mesmo mundo do design; não cria outra economia.
+Continuação: ledger incremental em transação, rollback sem copiar payloads imutáveis,
+recuperação idempotente e gaveta com quantidade cotada. No mesmo snapshot: 185,5 MB
+→ 36,6 MB regravados; serialização 1,43 s → 243 ms. Motor e snapshot residual ainda podem bloquear a API. A etapa C continua aberta. Evidência, limites
+e prioridades em [validação 012](../specs/012-carregamento-fluido/validation.md).
 
 Direção **Livro-caixa** aplicada à interface: Archivo condensada nos títulos e valores,
 IBM Plex Mono nos controles e Caveat Brush nas notas curtas, com fontes locais, papel,
@@ -35,14 +48,14 @@ e limites em [VALIDAÇÃO DA INTERFACE](../docs/design/VALIDACAO-INTERFACE-2026-
 
 ## Furos conhecidos
 
-| Área        | Problema                                                                                                                                 | Onde está o detalhe                                             |
-| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| Economia    | Escala 20: arroz, feijão, utensílios e caminhão leve no vermelho; aço ao governo ~190 de 320 t/dia; procura atendida 51%                 | [PROVA](../docs/product/PROVA.md), D-036, D-038, D-039, HANDOFF |
-| Mundo       | Só 12 lotes livres e os dois jogadores de teste começam em Campinas                                                                      | etapa D (uma cidade e lotes por amigo)                          |
-| Mundo salvo | Mundos da economia antiga são recusados ao abrir, sem backup nem alteração; o dono arquiva `.runtime/world.sqlite` e começa um novo      | spec 001 (R6)                                                   |
-| Desempenho  | Mundo salvo como um JSON único, regravado a cada 2 s; navegador baixa tudo a cada 3 s; ~2 s de cálculo por dia de jogo no fim de 90 dias | etapa C do roteiro                                              |
-| Multiplayer | Servidor só escuta `127.0.0.1`; perfis sem senha                                                                                         | etapa D do roteiro                                              |
-| Interface   | Sem mural de notícias nem ranking; fábricas e fazendas ainda sem o padrão novo da loja                                                   | etapa E do roteiro                                              |
+| Área        | Problema                                                                                                                            | Onde está o detalhe                                             |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| Economia    | Escala 20: arroz, feijão, utensílios e caminhão leve no vermelho; aço ao governo ~190 de 320 t/dia; procura atendida 51%            | [PROVA](../docs/product/PROVA.md), D-036, D-038, D-039, HANDOFF |
+| Mundo       | Só 12 lotes livres e os dois jogadores de teste começam em Campinas                                                                 | etapa D (uma cidade e lotes por amigo)                          |
+| Mundo salvo | Mundos da economia antiga são recusados ao abrir, sem backup nem alteração; o dono arquiva `.runtime/world.sqlite` e começa um novo | spec 001 (R6)                                                   |
+| Desempenho  | Ledger incremental; demais entidades ainda em snapshot síncrono (~36,6 MB); motor compartilha thread da API                         | etapa C do roteiro                                              |
+| Multiplayer | Servidor só escuta `127.0.0.1`; perfis sem senha                                                                                    | etapa D do roteiro                                              |
+| Interface   | Sem mural de notícias nem ranking; fábricas e fazendas ainda sem o padrão novo da loja                                              | etapa E do roteiro                                              |
 
 ## Próximo passo
 

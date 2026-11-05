@@ -109,7 +109,7 @@ test('compra, frete, entrega e produção alteram o estado real e persistem apó
       .getByRole('button', { name: 'Negócios', exact: true })
       .click();
     await page
-      .locator('article.neg-item')
+      .locator('article.ng-card')
       .filter({ has: page.getByRole('heading', { name: 'Indústria de Aço', exact: true }) })
       .getByRole('button', { name: /^Abrir/ })
       .click();

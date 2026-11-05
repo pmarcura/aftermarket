@@ -179,6 +179,8 @@ export interface Entry {
   amount: number;
   description: string;
   establishmentId?: string;
+  /** Linha de custo fixo do dia (spec 013): soma as rodadas do mesmo dia de jogo. */
+  daily?: true;
   kind:
     | 'trade'
     | 'freight'
@@ -220,6 +222,13 @@ export interface World {
   revision: number;
   createdAt: number;
   updatedAt: number;
+  /**
+   * Tempo real em que o mundo ficou parado (spec 013): o relógio do mundo é o relógio real menos
+   * isto. Só o servidor muda; o motor recebe o instante já descontado.
+   */
+  pausedMs?: number;
+  /** Contador dos códigos de registros novos (spec 014, `ids.ts`). */
+  idSeq?: number;
   nextEconomicAt: number;
   companies: Company[];
   properties: Property[];
@@ -524,6 +533,8 @@ export interface SupplyPolicy {
   maxDistanceKm: number;
   minQuality: number;
   maxFreightPerUnit: number;
+  // Loja: só compra se mercadoria + frete por unidade deixar esta fração do preço de venda.
+  shelfMargin?: number;
   carrierId: string;
   rules: SupplyRule[];
 }

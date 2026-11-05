@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Aftermarket · Animação 5 · Sem pegadinha</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Archivo:wght@500;700;800;900&display=block"
+    />
+    <link rel="stylesheet" href="limpo.css" />
+    <style>
+      /* Gatilho: confiança e acesso antecipado. O jogo não quer dinheiro; quem entra vê primeiro. */
+      .elo.m {
+        height: 150px;
+      }
+      .moeda-g {
+        border-radius: 50%;
+        background: var(--lime);
+        border: 14px solid #0f1114;
+        color: #0d0f0b;
+        font: 900 220px/380px Archivo;
+        text-align: center;
+        box-shadow: 0 0 80px #a6e22e55;
+      }
+      .risco {
+        height: 26px;
+        background: var(--brasa);
+        transform-origin: center;
+        border: 4px solid #0f1114;
+        box-sizing: border-box;
+      }
+      .ok {
+        width: 70px;
+        height: 70px;
+        flex: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="bar">
+      <button id="play">▶ Tocar</button><button id="rst">⟲ Do início</button
+      ><span id="tt">0.0 / 0.0 s</span>
+    </div>
+    <div id="wrap">
+      <div id="stage">
+        <div id="grade"></div>
+        <div class="a tag" id="marca">AFTERMARKET · EM DESENVOLVIMENTO</div>
+
+        <!-- 1. GANCHO: a moeda riscada -->
+        <section class="cena" id="c-gancho">
+          <div class="a h" id="g-t" style="top: 250px; font-size: 112px">
+            Esse jogo<br />não quer
+          </div>
+          <div
+            class="a moeda-g"
+            id="g-m"
+            style="left: 330px; top: 640px; width: 420px; height: 420px"
+          >
+            R$
+          </div>
+          <div
+            class="a risco"
+            id="g-r"
+            style="left: 270px; top: 830px; width: 540px; transform: rotate(-24deg)"
+          ></div>
+          <div class="a h" id="g-u" style="top: 1160px; font-size: 104px">
+            o seu <span class="brasa">dinheiro</span>
+          </div>
+        </section>
+
+        <!-- 2. PORQUÊ: coração em pixel -->
+        <section class="cena" id="c-paixao">
+          <svg
+            class="a"
+            id="p-c"
+            width="432"
+            height="384"
+            viewBox="0 0 9 8"
+            style="left: 324px; top: 420px; shape-rendering: crispEdges"
+          >
+            <g fill="#ef6a4c">
+              <rect x="1" y="0" width="2" height="1" />
+              <rect x="6" y="0" width="2" height="1" />
+              <rect x="0" y="1" width="4" height="1" />
+              <rect x="5" y="1" width="4" height="1" />
+              <rect x="0" y="2" width="9" height="2" />
+              <rect x="1" y="4" width="7" height="1" />
+              <rect x="2" y="5" width="5" height="1" />
+              <rect x="3" y="6" width="3" height="1" />
+              <rect x="4" y="7" width="1" height="1" />
+            </g>
+            <g fill="#ff9a82">
+              <rect x="1" y="1" width="1" height="1" />
+              <rect x="1" y="2" width="1" height="1" />
+            </g>
+          </svg>
+          <div class="a h" id="p-t" style="top: 900px; font-size: 108px">
+            Feito por<br /><span class="brasa">vontade e paixão</span>
+          </div>
+        </section>
+
+        <!-- 3. TRANSPARÊNCIA: três razões para entrar -->
+        <section class="cena" id="c-prova">
+          <div class="a h" id="v-t" style="top: 240px; font-size: 104px">
+            Sem <span class="lime">pegadinha</span>
+          </div>
+          <div class="a elo m" id="v1" style="top: 520px; --c: #a6e22e">
+            <svg class="ok" viewBox="0 0 7 7" shape-rendering="crispEdges">
+              <rect width="7" height="7" fill="#a6e22e" />
+              <path
+                id="v1p"
+                d="M1.4 3.6 L3 5.2 L5.6 1.8"
+                fill="none"
+                stroke="#0d0f0b"
+                stroke-width="1"
+                stroke-linecap="square"
+              />
+            </svg>
+            <div><b>Em desenvolvimento</b><small>A GENTE MOSTRA O PROCESSO</small></div>
+          </div>
+          <div class="a elo m" id="v2" style="top: 720px; --c: #a6e22e">
+            <svg class="ok" viewBox="0 0 7 7" shape-rendering="crispEdges">
+              <rect width="7" height="7" fill="#a6e22e" />
+              <path
+                id="v2p"
+                d="M1.4 3.6 L3 5.2 L5.6 1.8"
+                fill="none"
+                stroke="#0d0f0b"
+                stroke-width="1"
+                stroke-linecap="square"
+              />
+            </svg>
+            <div><b>Novidades</b><small>DIRETO NO DISCORD</small></div>
+          </div>
+          <div class="a elo m" id="v3" style="top: 920px; --c: #a6e22e">
+            <svg class="ok" viewBox="0 0 7 7" shape-rendering="crispEdges">
+              <rect width="7" height="7" fill="#a6e22e" />
+              <path
+                id="v3p"
+                d="M1.4 3.6 L3 5.2 L5.6 1.8"
+                fill="none"
+                stroke="#0d0f0b"
+                stroke-width="1"
+                stroke-linecap="square"
+              />
+            </svg>
+            <div><b>Primeiros testes</b><small>ACESSO PARA QUEM ENTRAR</small></div>
+          </div>
+        </section>
+
+        <!-- 4. MUNDO -->
+        <section class="cena" id="c-mundo">
+          <img
+            class="a pix"
+            id="w-pl"
+            src="../../../apps/web/public/arte/landing/planet.png"
+            alt=""
+            style="left: 190px; top: 420px; width: 700px; height: 700px"
+          />
+          <div class="a h" id="w-h" style="top: 1170px; font-size: 104px">
+            Começamos<br /><span class="lime">pelo Brasil</span>
+          </div>
+        </section>
+
+        <!-- 5. CHAMADA -->
+        <section class="cena" id="c-cta">
+          <div class="a h" id="z-h" style="top: 420px; font-size: 124px">
+            Entre antes<br /><span class="lime">de todo mundo</span>
+          </div>
+          <div class="a botao" id="z-bot" style="top: 960px">Entre no Discord</div>
+          <div class="a tag" id="z-l" style="top: 1150px; left: 0; right: 0; color: #f2f4ee">
+            Link na bio
+          </div>
+        </section>
+
+        <div id="flash"></div>
+        <div id="fundo-cap"></div>
+        <div id="cap"><p id="cap-p"></p></div>
+      </div>
+    </div>
+
+    <script src="motor.js"></script>
+    <script>
+      montar([
+        [
+          'gancho',
+          3.2,
+          'Esse jogo não quer o seu dinheiro.',
+          (u) => {
+            palavras($('g-t'), u, -0.5, 0.05, 0.3);
+            const k = E.out(q(u, -0.3, 0.6));
+            T($('g-m'), { s: 0.8 + 0.2 * k, o: 1 });
+            // o risco "corta" a moeda
+            const r = E.out(q(u, 0.7, 0.3));
+            $('g-r').style.transform = `rotate(-24deg) scaleX(${r})`;
+            estala($('g-u'), u, 1.1, 0.45);
+            sacode($('c-gancho'), u, 0.75, 10);
+          },
+        ],
+        [
+          'paixao',
+          4.2,
+          'É feito por vontade e paixão.',
+          (u) => {
+            // coração pulsa duas vezes e continua batendo
+            const bate = 1 + 0.1 * Math.max(0, Math.sin(u * 7)) ** 2;
+            const k = E.out(q(u, 0, 0.45));
+            T($('p-c'), { s: (0.6 + 0.4 * k) * bate, o: clamp(u * 6) });
+            estala($('p-t'), u, 0.5, 0.45);
+          },
+        ],
+        [
+          'prova',
+          6.0,
+          [
+            [0, 'Sem pegadinha.'],
+            [1.5, 'Em desenvolvimento, novidades no Discord e primeiros testes.'],
+          ],
+          (u) => {
+            estala($('v-t'), u, 0, 0.4);
+            ['v1', 'v2', 'v3'].forEach((id, i) => {
+              const k = E.out(q(u, 0.7 + i * 1.2, 0.4));
+              T($(id), { x: (1 - k) * 80, o: k });
+              tracar($(id + 'p'), E.out(q(u, 1.0 + i * 1.2, 0.35)));
+            });
+          },
+        ],
+        [
+          'mundo',
+          3.4,
+          'Começamos pelo Brasil.',
+          (u) => {
+            const k = E.out(q(u, 0, 0.6));
+            T($('w-pl'), { y: (1 - k) * 260, s: 0.82 + 0.18 * k, o: k });
+            estala($('w-h'), u, 0.4, 0.45);
+          },
+        ],
+        [
+          'cta',
+          3.6,
+          'Entre no Discord. Link na bio.',
+          (u) => {
+            palavras($('z-h'), u, 0, 0.1, 0.4);
+            estala($('z-bot'), u, 0.9, 0.45);
+            entra($('z-l'), u, 1.5, 0.35, 30);
+          },
+        ],
+      ]);
+    </script>
+  </body>
+</html>

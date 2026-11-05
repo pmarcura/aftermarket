@@ -3,12 +3,11 @@ import '../design/loja.css';
 import '../design/producao.css';
 import { useGame } from '../lib/game';
 import { Panel, Tabs, Empty } from '../components/ui';
-import { Abastecimento } from '../features/business/Abastecimento';
-import { Workforce } from '../features/business/Workforce';
 import { Installation } from '../features/business/Installation';
-import { BusinessFinance, Consumption } from '../features/business/Analytics';
 import { LojaCabecalho } from '../features/business/Empate';
-import { Prateleira } from '../features/business/Prateleira';
+import { Balcao } from '../features/loja/Balcao';
+import { EquipeLoja } from '../features/loja/EquipeLoja';
+import { ResultadoLoja } from '../features/loja/ResultadoLoja';
 import { Unidades } from '../features/business/producao/Cabeca';
 import { matizDaCategoria } from '../features/business/producao/pecas';
 
@@ -18,7 +17,17 @@ export function RetailPage() {
     world.establishments.find(
       (e) => e.id === businessId && e.companyId === actor && e.category === 'retail',
     ) ?? world.establishments.find((e) => e.companyId === actor && e.category === 'retail');
-  const [tab, setTab] = useState('Prateleira');
+  // Quem abre a loja pode pedir uma aba (o Início leva direto à Equipe, por exemplo).
+  const [tab, setTab] = useState(() => {
+    const pedida = sessionStorage.getItem('aftermarket.loja.aba');
+    sessionStorage.removeItem('aftermarket.loja.aba');
+    // Abas antigas continuam valendo para quem chega com um atalho velho.
+    return pedida === 'Finanças'
+      ? 'Resultado'
+      : pedida === 'Abastecimento'
+        ? 'Prateleira'
+        : (pedida ?? 'Prateleira');
+  });
   if (!e)
     return (
       <Empty
@@ -57,20 +66,10 @@ export function RetailPage() {
       <LojaCabecalho loja={e} />
       <div className="retail-grid">
         <Panel className="loja-painel">
-          <Tabs
-            values={['Prateleira', 'Abastecimento', 'Equipe', 'Finanças']}
-            value={tab}
-            onChange={setTab}
-          />
-          {tab === 'Prateleira' && <Prateleira loja={e} />}
-          {tab === 'Abastecimento' && <Abastecimento key={e.id} establishment={e} />}
-          {tab === 'Equipe' && <Workforce key={e.id} establishment={e} />}
-          {tab === 'Finanças' && (
-            <>
-              <BusinessFinance key={e.id} establishment={e} />
-              <Consumption key={`${e.id}-consumo`} establishment={e} />
-            </>
-          )}
+          <Tabs values={['Prateleira', 'Equipe', 'Resultado']} value={tab} onChange={setTab} />
+          {tab === 'Prateleira' && <Balcao loja={e} />}
+          {tab === 'Equipe' && <EquipeLoja key={e.id} loja={e} />}
+          {tab === 'Resultado' && <ResultadoLoja key={e.id} loja={e} />}
         </Panel>
       </div>
     </div>
